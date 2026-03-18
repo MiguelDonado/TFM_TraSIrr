@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-03-18 02:33:57.804697 by Eclipse SUMO randomTrips.py v1.26.0
+<configuration>
+    <net-file value="/home/miguel/6.Projects/ReplicateSongThesis/sumo_conf/thesisToyNetwork.net.xml"/>
+    <additional-files value="/home/miguel/6.Projects/ReplicateSongThesis/sumo_conf/vtype.add.xml"/>
+    <output-trip-file value="/home/miguel/6.Projects/ReplicateSongThesis/sumo_conf/trips.trips.xml"/>
+    <prefix value="veh_"/>
+    <trip-attributes value="type=&quot;Thesis&quot;"/>
+    <end value="1000.0"/>
+    <period value="50.0"/>
+</configuration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <trip id="veh_0" depart="0.00" from="E2" to="-E1" type="Thesis"/>
+    <trip id="veh_1" depart="50.00" from="-E4" to="-E3" type="Thesis"/>
+    <trip id="veh_2" depart="100.00" from="E3" to="E3" type="Thesis"/>
+    <trip id="veh_3" depart="150.00" from="E4" to="-E1" type="Thesis"/>
+    <trip id="veh_4" depart="200.00" from="-E5" to="-E1" type="Thesis"/>
+    <trip id="veh_5" depart="250.00" from="-E3" to="E1" type="Thesis"/>
+    <trip id="veh_6" depart="300.00" from="-E1" to="-E3" type="Thesis"/>
+    <trip id="veh_7" depart="350.00" from="E2" to="E1" type="Thesis"/>
+    <trip id="veh_8" depart="400.00" from="-E3" to="E2" type="Thesis"/>
+    <trip id="veh_9" depart="450.00" from="E3" to="-E1" type="Thesis"/>
+    <trip id="veh_10" depart="500.00" from="E3" to="E3" type="Thesis"/>
+    <trip id="veh_11" depart="550.00" from="-E4" to="-E2" type="Thesis"/>
+    <trip id="veh_12" depart="600.00" from="E5" to="-E4" type="Thesis"/>
+    <trip id="veh_13" depart="650.00" from="-E2" to="-E2" type="Thesis"/>
+    <trip id="veh_14" depart="700.00" from="E4" to="E2" type="Thesis"/>
+    <trip id="veh_15" depart="750.00" from="E3" to="E4" type="Thesis"/>
+    <trip id="veh_16" depart="800.00" from="E0" to="E6" type="Thesis"/>
+    <trip id="veh_17" depart="850.00" from="-E5" to="E2" type="Thesis"/>
+    <trip id="veh_18" depart="900.00" from="E4" to="E2" type="Thesis"/>
+    <trip id="veh_19" depart="950.00" from="E4" to="E2" type="Thesis"/>
+</routes>
