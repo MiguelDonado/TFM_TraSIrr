@@ -35,6 +35,7 @@ class SumTree(object):
         2. Size of priority tree: self.tree
         """
         self.capacity = capacity
+        self.memory_counter = 0
 
         """
         Create the tree (it stores priorities not experiences)
@@ -76,10 +77,13 @@ class SumTree(object):
         """
         Insert a new experience with priority p
         """
+
         # Find leaf index in the tree array where the new priority will be stored
         tree_idx = self.data_pointer + self.capacity - 1
         # Store experience
         self.data[self.data_pointer] = data
+        # To check we can start training in main.py
+        self.memory_counter += 1
         # Update tree
         self.update(tree_idx, p)
 

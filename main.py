@@ -12,6 +12,9 @@ N_VEH = 20  # Number of vehicles to insert
 ACCIDENTS = False
 START_EDGE = "E0"  # For agent vehicle
 END_EDGE = "E6"  # For agent vehicle
+MEMORY_SIZE = 10000
+BATCH_SIZE = 32
+MIN_REPLAY_SIZE = BATCH_SIZE * 10
 
 
 def main():
@@ -31,7 +34,7 @@ def main():
     # -----------------------------
     env = Sumo(
         sumo_conf=scen.conf,
-        gui=False,
+        gui=True,
         start_edge=START_EDGE,
         end_edge=END_EDGE,
         max_n_veh=N_VEH,
@@ -41,8 +44,7 @@ def main():
     # 3. CREATE AGENT
     # -----------------------------
     agent = Agent(
-        n_features=env.n_features,
-        n_actions=env.max_n_actions,
+        n_features=env.n_features, n_actions=env.max_n_actions, memory_size=MEMORY_SIZE
     )
 
     # -----------------------------
@@ -55,7 +57,7 @@ def main():
         print(f"\n--- Episode {episode} ---")
 
         # Reset environment
-        obs, display, n_actions, done, terminal = env.reset()
+        obs, display, n_actions, reward, done = env.reset()
 
         while True:
 
@@ -73,27 +75,23 @@ def main():
             # -----------------------------
             # 2. STEP ENVIRONMENT
             # -----------------------------
-            obs_, display, n_actions_, done, terminal = env.run_simulation(action)
+            obs_, display, n_actions_, reward, done = env.run_simulation(action)
 
             # -----------------------------
-            # 3. REWARD (IMPORTANT)
-            # -----------------------------
-            # You need to define this depending on reward_method
-            reward = compute_reward(env)
-
-            # -----------------------------
-            # 4. STORE TRANSITION
+            # 3. STORE TRANSITION
             # -----------------------------
             agent.store_transition((obs, action, reward, obs_))
 
             # -----------------------------
-            # 5. LEARN
+            # 4. LEARN
             # -----------------------------
-            if agent.learn_step_counter > agent.batch_size:
+            if agent.memory.tree.memory_counter >= MIN_REPLAY_SIZE:
                 agent.learn(episode, env)
 
-            # Move to next state
-            obs = obs_
+            # -----------------------------
+            # 5. Keep simulating until DONE or IN_ZONE (because previously we were at NEW, it will stop when DONE or IN_ZONE)
+            obs_, display, n_actions, reward, done = env.run_simulation()
+            # -----------------------------
 
             # -----------------------------
             # 6. TERMINATION
@@ -108,21 +106,6 @@ def main():
     # 5. SAVE MODEL
     # -----------------------------
     agent.save()
-
-
-# -----------------------------
-# REWARD FUNCTION
-# -----------------------------
-def compute_reward(env):
-    """
-    You MUST define this based on your thesis
-
-    Example (simple):
-    negative travel time or congestion
-    """
-
-    # Placeholder (you should adapt)
-    return -1
 
 
 if __name__ == "__main__":

@@ -414,6 +414,17 @@ class Sumo:
                 self.NOX = 0
                 self.PMX = 0
 
+                n_actions = 0
+                # Get reward
+                done = 0
+                reward = self.get_reward(done)
+
+                # Get observation
+                # State vector + Debug table
+                obs, t = self.get_observation()
+
+                return obs, t, n_actions, reward, done
+
             # Decision point
             if status == "IN_ZONE":
                 done = 0
