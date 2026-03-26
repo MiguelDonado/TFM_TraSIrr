@@ -4,10 +4,10 @@ import numpy as np
 
 from config.simulation import config_simulation
 from config.training import config_training
+from environment import Sumo
 from paths import MAP_FILE
 from scenario import scenario
 
-# from environment import Sumo
 # from agent import Agent
 
 
@@ -18,89 +18,55 @@ def main():
     # -----------------------------
     scen = scenario(
         map=MAP_FILE,
-        duration=config_simulation.duration,
-        n_veh=config_simulation.n_veh,
-        accidents=config_simulation.accidents,
+        n_agents=config_simulation.n_agents,
     )
 
+    # -----------------------------
+    # 2. CREATE ENVIRONMENT
+    # -----------------------------
+    env = Sumo(scenario=scen, gui=True)
 
-#     # -----------------------------
-#     # 2. CREATE ENVIRONMENT
-#     # -----------------------------
-#     env = Sumo(
-#         sumo_conf=scen.conf,
-#         gui=True,
-#         start_edge=START_EDGE,
-#         end_edge=END_EDGE,
-#         max_n_veh=N_VEH,
-#     )
+    #     # -----------------------------
+    #     # 3. CREATE AGENT
+    #     # -----------------------------
+    #     agent = Agent(
+    #         n_features=env.n_features, n_actions=env.max_n_actions, memory_size=MEMORY_SIZE
+    #     )
 
-#     # -----------------------------
-#     # 3. CREATE AGENT
-#     # -----------------------------
-#     agent = Agent(
-#         n_features=env.n_features, n_actions=env.max_n_actions, memory_size=MEMORY_SIZE
-#     )
+    # -----------------------------
+    # 4. TRAINING LOOP
+    # -----------------------------
 
-#     # -----------------------------
-#     # 4. TRAINING LOOP
-#     # -----------------------------
-#     n_episodes = 100
+    for episode in range(config_simulation.n_episodes):
 
-#     for episode in range(n_episodes):
+        print(f"\n--- Episode {episode + 1} ---")
 
-#         print(f"\n--- Episode {episode} ---")
+        while True:
 
-#         # Reset environment
-#         obs, display, n_actions, reward, done = env.reset()
+            # -----------------------------
+            # 1. RESET ENVIRONMENT
+            # -----------------------------
+            env.start()
 
-#         while True:
+            # -----------------------------
+            # 2. CHOOSE ACTION
+            # -----------------------------
+            actions = env.choose_action()
 
-#             # Get current edge and connections
-#             current_edge = env.traci.vehicle.getRoadID("nav_veh")
-#             conn_edges = env.e_conn_dict[current_edge]
+            # -----------------------------
+            # 3. INSERT VEHICLES
+            # -----------------------------
+            env.insert_vehicles(actions)
 
-#             # -----------------------------
-#             # 1. CHOOSE ACTION
-#             # -----------------------------
-#             action, _ = agent.choose_action(
-#                 obs, n_actions, current_edge, conn_edges, env.e_distance_dest_dict
-#             )
+            # -----------------------------
+            # 4. RUN EPISODE
+            # -----------------------------
+            env.run_episode()
 
-#             # -----------------------------
-#             # 2. STEP ENVIRONMENT
-#             # -----------------------------
-#             obs_, display, n_actions_, reward, done = env.run_simulation(action)
-
-#             # -----------------------------
-#             # 3. STORE TRANSITION
-#             # -----------------------------
-#             agent.store_transition((obs, action, reward, obs_))
-
-#             # -----------------------------
-#             # 4. LEARN
-#             # -----------------------------
-#             if agent.memory.tree.memory_counter >= MIN_REPLAY_SIZE:
-#                 agent.learn(episode, env)
-
-#             # -----------------------------
-#             # 5. Keep simulating until DONE or IN_ZONE (because previously we were at NEW, it will stop when DONE or IN_ZONE)
-#             obs_, display, n_actions, reward, done = env.run_simulation()
-#             # -----------------------------
-
-#             # -----------------------------
-#             # 6. TERMINATION
-#             # -----------------------------
-#             if done:
-#                 print("Episode finished")
-#                 break
-
-#         env.close()
-
-#     # -----------------------------
-#     # 5. SAVE MODEL
-#     # -----------------------------
-#     agent.save()
+            # -----------------------------
+            # 4. GET REWARDS
+            # -----------------------------
+            rewards = env.get_travel_times()
 
 
 if __name__ == "__main__":

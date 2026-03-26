@@ -3,7 +3,9 @@ Class that creates the required files for SUMO simulator in order to run simulat
 """
 
 import os
+import random
 import subprocess
+import tempfile
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -11,28 +13,29 @@ import numpy as np
 from config.constants import config_constants
 from config.simulation import config_simulation
 from paths import (
+    MAP_FILE,
     NET_FILE,
     ROUTE_FILE,
     SUMO_CONF,
     TRIP_FILE,
+    TRIPSINFO_OUTPUT_FILE,
     UNDESIRED_ROUTE_FILE,
     VTYPE_FILE,
 )
 
 
 class scenario:
-    def __init__(self, map, duration, n_veh, vType_list=None, accidents=False):
+    def __init__(self, map, n_agents):
         """
         Parameters:
         map: network file or .osm file
-        duration: simulation time
-        n_veh: number of vehicles
-        vType_list: optional vehicle types
-        accidents: whether to simulate accidents
+        n_agents: number of agents
         """
-
-        # Store number of vehicles
-        self.n_veh = n_veh
+        self.n_agents = n_agents
+        # List that store agents (each agent a dictionary with keys id, origin, destination)
+        self.agents = []
+        # Dictionary that stores set of routes for each OD-pair
+        self.od_routes = {}  # (origin, dest) → routes
 
         """
         Convert map if needed
@@ -45,42 +48,13 @@ class scenario:
             self.network = map
 
         """
-        If you provide vehicle type definitions in a list format (each element of the list is a dictionary), 
-        it creates a new additional XML file
-        Otherwise, it uses a default additional file
-
-        Example of the list format:
-        vType_list = [
-            {
-                "id": "car",
-                "accel": "2.6",
-                "decel": "4.5",
-                "sigma": "0.5",
-                "length": "5.0",
-                "maxSpeed": "25.0"
-            },
-            {
-                "id": "truck",
-                "accel": "1.2",
-                "decel": "3.0",
-                "sigma": "0.5",
-                "length": "12.0",
-                "maxSpeed": "18.0"
-            }
-        """
-        if vType_list is not None:
-            self.vType = self.gen_vType(vType_list)
-        else:
-            self.vType = VTYPE_FILE
-
-        """
         Automatically
-        1. Creates trips
-        2. Converts trips to routes
+        1. Creates agents  
+        2. Generate routes sets per OD
         3. Creates a config file
         """
-        self.trips = self.gen_trips(duration, n_veh)
-        self.routes = self.gen_routes(accidents)
+        self.generate_agents()
+        self.generate_routes()
         self.conf = self.gen_conf()
 
     def convert_map(self, map):
@@ -122,201 +96,127 @@ class scenario:
 
         return NET_FILE
 
-    def gen_vType(self, vType_list, dist_id=config_constants.vtype_id):
+    def generate_agents(self):
+        for i in range(self.n_agents):
+            origin, dest = self.sample_od()
+            self.agents.append(
+                {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
+            )
+
+    def generate_routes(self):
+
+        unique_ods = self.get_unique_ods()
+
+        # 1. Compute routes per OD
+        for od in unique_ods:
+            # Store in the dictionary od_routes the set of routes for this od pair.
+            self.od_routes[od] = self.compute_k_routes(od)
+
+    def get_unique_ods(self):
+        # Extract unique OD pairs
+        # (agent["origin"], agent["destination"]) for agent in self.agents: List comprenhensions, returns a list
+        # set(): Constructs a set from a list
+        return set((agent["origin"], agent["destination"]) for agent in self.agents)
+
+    def sample_od(self):
         """
-        Creates an additional file that stores Vehicle Type
-        Example:
-            <additional>
-                <vTypeDistribution>
-                    <vType id="car1" accel="2.6" maxSpeed="30" />
-                </vTypeDistribution>
-            </additional>
-
-        Example:
-        vType_list = [
-            {
-                "id": "normal_car",
-                "maxSpeed": "20.00",
-                "color": "yellow",
-                "accel": "2",
-                "decel": "5",
-                "probability": "0.80"
-            },
-            {
-                "id": "Trucks",
-                "length": "8.00",
-                "maxSpeed": "5.00",
-                "vClass": "truck",
-                "color": "green",
-                "accel": "1",
-                "decel": "5",
-                "probability": "0.20"
-            }
-        ]
+        In the future I will implement more than one OD-pair.
+        For simplicity, and to start, all the agents start from the same OD-pair
         """
-        # --- Validation ---
-        total_prob = 0.0
+        fixed_od = (config_simulation.start_edge, config_simulation.end_edge)
+        return fixed_od
 
-        for i, vType in enumerate(vType_list):
-            if "id" not in vType:
-                raise ValueError(f"vType at index {i} missing 'id': {vType}")
+    def compute_k_routes(self, od, k=3, n_samples=10, random_factor=10):
+        # Weights of edges by default are free-flow travel times
+        # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
 
-            if "probability" not in vType:
-                raise ValueError(f"vType '{vType['id']}' missing 'probability'")
+        routes = []
 
-            try:
-                p = float(vType["probability"])
-            except ValueError:
-                raise ValueError(
-                    f"Invalid probability in vType '{vType['id']}': {vType['probability']}"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trips_file = os.path.join(tmpdir, "trips.xml")
+            routes_file = os.path.join(tmpdir, "routes.xml")
+
+            # 1. Create trips.xml
+            self.__write_trip(trips_file, od)
+
+            # 2. Compute best route according shortest-path
+            best_route = self._run_duarouter(
+                trips_file, routes_file, random_factor=1.0, seed=42
+            )
+
+            if best_route:
+                routes.append(best_route)
+
+            # 3. Sample alternative routes (applying random factor to edge costs)
+            for _ in range(n_samples):
+
+                route = self._run_duarouter(
+                    trips_file,
+                    routes_file,
+                    random_factor=random_factor,
+                    # So each time we call duarouter, assigns different random factor to each edge
+                    seed=random.randint(0, 100000),
                 )
 
-            total_prob += p
+                if route and route not in routes:
+                    routes.append(route)
 
-        with open(VTYPE_FILE, "w") as f:
-            f.write('<?xml version="1.0"?>\n')
-            f.write("<additional>\n\n")
+                # Early stop
+                if len(routes) == k:
+                    break
 
-            f.write(f'\t<vTypeDistribution id="{dist_id}">\n')
+        if not routes:
+            return []
 
-            for vType in vType_list:
-                vtype_str = "\t\t<vType "
-                for key, value in vType.items():
-                    vtype_str += f'{key}="{value}" '
-                vtype_str += "/>\n"
+        # 3. Return k routes
+        return routes
 
-                f.write(vtype_str)
-
-            f.write("\t</vTypeDistribution>\n\n")
-            f.write("</additional>\n")
-
-        return VTYPE_FILE
-
-    def gen_trips(self, duration, n_veh):
-        """
-        How is calculated the departure interval
-        Example:
-        duration = 1000 seconds
-        n_veh = 100
-        one vehicle every 10 seconds
-
-        It runs randomTrips.py (SUMO tool)
-        Tool that randomly picks start and end edges
-        It creates vehicles
-        Assign departure times
-
-        It saves trips into trips.trips.xml
-
-        Explanation of options used with the command
-        --trip-attributes: Adds extra attributes to each generated trip
-                           We must already have a <vType id="normal_car"> defined
-        -b: Begin time
-        -e: End time
-        -p: Generate 1 trip every n seconds
-        --prefix veh_: Generated trips will look like:
-            <trip id="veh_0" ... />
-            <trip id="veh_1" ... />
-        -o: Output file
-        """
-        n = duration / n_veh
-
-        cmd = [
-            "randomTrips.py",
-            "-n",
-            self.network,
-            "--additional-file",
-            self.vType,
-            "--trip-attributes",
-            'type="Thesis"',
-            "-b",
-            "0",
-            "-e",
-            str(duration),
-            "-p",
-            str(n),
-            "--prefix",
-            "veh_",
-            "-o",
-            TRIP_FILE,
-        ]
-        subprocess.run(cmd, check=True)
-
-        return TRIP_FILE
-
-    def gen_routes(self, accidents=False):
-        """
-        trips: Only specify origin, destination and departure time
-        route: Specify all the edges for a given trip
-
-        To generate routes from trips uses the tool duarouter
-        It computes the shortest route for each vehicle
-
-        Optional: Accidents
-        """
-
+    def _run_duarouter(self, trips_file, routes_file, random_factor, seed):
         cmd = [
             "duarouter",
-            "--route-files",
-            TRIP_FILE,
-            "--additional-files",
-            self.vType,
             "-n",
-            self.network,
+            MAP_FILE,
+            "--route-files",
+            trips_file,
             "-o",
-            ROUTE_FILE,
+            routes_file,
+            "--routing-algorithm",
+            "astar",
+            "--weights.random-factor",
+            str(random_factor),
+            "--seed",
+            str(seed),
         ]
 
         subprocess.run(cmd, check=True)
 
-        if accidents:
-            """
-            If:
-            100 vehicles
-            0.01 probability
-            -> 1 vehicle will have an accident
-            """
-            n_accidents = int(self.n_veh * config_simulation.accident_prob)
-            accidents_id_list = []
+        return self.__parse_route(routes_file)
 
-            """
-            Randomly select a vehicle that will be used to simulate an accident
-            """
-            for _ in range(n_accidents):
-                while True:
-                    j = np.random.randint(self.n_veh)
-                    if j not in accidents_id_list:
-                        accidents_id_list.append(j)
-                        break
+    def __write_trip(self, file_path, od):
+        origin, destination = od
+        with open(file_path, "w") as f:
+            f.write(
+                f"""<routes>
+    <trip id="t0" from="{origin}" to="{destination}" depart="0"/>
+</routes>
+                    """
+            )
 
-            """
-            How accident is simulated
+    def __parse_route(self, routes_file):
+        try:
+            tree = ET.parse(routes_file)
+            root = tree.getroot()
 
-            1. Find the selected vehicle in the XML
-            2. Then add: <stop lane="someEdge" endPos="10" duration="20"/>
-            That forces the vehicle to stop randomly for 20 seconds
-            That simulates an accident/blockage
-            """
-            for i in accidents_id_list:
-                root = ET.parse(ROUTE_FILE).getroot()
-                veh = root.find('.//vehicle[@id="veh_' + str(i) + '"]')
+            vehicle = root.find("vehicle")
+            route = vehicle.find("route")
+            if route is not None:
+                edges = route.attrib["edges"].split()
+                return edges
 
-                if veh is None:
-                    continue
+        except Exception:
+            return None
 
-                route = veh.find("route").attrib["edges"]
-                route = route.split(" ")
-
-                ET.SubElement(veh.find("route"), "stop")
-                stop = veh.find("route").find("stop")
-                stop.set("lane", route[np.random.randint(len(route))])
-                stop.set("endPos", "10")
-                stop.set("duration", "20")
-
-                ET.ElementTree(root).write(ROUTE_FILE, encoding="unicode")
-
-        UNDESIRED_ROUTE_FILE.unlink()
-
-        return ROUTE_FILE
+        return None
 
     def gen_conf(self):
         """
@@ -327,8 +227,10 @@ class scenario:
             conf.write("<configuration>\n")
             conf.write("\t<input>\n")
             conf.write(f'\t\t<net-file value="{self.network}"/>\n')
-            conf.write(f'\t\t<route-files value="{self.routes}"/>\n')
             conf.write("\t</input>\n")
+            conf.write(f"\t<report>\n")
+            conf.write(f'\t\t<tripinfo-output value="{TRIPSINFO_OUTPUT_FILE}"/>\n')
+            conf.write(f"\t</report>\n")
             conf.write("</configuration>\n")
 
         return SUMO_CONF

@@ -3,12 +3,10 @@ from dataclasses import dataclass
 
 @dataclass
 class SimulationConfig:
-    accident_prob: float = 0.01
-    duration: int = 1000
-    n_veh: int = 20
-    accidents: bool = False
-    start_edge: str = "E0"  # For agent vehicle
-    end_edge: str = "E6"  # For agent vehicle
+    n_agents: int = 50
+    start_edge: str = "E0"
+    end_edge: str = "E6"
+    n_episodes: int = 1000
 
 
 config_simulation = SimulationConfig()

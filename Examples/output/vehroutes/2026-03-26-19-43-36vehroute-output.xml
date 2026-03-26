@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-03-26T19:43:36.818252+01:00 by Eclipse SUMO GUI 1.26.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="input.net.xml"/>
+        <route-files value="output_shortest_path.routes.xml"/>
+    </input>
+
+    <output>
+        <output-prefix value="TIME"/>
+        <vehroute-output value="vehroute-output.xml"/>
+        <vehroute-output.exit-times value="TRUE"/>
+    </output>
+
+    <time>
+        <step-length value="0.1"/>
+    </time>
+
+    <gui_only>
+        <delay value="500"/>
+    </gui_only>
+
+</sumoConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vehicle id="f_1.0" depart="0.00" arrival="9.90">
+        <route edges="E7 E8" exitTimes="6.00 9.90"/>
+    </vehicle>
+
+    <vehicle id="f_1.1" depart="6.00" arrival="16.50">
+        <route edges="E7 E8" exitTimes="12.10 16.50"/>
+    </vehicle>
+
+    <vehicle id="f_1.2" depart="12.00" arrival="22.40">
+        <route edges="E7 E8" exitTimes="18.10 22.40"/>
+    </vehicle>
+
+    <vehicle id="f_0.0" depart="0.00" arrival="25.90">
+        <route edges="E11 E5 E6 E12" exitTimes="6.40 13.90 21.60 25.90"/>
+    </vehicle>
+
+    <vehicle id="f_1.3" depart="18.00" arrival="27.60">
+        <route edges="E7 E8" exitTimes="24.10 27.60"/>
+    </vehicle>
+
+    <vehicle id="f_0.1" depart="2.60" arrival="33.30">
+        <route edges="E11 E5 E6 E12" exitTimes="9.30 18.40 28.80 33.30"/>
+    </vehicle>
+
+    <vehicle id="f_1.4" depart="24.00" arrival="34.00">
+        <route edges="E7 E8" exitTimes="30.10 34.00"/>
+    </vehicle>
+
+    <vehicle id="f_0.2" depart="5.30" arrival="38.60">
+        <route edges="E11 E5 E6 E12" exitTimes="11.80 24.40 34.40 38.60"/>
+    </vehicle>
+
+    <vehicle id="f_0.3" depart="7.90" arrival="45.10">
+        <route edges="E11 E5 E6 E12" exitTimes="14.30 30.40 40.60 45.10"/>
+    </vehicle>
+
+    <vehicle id="f_0.4" depart="10.50" arrival="46.50">
+        <route edges="E11 E5 E6 E12" exitTimes="17.00 33.40 42.10 46.50"/>
+    </vehicle>
+
+    <vehicle id="f_0.5" depart="13.20" arrival="49.10">
+        <route edges="E11 E5 E6 E12" exitTimes="19.70 35.30 43.90 49.10"/>
+    </vehicle>
+
+    <vehicle id="f_0.6" depart="15.90" arrival="50.60">
+        <route edges="E11 E5 E6 E12" exitTimes="22.50 37.00 45.60 50.60"/>
+    </vehicle>
+
+    <vehicle id="f_0.7" depart="18.50" arrival="52.10">
+        <route edges="E11 E5 E6 E12" exitTimes="25.10 38.90 47.20 52.10"/>
+    </vehicle>
+
+    <vehicle id="f_0.8" depart="21.20" arrival="53.60">
+        <route edges="E11 E5 E6 E12" exitTimes="27.60 40.70 48.90 53.60"/>
+    </vehicle>
+
+    <vehicle id="f_0.9" depart="23.80" arrival="55.10">
+        <route edges="E11 E5 E6 E12" exitTimes="30.40 42.70 50.70 55.10"/>
+    </vehicle>
+
+    <vehicle id="f_0.10" depart="26.40" arrival="57.30">
+        <route edges="E11 E5 E6 E12" exitTimes="32.90 44.70 52.70 57.30"/>
+    </vehicle>
+
+    <vehicle id="f_0.11" depart="29.00" arrival="59.90">
+        <route edges="E11 E5 E6 E12" exitTimes="35.60 46.70 55.00 59.90"/>
+    </vehicle>
+
+    <vehicle id="f_0.12" depart="31.70" arrival="62.70">
+        <route edges="E11 E5 E6 E12" exitTimes="38.20 48.80 57.50 62.70"/>
+    </vehicle>
+
+    <vehicle id="f_0.13" depart="34.40" arrival="64.30">
+        <route edges="E11 E5 E6 E12" exitTimes="41.00 50.90 59.20 64.30"/>
+    </vehicle>
+
+    <vehicle id="f_0.14" depart="37.10" arrival="65.80">
+        <route edges="E11 E5 E6 E12" exitTimes="43.70 53.10 61.00 65.80"/>
+    </vehicle>
+
+</routes>
