@@ -2,78 +2,125 @@
 
 ## Overview
 
-This project explores the application of Reinforcement Learning (RL) to urban traffic optimization using simulation tools. The primary goal is to investigate how learning-based approaches can improve route decisions and contribute to more efficient and sustainable transportation systems.
+This project explores the application of Reinforcement Learning (RL) to urban traffic optimization using simulation tools. The main objective is to investigate how learning-based approaches can improve route decisions and contribute to more efficient and sustainable transportation systems.
 
-## Current Stage
+---
 
-At the initial stage, the objective is to **replicate the experiment presented in the thesis**:
+## Project Evolution
+
+### ✅ Replication Phase (Completed)
+
+The initial stage of the project focused on replicating the experiment presented in:
 
 > *"Realtime Vehicle Route Optimisation via DQN for Sustainable and Resilient Urban Transportation Network"*  
 > *Song Sang Koh*
 
-The purpose of this replication is not to propose a novel contribution yet, but to:
+This phase has been successfully completed. Through this process, I achieved:
 
-- Gain familiarity with **SUMO (Simulation of Urban MObility)**
-- Understand the interaction between **Reinforcement Learning and traffic simulators**
-- Explore how **Deep Q-Networks (DQN)** are applied in a traffic routing context
-- Learn how to use **TraCI** for real-time communication with SUMO
+- Familiarity with **SUMO (Simulation of Urban MObility)**
+- Understanding of **Deep Q-Networks (DQN)** in traffic routing
+- Experience with **TraCI** for real-time simulation interaction
 
-## Future Direction
+🚧 Remaining tasks for this phase:
 
-After this initial replication phase, the project will shift towards a different modeling perspective.
+- Verify that the agent is effectively learning
+- Generate and analyze output plots
+- Document results for inclusion in the thesis
 
-### Key Idea: From Local to Global Decisions
+---
 
-The referenced work focuses on **real-time decision-making at each junction**, where vehicles dynamically choose their next move.
+## Current Stage: Day-to-Day Learning Approach
 
-In contrast, this project will adopt a **"zoomed-out" approach**, where:
+The project has now transitioned to a **day-to-day learning framework**, shifting from local, real-time decisions to global route-level optimization.
 
-- Decisions are made at the **route level (origin → destination)**
-- Learning occurs in a **day-to-day framework**, rather than step-by-step within a single simulation
+### Key Concept
 
-### Implications for Reinforcement Learning Design
+Instead of making decisions at each junction, the agent:
 
-This shift will require redefining core RL components:
+- Selects a **complete route (origin → destination)**
+- Learns from **aggregate outcomes across simulation episodes (days)**
 
-- **State Space**  
-  Likely to represent aggregated traffic conditions or historical travel times rather than local intersection states
+This approach better reflects realistic traveler behavior and enables a more strategic learning process.
 
-- **Action Space**  
-  Selection of entire routes instead of next-edge decisions
+---
 
-- **Reward Function**  
-  Based on overall trip performance (e.g., travel time, congestion, emissions), possibly evaluated after each episode (day)
+## Current Implementation Status
 
-### Interaction with SUMO
+### ✅ Core Components Implemented
 
-Given the day-to-day learning setting:
+- `Scenario` class  
+  Defines the traffic network, generate agents and routes (internally in Python), and simulation setup
 
-- Real-time interaction via **TraCI may not be necessary**
-- Instead, the workflow may rely on:
-  - Running full simulations
-  - Extracting results from **SUMO output files**
-  - Updating the agent **after each simulation episode**
+- `Environment` class  
+  Handles interaction with SUMO simulations to insert agents and manage episode execution
 
-This simplifies the architecture and aligns better with the proposed learning paradigm.
+- `main.py`  
+  Orchestrates the simulation and learning workflow
 
-## Technical Considerations
+### 🔄 Interaction with SUMO
 
-### RL Framework Modernization
+- **TraCI is no longer required**
+- The system now relies on:
+  - Running full simulations in SUMO
+  - Extracting results from **tripinfo output files**
+  - Updating the agent **after each episode**
 
-The original implementation of the agent will need to be updated:
+This simplifies the architecture and aligns with the day-to-day learning paradigm.
 
-- Migrate to a **modern deep learning framework**, such as:
-  - TensorFlow (using the **Keras API**)
-  - or **PyTorch**
+---
 
-- Refactor the `Agent` class to:
-  - Improve modularity
-  - Support experimentation with different architectures
-  - Enable easier training and evaluation
+## Reinforcement Learning Design
+
+### Action Space
+
+- Selection of **complete routes** between origin and destination
+
+### Reward Function
+
+- Currently based on **travel time**
+- May be extended in the future to include irrationalities...
+
+### State Space
+
+- **Not yet defined**
+- Will likely include:
+  - Aggregated traffic conditions
+  - Historical performance metrics
+
+---
+
+## Agent Development (In Progress)
+
+The **Agent class** is the next major component to be implemented.
+
+### Theoretical Foundation
+
+The design is inspired by:
+
+> *A Day-to-Day Route Choice Model Based on Reinforcement Learning*  
+> Fangfang Wei, Shoufeng Ma, Ning Jia  
+> DOI: 10.1155/2014/646548
+
+Key characteristics:
+
+- Based on the **Bush–Mosteller (BM) reinforcement learning model**
+
+---
+
+## Future Work
+
+- Define and implement the **state representation**
+- Complete the **Agent class**
+- Handle more complex cases throughout the project (more than one OD pair, validation k routes computed for OD-pairs...)
+- Evaluate learning performance and convergence behavior
+- Extend reward structure
+
+---
 
 ## Status
 
 🚧 Work in progress:
-- Replication phase ongoing
-- SUMO + RL integration under development
-- Future modeling approach under design
+
+- Replication phase completed (validation pending)
+- Day-to-day learning framework implemented
+- Agent development in progress
