@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-03-26T00:41:35.690304+01:00 by Eclipse SUMO duarouter 1.26.0
+<duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/miguel/6.Projects/ReplicateSongThesis/sumo/net/thesisToyNetwork.net.xml"/>
+        <additional-files value="/home/miguel/6.Projects/ReplicateSongThesis/sumo/additional/vtype.add.xml"/>
+        <route-files value="/home/miguel/6.Projects/ReplicateSongThesis/sumo/trips/trips.trips.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/miguel/6.Projects/ReplicateSongThesis/sumo/routes/routes.rou.xml"/>
+    </output>
+
+</duarouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="Trucks" length="8.00" maxSpeed="5.00" probability="0.20" vClass="truck" color="green" accel="1" decel="5"/>
+    <vehicle id="veh_0" type="Trucks" depart="0.00">
+        <routeDistribution last="0">
+            <route cost="45.03" probability="1.00000000" edges="E2 E4 -E5 -E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vType id="normal_car" maxSpeed="20.00" probability="0.80" color="yellow" accel="2" decel="5"/>
+    <vehicle id="veh_1" type="normal_car" depart="50.00">
+        <routeDistribution last="0">
+            <route cost="19.47" probability="1.00000000" edges="-E4 -E2 -E1 -E3"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_2" type="normal_car" depart="100.00">
+        <routeDistribution last="0">
+            <route cost="2.67" probability="1.00000000" edges="E3"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_3" type="normal_car" depart="150.00">
+        <routeDistribution last="0">
+            <route cost="13.57" probability="1.00000000" edges="E4 -E5 -E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_4" type="normal_car" depart="200.00">
+        <routeDistribution last="0">
+            <route cost="9.43" probability="1.00000000" edges="-E5 -E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_5" type="normal_car" depart="250.00">
+        <routeDistribution last="0">
+            <route cost="30.72" probability="1.00000000" edges="-E3 E4 -E5 E2 E3 E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_6" type="normal_car" depart="300.00">
+        <routeDistribution last="0">
+            <route cost="5.87" probability="1.00000000" edges="-E1 -E3"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_7" type="normal_car" depart="350.00">
+        <routeDistribution last="0">
+            <route cost="15.04" probability="1.00000000" edges="E2 E3 E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_8" type="normal_car" depart="400.00">
+        <routeDistribution last="0">
+            <route cost="18.60" probability="1.00000000" edges="-E3 E4 -E5 E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_9" type="normal_car" depart="450.00">
+        <routeDistribution last="0">
+            <route cost="33.00" probability="1.00000000" edges="E3 E1 E2 E4 -E5 -E1"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_10" type="normal_car" depart="500.00">
+        <routeDistribution last="0">
+            <route cost="2.67" probability="1.00000000" edges="E3"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_11" type="normal_car" depart="550.00">
+        <routeDistribution last="0">
+            <route cost="9.87" probability="1.00000000" edges="-E4 -E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_12" type="normal_car" depart="600.00">
+        <routeDistribution last="0">
+            <route cost="10.44" probability="1.00000000" edges="E5 -E4"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_13" type="normal_car" depart="650.00">
+        <routeDistribution last="0">
+            <route cost="2.92" probability="1.00000000" edges="-E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_14" type="normal_car" depart="700.00">
+        <routeDistribution last="0">
+            <route cost="14.58" probability="1.00000000" edges="E4 -E5 E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_15" type="normal_car" depart="750.00">
+        <routeDistribution last="0">
+            <route cost="21.68" probability="1.00000000" edges="E3 E1 E2 E4"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_16" type="normal_car" depart="800.00">
+        <routeDistribution last="0">
+            <route cost="16.83" probability="1.00000000" edges="E0 E1 E5 E6"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_17" type="Trucks" depart="850.00">
+        <routeDistribution last="0">
+            <route cost="25.44" probability="1.00000000" edges="-E5 E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_18" type="normal_car" depart="900.00">
+        <routeDistribution last="0">
+            <route cost="14.58" probability="1.00000000" edges="E4 -E5 E2"/>
+        </routeDistribution>
+    </vehicle>
+    <vehicle id="veh_19" type="normal_car" depart="950.00">
+        <routeDistribution last="0">
+            <route cost="14.58" probability="1.00000000" edges="E4 -E5 E2"/>
+        </routeDistribution>
+    </vehicle>
+</routes>
