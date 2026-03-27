@@ -4,9 +4,9 @@ import numpy as np
 
 from config.simulation import config_simulation
 from config.training import config_training
-from environment import Sumo
+from environment import Environment
 from paths import MAP_FILE
-from scenario import scenario
+from scenario import Scenario
 
 # from agent import Agent
 
@@ -16,7 +16,7 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = scenario(
+    scen = Scenario(
         map=MAP_FILE,
         n_agents=config_simulation.n_agents,
     )
@@ -24,7 +24,7 @@ def main():
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Sumo(scenario=scen, gui=True)
+    env = Environment(scenario=scen, gui=True)
 
     #     # -----------------------------
     #     # 3. CREATE AGENT
@@ -41,32 +41,30 @@ def main():
 
         print(f"\n--- Episode {episode + 1} ---")
 
-        while True:
+        # -----------------------------
+        # 1. RESET ENVIRONMENT
+        # -----------------------------
+        env.reset()
 
-            # -----------------------------
-            # 1. RESET ENVIRONMENT
-            # -----------------------------
-            env.start()
+        # -----------------------------
+        # 2. CHOOSE ACTION
+        # -----------------------------
+        actions = env.choose_action()
 
-            # -----------------------------
-            # 2. CHOOSE ACTION
-            # -----------------------------
-            actions = env.choose_action()
+        # -----------------------------
+        # 3. INSERT VEHICLES
+        # -----------------------------
+        env.insert_vehicles(actions)
 
-            # -----------------------------
-            # 3. INSERT VEHICLES
-            # -----------------------------
-            env.insert_vehicles(actions)
+        # -----------------------------
+        # 4. RUN EPISODE
+        # -----------------------------
+        env.run_episode()
 
-            # -----------------------------
-            # 4. RUN EPISODE
-            # -----------------------------
-            env.run_episode()
-
-            # -----------------------------
-            # 4. GET REWARDS
-            # -----------------------------
-            rewards = env.get_travel_times()
+        # -----------------------------
+        # 5. GET REWARDS
+        # -----------------------------
+        rewards = env.get_rewards()
 
 
 if __name__ == "__main__":

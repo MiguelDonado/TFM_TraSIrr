@@ -15,16 +15,13 @@ from config.simulation import config_simulation
 from paths import (
     MAP_FILE,
     NET_FILE,
-    ROUTE_FILE,
     SUMO_CONF,
-    TRIP_FILE,
     TRIPSINFO_OUTPUT_FILE,
     UNDESIRED_ROUTE_FILE,
-    VTYPE_FILE,
 )
 
 
-class scenario:
+class Scenario:
     def __init__(self, map, n_agents):
         """
         Parameters:
@@ -38,6 +35,18 @@ class scenario:
         self.od_routes = {}  # (origin, dest) → routes
 
         """
+        Automatically
+        1. Creates agents  
+        2. Generate routes sets per OD
+        3. Creates a config file
+        """
+        self.ensure_network(map)
+        self.generate_agents()
+        self.generate_routes()
+        self.conf = self.gen_conf()
+
+    def ensure_network(self, map):
+        """
         Convert map if needed
         If you give an OpenStreetMap file .osm, it converts it to SUMO format using netconvert
         Otherwise, it assumes it's already a SUMO network
@@ -46,16 +55,6 @@ class scenario:
             self.network = self.convert_map(map)
         else:
             self.network = map
-
-        """
-        Automatically
-        1. Creates agents  
-        2. Generate routes sets per OD
-        3. Creates a config file
-        """
-        self.generate_agents()
-        self.generate_routes()
-        self.conf = self.gen_conf()
 
     def convert_map(self, map):
         """

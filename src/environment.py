@@ -16,7 +16,7 @@ from sklearn import preprocessing
 from paths import TRIPSINFO_OUTPUT_FILE
 
 
-class Sumo:
+class Environment:
     def __init__(self, scenario, gui=False):
         """
         scenario: Scenario object
@@ -25,7 +25,7 @@ class Sumo:
         self.gui = gui
         self.scenario = scenario
 
-    def start(self):
+    def reset(self):
         cmd = [
             "sumo-gui" if self.gui else "sumo",
             "-c",
@@ -63,7 +63,7 @@ class Sumo:
 
         traci.close()
 
-    def get_travel_times(self):
+    def get_rewards(self):
         travel_times = {}
 
         tree = ET.parse(TRIPSINFO_OUTPUT_FILE)
@@ -73,6 +73,6 @@ class Sumo:
             veh_id = trip.attrib["id"]
             duration = float(trip.attrib["duration"])
 
-            travel_times[veh_id] = duration
+            travel_times[veh_id] = -duration
 
         return travel_times

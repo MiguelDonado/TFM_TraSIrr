@@ -1,0 +1,15 @@
+// “How should I run/debug my code?”
+
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug main.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

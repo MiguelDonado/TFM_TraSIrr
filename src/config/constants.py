@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Constants:
-    vtype_id: str = "Thesis"
+    pass
 
 
 config_constants = Constants()
