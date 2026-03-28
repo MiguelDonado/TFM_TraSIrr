@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<additional>
+
+	<vTypeDistribution id="Thesis">
+		<vType id="normal_car" maxSpeed="20.00" color="yellow" accel="2" decel="5" probability="0.80" />
+		<vType id="Trucks" length="8.00" maxSpeed="5.00" vClass="truck" color="green" accel="1" decel="5" probability="0.20" />
+	</vTypeDistribution>
+
+	<!-- Independent vehicle type -->
+    <vType id="nav_car"
+           maxSpeed="25.00"
+           color="red"
+           accel="3"
+           decel="6"/>
+
+</additional>

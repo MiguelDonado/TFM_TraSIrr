@@ -1,6 +1,0 @@
-// “How should VS Code behave?”
-
-{
-  "python.defaultInterpreterPath": "/home/miguel/.venvs/thesis_master/bin/python",
-  "terminal.integrated.cwd": "${workspaceFolder}/src"
-}
