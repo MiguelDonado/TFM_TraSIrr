@@ -2,7 +2,8 @@ import sys
 
 import numpy as np
 
-from agent import BMAgent
+from agents.agent import BMAgent
+from agents.factory import agents_select_actions, initialize_agents
 from config.constants import config_constants
 from config.simulation import config_simulation
 from config.training import config_training
@@ -30,17 +31,8 @@ def main():
     # -----------------------------
     # 3. CREATE AGENTS
     # -----------------------------
-    agents = {}
-    for agent_info in scen.agents:
-        agent_id = agent_info["id"]
-        od = (agent_info["origin"], agent_info["destination"])
+    agents = initialize_agents(n=config_simulation.n_agents, scen=scen, rng=rng)
 
-        routes = scen.od_routes[od]
-
-        agents[agent_id] = BMAgent(agent_id=agent_id, routes=routes, rng=rng)
-
-    # Variables not needed anymore. To improve debugging
-    del od, routes, agent_id, agent_info
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
@@ -58,9 +50,7 @@ def main():
         # 2. AGENTS CHOOSE ACTIONS
         # -----------------------------
         # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
-        actions = {
-            agent_id: agent.choose_action() for agent_id, agent in agents.items()
-        }
+        actions = agents_select_actions(agents)
 
         # -----------------------------
         # 3. INSERT VEHICLES

@@ -41,7 +41,7 @@ class Scenario:
         self.ensure_network(map)
         self.generate_agents()
         self.generate_routes(seeds)
-        self.conf = self.gen_conf()
+        self.conf = self.generate_conf()
 
     def ensure_network(self, map):
         """
@@ -221,7 +221,7 @@ class Scenario:
 
         return None
 
-    def gen_conf(self):
+    def generate_conf(self):
         """
         Create SUMO Config file
         """

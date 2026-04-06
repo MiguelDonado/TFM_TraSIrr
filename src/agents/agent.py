@@ -33,7 +33,7 @@ class BMAgent:
         # (scalar) Expected travel time
         self.ET = 0
 
-    def choose_action(self):
+    def select_action(self):
         """
         Action selection
         Example:
@@ -41,7 +41,7 @@ class BMAgent:
             Then self.rng.choice returns 0 or 1, not 1 or 2.
 
             It means:
-            “Choose from the array [0, 1] with probabilities p = [0.5, 0.5]”
+            “Select from the array [0, 1] with probabilities p = [0.5, 0.5]”
         """
         return self.rng.choice(self.n_routes, p=self.p)
 
