@@ -8,8 +8,6 @@ import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
 
-import numpy as np
-
 from config.constants import config_constants
 from config.simulation import config_simulation
 from paths import (
@@ -22,7 +20,7 @@ from paths import (
 
 
 class Scenario:
-    def __init__(self, map, n_agents):
+    def __init__(self, map, n_agents, seeds):
         """
         Parameters:
         map: network file or .osm file
@@ -42,7 +40,7 @@ class Scenario:
         """
         self.ensure_network(map)
         self.generate_agents()
-        self.generate_routes()
+        self.generate_routes(seeds)
         self.conf = self.gen_conf()
 
     def ensure_network(self, map):
@@ -102,14 +100,14 @@ class Scenario:
                 {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
             )
 
-    def generate_routes(self):
+    def generate_routes(self, seeds):
 
         unique_ods = self.get_unique_ods()
 
         # 1. Compute routes per OD
         for od in unique_ods:
             # Store in the dictionary od_routes the set of routes for this od pair.
-            self.od_routes[od] = self.compute_k_routes(od)
+            self.od_routes[od] = self.compute_k_routes(od, seeds)
 
     def get_unique_ods(self):
         # Extract unique OD pairs
@@ -125,7 +123,14 @@ class Scenario:
         fixed_od = (config_simulation.start_edge, config_simulation.end_edge)
         return fixed_od
 
-    def compute_k_routes(self, od, k=3, n_samples=10, random_factor=10):
+    def compute_k_routes(
+        self,
+        od,
+        seeds,
+        k=3,
+        n_samples=config_constants.n_samples,
+        random_factor=config_constants.random_factor,
+    ):
         # Weights of edges by default are free-flow travel times
         # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
 
@@ -140,21 +145,20 @@ class Scenario:
 
             # 2. Compute best route according shortest-path
             best_route = self._run_duarouter(
-                trips_file, routes_file, random_factor=1.0, seed=42
+                trips_file, routes_file, random_factor=1.0, seed=config_constants.seed
             )
 
             if best_route:
                 routes.append(best_route)
 
             # 3. Sample alternative routes (applying random factor to edge costs)
-            for _ in range(n_samples):
-
+            for seed in seeds:
                 route = self._run_duarouter(
                     trips_file,
                     routes_file,
                     random_factor=random_factor,
                     # So each time we call duarouter, assigns different random factor to each edge
-                    seed=random.randint(0, 100000),
+                    seed=seed,
                 )
 
                 if route and route not in routes:

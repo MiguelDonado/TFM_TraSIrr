@@ -4,11 +4,9 @@ Encapsulate the use of SUMO simulator with TraCI
 
 import math
 import os
-import random
 import statistics
 import xml.etree.ElementTree as ET
 
-import numpy as np
 import traci
 from prettytable import PrettyTable
 from sklearn import preprocessing
@@ -34,10 +32,6 @@ class Environment:
             # "TIME",
         ]
         traci.start(cmd)
-
-    def choose_action(self):
-        actions = {agent["id"]: random.choice([0, 1]) for agent in self.scenario.agents}
-        return actions
 
     def insert_vehicles(self, actions):
         for agent in self.scenario.agents:
@@ -73,6 +67,6 @@ class Environment:
             veh_id = trip.attrib["id"]
             duration = float(trip.attrib["duration"])
 
-            travel_times[veh_id] = -duration
+            travel_times[veh_id] = duration
 
         return travel_times

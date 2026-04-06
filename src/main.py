@@ -2,13 +2,17 @@ import sys
 
 import numpy as np
 
+from agent import BMAgent
+from config.constants import config_constants
 from config.simulation import config_simulation
 from config.training import config_training
 from environment import Environment
 from paths import MAP_FILE
 from scenario import Scenario
 
-# from agent import Agent
+# Reproducibility
+rng = np.random.default_rng(config_constants.seed)
+seeds = rng.integers(0, 100000, size=config_constants.n_samples)
 
 
 def main():
@@ -16,30 +20,34 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = Scenario(
-        map=MAP_FILE,
-        n_agents=config_simulation.n_agents,
-    )
+    scen = Scenario(map=MAP_FILE, n_agents=config_simulation.n_agents, seeds=seeds)
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(scenario=scen, gui=True)
+    env = Environment(scenario=scen, gui=config_constants.gui)
 
-    #     # -----------------------------
-    #     # 3. CREATE AGENT
-    #     # -----------------------------
-    #     agent = Agent(
-    #         n_features=env.n_features, n_actions=env.max_n_actions, memory_size=MEMORY_SIZE
-    #     )
+    # -----------------------------
+    # 3. CREATE AGENTS
+    # -----------------------------
+    agents = {}
+    for agent_info in scen.agents:
+        agent_id = agent_info["id"]
+        od = (agent_info["origin"], agent_info["destination"])
 
+        routes = scen.od_routes[od]
+
+        agents[agent_id] = BMAgent(agent_id=agent_id, routes=routes, rng=rng)
+
+    # Variables not needed anymore. To improve debugging
+    del od, routes, agent_id, agent_info
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
 
-    for episode in range(config_simulation.n_episodes):
+    for episode in range(1, config_simulation.n_episodes):
 
-        print(f"\n--- Episode {episode + 1} ---")
+        print(f"\n--- Episode {episode} ---")
 
         # -----------------------------
         # 1. RESET ENVIRONMENT
@@ -47,9 +55,12 @@ def main():
         env.reset()
 
         # -----------------------------
-        # 2. CHOOSE ACTION
+        # 2. AGENTS CHOOSE ACTIONS
         # -----------------------------
-        actions = env.choose_action()
+        # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
+        actions = {
+            agent_id: agent.choose_action() for agent_id, agent in agents.items()
+        }
 
         # -----------------------------
         # 3. INSERT VEHICLES
@@ -65,6 +76,18 @@ def main():
         # 5. GET REWARDS
         # -----------------------------
         rewards = env.get_rewards()
+
+        # -----------------------------
+        # 6. UPDATE AGENTS
+        # -----------------------------
+        for agent_id, agent in agents.items():
+            chosen_route = actions[agent_id]
+            reward = rewards[agent_id]
+
+            agent.update(chosen_route, reward, config_simulation.warm_up, episode)
+
+        # Variables not needed anymore. To improve debugging
+        del agent, agent_id, chosen_route, reward
 
 
 if __name__ == "__main__":

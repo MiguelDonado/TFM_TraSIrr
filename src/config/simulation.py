@@ -7,6 +7,7 @@ class SimulationConfig:
     start_edge: str = "E0"
     end_edge: str = "E6"
     n_episodes: int = 1000
+    warm_up: int = 50
 
 
 config_simulation = SimulationConfig()
