@@ -3,7 +3,7 @@ import sys
 import numpy as np
 
 from agents.agent import BMAgent
-from agents.factory import agents_select_actions, initialize_agents
+from agents.factory import initialize_agents, select_actions, update_agents
 from config.constants import config_constants
 from config.simulation import config_simulation
 from config.training import config_training
@@ -31,7 +31,9 @@ def main():
     # -----------------------------
     # 3. CREATE AGENTS
     # -----------------------------
-    agents = initialize_agents(n=config_simulation.n_agents, scen=scen, rng=rng)
+    agents = initialize_agents(
+        n=config_simulation.n_agents, scen=scen, seed=config_constants.seed
+    )
 
     # -----------------------------
     # 4. TRAINING LOOP
@@ -50,7 +52,7 @@ def main():
         # 2. AGENTS CHOOSE ACTIONS
         # -----------------------------
         # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
-        actions = agents_select_actions(agents)
+        actions = select_actions(agents)
 
         # -----------------------------
         # 3. INSERT VEHICLES
@@ -70,14 +72,13 @@ def main():
         # -----------------------------
         # 6. UPDATE AGENTS
         # -----------------------------
-        for agent_id, agent in agents.items():
-            chosen_route = actions[agent_id]
-            reward = rewards[agent_id]
-
-            agent.update(chosen_route, reward, config_simulation.warm_up, episode)
-
-        # Variables not needed anymore. To improve debugging
-        del agent, agent_id, chosen_route, reward
+        update_agents(
+            actions=actions,
+            agents=agents,
+            episode=episode,
+            rewards=rewards,
+            warm_up=config_simulation.warm_up,
+        )
 
 
 if __name__ == "__main__":

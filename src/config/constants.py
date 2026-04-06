@@ -7,6 +7,7 @@ class Constants:
     n_samples: int = 10
     gui: bool = False
     seed: int = 42
+    epsilon: float = 1e-8
 
 
 config_constants = Constants()
