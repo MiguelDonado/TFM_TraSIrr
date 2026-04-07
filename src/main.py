@@ -9,7 +9,8 @@ from config.simulation import config_simulation
 from config.training import config_training
 from environment import Environment
 from io_module.parser import Parser
-from paths import MAP_FILE
+from io_module.plots import ExperimentPlotter
+from paths import MAP_FILE, PLOT_MEAN_TRAVEL_TIME_ALL
 from scenario import Scenario
 
 # Reproducibility
@@ -90,6 +91,12 @@ def main():
             rewards=rewards,
             warm_up=config_simulation.warm_up,
         )
+
+    # -----------------------------
+    # 7. OUTPUT
+    # -----------------------------
+    experimentPlotter = ExperimentPlotter()
+    experimentPlotter.mean_travel_time(results, PLOT_MEAN_TRAVEL_TIME_ALL)
 
 
 if __name__ == "__main__":

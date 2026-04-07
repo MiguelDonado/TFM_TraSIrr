@@ -18,5 +18,9 @@ class Parser:
         self.episode = episode
         self.tree = self.etree.parse(self.document)
 
-        mean_travel_time = self.tree.xpath("//vehicleTripStatistics/@duration")
-        return {"episode": self.episode, "mean_travel_time": mean_travel_time}
+        mean_travel_time = float(
+            self.tree.xpath("string(//vehicleTripStatistics/@duration)")
+        )
+
+        result = {"episode": self.episode, "mean_travel_time": mean_travel_time}
+        return result

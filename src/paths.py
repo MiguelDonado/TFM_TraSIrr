@@ -13,3 +13,4 @@ MAP_FILE = SUMO_DIR / "net" / "thesisToyNetwork.net.xml"  # For using
 TRIPSINFO_OUTPUT_FILE = SUMO_DIR / "output" / "tripsInfoOutput.xml"
 STATISTICSINFO_OUTPUT_FILE = SUMO_DIR / "output" / "statisticsInfoOutput.xml"
 UNDESIRED_ROUTE_FILE = BASE_DIR / "src" / "routes.rou.xml"  # Extra file not needed
+PLOT_MEAN_TRAVEL_TIME_ALL = SUMO_DIR / "output" / "mean_travel_time_all.png"
