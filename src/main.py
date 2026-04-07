@@ -49,9 +49,10 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
+    # Store mean travel times of all vehicles over episodes
     results = []
 
-    for episode in range(1, config_simulation.n_episodes):
+    for episode in range(1, config_simulation.n_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
 
