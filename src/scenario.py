@@ -128,7 +128,7 @@ class Scenario:
         od,
         seeds,
         k=3,
-        n_samples=config_constants.n_samples,
+        max_attempts=config_constants.max_attempts,
         random_factor=config_constants.random_factor,
     ):
         # Weights of edges by default are free-flow travel times
@@ -151,27 +151,23 @@ class Scenario:
             if best_route:
                 routes.append(best_route)
 
-            # 3. Sample alternative routes (applying random factor to edge costs)
+            # 3. Try seeds until k routes (applying random factor to edge costs)
             for seed in seeds:
+                # Early stop
+                if len(routes) == k:
+                    break
+
                 route = self._run_duarouter(
                     trips_file,
                     routes_file,
                     random_factor=random_factor,
-                    # So each time we call duarouter, assigns different random factor to each edge
-                    seed=seed,
+                    seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
                 )
 
                 if route and route not in routes:
                     routes.append(route)
 
-                # Early stop
-                if len(routes) == k:
-                    break
-
-        if not routes:
-            return []
-
-        # 3. Return k routes
+        # 4. Return k routes
         return routes
 
     def _run_duarouter(self, trips_file, routes_file, random_factor, seed):

@@ -13,7 +13,7 @@ from scenario import Scenario
 
 # Reproducibility
 rng = np.random.default_rng(config_constants.seed)
-seeds = rng.integers(0, 100000, size=config_constants.n_samples)
+seeds = rng.integers(0, 100000, size=config_constants.max_attempts)
 
 
 def main():
