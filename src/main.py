@@ -8,6 +8,7 @@ from config.constants import config_constants
 from config.simulation import config_simulation
 from config.training import config_training
 from environment import Environment
+from io_module.parser import Parser
 from paths import MAP_FILE
 from scenario import Scenario
 
@@ -31,7 +32,11 @@ def main():
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(scenario=scen, episode_with_gui=config_constants.episode_with_gui)
+    env = Environment(
+        scenario=scen,
+        episode_with_gui=config_constants.episode_with_gui,
+        parser=Parser(),
+    )
 
     # -----------------------------
     # 3. CREATE AGENTS
@@ -43,6 +48,7 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
+    results = []
 
     for episode in range(1, config_simulation.n_episodes):
 
@@ -67,8 +73,8 @@ def main():
         # -----------------------------
         # 4. RUN EPISODE
         # -----------------------------
-        env.run_episode()
-
+        result = env.run_episode(episode)
+        results.append(result)
         # -----------------------------
         # 5. GET REWARDS
         # -----------------------------
