@@ -15,14 +15,13 @@ from paths import TRIPSINFO_OUTPUT_FILE
 
 
 class Environment:
-    def __init__(self, scenario, parser, episode_with_gui=None):
+    def __init__(self, scenario, episode_with_gui=None):
         """
         scenario: Scenario object
         gui: Decide if running simulation in GUI mode or just CLI
         """
         self.scenario = scenario
         self.episode_with_gui = episode_with_gui
-        self.parser = parser
 
     def reset(self, current_episode):
         # Check if we want to enable gui for some episode
@@ -61,8 +60,6 @@ class Environment:
             traci.simulationStep()
 
         traci.close()
-
-        return self.parser.parse_statistics_output(current_episode)
 
     def get_rewards(self):
         travel_times = {}

@@ -8,9 +8,10 @@ from config.constants import config_constants
 from config.simulation import config_simulation
 from config.training import config_training
 from environment import Environment
+from experiment import run_and_parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
-from paths import MAP_FILE, PLOT_MEAN_TRAVEL_TIME_ALL
+from paths import MAP_FILE, PLOT_MEAN_TRAVEL_TIME_ALL, STATISTICSINFO_OUTPUT_FILE
 from scenario import Scenario
 
 # Reproducibility
@@ -33,11 +34,7 @@ def main():
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(
-        scenario=scen,
-        episode_with_gui=config_constants.episode_with_gui,
-        parser=Parser(),
-    )
+    env = Environment(scenario=scen, episode_with_gui=config_constants.episode_with_gui)
 
     # -----------------------------
     # 3. CREATE AGENTS
@@ -75,8 +72,10 @@ def main():
         # -----------------------------
         # 4. RUN EPISODE
         # -----------------------------
-        result = env.run_episode(episode)
+        result = run_and_parse_output(env, episode, STATISTICSINFO_OUTPUT_FILE)
         results.append(result)
+
+        # return self.parser.parse_statistics_output(current_episode)
         # -----------------------------
         # 5. GET REWARDS
         # -----------------------------

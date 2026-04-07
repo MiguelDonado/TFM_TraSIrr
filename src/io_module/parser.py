@@ -1,26 +1,17 @@
 from lxml import etree
 
-from paths import STATISTICSINFO_OUTPUT_FILE
-
 
 class Parser:
-    def __init__(self):
-        self.etree = etree
-        self.document = None
-        self.episode = None
-        self.tree = None
+    """
+    Create one Parser object per document to be parsed
+    """
 
-    def parse_statistics_output(self, episode):
-        """
-        Get mean travel time of simulation episode
-        """
-        self.document = STATISTICSINFO_OUTPUT_FILE
-        self.episode = episode
-        self.tree = self.etree.parse(self.document)
+    def __init__(self, document):
+        self.document = document
+        self.tree = etree.parse(document)
 
-        mean_travel_time = float(
-            self.tree.xpath("string(//vehicleTripStatistics/@duration)")
-        )
+    def mean_travel_time(self):
+        return float(self.tree.xpath("string(//vehicleTripStatistics/@duration)"))
 
-        result = {"episode": self.episode, "mean_travel_time": mean_travel_time}
-        return result
+    def parse_episode(self, episode):
+        return {"episode": episode, "mean_travel_time": self.mean_travel_time()}
