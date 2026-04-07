@@ -26,7 +26,7 @@ def main():
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(scenario=scen, gui=config_constants.gui)
+    env = Environment(scenario=scen, episode_with_gui=config_constants.episode_with_gui)
 
     # -----------------------------
     # 3. CREATE AGENTS
@@ -46,7 +46,7 @@ def main():
         # -----------------------------
         # 1. RESET ENVIRONMENT
         # -----------------------------
-        env.reset()
+        env.reset(current_episode=episode)
 
         # -----------------------------
         # 2. AGENTS CHOOSE ACTIONS

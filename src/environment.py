@@ -15,15 +15,18 @@ from paths import TRIPSINFO_OUTPUT_FILE
 
 
 class Environment:
-    def __init__(self, scenario, gui=False):
+    def __init__(self, scenario, episode_with_gui=None):
         """
         scenario: Scenario object
         gui: Decide if running simulation in GUI mode or just CLI
         """
-        self.gui = gui
         self.scenario = scenario
+        self.episode_with_gui = episode_with_gui
 
-    def reset(self):
+    def reset(self, current_episode):
+        # Check if we want to enable gui for some episode
+        self.gui = self.episode_with_gui == current_episode
+
         cmd = [
             "sumo-gui" if self.gui else "sumo",
             "-c",
@@ -51,6 +54,7 @@ class Environment:
             traci.vehicle.add(vehID=agent_id, routeID=route_id, depart="0")
 
     def run_episode(self):
+
         # Get number of vehicles active and waiting to start
         while traci.simulation.getMinExpectedNumber() > 0:
             traci.simulationStep()
