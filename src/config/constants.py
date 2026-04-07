@@ -7,7 +7,8 @@ class Constants:
     max_attempts: int = 100
     seed: int = 42
     epsilon: float = 1e-8
-    episode_with_gui: int = 2
+    episode_with_gui: int = 0  # 0 if you dont want gui in any episode
+    write_output: bool = True
 
 
 config_constants = Constants()

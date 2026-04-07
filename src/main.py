@@ -21,7 +21,12 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = Scenario(map=MAP_FILE, n_agents=config_simulation.n_agents, seeds=seeds)
+    scen = Scenario(
+        map=MAP_FILE,
+        n_agents=config_simulation.n_agents,
+        seeds=seeds,
+        write_output=config_constants.write_output,
+    )
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT

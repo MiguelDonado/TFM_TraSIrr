@@ -13,6 +13,7 @@ from config.simulation import config_simulation
 from paths import (
     MAP_FILE,
     NET_FILE,
+    STATISTICSINFO_OUTPUT_FILE,
     SUMO_CONF,
     TRIPSINFO_OUTPUT_FILE,
     UNDESIRED_ROUTE_FILE,
@@ -20,7 +21,7 @@ from paths import (
 
 
 class Scenario:
-    def __init__(self, map, n_agents, seeds):
+    def __init__(self, map, n_agents, seeds, write_output=False):
         """
         Parameters:
         map: network file or .osm file
@@ -41,7 +42,7 @@ class Scenario:
         self.ensure_network(map)
         self.generate_agents()
         self.generate_routes(seeds)
-        self.conf = self.generate_conf()
+        self.conf = self.generate_conf(write_output)
 
     def ensure_network(self, map):
         """
@@ -217,7 +218,7 @@ class Scenario:
 
         return None
 
-    def generate_conf(self):
+    def generate_conf(self, write_output):
         """
         Create SUMO Config file
         """
@@ -229,6 +230,10 @@ class Scenario:
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
             conf.write(f'\t\t<tripinfo-output value="{TRIPSINFO_OUTPUT_FILE}"/>\n')
+            if write_output:
+                conf.write(
+                    f'\t\t<statistic-output value="{STATISTICSINFO_OUTPUT_FILE}"/>\n'
+                )
             conf.write(f"\t</report>\n")
             conf.write("</configuration>\n")
 
