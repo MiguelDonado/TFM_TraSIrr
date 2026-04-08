@@ -1,3 +1,4 @@
+import subprocess
 import sys
 
 import numpy as np
@@ -9,7 +10,7 @@ from environment import Environment
 from experiment import parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
-from paths import MAP
+from paths import MAP, ROUTES, SUMO_CONF
 from scenario import Scenario
 
 # Reproducibility
@@ -84,5 +85,20 @@ def main():
     experimentPlotter.statistics_output(results)
 
 
+def run_final_simulation():
+    cmd = [
+        "sumo-gui",
+        "-c",
+        SUMO_CONF,
+        "--route-files",  # Add the route-files through CLI (for simplicity, avoids having modify config file again)
+        ROUTES,
+    ]
+    subprocess.run(cmd)
+
+
 if __name__ == "__main__":
-    main()
+    if config.learning:
+        main()
+
+    if config.run_final_simul:
+        run_final_simulation()
