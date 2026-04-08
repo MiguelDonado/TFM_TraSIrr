@@ -17,6 +17,7 @@ from paths import (
     SUMO_CONF,
     TRIPSINFO_OUTPUT_FILE,
     UNDESIRED_ROUTE_FILE,
+    VEHROUTE_OUTPUT_FILE,
 )
 
 
@@ -237,6 +238,8 @@ class Scenario:
                 conf.write(
                     f'\t\t<statistic-output value="{STATISTICSINFO_OUTPUT_FILE}"/>\n'
                 )
+                conf.write(f'\t\t<vehroute-output value="{VEHROUTE_OUTPUT_FILE}"/>\n')
+                conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
             conf.write(f"\t</report>\n")
             conf.write("</configuration>\n")
 

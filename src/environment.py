@@ -53,8 +53,7 @@ class Environment:
             # Add vehicle
             traci.vehicle.add(vehID=agent_id, routeID=route_id, depart="0")
 
-    def run_episode(self, current_episode):
-
+    def run_episode(self):
         # Get number of vehicles active and waiting to start
         while traci.simulation.getMinExpectedNumber() > 0:
             traci.simulationStep()

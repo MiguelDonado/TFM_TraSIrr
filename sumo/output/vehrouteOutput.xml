@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-04-08T17:01:05.578423+01:00 by Eclipse SUMO sumo 1.26.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/thesisToyNetwork.net.xml"/>
+    </input>
+
+    <output>
+        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/output/tripsInfoOutput.xml"/>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/output/vehrouteOutput.xml"/>
+        <vehroute-output.exit-times value="true"/>
+        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/output/statisticsInfoOutput.xml"/>
+    </output>
+
+    <traci_server>
+        <remote-port value="42697"/>
+    </traci_server>
+
+</sumoConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vehicle id="agent_2" depart="0.00" arrival="25.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="4.00 8.00 16.00 21.00 25.00"/>
+    </vehicle>
+
+    <vehicle id="agent_4" depart="3.00" arrival="27.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="7.00 11.00 19.00 23.00 27.00"/>
+    </vehicle>
+
+    <vehicle id="agent_5" depart="6.00" arrival="31.00">
+        <route edges="E0 E1 E5 E6" exitTimes="11.00 14.00 25.00 31.00"/>
+    </vehicle>
+
+    <vehicle id="agent_8" depart="9.00" arrival="36.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="14.00 18.00 26.00 31.00 36.00"/>
+    </vehicle>
+
+    <vehicle id="agent_6" depart="6.00" arrival="37.00">
+        <route edges="-E6 -E5 E7" exitTimes="12.00 22.00 37.00"/>
+    </vehicle>
+
+    <vehicle id="agent_18" depart="21.00" arrival="40.00">
+        <route edges="E0 -E3 E4 E6" exitTimes="25.00 31.00 35.00 40.00"/>
+    </vehicle>
+
+    <vehicle id="agent_16" depart="15.00" arrival="43.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="19.00 23.00 33.00 39.00 43.00"/>
+    </vehicle>
+
+    <vehicle id="agent_20" depart="24.00" arrival="47.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="29.00 32.00 39.00 43.00 47.00"/>
+    </vehicle>
+
+    <vehicle id="agent_10" depart="12.00" arrival="52.00">
+        <route edges="E0 E1 E5 E6" exitTimes="16.00 21.00 45.00 52.00"/>
+    </vehicle>
+
+    <vehicle id="agent_17" depart="18.00" arrival="55.00">
+        <route edges="E0 E1 E5 E6" exitTimes="22.00 26.00 48.00 55.00"/>
+    </vehicle>
+
+    <vehicle id="agent_23" depart="27.00" arrival="56.00">
+        <route edges="E0 E1 E5 E6" exitTimes="32.00 36.00 51.00 56.00"/>
+    </vehicle>
+
+    <vehicle id="agent_19" depart="30.00" arrival="60.00">
+        <route edges="-E6 -E5 E7" exitTimes="36.00 54.00 60.00"/>
+    </vehicle>
+
+    <vehicle id="agent_36" depart="43.00" arrival="61.00">
+        <route edges="E0 -E3 E4 E6" exitTimes="47.00 53.00 57.00 61.00"/>
+    </vehicle>
+
+    <vehicle id="agent_21" depart="33.00" arrival="63.00">
+        <route edges="-E6 -E5 E7" exitTimes="47.00 57.00 63.00"/>
+    </vehicle>
+
+    <vehicle id="agent_38" depart="46.00" arrival="63.00">
+        <route edges="E0 -E3 E4 E6" exitTimes="51.00 55.00 59.00 63.00"/>
+    </vehicle>
+
+    <vehicle id="agent_28" depart="37.00" arrival="68.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="41.00 45.00 57.00 63.00 68.00"/>
+    </vehicle>
+
+    <vehicle id="agent_33" depart="40.00" arrival="70.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="45.00 49.00 60.00 65.00 70.00"/>
+    </vehicle>
+
+    <vehicle id="agent_43" depart="55.00" arrival="72.00">
+        <route edges="E0 -E3 E4 E6" exitTimes="59.00 65.00 68.00 72.00"/>
+    </vehicle>
+
+    <vehicle id="agent_1" depart="0.00" arrival="75.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="5.00 9.00 67.00 72.00 75.00"/>
+    </vehicle>
+
+    <vehicle id="agent_40" depart="49.00" arrival="76.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="53.00 57.00 66.00 71.00 76.00"/>
+    </vehicle>
+
+    <vehicle id="agent_3" depart="3.00" arrival="78.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="9.00 13.00 70.00 75.00 78.00"/>
+    </vehicle>
+
+    <vehicle id="agent_42" depart="52.00" arrival="78.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="56.00 60.00 69.00 74.00 78.00"/>
+    </vehicle>
+
+    <vehicle id="agent_9" depart="12.00" arrival="81.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="18.00 22.00 73.00 78.00 81.00"/>
+    </vehicle>
+
+    <vehicle id="agent_12" depart="18.00" arrival="84.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="24.00 28.00 76.00 81.00 84.00"/>
+    </vehicle>
+
+    <vehicle id="agent_48" depart="58.00" arrival="84.00">
+        <route edges="E0 E1 E2 E4 E6" exitTimes="62.00 66.00 74.00 79.00 84.00"/>
+    </vehicle>
+
+    <vehicle id="agent_13" depart="21.00" arrival="86.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="26.00 30.00 78.00 83.00 86.00"/>
+    </vehicle>
+
+    <vehicle id="agent_24" depart="30.00" arrival="88.00">
+        <route edges="E0 E1 E5 E6" exitTimes="35.00 39.00 81.00 88.00"/>
+    </vehicle>
+
+    <vehicle id="agent_22" depart="36.00" arrival="89.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="50.00 72.00 81.00 85.00 89.00"/>
+    </vehicle>
+
+    <vehicle id="agent_27" depart="34.00" arrival="90.00">
+        <route edges="E0 E1 E5 E6" exitTimes="39.00 43.00 84.00 90.00"/>
+    </vehicle>
+
+    <vehicle id="agent_7" depart="9.00" arrival="92.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="15.00 19.00 86.00 92.00"/>
+    </vehicle>
+
+    <vehicle id="agent_50" depart="61.00" arrival="93.00">
+        <route edges="E0 E1 E5 E6" exitTimes="65.00 69.00 86.00 93.00"/>
+    </vehicle>
+
+    <vehicle id="agent_29" depart="50.00" arrival="96.00">
+        <route edges="-E6 -E5 E7" exitTimes="57.00 91.00 96.00"/>
+    </vehicle>
+
+    <vehicle id="agent_31" depart="57.00" arrival="101.00">
+        <route edges="-E6 -E5 E7" exitTimes="87.00 96.00 101.00"/>
+    </vehicle>
+
+    <vehicle id="agent_34" depart="63.00" arrival="104.00">
+        <route edges="-E6 -E5 E7" exitTimes="92.00 100.00 104.00"/>
+    </vehicle>
+
+    <vehicle id="agent_30" depart="54.00" arrival="109.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="84.00 94.00 101.00 106.00 109.00"/>
+    </vehicle>
+
+    <vehicle id="agent_32" depart="60.00" arrival="111.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="89.00 96.00 103.00 108.00 111.00"/>
+    </vehicle>
+
+    <vehicle id="agent_35" depart="88.00" arrival="113.00">
+        <route edges="-E6 -E4 E3 E1 E7" exitTimes="94.00 99.00 106.00 110.00 113.00"/>
+    </vehicle>
+
+    <vehicle id="agent_44" depart="100.00" arrival="120.00">
+        <route edges="-E6 -E5 E7" exitTimes="106.00 114.00 120.00"/>
+    </vehicle>
+
+    <vehicle id="agent_11" depart="15.00" arrival="123.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="21.00 25.00 117.00 123.00"/>
+    </vehicle>
+
+    <vehicle id="agent_14" depart="24.00" arrival="125.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="30.00 34.00 120.00 125.00"/>
+    </vehicle>
+
+    <vehicle id="agent_15" depart="27.00" arrival="127.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="32.00 38.00 123.00 127.00"/>
+    </vehicle>
+
+    <vehicle id="agent_25" depart="39.00" arrival="130.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="52.00 75.00 125.00 130.00"/>
+    </vehicle>
+
+    <vehicle id="agent_26" depart="42.00" arrival="133.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="54.00 91.00 128.00 133.00"/>
+    </vehicle>
+
+    <vehicle id="agent_37" depart="91.00" arrival="136.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="97.00 122.00 131.00 136.00"/>
+    </vehicle>
+
+    <vehicle id="agent_39" depart="94.00" arrival="137.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="99.00 125.00 133.00 137.00"/>
+    </vehicle>
+
+    <vehicle id="agent_41" depart="97.00" arrival="140.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="103.00 128.00 136.00 140.00"/>
+    </vehicle>
+
+    <vehicle id="agent_49" depart="112.00" arrival="147.00">
+        <route edges="-E6 -E5 E7" exitTimes="132.00 142.00 147.00"/>
+    </vehicle>
+
+    <vehicle id="agent_45" depart="103.00" arrival="150.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="109.00 131.00 144.00 150.00"/>
+    </vehicle>
+
+    <vehicle id="agent_46" depart="106.00" arrival="152.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="126.00 134.00 147.00 152.00"/>
+    </vehicle>
+
+    <vehicle id="agent_47" depart="109.00" arrival="154.00">
+        <route edges="-E6 -E4 -E2 E7" exitTimes="130.00 137.00 150.00 154.00"/>
+    </vehicle>
+
+</routes>

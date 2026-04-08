@@ -1,6 +1,8 @@
 import pandas as pd
 from plotnine import *
 
+from paths import PLOT_STATISTICS_OUTPUT
+
 
 class Plotter:
     """
@@ -32,11 +34,14 @@ class ExperimentPlotter:
     def __init__(self):
         self.plotter = Plotter()
 
-    def mean_travel_time(self, results, filename):
+    def statistics_output(self, results):
         df = pd.DataFrame(results)
-        x = df.columns[0]
-        y = df.columns[1]
-        title = "Mean Travel Time of All Vehicles Over Episodes"
-        filename = filename
+        keys = list(df.columns[1:])
+        x = df["episode"]
+        for key in keys:
+            y = df[key]
+            title = f"{key} over episodes"
+            filename = PLOT_STATISTICS_OUTPUT
+            filename = filename.with_name(f"{key}_{filename.name}")
 
-        self.plotter.plot_2D_line(df=df, x=x, y=y, title=title, filename=filename)
+            self.plotter.plot_2D_line(df=df, x=x, y=y, title=title, filename=filename)

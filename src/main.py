@@ -11,7 +11,7 @@ from environment import Environment
 from experiment import run_and_parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
-from paths import MAP_FILE, PLOT_MEAN_TRAVEL_TIME_ALL, STATISTICSINFO_OUTPUT_FILE
+from paths import MAP_FILE, STATISTICSINFO_OUTPUT_FILE
 from scenario import Scenario
 
 # Reproducibility
@@ -46,7 +46,7 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
-    # Store mean travel times of all vehicles over episodes
+    # Store parsed output of each episode
     results = []
 
     for episode in range(1, config_simulation.n_episodes + 1):
@@ -72,7 +72,7 @@ def main():
         # -----------------------------
         # 4. RUN EPISODE
         # -----------------------------
-        result = run_and_parse_output(env, episode, STATISTICSINFO_OUTPUT_FILE)
+        result = run_and_parse_output(env, episode)
         results.append(result)
 
         # return self.parser.parse_statistics_output(current_episode)
@@ -96,7 +96,7 @@ def main():
     # 7. OUTPUT
     # -----------------------------
     experimentPlotter = ExperimentPlotter()
-    experimentPlotter.mean_travel_time(results, PLOT_MEAN_TRAVEL_TIME_ALL)
+    experimentPlotter.statistics_output(results)
 
 
 if __name__ == "__main__":

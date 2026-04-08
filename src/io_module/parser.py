@@ -10,8 +10,16 @@ class Parser:
         self.document = document
         self.tree = etree.parse(document)
 
-    def mean_travel_time(self):
-        return float(self.tree.xpath("string(//vehicleTripStatistics/@duration)"))
+    def extract_one(self, xpath, cast):
+        """
+        Scalar extraction
+        """
+        value = self.tree.xpath(f"string({xpath})")
+        return cast(value)
 
-    def parse_episode(self, episode):
-        return {"episode": episode, "mean_travel_time": self.mean_travel_time()}
+    def extract_many(self, xpath, cast):
+        """
+        List extraction
+        """
+        values = self.tree.xpath(xpath)
+        return [cast(v) for v in values]

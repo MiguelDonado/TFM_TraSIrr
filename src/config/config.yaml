@@ -1,0 +1,7 @@
+metrics:
+  statistics_output:
+    mean_travel_time: "//vehicleTripStatistics/@duration"
+    mean_route_length: "//vehicleTripStatistics/@routeLength"
+    mean_speed: "//vehicleTripStatistics/@speed"
+    mean_time_loss: "//vehicleTripStatistics/@timeLoss"
+    total_travel_time: "//vehicleTripStatistics/@totalTravelTime"
