@@ -41,7 +41,6 @@ I had two options:
 - I prefer to use OOP instead of functional programming, because a class is better if we want to extend functionality in the future. For example, for the `io_module` I had the doubt of using functions instead of classes (Parser, Plotter...) but for the sake of being able to easily extend it I sticked to OOP.
 
 ## Pending
-- Make easier to run an experiment (hyperparameters tweak)
 - Configurar outputs vehiculos individuales
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures.
 - Anotar todo lo relativo a TAZ (--junction-taz)

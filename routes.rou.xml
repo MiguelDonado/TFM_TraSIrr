@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-04-08 18:30:16.051159 by Eclipse SUMO randomTrips.py v1.26.0
+<!-- generated on 2026-04-09 00:45:25.806317 by Eclipse SUMO randomTrips.py v1.26.0
 <configuration>
     <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/thesisToyNetwork.net.xml"/>
-    <output-trip-file value="/tmp/tmp9g38iz9k/trips.xml"/>
+    <output-trip-file value="/tmp/tmpjbc186zo/trips.xml"/>
     <fringe-factor value="10"/>
     <min-distance value="100.0"/>
     <end value="50.0"/>
@@ -11,12 +11,12 @@
 </configuration>
 -->
 
-<!-- generated on 2026-04-08T18:30:16.045822+01:00 by Eclipse SUMO duarouter 1.26.0
+<!-- generated on 2026-04-09T00:45:25.800925+01:00 by Eclipse SUMO duarouter 1.26.0
 <duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
         <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/thesisToyNetwork.net.xml"/>
-        <route-files value="/tmp/tmp9g38iz9k/trips.xml"/>
+        <route-files value="/tmp/tmpjbc186zo/trips.xml"/>
     </input>
 
     <output>

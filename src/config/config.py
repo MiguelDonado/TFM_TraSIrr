@@ -1,3 +1,5 @@
+# This file stores constants, hyperparameters used throughout the project
+
 from dataclasses import dataclass
 
 
@@ -8,6 +10,7 @@ class Config:
     memory_level: float = 1  # Traveler memory
 
     # Simulation
+    network: str = "thesisToyNetwork.net.xml"
     n_agents: int = 50
     n_episodes: int = 30
     warm_up: int = 10

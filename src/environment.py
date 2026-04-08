@@ -11,7 +11,7 @@ import traci
 from prettytable import PrettyTable
 from sklearn import preprocessing
 
-from paths import TRIPSINFO_OUTPUT_FILE
+from paths import TRIPS_INFO
 
 
 class Environment:
@@ -63,7 +63,7 @@ class Environment:
     def get_rewards(self):
         travel_times = {}
 
-        tree = ET.parse(TRIPSINFO_OUTPUT_FILE)
+        tree = ET.parse(TRIPS_INFO)
         root = tree.getroot()
 
         for trip in root.findall("tripinfo"):

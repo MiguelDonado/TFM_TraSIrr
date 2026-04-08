@@ -9,7 +9,7 @@ from environment import Environment
 from experiment import run_and_parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
-from paths import MAP_FILE, STATISTICSINFO_OUTPUT_FILE
+from paths import MAP
 from scenario import Scenario
 
 # Reproducibility
@@ -22,7 +22,7 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = Scenario(map=MAP_FILE, n_agents=config.n_agents, seeds=seeds)
+    scen = Scenario(map=MAP, n_agents=config.n_agents, seeds=seeds)
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT

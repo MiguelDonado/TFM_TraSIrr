@@ -1,3 +1,5 @@
+# This file stores the xpaths used to parse the xml output files generating after each episode
+
 metrics:
   statistics_output:
     mean_travel_time: "//vehicleTripStatistics/@duration"

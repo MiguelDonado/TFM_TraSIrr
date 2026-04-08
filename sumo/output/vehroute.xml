@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-04-08T18:31:00.774323+01:00 by Eclipse SUMO GUI 1.26.0
+<!-- generated on 2026-04-09T00:46:09.933553+01:00 by Eclipse SUMO GUI 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -8,14 +8,14 @@
     </input>
 
     <output>
-        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/output/tripsInfoOutput.xml"/>
-        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/output/vehrouteOutput.xml"/>
+        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/output/tripsinfo.xml"/>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/output/vehroute.xml"/>
         <vehroute-output.exit-times value="true"/>
-        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/output/statisticsInfoOutput.xml"/>
+        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/output/statistics.xml"/>
     </output>
 
     <traci_server>
-        <remote-port value="44109"/>
+        <remote-port value="41441"/>
     </traci_server>
 
 </sumoConfiguration>

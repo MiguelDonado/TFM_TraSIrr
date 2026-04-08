@@ -14,14 +14,14 @@ from lxml import etree
 
 from config.config import config
 from paths import (
-    MAP_FILE,
-    NET_FILE,
-    OD_MATRIX_FILE,
-    STATISTICSINFO_OUTPUT_FILE,
+    MAP,
+    NET,
+    OD_MATRIX,
+    STATISTICS,
     SUMO_CONF,
-    TRIPSINFO_OUTPUT_FILE,
+    TRIPS_INFO,
     UNDESIRED_ROUTE_FILE,
-    VEHROUTE_OUTPUT_FILE,
+    VEHROUTE,
 )
 
 
@@ -91,13 +91,13 @@ class Scenario:
             "--tls.guess-signals",
             "--tls.join",
             "-o",
-            NET_FILE,
+            NET,
         ]
 
         # Runs the command in the OS shell
         subprocess.run(cmd, check=True)
 
-        return NET_FILE
+        return NET
 
     def generate_agents(self):
         od_s = self.generate_od_agents()
@@ -119,7 +119,7 @@ class Scenario:
         cmd = [
             "randomTrips.py",
             "-n",
-            MAP_FILE,
+            MAP,
             "-b",
             "0",
             "-e",
@@ -156,7 +156,7 @@ class Scenario:
             .fillna(0)
             .astype(int)
         )
-        matrix.to_csv(OD_MATRIX_FILE)
+        matrix.to_csv(OD_MATRIX)
 
     def generate_routes(self, seeds):
 
@@ -224,7 +224,7 @@ class Scenario:
         cmd = [
             "duarouter",
             "-n",
-            MAP_FILE,
+            MAP,
             "--route-files",
             trips_file,
             "-o",
@@ -278,11 +278,9 @@ class Scenario:
             conf.write(f'\t\t<net-file value="{self.network}"/>\n')
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<tripinfo-output value="{TRIPSINFO_OUTPUT_FILE}"/>\n')
-            conf.write(
-                f'\t\t<statistic-output value="{STATISTICSINFO_OUTPUT_FILE}"/>\n'
-            )
-            conf.write(f'\t\t<vehroute-output value="{VEHROUTE_OUTPUT_FILE}"/>\n')
+            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
+            conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
+            conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
             conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
             conf.write(f"\t</report>\n")
             conf.write("</configuration>\n")

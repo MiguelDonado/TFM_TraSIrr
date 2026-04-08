@@ -1,7 +1,7 @@
 import pandas as pd
 from plotnine import *
 
-from paths import PLOT_STATISTICS_OUTPUT
+from paths import PLOT_STATISTICS
 
 
 class Plotter:
@@ -41,7 +41,7 @@ class ExperimentPlotter:
         for key in keys:
             y = df[key]
             title = f"{key} over episodes"
-            filename = PLOT_STATISTICS_OUTPUT
+            filename = PLOT_STATISTICS
             filename = filename.with_name(f"{key}_{filename.name}")
 
             self.plotter.plot_2D_line(df=df, x=x, y=y, title=title, filename=filename)

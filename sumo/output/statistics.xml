@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-04-08T18:31:00.774002+01:00 by Eclipse SUMO GUI 1.26.0
+<!-- generated on 2026-04-09T00:46:09.933010+01:00 by Eclipse SUMO GUI 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -8,21 +8,21 @@
     </input>
 
     <output>
-        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/output/tripsInfoOutput.xml"/>
-        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/output/vehrouteOutput.xml"/>
+        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/output/tripsinfo.xml"/>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/output/vehroute.xml"/>
         <vehroute-output.exit-times value="true"/>
-        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/output/statisticsInfoOutput.xml"/>
+        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/output/statistics.xml"/>
     </output>
 
     <traci_server>
-        <remote-port value="44109"/>
+        <remote-port value="41441"/>
     </traci_server>
 
 </sumoConfiguration>
 -->
 
 <statistics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/statistic_file.xsd">
-    <performance clockBegin="1775665860.78" clockEnd="1775665894.84" clockDuration="34.07" traciDuration="0.11" realTimeFactor="3.73" vehicleUpdatesPerSecond="47.61" personUpdatesPerSecond="0.00" begin="0.00" end="127.00" duration="127.00"/>
+    <performance clockBegin="1775688369.93" clockEnd="1775688371.91" clockDuration="1.98" traciDuration="0.03" realTimeFactor="64.14" vehicleUpdatesPerSecond="819.19" personUpdatesPerSecond="0.00" begin="0.00" end="127.00" duration="127.00"/>
     <vehicles loaded="50" inserted="50" running="0" waiting="0"/>
     <teleports total="0" jam="0" yield="0" wrongLane="0"/>
     <safety collisions="0" emergencyStops="0" emergencyBraking="0"/>

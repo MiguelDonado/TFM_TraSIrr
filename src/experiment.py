@@ -2,7 +2,7 @@
 import yaml
 
 from io_module.parser import Parser
-from paths import STATISTICSINFO_OUTPUT_FILE, VEHROUTE_OUTPUT_FILE, YAML_CONF
+from paths import STATISTICS, YAML_CONF
 
 # Load YAML file
 with open(YAML_CONF, "r") as file:
@@ -31,7 +31,7 @@ def parse_statistics_output_file():
     }
     """
     results = {}
-    parser = Parser(STATISTICSINFO_OUTPUT_FILE)
+    parser = Parser(STATISTICS)
 
     for metric_name, metric_xpath in config["metrics"]["statistics_output"].items():
         value = parser.extract_one(metric_xpath, float)
