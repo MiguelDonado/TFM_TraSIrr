@@ -124,3 +124,8 @@ Key characteristics:
 - Replication phase completed (validation pending)
 - Day-to-day learning framework implemented
 - Agent development in progress
+
+**PENDING**
+1. FINISH KOH
+2. FINISH DAY-TO-DAY LEARNING
+3. FINISH WRITING BOTH

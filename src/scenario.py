@@ -121,8 +121,11 @@ class Scenario:
         In the future I will implement more than one OD-pair.
         For simplicity, and to start, all the agents start from the same OD-pair
         """
-        fixed_od = (config_simulation.start_edge, config_simulation.end_edge)
-        return fixed_od
+        od_1 = (config_simulation.od_1_start, config_simulation.od_1_end)
+        od_2 = (config_simulation.od_2_start, config_simulation.od_2_end)
+        ods = [od_1, od_2]
+        selected = random.choice(ods)
+        return selected
 
     def compute_k_routes(
         self,

@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-from agent import Agent
+from agents.agent import Agent
 from environment import Sumo
 from scenario import scenario
 
