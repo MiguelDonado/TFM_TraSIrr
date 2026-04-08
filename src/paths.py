@@ -21,8 +21,9 @@ OD_MATRIX = OUTPUT_DIR / "od_matrix.csv"
 # Files
 MAP = SUMO_DIR / "net" / config.network  # For using
 NET = SUMO_DIR / "net" / "net.net.xml"  # For saving (if OSM file is provided)
+ROUTES = SUMO_DIR / "routes" / "routes.rou.xml"
 SUMO_CONF = SUMO_DIR / "config" / "basic.cfg"
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"
 
 # File automatically generated (used to delete it)
-UNDESIRED_ROUTE_FILE = BASE_DIR / "src" / "routes.rou.xml"
+UNDESIRED_ROUTE_FILE = BASE_DIR / "routes.rou.xml"

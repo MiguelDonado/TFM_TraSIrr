@@ -41,12 +41,13 @@ I had two options:
 - I prefer to use OOP instead of functional programming, because a class is better if we want to extend functionality in the future. For example, for the `io_module` I had the doubt of using functions instead of classes (Parser, Plotter...) but for the sake of being able to easily extend it I sticked to OOP.
 
 ## Pending
+- Be able to run the simulation once script is finished in case i forgot
+- Make route file to be tmp, i dont need to store it
 - Configurar outputs vehiculos individuales
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures.
 - Anotar todo lo relativo a TAZ (--junction-taz)
 - Leer paper "Where does this road go"
 - How to incorporate DRL, experience replay...
-- Be able to run the simulation once script is finished in case i forgot
 - Check experiment evaluation in papers
 - Generate parquet files that will be analyzed with R.
 - Entender lo de preventivo y reactivo
@@ -54,4 +55,3 @@ I had two options:
 - Grafica thesis Mari Paz (nº de caminos)
 - State space (informacion historica de mi camino y tambien estaria bien ver que links fueron problematicos)
 - En la del asiatico, la decision_zone length estaba mal la formula
-- Paths put right and short names

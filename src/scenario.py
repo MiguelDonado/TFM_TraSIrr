@@ -167,6 +167,8 @@ class Scenario:
             # Store in the dictionary od_routes the set of routes for this od pair.
             self.od_routes[od] = self.compute_k_routes(od, seeds)
 
+        UNDESIRED_ROUTE_FILE.unlink()
+
     def get_unique_ods(self):
         # Extract unique OD pairs
         # (agent["origin"], agent["destination"]) for agent in self.agents: List comprenhensions, returns a list

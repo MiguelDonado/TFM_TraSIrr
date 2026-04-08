@@ -9,8 +9,7 @@ with open(YAML_CONF, "r") as file:
     config = yaml.safe_load(file)
 
 
-def run_and_parse_output(env, episode):
-    env.run_episode()
+def parse_output(episode):
     stats = parse_statistics_output_file()
     return {"episode": episode, **stats}
 

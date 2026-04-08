@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-04-09 00:58:14.130357 by Eclipse SUMO randomTrips.py v1.26.0
+<configuration>
+    <net-file value="net.net.xml"/>
+    <prefix value="veh_"/>
+    <trip-attributes value="type=&quot;vehDist&quot;"/>
+    <end value="50.0"/>
+    <period value="2.0"/>
+</configuration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <trip id="veh_0" depart="0.00" from="42733214#2" to="-122169876" type="vehDist"/>
+    <trip id="veh_1" depart="2.00" from="-676348998#0" to="-676348966#0" type="vehDist"/>
+    <trip id="veh_2" depart="4.00" from="676348987#1" to="662323463#1" type="vehDist"/>
+    <trip id="veh_3" depart="6.00" from="84219137#1" to="-284386828" type="vehDist"/>
+    <trip id="veh_4" depart="8.00" from="-868058256#0" to="-1237884166" type="vehDist"/>
+    <trip id="veh_5" depart="10.00" from="-676348963#0" to="122169876" type="vehDist"/>
+    <trip id="veh_6" depart="12.00" from="-1237884166" to="-662323463#0" type="vehDist"/>
+    <trip id="veh_7" depart="14.00" from="-676348963#0" to="284386829#0" type="vehDist"/>
+    <trip id="veh_8" depart="16.00" from="676349002" to="676348966#0" type="vehDist"/>
+    <trip id="veh_9" depart="18.00" from="92325325#3" to="-676582301#3" type="vehDist"/>
+    <trip id="veh_10" depart="20.00" from="-240437346" to="-284386829#0" type="vehDist"/>
+    <trip id="veh_11" depart="22.00" from="676582301#3" to="284386829#2" type="vehDist"/>
+    <trip id="veh_12" depart="24.00" from="676349002" to="676348987#2" type="vehDist"/>
+    <trip id="veh_13" depart="26.00" from="1426938284#0" to="969910068#0" type="vehDist"/>
+    <trip id="veh_14" depart="28.00" from="-84219137#0" to="211212151" type="vehDist"/>
+    <trip id="veh_15" depart="30.00" from="676582301#0" to="42733214#0" type="vehDist"/>
+    <trip id="veh_16" depart="32.00" from="676582301#4" to="284386828" type="vehDist"/>
+    <trip id="veh_17" depart="34.00" from="676348963#0" to="-1426938284#1" type="vehDist"/>
+    <trip id="veh_18" depart="36.00" from="-676348966#0" to="-676348999" type="vehDist"/>
+    <trip id="veh_19" depart="38.00" from="-211212151" to="-676348966#1" type="vehDist"/>
+    <trip id="veh_20" depart="40.00" from="-284386828" to="-676348998#0" type="vehDist"/>
+    <trip id="veh_21" depart="42.00" from="42733214#2" to="-676582301#6" type="vehDist"/>
+    <trip id="veh_22" depart="44.00" from="-676348993" to="868058257" type="vehDist"/>
+    <trip id="veh_23" depart="46.00" from="42733214#4" to="307085472" type="vehDist"/>
+    <trip id="veh_24" depart="48.00" from="-49250954" to="676348987#2" type="vehDist"/>
+</routes>

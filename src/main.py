@@ -6,7 +6,7 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import run_and_parse_output
+from experiment import parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
 from paths import MAP
@@ -45,35 +45,29 @@ def main():
         print(f"\n--- Episode {episode} ---")
 
         # -----------------------------
-        # 1. RESET ENVIRONMENT
-        # -----------------------------
-        env.reset(current_episode=episode)
-
-        # -----------------------------
-        # 2. AGENTS CHOOSE ACTIONS
+        # 1. AGENTS CHOOSE ACTIONS
         # -----------------------------
         # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
         actions = select_actions(agents)
 
         # -----------------------------
-        # 3. INSERT VEHICLES
+        # 2. RUN EPISODE
         # -----------------------------
-        env.insert_vehicles(actions)
+        env.run_episode(actions, episode)
 
         # -----------------------------
-        # 4. RUN EPISODE
+        # 3. PARSE GENERATED OUTPUT
         # -----------------------------
-        result = run_and_parse_output(env, episode)
+        result = parse_output(episode)
         results.append(result)
 
-        # return self.parser.parse_statistics_output(current_episode)
         # -----------------------------
-        # 5. GET REWARDS
+        # 4. GET REWARDS
         # -----------------------------
         rewards = env.get_rewards()
 
         # -----------------------------
-        # 6. UPDATE AGENTS
+        # 5. UPDATE AGENTS
         # -----------------------------
         update_agents(
             actions=actions,
@@ -84,7 +78,7 @@ def main():
         )
 
     # -----------------------------
-    # 7. OUTPUT
+    # 6. OUTPUT
     # -----------------------------
     experimentPlotter = ExperimentPlotter()
     experimentPlotter.statistics_output(results)
