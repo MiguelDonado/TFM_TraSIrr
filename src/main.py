@@ -4,9 +4,7 @@ import numpy as np
 
 from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
-from config.constants import config_constants
-from config.simulation import config_simulation
-from config.training import config_training
+from config.config import config
 from environment import Environment
 from experiment import run_and_parse_output
 from io_module.parser import Parser
@@ -15,8 +13,8 @@ from paths import MAP_FILE, STATISTICSINFO_OUTPUT_FILE
 from scenario import Scenario
 
 # Reproducibility
-rng = np.random.default_rng(config_constants.seed)
-seeds = rng.integers(0, 100000, size=config_constants.max_attempts)
+rng = np.random.default_rng(config.seed)
+seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
 def main():
@@ -24,24 +22,17 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = Scenario(
-        map=MAP_FILE,
-        n_agents=config_simulation.n_agents,
-        seeds=seeds,
-        write_output=config_constants.write_output,
-    )
+    scen = Scenario(map=MAP_FILE, n_agents=config.n_agents, seeds=seeds)
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(scenario=scen, episode_with_gui=config_constants.episode_with_gui)
+    env = Environment(scenario=scen, episode_with_gui=config.episode_with_gui)
 
     # -----------------------------
     # 3. CREATE AGENTS
     # -----------------------------
-    agents = initialize_agents(
-        n=config_simulation.n_agents, scen=scen, seed=config_constants.seed
-    )
+    agents = initialize_agents(n=config.n_agents, scen=scen, seed=config.seed)
 
     # -----------------------------
     # 4. TRAINING LOOP
@@ -49,7 +40,7 @@ def main():
     # Store parsed output of each episode
     results = []
 
-    for episode in range(1, config_simulation.n_episodes + 1):
+    for episode in range(1, config.n_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
 
@@ -89,7 +80,7 @@ def main():
             agents=agents,
             episode=episode,
             rewards=rewards,
-            warm_up=config_simulation.warm_up,
+            warm_up=config.warm_up,
         )
 
     # -----------------------------

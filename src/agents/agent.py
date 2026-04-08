@@ -1,7 +1,6 @@
 import numpy as np
 
-from config.constants import config_constants
-from config.training import config_training
+from config.config import config
 
 
 class BMAgent:
@@ -10,8 +9,8 @@ class BMAgent:
         agent_id,
         routes,
         seed,
-        beta=config_training.learning_rate,
-        gamma=config_training.memory_level,
+        beta=config.learning_rate,
+        gamma=config.memory_level,
     ):
         self.id = agent_id
         self.routes = routes
@@ -103,11 +102,11 @@ class BMAgent:
         diff = A - M_c
 
         if diff >= 0:
-            biggest_benefit = max(A - M) + config_constants.epsilon
+            biggest_benefit = max(A - M) + config.epsilon
             stimulus = diff / biggest_benefit
             return stimulus
         else:
-            biggest_loss = abs(min(A - M)) + config_constants.epsilon
+            biggest_loss = abs(min(A - M)) + config.epsilon
             stimulus = diff / biggest_loss
             return stimulus
 

@@ -12,8 +12,7 @@ from collections import Counter
 import pandas as pd
 from lxml import etree
 
-from config.constants import config_constants
-from config.simulation import config_simulation
+from config.config import config
 from paths import (
     MAP_FILE,
     NET_FILE,
@@ -27,7 +26,7 @@ from paths import (
 
 
 class Scenario:
-    def __init__(self, map, n_agents, seeds, write_output=False):
+    def __init__(self, map, n_agents, seeds):
         """
         Parameters:
         map: network file or .osm file
@@ -48,7 +47,7 @@ class Scenario:
         self.ensure_network(map)
         self.generate_agents()
         self.generate_routes(seeds)
-        self.conf = self.generate_conf(write_output)
+        self.conf = self.generate_conf()
 
     def ensure_network(self, map):
         """
@@ -179,8 +178,8 @@ class Scenario:
         od,
         seeds,
         k=3,
-        max_attempts=config_constants.max_attempts,
-        random_factor=config_constants.random_factor,
+        max_attempts=config.max_attempts,
+        random_factor=config.random_factor,
     ):
         # Weights of edges by default are free-flow travel times
         # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
@@ -196,7 +195,7 @@ class Scenario:
 
             # 2. Compute best route according shortest-path
             best_route = self._run_duarouter(
-                trips_file, routes_file, random_factor=1.0, seed=config_constants.seed
+                trips_file, routes_file, random_factor=1.0, seed=config.seed
             )
 
             if best_route:
@@ -268,7 +267,7 @@ class Scenario:
 
         return None
 
-    def generate_conf(self, write_output):
+    def generate_conf(self):
         """
         Create SUMO Config file
         """
@@ -280,12 +279,11 @@ class Scenario:
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
             conf.write(f'\t\t<tripinfo-output value="{TRIPSINFO_OUTPUT_FILE}"/>\n')
-            if write_output:
-                conf.write(
-                    f'\t\t<statistic-output value="{STATISTICSINFO_OUTPUT_FILE}"/>\n'
-                )
-                conf.write(f'\t\t<vehroute-output value="{VEHROUTE_OUTPUT_FILE}"/>\n')
-                conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
+            conf.write(
+                f'\t\t<statistic-output value="{STATISTICSINFO_OUTPUT_FILE}"/>\n'
+            )
+            conf.write(f'\t\t<vehroute-output value="{VEHROUTE_OUTPUT_FILE}"/>\n')
+            conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
             conf.write(f"\t</report>\n")
             conf.write("</configuration>\n")
 
