@@ -7,12 +7,17 @@ import random
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
+from collections import Counter
+
+import pandas as pd
+from lxml import etree
 
 from config.constants import config_constants
 from config.simulation import config_simulation
 from paths import (
     MAP_FILE,
     NET_FILE,
+    OD_MATRIX_FILE,
     STATISTICSINFO_OUTPUT_FILE,
     SUMO_CONF,
     TRIPSINFO_OUTPUT_FILE,
@@ -96,11 +101,63 @@ class Scenario:
         return NET_FILE
 
     def generate_agents(self):
+        od_s = self.generate_od_agents()
         for i in range(self.n_agents):
-            origin, dest = self.sample_od()
+            origin, dest = od_s[i]
             self.agents.append(
                 {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
             )
+
+    def generate_od_agents(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trips_file = os.path.join(tmpdir, "trips.xml")
+            self.generate_random_trips(trips_file)
+            od_s = self.parse_od_agents(trips_file)
+        self.write_od_matrix(od_s)
+        return od_s
+
+    def generate_random_trips(self, output_file):
+        cmd = [
+            "randomTrips.py",
+            "-n",
+            MAP_FILE,
+            "-b",
+            "0",
+            "-e",
+            str(self.n_agents),
+            "-p",
+            "1",
+            "--fringe-factor",
+            "10",
+            "--min-distance",
+            "100",
+            "--seed",
+            "42",
+            "-o",
+            output_file,
+        ]
+
+        subprocess.run(cmd, check=True)
+
+    def parse_od_agents(self, trips_file):
+        tree = etree.parse(trips_file)
+        origins = tree.xpath("//trip/@from")
+        destinies = tree.xpath("//trip/@to")
+        od_s = list(zip(origins, destinies))
+        return od_s
+
+    def write_od_matrix(self, od_list):
+        counts = Counter(od_list)
+        df = pd.DataFrame(
+            [(o, d, c) for (o, d), c in counts.items()],
+            columns=["origin", "destination", "count"],
+        )
+        matrix = (
+            df.pivot(index="origin", columns="destination", values="count")
+            .fillna(0)
+            .astype(int)
+        )
+        matrix.to_csv(OD_MATRIX_FILE)
 
     def generate_routes(self, seeds):
 
@@ -116,17 +173,6 @@ class Scenario:
         # (agent["origin"], agent["destination"]) for agent in self.agents: List comprenhensions, returns a list
         # set(): Constructs a set from a list
         return set((agent["origin"], agent["destination"]) for agent in self.agents)
-
-    def sample_od(self):
-        """
-        In the future I will implement more than one OD-pair.
-        For simplicity, and to start, all the agents start from the same OD-pair
-        """
-        od_1 = (config_simulation.od_1_start, config_simulation.od_1_end)
-        od_2 = (config_simulation.od_2_start, config_simulation.od_2_end)
-        ods = [od_1, od_2]
-        selected = random.choice(ods)
-        return selected
 
     def compute_k_routes(
         self,

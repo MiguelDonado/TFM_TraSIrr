@@ -28,15 +28,12 @@ I wanna focus on behavioral heterogeinity (aversion traffic lights...) instead o
 - For simplicity, all agents will start from same OD-pair. Must be extended in the future 
 - For simplicity, all agents will have same departure time. Must be extended in the future
   - In SUMO, many vehicles can be scheduled at the same time, but insertion may be delayed if there is congestion. SUMO handles it.
-- Implement a check to verify that I have at least k routes for od-pair.
-- In library **Flow**, check in the Github, because they several files with popular research networks (copy them) and another automatic generation of networks files.
-
-**To verify**
 
 **Verified**
 - `scenario.compute_k_routes(od)` has been implemented by calling duarouter multiple times and using option `--weights.random-factor <float>`. This option modifies the edge costs randomly by $x \in [1,<float>]$. Another option would be to use duaIterate.py.
 - ¿The generated set of k routes for an OD-pair, needs to be filtered in order to ensure that we get "decent" routes (we are using duarouter and modifying cost of edges by a random factor)?
   - **Solution**: The answer to both questions, after asking the teachers, is that they have told me that using duarouter is fine and we want to discover random routes, even if they are not "efficient". This way we would check that our agents are able to learn and distinguish efficient from not efficient routes. Also when using duaIterate.py, we could be biasing somehow our algorithm to converge to DUE (because the set of k routes, would be the set of routes that we get when iterating on DUE.)
+- The function `scenario.compute_k_routes(od)` guarantees in most situations that k routes are generated for od-pair.
 
 **Scalability**
 - Vehicles are inserted one by one with Traci (not sure if that causes big overhead). Could be more efficient to write a xml file and insert them by reading the xml file. Then Traci wont be needed at all. I could avoid using Traci and just add the xml files to the sumo config file.

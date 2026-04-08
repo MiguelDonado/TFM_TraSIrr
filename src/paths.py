@@ -16,6 +16,7 @@ TRIPSINFO_OUTPUT_FILE = SUMO_DIR / "output" / "tripsInfoOutput.xml"
 VEHROUTE_OUTPUT_FILE = SUMO_DIR / "output" / "vehrouteOutput.xml"
 STATISTICSINFO_OUTPUT_FILE = SUMO_DIR / "output" / "statisticsInfoOutput.xml"
 UNDESIRED_ROUTE_FILE = BASE_DIR / "src" / "routes.rou.xml"  # Extra file not needed
+OD_MATRIX_FILE = SUMO_DIR / "output" / "od_matrix.csv"
 
 # Plots
 PLOT_STATISTICS_OUTPUT = PLOTS_DIR / "statistics_output.png"

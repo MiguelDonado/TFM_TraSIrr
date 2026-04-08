@@ -8,7 +8,7 @@ class SimulationConfig:
     od_2_start: str = "-E6"
     od_1_end: str = "E6"
     od_2_end: str = "E7"
-    n_episodes: int = 5
+    n_episodes: int = 30
     warm_up: int = 10
 
 
