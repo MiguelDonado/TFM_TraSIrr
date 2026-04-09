@@ -154,4 +154,49 @@ trips_info_plot_1 <- ggplot(
 # Save plot
 ggsave(filename = trips_info_plot_1_path, plot = trips_info_plot_1, dpi = dpi, width = width, height = height)
 
+#################################################
+# 4. "RawDump" parquet file
+#################################################
+rawdump_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/rawdump.parquet"
+rawdump_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/rawdump.png"
+
+
+# To get the same data than this file gave my, I dont need SUMO to generate rawdump output files, 
+# because I can get the same data by doing data wrangling on the dataframe that I got from vehroutes
+df_rawdump <- df_vehroute |> mutate(
+  entry_time = exit_times - time_on_edge, .before = exit_times
+) |> mutate(
+  vehicle_id = str_replace(vehicle_id, "agent_", "")
+) 
+
+df_rawdump_expanded <- df_rawdump |> 
+  # Changes behavior from operate on whole columns to operate row by row
+  rowwise() |> 
+  # Creates a new column called time
+  # That new column will contain a list
+  # And that list will be the timesteps for that edge
+  mutate(time = list(seq(entry_time, exit_times))) |> 
+  # Explodes the list into rows
+  unnest(time) 
+
+df_rawdump_counts <- df_rawdump_expanded |> 
+  group_by(edge, time) |> 
+  summarise(n_vehicles = n(), .groups = "drop")
+
+write_parquet(df_rawdump_counts, rawdump_parquet_path)
+
+rawdump_plot_1 <- ggplot(
+  data = df_rawdump_counts,
+  mapping = aes(x = time, y = n_vehicles)
+) +
+  geom_line() +
+  facet_wrap(~ edge, scales = "free_y") +
+  theme_minimal()
+
+# Save plot
+ggsave(filename = rawdump_plot_1_path, plot = rawdump_plot_1, dpi = dpi, width = width, height = height)
+
+
+
+
 
