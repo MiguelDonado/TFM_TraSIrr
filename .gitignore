@@ -3,3 +3,5 @@ __pycache__/
 *workspace
 *PAGINASPENDIENTESLEER.txt
 Reunion.md
+.Rproj.user
+renv/library/
