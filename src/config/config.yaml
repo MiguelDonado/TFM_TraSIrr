@@ -17,3 +17,6 @@ metrics:
     durations: "//tripinfo/@duration"
     route_lengths: "//tripinfo/@routeLength"
     time_losses: "//tripinfo/@timeLoss"
+  fcd: 
+    timesteps: "//timestep"
+    vehicle: "vehicle"

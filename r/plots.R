@@ -5,8 +5,12 @@ dpi = 300
 width = 10
 height = 6
 
+
+
+#################################################
 #################################################
 # 1. "Statistics" parquet file
+#################################################
 #################################################
 
 statistics_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/statistics.parquet"
@@ -39,9 +43,14 @@ statistics_plot <- ggplot(
 # Save plot
 ggsave(filename = statistics_plot_path, plot = statistics_plot, dpi = dpi, width = width, height = height)
 
+
+
+#################################################
 #################################################
 # 2. "Vehroute" parquet file
 #################################################
+#################################################
+
 vehroute_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/vehroute.parquet"
 vehroute_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_1.png"
 vehroute_plot_2_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_2.png"
@@ -107,8 +116,12 @@ vehroute_plot_2 <- ggplot(
 # Save plot
 ggsave(filename = vehroute_plot_2_path, plot = vehroute_plot_2, dpi = dpi, width = width, height = height)
 
+
+
+#################################################
 #################################################
 # 3. "Tripsinfo" parquet file
+#################################################
 #################################################
 
 trips_info_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/trips_info.parquet"
@@ -154,9 +167,14 @@ trips_info_plot_1 <- ggplot(
 # Save plot
 ggsave(filename = trips_info_plot_1_path, plot = trips_info_plot_1, dpi = dpi, width = width, height = height)
 
+
+
+#################################################
 #################################################
 # 4. "RawDump" parquet file
 #################################################
+#################################################
+
 rawdump_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/rawdump.parquet"
 rawdump_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/rawdump.png"
 
@@ -180,23 +198,152 @@ df_rawdump_expanded <- df_rawdump |>
   unnest(time) 
 
 df_rawdump_counts <- df_rawdump_expanded |> 
-  group_by(edge, time) |> 
+  group_by(episode, edge, time) |> 
   summarise(n_vehicles = n(), .groups = "drop")
+
+df_rawdump_counts_plot_1 <- df_rawdump_counts |> 
+  filter(edge == "-E3") 
 
 write_parquet(df_rawdump_counts, rawdump_parquet_path)
 
 rawdump_plot_1 <- ggplot(
-  data = df_rawdump_counts,
+  data = df_rawdump_counts_plot_1,
   mapping = aes(x = time, y = n_vehicles)
 ) +
   geom_line() +
-  facet_wrap(~ edge, scales = "free_y") +
-  theme_minimal()
+  facet_wrap(episode ~ edge, scales = "free_y") +
+  theme_minimal() +
+  labs(title= "Counts of vehicles on edge -E3 over time across all episodes")
 
 # Save plot
 ggsave(filename = rawdump_plot_1_path, plot = rawdump_plot_1, dpi = dpi, width = width, height = height)
 
 
 
+#################################################
+#################################################
+# 5. "FCD" parquet file
+#################################################
+#################################################
+fcd_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/fcd.parquet"
+fcd_parquet_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_1.png"
+fcd_parquet_plot_2_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_2.png"
+fcd_parquet_plot_3_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_3.png"
+fcd_parquet_plot_4_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_4.png"
+fcd_parquet_plot_5_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_5.mp4"
+fcd_parquet_plot_6_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_6.png"
 
 
+df_fcd <- read_parquet(fcd_parquet_path)
+
+# Data wrangling
+df_fcd <- df_fcd |> mutate(
+  vehicle_id = str_replace(vehicle_id, "agent_", ""),
+  episode = factor(episode)
+) |> 
+  arrange(episode, timestep, vehicle_id)
+
+# We have:
+# 1. multiple vehicles
+# 2. multiple episodes (runs)
+# 3. trajectories → (x, y, t)
+# We can perform many analysis with this
+
+
+###############
+## Plot 1: Draws ALL trajectories of ALL vehicles across ALL episodes (each trajectory is one line)
+###############
+# A trajectory is: All the positions (x, y) of one vehicle over time, within one episode
+
+# Explanation:
+# group = interaction(vehicle_id, episode): Tells ggplot, each unique (vehicle_id, episode) is one trajectory
+# interaction(): Computes a factor which represents the interaction of given factors. 
+# Example: interaction(df_fcd$vehicle_id,df_fcd$episode)
+# Because of alpha: Darker lines mean ooverlapping paths, and lighter lines rare paths
+
+# Used for: Common routes, are routes stable?, do vehicles spread out?
+# Small improvements: Color by episode, highlight one vehicle...
+
+fcd_plot_1 <- ggplot(df_fcd, aes(x = x, y = y, group = interaction(vehicle_id, episode))) +
+  geom_path(alpha = 0.2) +
+  theme_minimal() +
+  labs(title = "ALL trajectories of ALL vehicles across ALL episodes")
+
+# Save plot
+ggsave(filename = fcd_parquet_plot_1_path, plot = fcd_plot_1, dpi = dpi, width = width, height = height)
+
+###############
+## Plot 2: Facet by episode (all vehicles)
+###############
+fcd_plot_2 <- ggplot(
+  data = df_fcd, 
+  mapping = aes(x = x, y = y, group = vehicle_id)
+) +
+  geom_path(alpha = 0.2) +
+  facet_wrap(~episode) +
+  theme_minimal() +
+  labs(title = "ALL trajectories of ALL vehicles faceted by episodes")
+
+# Save plot
+ggsave(filename = fcd_parquet_plot_2_path, plot = fcd_plot_2, dpi = dpi, width = width, height = height)
+
+###############
+## Plot 3: Same vehicle across episodes
+###############
+df_fcd_plot_3 <- df_fcd |> 
+  filter(vehicle_id == 18)
+
+fcd_plot_3 <- ggplot(
+  data = df_fcd_plot_3, 
+  mapping = aes(x = x, y = y)
+) +
+  geom_path() +
+  facet_wrap(~episode) +
+  theme_minimal() +
+  labs(title = "Trajectories of vehicle nº10 across episodes")
+
+# Save plot
+ggsave(filename = fcd_parquet_plot_3_path, plot = fcd_plot_3, dpi = dpi, width = width, height = height)
+
+###############
+## Plot 4: Facet by vehicle
+###############
+fcd_plot_4 <- ggplot(
+  data = df_fcd, 
+  mapping = aes(x = x, y = y, group = episode)
+) +
+  geom_path(alpha = 0.2) +
+  facet_wrap(~vehicle_id) +
+  theme_minimal()
+
+# Save plot
+ggsave(filename = fcd_parquet_plot_4_path, plot = fcd_plot_4, dpi = dpi, width = width, height = height)
+
+###############
+## Plot 5: Animate
+###############
+library(gganimate)
+
+df_fcd_plot_5 <- df_fcd |> 
+  filter(episode == 18)
+
+fcd_plot_5 <- ggplot(df_fcd_plot_5, aes(x = x, y = y, group = vehicle_id)) +
+  geom_point() +
+  transition_time(timestep) +
+  labs(title="Traffic evolution of all vehicles in one episode")
+
+anim <- animate(fcd_plot_5, renderer = av_renderer())
+
+anim_save(fcd_parquet_plot_5_path, anim)
+
+###############
+## Plot 6: Traffic density across episodes
+###############
+fcd_plot_6 <- ggplot(df_fcd, aes(x = x, y = y)) +
+  geom_bin2d() +
+  facet_wrap(~episode) +
+  theme_minimal() +
+  labs(title = "Traffic density acrooss episodes")
+
+# Save plot
+ggsave(filename = fcd_parquet_plot_6_path, plot = fcd_plot_6, dpi = dpi, width = width, height = height)

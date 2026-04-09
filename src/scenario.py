@@ -14,6 +14,7 @@ from lxml import etree
 
 from config.config import config
 from paths import (
+    FCD,
     MAP,
     NET,
     OD_MATRIX,
@@ -284,7 +285,14 @@ class Scenario:
             conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
             conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
             conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
+            conf.write(f'\t\t<fcd-output value="{FCD}"/>\n')
+            conf.write(f'\t\t<fcd-output.attributes value="x,y"/>\n')
             conf.write(f"\t</report>\n")
+            conf.write(f"\t<random>\n")
+            conf.write(f"\t\t<seed value='42'/>\n")
+            conf.write(f"\t</random>\n")
+            conf.write(f"\t<device>\n")
+            conf.write(f"\t\t<device.fcd.probability value='0.2'/>\n")
+            conf.write(f"\t</device>\n")
             conf.write("</configuration>\n")
-
         return SUMO_CONF

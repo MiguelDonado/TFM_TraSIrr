@@ -15,11 +15,13 @@ FIGURES_DIR = BASE_DIR / "output" / "figures"
 STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
 VEHROUTE_PROCESSED = PROCESSED_DATA_DIR / "vehroute.parquet"
 TRIPS_INFO_PROCESSED = PROCESSED_DATA_DIR / "trips_info.parquet"
+FCD_PROCESSED = PROCESSED_DATA_DIR / "fcd.parquet"
 
 # Output files
 STATISTICS = RAW_DATA_DIR / "statistics.xml"
 TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
 VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
+FCD = RAW_DATA_DIR / "fcd-export.parquet"
 OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
 
 # Files

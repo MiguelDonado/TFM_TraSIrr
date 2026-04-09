@@ -23,3 +23,23 @@ class Parser:
         """
         values = self.tree.xpath(xpath)
         return [cast(v) for v in values]
+
+    def extract_fcd_flat(self, episode):
+        rows = []
+
+        timesteps = self.tree.xpath("//timestep")
+
+        for ts in timesteps:
+            t = float(ts.get("time"))
+
+            for v in ts.xpath("vehicle"):
+                rows.append(
+                    {
+                        "episode": episode,
+                        "timestep": t,
+                        "vehicle_id": v.get("id"),
+                        "x": float(v.get("x")),
+                        "y": float(v.get("y")),
+                    }
+                )
+        return rows

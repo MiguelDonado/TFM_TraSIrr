@@ -2,7 +2,7 @@
 import yaml
 
 from io_module.parser import Parser
-from paths import STATISTICS, TRIPS_INFO, VEHROUTE, YAML_CONF
+from paths import FCD, STATISTICS, TRIPS_INFO, VEHROUTE, YAML_CONF
 
 # Load YAML file
 with open(YAML_CONF, "r") as file:
@@ -77,4 +77,11 @@ def parse_trips_info(episode):
                 "time_loss": time_loss,
             }
         )
+    return data
+
+
+def parse_fcd(episode):
+    parser = Parser(FCD)
+    data = parser.extract_fcd_flat(episode)
+
     return data

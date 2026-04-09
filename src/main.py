@@ -8,9 +8,15 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import parse_aggregated_data, parse_trips_info, parse_vehroute
+from experiment import (
+    parse_aggregated_data,
+    parse_fcd,
+    parse_trips_info,
+    parse_vehroute,
+)
 from io_module.parser import Parser
 from paths import (
+    FCD_PROCESSED,
     MAP,
     ROUTES,
     STATISTICS,
@@ -50,6 +56,7 @@ def main():
     aggregated_results = []
     vehroute_results = []
     trips_info_results = []
+    fcd_results = []
 
     for episode in range(1, config.n_episodes + 1):
 
@@ -72,12 +79,15 @@ def main():
         aggregated_result = parse_aggregated_data(episode)
         aggregated_results.append(aggregated_result)
 
-        vehroute_result = parse_vehroute(episode)
         # Extend: Instead of adding the dictionary, it adds the elements of the iterable
+        vehroute_result = parse_vehroute(episode)
         vehroute_results.extend(vehroute_result)
 
         trips_info_result = parse_trips_info(episode)
         trips_info_results.extend(trips_info_result)
+
+        fcd_result = parse_fcd(episode)
+        fcd_results.extend(fcd_result)
 
         # -----------------------------
         # 4. GET REWARDS
@@ -106,6 +116,9 @@ def main():
 
     df_3 = pd.DataFrame(trips_info_results)
     df_3.to_parquet(TRIPS_INFO_PROCESSED, engine="pyarrow")
+
+    df_4 = pd.DataFrame(fcd_results)
+    df_4.to_parquet(FCD_PROCESSED, engine="pyarrow")
 
 
 def run_final_simulation():
