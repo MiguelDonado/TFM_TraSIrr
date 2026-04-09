@@ -2,7 +2,7 @@
 import yaml
 
 from io_module.parser import Parser
-from paths import STATISTICS, VEHROUTE, YAML_CONF
+from paths import STATISTICS, TRIPS_INFO, VEHROUTE, YAML_CONF
 
 # Load YAML file
 with open(YAML_CONF, "r") as file:
@@ -12,11 +12,6 @@ with open(YAML_CONF, "r") as file:
 def parse_aggregated_data(episode):
     statistics = parse_statistics()
     return {"episode": episode, **statistics}
-
-
-def parse_vehicle_level_data(episode):
-    vehroute = parse_vehroute(episode)
-    return vehroute
 
 
 def parse_statistics():
@@ -53,4 +48,33 @@ def parse_vehroute(episode):
                     "exit_times": t,
                 }
             )
+    return data
+
+
+def parse_trips_info(episode):
+    data_dict = {}
+    data = []
+    parser = Parser(TRIPS_INFO)
+
+    for name, xpath in config["metrics"]["tripsinfo"].items():
+        values = parser.extract_many(xpath, str)
+        data_dict[name] = values
+
+    for vid, arrival, duration, length, time_loss in zip(
+        data_dict["vehicles"],
+        data_dict["arrivals"],
+        data_dict["durations"],
+        data_dict["route_lengths"],
+        data_dict["time_losses"],
+    ):
+        data.append(
+            {
+                "episode": episode,
+                "vehicle_id": vid,
+                "arrival": arrival,
+                "duration": duration,
+                "length": length,
+                "time_loss": time_loss,
+            }
+        )
     return data

@@ -1,8 +1,6 @@
 library(arrow)
 library(tidyverse)
 
-statistics_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/statistics.parquet"
-statistics_plot_path <- "/home/miguel/6.Projects/Thesis/output/figures/statistics.png"
 dpi = 300
 width = 10
 height = 6
@@ -10,6 +8,10 @@ height = 6
 #################################################
 # 1. "Statistics" parquet file
 #################################################
+
+statistics_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/statistics.parquet"
+statistics_plot_path <- "/home/miguel/6.Projects/Thesis/output/figures/statistics.png"
+
 df_statistics <- read_parquet(statistics_parquet_path)
 
 # Data wrangling
@@ -105,4 +107,51 @@ vehroute_plot_2 <- ggplot(
 # Save plot
 ggsave(filename = vehroute_plot_2_path, plot = vehroute_plot_2, dpi = dpi, width = width, height = height)
 
-  
+#################################################
+# 3. "Tripsinfo" parquet file
+#################################################
+
+trips_info_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/trips_info.parquet"
+trips_info_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/trips_info_1.png"
+
+df_tripsinfo <- read_parquet(trips_info_parquet_path)
+
+# Data wrangling
+df_tripsinfo <- df_tripsinfo |> mutate(
+  vehicle_id = str_replace(vehicle_id, "agent_", "")
+) |> 
+  mutate(
+    vehicle_id = as.numeric(vehicle_id),
+    arrival = as.double(arrival),
+    duration = as.double(duration),
+    length = as.double(length),
+    time_loss = as.double(time_loss)
+    
+  ) |> 
+  arrange(episode, vehicle_id)
+
+top_5_affected_vehicles<- df_tripsinfo |> 
+  group_by(vehicle_id) |> 
+  summarise(mean_time_loss = mean(time_loss)) |> 
+  slice_max(mean_time_loss, n = 5) |> 
+  pull(vehicle_id)
+
+df_tripsinfo_plot_1 <- df_tripsinfo |> 
+  filter(vehicle_id %in% top_5_affected_vehicles)
+
+# 5 Vehicles with largest time_loss over episodes
+trips_info_plot_1 <- ggplot(
+  data = df_tripsinfo_plot_1,
+  mapping = aes(x = episode, y = time_loss)
+) +
+  geom_line() +
+  facet_wrap(~ vehicle_id, scale="free_y") +
+  theme_minimal() +
+  labs(
+    title = "Evolution of time loss over episodes (5 worst affected vehicles)"
+  )
+
+# Save plot
+ggsave(filename = trips_info_plot_1_path, plot = trips_info_plot_1, dpi = dpi, width = width, height = height)
+
+

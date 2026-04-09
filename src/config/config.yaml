@@ -11,3 +11,9 @@ metrics:
     vehicles: "//vehicle/@id"
     routes: "//vehicle/route/@edges"
     exit_times: "//vehicle/route/@exitTimes"
+  tripsinfo:
+    vehicles: "//tripinfo/@id"
+    arrivals: "//tripinfo/@arrival"
+    durations: "//tripinfo/@duration"
+    route_lengths: "//tripinfo/@routeLength"
+    time_losses: "//tripinfo/@timeLoss"
