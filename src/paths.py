@@ -13,6 +13,7 @@ FIGURES_DIR = BASE_DIR / "output" / "figures"
 
 # Parquet files (outputs that will be analyzed in R)
 STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
+VEHROUTE_PROCESSED = PROCESSED_DATA_DIR / "vehroute.parquet"
 
 # Output files
 STATISTICS = RAW_DATA_DIR / "statistics.xml"

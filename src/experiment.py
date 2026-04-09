@@ -2,37 +2,55 @@
 import yaml
 
 from io_module.parser import Parser
-from paths import STATISTICS, YAML_CONF
+from paths import STATISTICS, VEHROUTE, YAML_CONF
 
 # Load YAML file
 with open(YAML_CONF, "r") as file:
     config = yaml.safe_load(file)
 
 
-def parse_output(episode):
-    stats = parse_statistics_output_file()
-    return {"episode": episode, **stats}
+def parse_aggregated_data(episode):
+    statistics = parse_statistics()
+    return {"episode": episode, **statistics}
 
 
-def parse_statistics_output_file():
-    # Quiero devolver un diccionario plano, de esa manera se puede convertir facilmente a df
-    """
-    Instead of this
-    [
-        {"name": "mean_routeLength", "value": 200.42},
-        {"name": "timeLoss", "value": 50.1}
-    ]
+def parse_vehicle_level_data(episode):
+    vehroute = parse_vehroute(episode)
+    return vehroute
 
-    I wanna return this
-    {
-        "mean_routeLength": 200.42,
-        "timeLoss": 50.1
-    }
-    """
-    results = {}
+
+def parse_statistics():
+    data = {}
     parser = Parser(STATISTICS)
 
-    for metric_name, metric_xpath in config["metrics"]["statistics_output"].items():
-        value = parser.extract_one(metric_xpath, float)
-        results[metric_name] = value
-    return results
+    for name, xpath in config["metrics"]["statistics"].items():
+        value = parser.extract_one(xpath, float)
+        data[name] = value
+    return data
+
+
+def parse_vehroute(episode):
+    data_dict = {}
+    data = []
+    parser = Parser(VEHROUTE)
+
+    for name, xpath in config["metrics"]["vehroute"].items():
+        values = parser.extract_many(xpath, str)
+        data_dict[name] = values
+
+    for vid, edges, times in zip(
+        data_dict["vehicles"], data_dict["routes"], data_dict["exit_times"]
+    ):
+        edge_list = edges.split()
+        time_list = list(map(float, times.split()))
+
+        for edge, t in zip(edge_list, time_list):
+            data.append(
+                {
+                    "episode": episode,
+                    "vehicle_id": vid,
+                    "edge": edge,
+                    "exit_times": t,
+                }
+            )
+    return data

@@ -8,9 +8,16 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import parse_output
+from experiment import parse_aggregated_data, parse_vehicle_level_data
 from io_module.parser import Parser
-from paths import MAP, ROUTES, STATISTICS, STATISTICS_PROCESSED, SUMO_CONF
+from paths import (
+    MAP,
+    ROUTES,
+    STATISTICS,
+    STATISTICS_PROCESSED,
+    SUMO_CONF,
+    VEHROUTE_PROCESSED,
+)
 from scenario import Scenario
 
 # Reproducibility
@@ -39,7 +46,8 @@ def main():
     # 4. TRAINING LOOP
     # -----------------------------
     # Store parsed output of each episode
-    results = []
+    aggregated_results = []
+    vehicle_level_results = []
 
     for episode in range(1, config.n_episodes + 1):
 
@@ -59,8 +67,12 @@ def main():
         # -----------------------------
         # 3. PARSE GENERATED OUTPUT
         # -----------------------------
-        result = parse_output(episode)
-        results.append(result)
+        aggregated_result = parse_aggregated_data(episode)
+        aggregated_results.append(aggregated_result)
+
+        vehicle_level_result = parse_vehicle_level_data(episode)
+        # Extend: Instead of adding the dictionary, it adds the elements of the iterable
+        vehicle_level_results.extend(vehicle_level_result)
 
         # -----------------------------
         # 4. GET REWARDS
@@ -81,8 +93,11 @@ def main():
     # -----------------------------
     # 6. OUTPUT
     # -----------------------------
-    df = pd.DataFrame(results)
-    df.to_parquet(STATISTICS_PROCESSED, engine="pyarrow")
+    df_1 = pd.DataFrame(aggregated_results)
+    df_1.to_parquet(STATISTICS_PROCESSED, engine="pyarrow")
+
+    df_2 = pd.DataFrame(vehicle_level_results)
+    df_2.to_parquet(VEHROUTE_PROCESSED, engine="pyarrow")
 
 
 def run_final_simulation():
