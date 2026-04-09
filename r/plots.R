@@ -1,8 +1,8 @@
 library(arrow)
 library(tidyverse)
 
-statistics_output_parquet_path <- "~/6.Projects/Thesis/sumo/output/statistics_output/statistics.parquet"
-statistics_output_plot_path <- "~/6.Projects/Thesis/sumo/output/statistics_output/statistics_plot.png"
+statistics_output_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/statistics.parquet"
+statistics_output_plot_path <- "/home/miguel/6.Projects/Thesis/output/figures/statistics.png"
 dpi = 300
 width = 10
 height = 6

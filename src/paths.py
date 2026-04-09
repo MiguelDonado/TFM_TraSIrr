@@ -7,16 +7,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Folders
 SUMO_DIR = BASE_DIR / "sumo"
-OUTPUT_DIR = SUMO_DIR / "output"
+RAW_DATA_DIR = BASE_DIR / "data" / "raw"
+PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
+FIGURES_DIR = BASE_DIR / "output" / "figures"
 
 # Parquet files (outputs that will be analyzed in R)
-STATISTICS_PLOT = OUTPUT_DIR / "statistics_output" / "statistics.parquet"
+STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
 
 # Output files
-STATISTICS = OUTPUT_DIR / "statistics.xml"
-TRIPS_INFO = OUTPUT_DIR / "tripsinfo.xml"
-VEHROUTE = OUTPUT_DIR / "vehroute.xml"
-OD_MATRIX = OUTPUT_DIR / "od_matrix.csv"
+STATISTICS = RAW_DATA_DIR / "statistics.xml"
+TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
+VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
+OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
 
 # Files
 MAP = SUMO_DIR / "net" / config.network  # For using

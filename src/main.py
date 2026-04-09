@@ -10,8 +10,7 @@ from config.config import config
 from environment import Environment
 from experiment import parse_output
 from io_module.parser import Parser
-from io_module.plots import ExperimentPlotter
-from paths import MAP, ROUTES, STATISTICS_PLOT, SUMO_CONF
+from paths import MAP, ROUTES, STATISTICS, STATISTICS_PROCESSED, SUMO_CONF
 from scenario import Scenario
 
 # Reproducibility
@@ -83,7 +82,7 @@ def main():
     # 6. OUTPUT
     # -----------------------------
     df = pd.DataFrame(results)
-    df.to_parquet(STATISTICS_PLOT, engine="pyarrow")
+    df.to_parquet(STATISTICS_PROCESSED, engine="pyarrow")
 
 
 def run_final_simulation():
