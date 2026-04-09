@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 import numpy as np
+import pandas as pd
 
 from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
@@ -10,7 +11,7 @@ from environment import Environment
 from experiment import parse_output
 from io_module.parser import Parser
 from io_module.plots import ExperimentPlotter
-from paths import MAP, ROUTES, SUMO_CONF
+from paths import MAP, ROUTES, STATISTICS_PLOT, SUMO_CONF
 from scenario import Scenario
 
 # Reproducibility
@@ -81,8 +82,8 @@ def main():
     # -----------------------------
     # 6. OUTPUT
     # -----------------------------
-    experimentPlotter = ExperimentPlotter()
-    experimentPlotter.statistics_output(results)
+    df = pd.DataFrame(results)
+    df.to_parquet(STATISTICS_PLOT, engine="pyarrow")
 
 
 def run_final_simulation():

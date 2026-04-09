@@ -26,12 +26,12 @@ I had two options:
 1. Parse inmediately: Better. Memory efficient, faster, scales well for many episodes. Overwrite the file on each iteration. (recommended)
 2. Stores all XMLs output files, parse at the end
 
-## 4. Plots
+## 4. Data science
 
-- Plot library: Plotnine
+- Programming language: R
 
 **Reasoning**
-- I know pretty well ggplot and tidyverse ecosystem in R. That's why I will use **Plotnine** as the library to make the plots in Python. It has the same syntax than ggplot. Normally in Python is used matplotlib, but I will stick with Plotnine.
+- I know pretty well ggplot and tidyverse ecosystem in R. I find it pretty easy to perform data wrangling and I like a lot ggplot for visualization. 
 
 ## 5. Programming style
 
@@ -40,9 +40,14 @@ I had two options:
 **Reasoning**
 - I prefer to use OOP instead of functional programming, because a class is better if we want to extend functionality in the future. For example, for the `io_module` I had the doubt of using functions instead of classes (Parser, Plotter...) but for the sake of being able to easily extend it I sticked to OOP.
 
+## 6. Parsing outputs
+
+- Programming language: Python
+
+**Reasoning**
+For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
+
 ## Pending
-- Be able to run the simulation once script is finished in case i forgot
-- Make route file to be tmp, i dont need to store it
 - Configurar outputs vehiculos individuales
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures.
 - Anotar todo lo relativo a TAZ (--junction-taz)

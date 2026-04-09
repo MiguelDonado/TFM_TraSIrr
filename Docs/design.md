@@ -36,7 +36,7 @@ I wanna focus on behavioral heterogeinity (aversion traffic lights...) instead o
 - The function `scenario.compute_k_routes(od)` guarantees in most situations that k routes are generated for od-pair.
 
 **Scalability**
-- Vehicles are inserted one by one with Traci (not sure if that causes big overhead). Could be more efficient to write a xml file and insert them by reading the xml file. Then Traci wont be needed at all. I could avoid using Traci and just add the xml files to the sumo config file.
+- At first we used Traci in the project to insert the vehicles. But now, we already refactor the project so that Traci does not have to be used because each episode we write a xml file with the trips and pass is as argument when calling `sumo` command. I have notice that now the simulations goes much faster.
 
 ## 3. SUMO value retrieval
 

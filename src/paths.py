@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SUMO_DIR = BASE_DIR / "sumo"
 OUTPUT_DIR = SUMO_DIR / "output"
 
-# Plots (output)
-PLOT_STATISTICS = OUTPUT_DIR / "statistics.png"
+# Parquet files (outputs that will be analyzed in R)
+STATISTICS_PLOT = OUTPUT_DIR / "statistics_output" / "statistics.parquet"
 
 # Output files
 STATISTICS = OUTPUT_DIR / "statistics.xml"
