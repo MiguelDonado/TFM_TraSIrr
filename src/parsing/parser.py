@@ -1,3 +1,7 @@
+"""
+Purpose of this file: parse xml, parquet files
+"""
+
 from lxml import etree
 
 

@@ -9,7 +9,7 @@ from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
 from experiment import accumulate_results, parse_output, save_processed_data
-from io_module.parser import Parser
+from parsing.parser import Parser
 from paths import (
     FCD_PROCESSED,
     MAP,
@@ -91,6 +91,21 @@ def main():
     save_processed_data(results)
 
 
+####################################
+# Helper functions to execute script
+####################################
+# This logic is introduced JUST FOR being able TO RUN IN GUI
+# the simulation from previous execution
+
+
+def run():
+    if config.learning:
+        main()
+
+    if config.run_final_simul:
+        run_final_simulation()
+
+
 def run_final_simulation():
     cmd = [
         "sumo-gui",
@@ -103,8 +118,4 @@ def run_final_simulation():
 
 
 if __name__ == "__main__":
-    if config.learning:
-        main()
-
-    if config.run_final_simul:
-        run_final_simulation()
+    run()
