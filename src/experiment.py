@@ -11,8 +11,10 @@ import yaml
 
 from parsing.parser import Parser
 from paths import (
+    ACTIONS,
     FCD,
     FCD_PROCESSED,
+    REWARDS,
     STATISTICS,
     STATISTICS_PROCESSED,
     TRIPS_INFO,
@@ -33,16 +35,20 @@ with open(YAML_CONF, "r") as file:
 ########################################
 
 
-def parse_output(episode):
+def prepare_data(episode, actions, rewards):
     aggregated_result = parse_aggregated_data(episode)
     vehroute_result = parse_vehroute(episode)
     trips_info_result = parse_trips_info(episode)
     fcd_result = parse_fcd(episode)
+    actions = prepare_actions(episode, actions)
+    rewards = prepare_rewards(episode, rewards)
     return {
         "aggregated_result": aggregated_result,
         "vehroute_result": vehroute_result,
         "trips_info_result": trips_info_result,
         "fcd_result": fcd_result,
+        "actions_result": actions,
+        "rewards_result": rewards,
     }
 
 
@@ -52,6 +58,8 @@ def accumulate_results(results, result):
         "vehroute": ("vehroute_result", "extend"),
         "trips_info": ("trips_info_result", "extend"),
         "fcd": ("fcd_result", "extend"),
+        "actions": ("actions_result", "extend"),
+        "rewards": ("rewards_result", "extend"),
     }
 
     """
@@ -80,6 +88,8 @@ def save_processed_data(results):
         "vehroute": VEHROUTE_PROCESSED,
         "trips_info": TRIPS_INFO_PROCESSED,
         "fcd": FCD_PROCESSED,
+        "actions": ACTIONS,
+        "rewards": REWARDS,
     }
 
     for key, path in mapping.items():
@@ -173,3 +183,17 @@ def parse_fcd(episode):
     data = parser.extract_fcd_flat(episode)
 
     return data
+
+
+def prepare_actions(episode, actions):
+    rows = []
+    for agent, action in actions.items():
+        rows.append({"episode": episode, "agent_id": agent, "action": action})
+    return rows
+
+
+def prepare_rewards(episode, rewards):
+    rows = []
+    for agent, reward in rewards.items():
+        rows.append({"episode": episode, "agent_id": agent, "reward": reward})
+    return rows

@@ -8,7 +8,7 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import accumulate_results, make_plots, parse_output, save_processed_data
+from experiment import accumulate_results, make_plots, prepare_data, save_processed_data
 from parsing.parser import Parser
 from paths import (
     FCD_PROCESSED,
@@ -47,7 +47,14 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
-    results = {"aggregated": [], "vehroute": [], "trips_info": [], "fcd": []}
+    results = {
+        "aggregated": [],
+        "vehroute": [],
+        "trips_info": [],
+        "fcd": [],
+        "actions": [],
+        "rewards": [],
+    }
     for episode in range(1, config.n_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
@@ -64,15 +71,15 @@ def main():
         env.run_episode(actions, episode)
 
         # -----------------------------
-        # 3. PARSE GENERATED OUTPUT
-        # -----------------------------
-        result = parse_output(episode)
-        accumulate_results(results, result)
-
-        # -----------------------------
-        # 4. GET REWARDS
+        # 3. GET REWARDS
         # -----------------------------
         rewards = env.get_rewards()
+
+        # -----------------------------
+        # 4. PREPARE GENERATED DATA
+        # -----------------------------
+        result = prepare_data(episode, actions, rewards)
+        accumulate_results(results, result)
 
         # -----------------------------
         # 5. UPDATE AGENTS

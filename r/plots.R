@@ -348,3 +348,17 @@ fcd_plot_6 <- ggplot(df_fcd, aes(x = x, y = y)) +
 
 # Save plot
 ggsave(filename = fcd_parquet_plot_6_path, plot = fcd_plot_6, dpi = dpi, width = width, height = height)
+
+##########################
+## Internal data
+##########################
+agents_od_path <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parquet"
+od_routes_path <- "/home/miguel/6.Projects/Thesis/data/internal/od_routes.parquet"
+actions_path <- "/home/miguel/6.Projects/Thesis/data/internal/actions.parquet"
+rewards_path <- "/home/miguel/6.Projects/Thesis/data/internal/rewards.parquet"
+
+df_agents_od <- read_parquet(agents_od_path)
+df_od_routes <- read_parquet(od_routes_path)
+df_actions <- read_parquet(actions_path)
+df_rewards <- read_parquet(rewards_path)
+

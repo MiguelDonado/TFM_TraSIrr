@@ -48,26 +48,28 @@ I had two options:
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
 ## Pending
-- Function make_plots() and call R script from Python
-
-
-
-
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures. (tidy data)
+
+
+
+
+
+
+
+- Luego visualizarla (Quiero hacer grafica con las rutas)
+- En un futuro no guardar lo de "agent_", solamente guardar el numero. Ocupa menos y mas eficiente. Asi luego en R no tengo que eliminarlo
+- Grafica thesis Mari Paz (nº de caminos)
 - Write down ChatGPT rowwise() logic. Work on rows not on columns
 - Anotar todo lo relativo a TAZ (--junction-taz)
 - Leer paper "Where does this road go"
 - How to incorporate DRL, experience replay...
 - Check experiment evaluation in papers
-- Generate parquet files that will be analyzed with R.
 - Entender lo de preventivo y reactivo
 - OD-matriz de una hora. Centroid. Cuadricula. Todos contra todos. (zonificacion)
-- Grafica thesis Mari Paz (nº de caminos)
+- Guardar self.p, self.history, self.ET, self.PT (he guardado el resto de internal data (rewards, actions...) pero este no lo he guardado porque es especifico de este algoritmo. En el futuro si uso otro algoritmo no me servira el codigo que escriba).
 - State space (informacion historica de mi camino y tambien estaria bien ver que links fueron problematicos)
 - En la del asiatico, la decision_zone length estaba mal la formula
 - Mirar lo de behavioral, bandit...
-- Simplify parsing
-- Cleanly save processed outputs at the end of main.py.
 - Leer Parquet files libro R.
 - I have two kinds of data (vehicle-level, episode-level)
 - Think about interesting plots

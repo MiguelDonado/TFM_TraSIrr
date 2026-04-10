@@ -14,10 +14,12 @@ from lxml import etree
 
 from config.config import config
 from paths import (
+    AGENTS_OD,
     FCD,
     MAP,
     NET,
     OD_MATRIX,
+    OD_ROUTES,
     STATISTICS,
     SUMO_CONF,
     TRIPS_INFO,
@@ -48,6 +50,7 @@ class Scenario:
         self.ensure_network(map)
         self.generate_agents()
         self.generate_routes(seeds)
+        self.save_scenario_data()
         self.conf = self.generate_conf()
 
     def ensure_network(self, map):
@@ -60,6 +63,88 @@ class Scenario:
             self.network = self.convert_map(map)
         else:
             self.network = map
+
+    def generate_agents(self):
+        od_s = self.generate_od_agents()
+        for i in range(self.n_agents):
+            origin, dest = od_s[i]
+            self.agents.append(
+                {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
+            )
+
+    def generate_routes(self, seeds):
+
+        unique_ods = self.get_unique_ods()
+
+        # 1. Compute routes per OD
+        for od in unique_ods:
+            # Store in the dictionary od_routes the set of routes for this od pair.
+            self.od_routes[od] = self.compute_k_routes(od, seeds)
+
+        UNDESIRED_ROUTE_FILE.unlink()
+
+    def generate_conf(self):
+        """
+        Create SUMO Config file
+        """
+        with open(SUMO_CONF, "w+") as conf:
+            conf.write('<?xml version="1.0"?>\n')
+            conf.write("<configuration>\n")
+            conf.write("\t<input>\n")
+            conf.write(f'\t\t<net-file value="{self.network}"/>\n')
+            conf.write("\t</input>\n")
+            conf.write(f"\t<report>\n")
+            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
+            conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
+            conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
+            conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
+            conf.write(f'\t\t<fcd-output value="{FCD}"/>\n')
+            conf.write(f'\t\t<fcd-output.attributes value="x,y"/>\n')
+            conf.write(f"\t</report>\n")
+            conf.write(f"\t<random>\n")
+            conf.write(f"\t\t<seed value='42'/>\n")
+            conf.write(f"\t</random>\n")
+            conf.write(f"\t<device>\n")
+            conf.write(f"\t\t<device.fcd.probability value='0.2'/>\n")
+            conf.write(f"\t</device>\n")
+            conf.write("</configuration>\n")
+        return SUMO_CONF
+
+    def save_scenario_data(self):
+        processed_od_routes = self.process_od_routes()
+        mapping = {
+            "agents_od": (self.agents, AGENTS_OD),
+            "od_routes": (processed_od_routes, OD_ROUTES),
+        }
+        for _, (data, path) in mapping.items():
+            df = pd.DataFrame(data)
+            df.to_parquet(path, engine="pyarrow")
+
+    def process_od_routes(self):
+        """
+        I want this format
+        origin | dest | route_id | step | edge
+        A         B      1          1       e1
+        A         B      1          2       e5 ...
+        """
+        rows = []
+        for (origin, dest), routes in self.od_routes.items():
+            for route_id, route in enumerate(routes):
+                for step, edge in enumerate(route):
+                    rows.append(
+                        {
+                            "origin": origin,
+                            "dest": dest,
+                            "route_id": route_id,
+                            "step": step,
+                            "edge": edge,
+                        }
+                    )
+        return rows
+
+    ########################
+    ### HELPER FUNCTIONS ###
+    ########################
 
     def convert_map(self, map):
         """
@@ -99,14 +184,6 @@ class Scenario:
         subprocess.run(cmd, check=True)
 
         return NET
-
-    def generate_agents(self):
-        od_s = self.generate_od_agents()
-        for i in range(self.n_agents):
-            origin, dest = od_s[i]
-            self.agents.append(
-                {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
-            )
 
     def generate_od_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -158,17 +235,6 @@ class Scenario:
             .astype(int)
         )
         matrix.to_csv(OD_MATRIX)
-
-    def generate_routes(self, seeds):
-
-        unique_ods = self.get_unique_ods()
-
-        # 1. Compute routes per OD
-        for od in unique_ods:
-            # Store in the dictionary od_routes the set of routes for this od pair.
-            self.od_routes[od] = self.compute_k_routes(od, seeds)
-
-        UNDESIRED_ROUTE_FILE.unlink()
 
     def get_unique_ods(self):
         # Extract unique OD pairs
@@ -269,30 +335,3 @@ class Scenario:
             return None
 
         return None
-
-    def generate_conf(self):
-        """
-        Create SUMO Config file
-        """
-        with open(SUMO_CONF, "w+") as conf:
-            conf.write('<?xml version="1.0"?>\n')
-            conf.write("<configuration>\n")
-            conf.write("\t<input>\n")
-            conf.write(f'\t\t<net-file value="{self.network}"/>\n')
-            conf.write("\t</input>\n")
-            conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
-            conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
-            conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
-            conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
-            conf.write(f'\t\t<fcd-output value="{FCD}"/>\n')
-            conf.write(f'\t\t<fcd-output.attributes value="x,y"/>\n')
-            conf.write(f"\t</report>\n")
-            conf.write(f"\t<random>\n")
-            conf.write(f"\t\t<seed value='42'/>\n")
-            conf.write(f"\t</random>\n")
-            conf.write(f"\t<device>\n")
-            conf.write(f"\t\t<device.fcd.probability value='0.2'/>\n")
-            conf.write(f"\t</device>\n")
-            conf.write("</configuration>\n")
-        return SUMO_CONF
