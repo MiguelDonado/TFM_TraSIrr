@@ -8,12 +8,7 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import (
-    parse_aggregated_data,
-    parse_fcd,
-    parse_trips_info,
-    parse_vehroute,
-)
+from experiment import accumulate_results, parse_output, save_processed_data
 from io_module.parser import Parser
 from paths import (
     FCD_PROCESSED,
@@ -52,12 +47,7 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
-    # Store parsed output of each episode
-    aggregated_results = []
-    vehroute_results = []
-    trips_info_results = []
-    fcd_results = []
-
+    results = {"aggregated": [], "vehroute": [], "trips_info": [], "fcd": []}
     for episode in range(1, config.n_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
@@ -76,18 +66,8 @@ def main():
         # -----------------------------
         # 3. PARSE GENERATED OUTPUT
         # -----------------------------
-        aggregated_result = parse_aggregated_data(episode)
-        aggregated_results.append(aggregated_result)
-
-        # Extend: Instead of adding the dictionary, it adds the elements of the iterable
-        vehroute_result = parse_vehroute(episode)
-        vehroute_results.extend(vehroute_result)
-
-        trips_info_result = parse_trips_info(episode)
-        trips_info_results.extend(trips_info_result)
-
-        fcd_result = parse_fcd(episode)
-        fcd_results.extend(fcd_result)
+        result = parse_output(episode)
+        accumulate_results(results, result)
 
         # -----------------------------
         # 4. GET REWARDS
@@ -108,17 +88,7 @@ def main():
     # -----------------------------
     # 6. OUTPUT
     # -----------------------------
-    df_1 = pd.DataFrame(aggregated_results)
-    df_1.to_parquet(STATISTICS_PROCESSED, engine="pyarrow")
-
-    df_2 = pd.DataFrame(vehroute_results)
-    df_2.to_parquet(VEHROUTE_PROCESSED, engine="pyarrow")
-
-    df_3 = pd.DataFrame(trips_info_results)
-    df_3.to_parquet(TRIPS_INFO_PROCESSED, engine="pyarrow")
-
-    df_4 = pd.DataFrame(fcd_results)
-    df_4.to_parquet(FCD_PROCESSED, engine="pyarrow")
+    save_processed_data(results)
 
 
 def run_final_simulation():

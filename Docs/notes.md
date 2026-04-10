@@ -48,6 +48,9 @@ I had two options:
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
 ## Pending
+- Crear funciones parse and make plots.
+
+
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures. (tidy data)
 - Write down ChatGPT rowwise() logic. Work on rows not on columns
 - Anotar todo lo relativo a TAZ (--junction-taz)
@@ -67,3 +70,4 @@ For simplicity has to be done in Python, because we have to parse the outputs fi
 - I have two kinds of data (vehicle-level, episode-level)
 - Think about interesting plots
 - Send to R data of ageents, actions...?
+- Anotar la logica dle algoritmo

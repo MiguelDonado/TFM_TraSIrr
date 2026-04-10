@@ -1,27 +1,46 @@
 # This file is about: (running episodes, parsing output, creating dataframes and saving the results...). That is experiment logic
+import pandas as pd
 import yaml
 
 from io_module.parser import Parser
-from paths import FCD, STATISTICS, TRIPS_INFO, VEHROUTE, YAML_CONF
+from paths import (
+    FCD,
+    FCD_PROCESSED,
+    STATISTICS,
+    STATISTICS_PROCESSED,
+    TRIPS_INFO,
+    TRIPS_INFO_PROCESSED,
+    VEHROUTE,
+    VEHROUTE_PROCESSED,
+    YAML_CONF,
+)
 
 # Load YAML file
 with open(YAML_CONF, "r") as file:
     config = yaml.safe_load(file)
 
 
+def parse_output(episode):
+    aggregated_result = parse_aggregated_data(episode)
+    vehroute_result = parse_vehroute(episode)
+    trips_info_result = parse_trips_info(episode)
+    fcd_result = parse_fcd(episode)
+    return {
+        "aggregated_result": aggregated_result,
+        "vehroute_result": vehroute_result,
+        "trips_info_result": trips_info_result,
+        "fcd_result": fcd_result,
+    }
+
+
 def parse_aggregated_data(episode):
-    statistics = parse_statistics()
-    return {"episode": episode, **statistics}
-
-
-def parse_statistics():
     data = {}
     parser = Parser(STATISTICS)
 
     for name, xpath in config["metrics"]["statistics"].items():
         value = parser.extract_one(xpath, float)
         data[name] = value
-    return data
+    return {"episode": episode, **data}
 
 
 def parse_vehroute(episode):
@@ -85,3 +104,24 @@ def parse_fcd(episode):
     data = parser.extract_fcd_flat(episode)
 
     return data
+
+
+def accumulate_results(results, result):
+    results["aggregated"].append(result["aggregated_result"])
+    results["vehroute"].extend(result["vehroute_result"])
+    results["trips_info"].extend(result["trips_info_result"])
+    results["fcd"].extend(result["fcd_result"])
+
+
+def save_processed_data(results):
+    aggregated_df = pd.DataFrame(results["aggregated"])
+    aggregated_df.to_parquet(STATISTICS_PROCESSED, engine="pyarrow")
+
+    vehroute_df = pd.DataFrame(results["vehroute"])
+    vehroute_df.to_parquet(VEHROUTE_PROCESSED, engine="pyarrow")
+
+    trips_info_df = pd.DataFrame(results["trips_info"])
+    trips_info_df.to_parquet(TRIPS_INFO_PROCESSED, engine="pyarrow")
+
+    fcd_df = pd.DataFrame(results["fcd"])
+    fcd_df.to_parquet(FCD_PROCESSED, engine="pyarrow")

@@ -12,7 +12,7 @@ class Config:
     # Simulation
     network: str = "thesisToyNetwork.net.xml"
     n_agents: int = 50
-    n_episodes: int = 20
+    n_episodes: int = 25
     warm_up: int = 10
     episode_with_gui: int = 0  # 0 if you dont want gui in any episode
     random_factor: int = 100  # For duarouter, the random factor it applies to the edges

@@ -314,7 +314,8 @@ fcd_plot_4 <- ggplot(
 ) +
   geom_path(alpha = 0.2) +
   facet_wrap(~vehicle_id) +
-  theme_minimal()
+  theme_minimal() +
+  labs(title = "Subplot: Trajectories of vehicle across all episodes (faceted by vehicle")
 
 # Save plot
 ggsave(filename = fcd_parquet_plot_4_path, plot = fcd_plot_4, dpi = dpi, width = width, height = height)
