@@ -8,7 +8,7 @@ from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from environment import Environment
-from experiment import accumulate_results, parse_output, save_processed_data
+from experiment import accumulate_results, make_plots, parse_output, save_processed_data
 from parsing.parser import Parser
 from paths import (
     FCD_PROCESSED,
@@ -86,9 +86,14 @@ def main():
         )
 
     # -----------------------------
-    # 6. OUTPUT
+    # 6. SAVE OUTPUT
     # -----------------------------
     save_processed_data(results)
+
+    # -----------------------------
+    # 7. PLOTS
+    # -----------------------------
+    make_plots()
 
 
 ####################################

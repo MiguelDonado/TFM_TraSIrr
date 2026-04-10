@@ -4,6 +4,8 @@ Purpose of this file: Orchestration + Pipeline
 2. Handling the data structure in which results are stored
 """
 
+import subprocess
+
 import pandas as pd
 import yaml
 
@@ -83,6 +85,10 @@ def save_processed_data(results):
     for key, path in mapping.items():
         df = pd.DataFrame(results[key])
         df.to_parquet(path, engine="pyarrow")
+
+
+def make_plots():
+    subprocess.run(["Rscript", "r/plots.R"])
 
 
 ########################################

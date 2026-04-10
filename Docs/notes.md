@@ -48,7 +48,9 @@ I had two options:
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
 ## Pending
-- Crear funciones parse and make plots.
+- Function make_plots() and call R script from Python
+
+
 
 
 - Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures. (tidy data)
@@ -71,3 +73,4 @@ For simplicity has to be done in Python, because we have to parse the outputs fi
 - Think about interesting plots
 - Send to R data of ageents, actions...?
 - Anotar la logica dle algoritmo
+- Quiero que ellos tambien lo puedan tocar el proyecto y jugar.
