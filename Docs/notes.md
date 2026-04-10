@@ -9,13 +9,42 @@
 
 Instead of each layer refer to one python file, each layer refers to some concept, i.e. scenario, agent (contains all agent-related code)
 
-## 2. Algorithm
+## 2. Functions learned during the project 
 
 - Weighted average: np.average(array, weights)
+- rowwise(): Change tidyverse behavior to apply logic per row instead of per column
 
 **Reasoning**
 
-We can compute a weighted average using `np.average(array, weights = weights)`
+- We can compute a weighted average using `np.average(array, weights = weights)`
+- rowwise() explanation:
+```r
+# 1. In dplyr, operations normally work on whole columns at once
+df %>%
+    mutate(x2 = x * 2)
+# Here x is a vector (entire column)
+# R does vectorized computation
+# Internally:
+x2 = [x1*2, x2*2, x3*2, ...]
+
+# 2. In our case:
+rowwise() %>%
+  mutate(time = list(seq(entry_time, exit_times))) 
+
+# entry_time is a vector (column)
+# exit_times is a vector (column)
+
+# So R tries to do:
+seq(c(5,10,3,...), c(9,12,7,...))
+# So is not taking just the entry_time and the exit_times of the actual row, but instead it takes the whole column
+
+# 3. What rowwise() does:
+# Change behavior to: 
+# Treat each row as a mini dataframe of size 1
+# With rowwise()
+for each row:
+    seq(entry_time_i, exit_time_i)
+```
 
 ## 3. Efficiency
 
@@ -29,9 +58,38 @@ I had two options:
 ## 4. Data science
 
 - Programming language: R
+- Format in which data is stored for later analysis in R (tidyverse): Flat/tabular structure rather than hierarchical format
 
 **Reasoning**
 - I know pretty well ggplot and tidyverse ecosystem in R. I find it pretty easy to perform data wrangling and I like a lot ggplot for visualization. 
+- Is important to highlight the concept of **tidy data**. When working with tidyverse, data is easiest to manipulate when it is flat and tabular, rather than deeply nested (hierarchical).
+```python
+'''
+Example:
+1. Hierarchical (WRONG):
+{
+  "user_1": {
+    "age": 25,
+    "purchases": [
+      {"product": "A", "price": 10},
+      {"product": "B", "price": 20}
+    ]
+  }
+}
+2. Tabular (flat table) (RIGHT):
+-------------------------------
+user_id | age | product | price
+-------------------------------
+user_1    25       A        10
+user_1    25       B        20
+'''
+```
+   - This align with the tidy data principles:
+     - Each variable = one column (user_id, age, product, price)
+     - Each observation = one row
+ - Flat/tabular data works seamlessly with (dplyr, ggplot2, tidyr)
+ - So, although hierarchical representations (nested dictionaries, JSON structure) are common in data storage and transmission, they introduce additional complexity when performing data analysis in environments such as tidyverse in R.
+
 
 ## 5. Programming style
 
@@ -48,10 +106,7 @@ I had two options:
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
 ## Pending
-- Anotar lo de ChatGPT. Quiero devolver dict planos, en lugar de hierarchical structures. (tidy data)
-
-
-
+- Anotar todo lo relativo a TAZ (--junction-taz)
 
 
 
@@ -59,8 +114,6 @@ For simplicity has to be done in Python, because we have to parse the outputs fi
 - Luego visualizarla (Quiero hacer grafica con las rutas)
 - En un futuro no guardar lo de "agent_", solamente guardar el numero. Ocupa menos y mas eficiente. Asi luego en R no tengo que eliminarlo
 - Grafica thesis Mari Paz (nº de caminos)
-- Write down ChatGPT rowwise() logic. Work on rows not on columns
-- Anotar todo lo relativo a TAZ (--junction-taz)
 - Leer paper "Where does this road go"
 - How to incorporate DRL, experience replay...
 - Check experiment evaluation in papers
@@ -73,6 +126,5 @@ For simplicity has to be done in Python, because we have to parse the outputs fi
 - Leer Parquet files libro R.
 - I have two kinds of data (vehicle-level, episode-level)
 - Think about interesting plots
-- Send to R data of ageents, actions...?
 - Anotar la logica dle algoritmo
 - Quiero que ellos tambien lo puedan tocar el proyecto y jugar.
