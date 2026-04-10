@@ -360,9 +360,17 @@ agents_od_path <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parque
 od_routes_path <- "/home/miguel/6.Projects/Thesis/data/internal/od_routes.parquet"
 actions_path <- "/home/miguel/6.Projects/Thesis/data/internal/actions.parquet"
 rewards_path <- "/home/miguel/6.Projects/Thesis/data/internal/rewards.parquet"
+agents_history_path <- "/home/miguel/6.Projects/Thesis/data/internal/agents_history.parquet"
+BM_results_path <- "/home/miguel/6.Projects/Thesis/data/internal/BM_results.parquet"
 
 df_agents_od <- read_parquet(agents_od_path)
 df_od_routes <- read_parquet(od_routes_path)
 df_actions <- read_parquet(actions_path)
 df_rewards <- read_parquet(rewards_path)
+df_BM_results <- read_parquet(BM_results_path)
+
+# Build history for agents
+df_agents_history <- df_actions |> 
+  left_join(df_rewards, by = c("episode","agent_id"))
+write_parquet(df_agents_history, agents_history_path)
 

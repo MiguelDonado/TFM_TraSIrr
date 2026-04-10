@@ -23,6 +23,7 @@ AGENTS_OD = INTERNAL_DATA_DIR / "agents_od.parquet"
 OD_ROUTES = INTERNAL_DATA_DIR / "od_routes.parquet"
 ACTIONS = INTERNAL_DATA_DIR / "actions.parquet"
 REWARDS = INTERNAL_DATA_DIR / "rewards.parquet"
+BM_RESULTS = INTERNAL_DATA_DIR / "BM_results.parquet"
 
 # Output files
 STATISTICS = RAW_DATA_DIR / "statistics.xml"

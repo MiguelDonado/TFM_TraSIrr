@@ -106,19 +106,36 @@ user_1    25       B        20
 **Reasoning**
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
+## 7. Format output files
+
+- Format: Parquet
+
+**Reasoning**
+Parquet format is more efficient than csv or similar formats. There are some techniques to make them even more efficient. 
+
+**Scalability**
+If when using a network that is very big, I have some scalability issue when writing or reading parquet files, see See https://r4ds.hadley.nz/arrow.html. There are techniques to manage more efficiently parquet files.
+
+
 ## Pending
-- Luego visualizarla (Quiero hacer grafica con las rutas)
-- Grafica thesis Mari Paz (nº de caminos)
-- Leer paper "Where does this road go"
-- How to incorporate DRL, experience replay...
-- Check experiment evaluation in papers
-- Entender lo de preventivo y reactivo
-- OD-matriz de una hora. Centroid. Cuadricula. Todos contra todos. (zonificacion)
-- Guardar self.p, self.history, self.ET, self.PT (he guardado el resto de internal data (rewards, actions...) pero este no lo he guardado porque es especifico de este algoritmo. En el futuro si uso otro algoritmo no me servira el codigo que escriba).
-- State space (informacion historica de mi camino y tambien estaria bien ver que links fueron problematicos)
-- En la del asiatico, la decision_zone length estaba mal la formula
-- Mirar lo de behavioral, bandit...
-- Leer Parquet files libro R.
-- Think about interesting plots
-- Anotar la logica dle algoritmo
-- Quiero que ellos tambien lo puedan tocar el proyecto y jugar.
+- c/p:
+  - Check warning messages   
+  - Check they are correct (self.p, self.ET, self.PT, self.stimulus). That the time is correct
+  - Grabar video editado con como funciona
+  - Quiero que ellos tambien lo puedan tocar el proyecto y jugar. Docker
+  - Escribir (asiatico,bm decision zone estaba mal)
+  - Preguntar lo de cuando los genero los vehiculos todos en 0, o cambio
+
+- l/p:
+  - Leer paper "Where does this road go"
+  - How to incorporate DRL, experience replay...
+  - Check experiment evaluation in papers
+  - Mirar lo de behavioral, bandit...
+  - Grafica thesis Mari Paz (nº de caminos)
+  - Entender lo de preventivo y reactivo
+  - State space (informacion historica de mi camino y tambien estaria bien ver que links fueron problematicos)
+
+
+
+
+

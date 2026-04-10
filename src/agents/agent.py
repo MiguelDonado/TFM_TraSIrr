@@ -32,6 +32,9 @@ class BMAgent:
         # (scalar) Expected travel time
         self.ET = 0
 
+        # (scalar) Stimulus
+        self.stimulus = 0
+
     def select_action(self):
         """
         Action selection
@@ -147,6 +150,6 @@ class BMAgent:
             self.compute_ET()
             self.compute_PT()
 
-            stimulus = self.compute_stimulus(chosen)
+            self.stimulus = self.compute_stimulus(chosen)
 
-            self.update_probabilities(chosen, stimulus)
+            self.update_probabilities(chosen, self.stimulus)

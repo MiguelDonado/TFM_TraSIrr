@@ -12,6 +12,7 @@ import yaml
 from parsing.parser import Parser
 from paths import (
     ACTIONS,
+    BM_RESULTS,
     FCD,
     FCD_PROCESSED,
     REWARDS,
@@ -35,13 +36,14 @@ with open(YAML_CONF, "r") as file:
 ########################################
 
 
-def prepare_data(episode, actions, rewards):
+def prepare_data(episode, actions, rewards, agents):
     aggregated_result = parse_aggregated_data(episode)
     vehroute_result = parse_vehroute(episode)
     trips_info_result = parse_trips_info(episode)
     fcd_result = parse_fcd(episode)
     actions = prepare_actions(episode, actions)
     rewards = prepare_rewards(episode, rewards)
+    BM_result = prepare_BM_data(episode, agents)
     return {
         "aggregated_result": aggregated_result,
         "vehroute_result": vehroute_result,
@@ -49,6 +51,7 @@ def prepare_data(episode, actions, rewards):
         "fcd_result": fcd_result,
         "actions_result": actions,
         "rewards_result": rewards,
+        "BM_result": BM_result,
     }
 
 
@@ -60,6 +63,7 @@ def accumulate_results(results, result):
         "fcd": ("fcd_result", "extend"),
         "actions": ("actions_result", "extend"),
         "rewards": ("rewards_result", "extend"),
+        "BM_results": ("BM_result", "extend"),
     }
 
     """
@@ -90,6 +94,7 @@ def save_processed_data(results):
         "fcd": FCD_PROCESSED,
         "actions": ACTIONS,
         "rewards": REWARDS,
+        "BM_results": BM_RESULTS,
     }
 
     for key, path in mapping.items():
@@ -196,4 +201,21 @@ def prepare_rewards(episode, rewards):
     rows = []
     for agent, reward in rewards.items():
         rows.append({"episode": episode, "agent_id": agent, "reward": reward})
+    return rows
+
+
+def prepare_BM_data(episode, agents):
+    rows = []
+    for _, agent in agents.items():
+        for route_id, PT in enumerate(agent.PT):
+            rows.append(
+                {
+                    "episode": episode,
+                    "agent_id": agent.id,
+                    "ET": agent.ET,
+                    "stimulus": agent.stimulus,
+                    "route_id": route_id,
+                    "PT": float(PT),
+                }
+            )
     return rows

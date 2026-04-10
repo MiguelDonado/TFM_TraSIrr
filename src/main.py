@@ -54,6 +54,7 @@ def main():
         "fcd": [],
         "actions": [],
         "rewards": [],
+        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
     }
     for episode in range(1, config.n_episodes + 1):
 
@@ -76,13 +77,7 @@ def main():
         rewards = env.get_rewards()
 
         # -----------------------------
-        # 4. PREPARE GENERATED DATA
-        # -----------------------------
-        result = prepare_data(episode, actions, rewards)
-        accumulate_results(results, result)
-
-        # -----------------------------
-        # 5. UPDATE AGENTS
+        # 4. UPDATE AGENTS
         # -----------------------------
         update_agents(
             actions=actions,
@@ -91,6 +86,12 @@ def main():
             rewards=rewards,
             warm_up=config.warm_up,
         )
+
+        # -----------------------------
+        # 5. PREPARE GENERATED DATA
+        # -----------------------------
+        result = prepare_data(episode, actions, rewards, agents)
+        accumulate_results(results, result)
 
     # -----------------------------
     # 6. SAVE OUTPUT
