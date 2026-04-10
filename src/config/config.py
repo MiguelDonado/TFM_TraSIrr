@@ -10,7 +10,7 @@ class Config:
     memory_level: float = 1  # Traveler memory
 
     # Simulation
-    network: str = "thesisToyNetwork.net.xml"
+    network: str = "ThirdNetworkDayToDay.net.xml"
     n_agents: int = 50
     n_episodes: int = 25
     warm_up: int = 10

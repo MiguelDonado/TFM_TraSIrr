@@ -4,7 +4,7 @@
 
 
 # 1. Change directory
-cd /home/miguel/6.Projects/ReplicateSongThesis/Examples/duarouter
+cd /home/miguel/6.Projects/Thesis/Examples/duarouter
 
 # 2. Execute duarouter (shortest-path)
 duarouter -n input.net.xml -r input.trips.xml -o output_shortest_path.routes.xml --write-costs

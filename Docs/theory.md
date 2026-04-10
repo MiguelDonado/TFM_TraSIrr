@@ -5,3 +5,114 @@
 - **Reactivos**:
   - Reactivo (route choice): Asignar probabilidades a cada camino (funciones de utilidad basadas en tiempo y distancia)
   - Solamente se preocupa de clavar los datos, pero no se preocupa de si los comportamientos son realistas
+
+### Demand representation
+There are two levels of demand representation:
+1. edge-based (non-aggregated)
+   - The generated OD matrix is huge and very sparse (bad)
+2. zone-based (TAZ aggregation)
+   - The generated OD matrix is meaningful
+
+### Approaches to create TAZ (Zonification)
+In real-world applications, detailed origin–destination data at the individual level is rarely available. Instead, demand is typically observed in aggregated form (e.g., number of trips between areas). Therefore, the network is partitioned into Traffic Analysis Zones (TAZ), allowing demand to be modeled at a coarser but manageable level. This aggregation enables the construction of realistic OD matrices and supports scalable and interpretable traffic simulations.
+So basically we dont have perfect data (we need aggregation) and we want to make the model tractable thats why we use TAZ.
+
+TAZ: Traffic assignment zones
+
+**1. Grid-based zoning:**
+   - Idea:
+     - Divide the map into equal squares
+   - Tools: 
+     - SUMO: gridDistricts.py
+   - Pros:
+     - Fully automatic
+     - Reproducible
+     - Good for we use Deep Learning with CNN (becuase it turns the city into an image, each pixel is a zone, and the value is the traffic count on that zone). And it keeps the spatial structure and it can learn taking advantage of it.
+   - Cons: 
+     - Ignores roads and demand
+     - Can split important areas arbitrarily
+   - Used when:
+     - You dont have data
+     - Baseline
+
+**2. Voronoi:**
+   - Idea: 
+     - Given points (sensors, intersections...), create zones based on proximity
+   - Tools:
+     - In SUMO we have the option `--junction-taz`. This automatically treats each junction as a zone. The downsides: 1. Too many zones (one per junction). 2. Noisy OD-matrix (similar to edge-based). Only works for very small networks. The edges of each zone are derived implicitly (basically the edges connected to that junction). An edge will be assigned to two different zones (junctions), but it will have a different role on each (origin side, or destination side). To sum up, despite being an interesting option, is not recommended for my project.
+   - Pros:
+     - Data-driven (uses real points)
+     - Easy to compute
+     - Spatially meaningful
+   - Cons:
+     - Sensitive to point placement
+     - Ignores road network topology
+   - Used when:
+     - You have detectors
+     - Sparse data: That is when you only know a few important points (sensors). So you dont have enough data for anything fancy
+**3. Network-based partition (graph clustering)**
+  - Idea:
+    - Instead of dividing space, you divide the road network into groups of strongly connected roads
+    - Example:
+      - ```python
+          '''
+          Zone 1: A - B - C
+          Zone 2: D - E - F
+          A, B, C are very connected
+          D, E, F are very connected
+          but few connections between the two groups
+          '''
+        ```
+    - Pros:
+      - Respects connectivity
+      - Captures traffic structure
+    - Cons:
+      - More complex
+      - Needs graph preprocessing
+    - Used when:
+      - Network structure matters
+**4. Demand-based zoning (OD-driven)**
+  - Idea:
+    - Based on mobility data
+    - Group areas that have similar travel demand (people with same destination)
+  - How it works:
+    - You need: trips (origin, destination), OD matrix (generated with another method, grid-based, Voronoi...), and GPS points
+    - Example:
+      - Zone candidates: A, B, C, D
+      - Trips: A -> X, B -> X, C -> Y, D -> Y
+      - Then [A,B] -> same zone (similar behavior) and [C,D] the same 
+  - Methods: 
+    - K-means
+      - Treat each zone as a vector: `zone A = [trips to Z1, Z2...]`. Then cluster similar vectors. 
+  - Pros:
+    - Reflects real behavior
+  - Cons:
+    - Needs data
+  - Used when:
+    - You have trips (GPS, mobile data)
+**5. Administrative / semantic zones**
+- Idea:
+  - Use:
+    - Neighborhoods
+    - Districts...
+  - Pros:
+    - Interpretable
+  - Cons:
+    - Not optimal for traffic
+  
+- A “good” TAZ system should:
+  - minimize trips within zones
+  - maximize trips between zones
+  - respect network structure
+  - keep number of zones manageable
+
+### Demand generation after creating the TAZ
+- In case a zonification would have done, after doing it, we still have to decide how much demand should be generated. That is how should be populated our OD-matrix (we already have the dimensions, but we need to decide the values on each "cell").
+- The steps to do it would be:
+  1. *Total demand level* (decide total number of vehicles in the network)
+  2. *Distribute demand across OD pairs* (several approaches) 
+     1. Distance-based demand (more trips between nearby zones)
+      - `OD[o][d] ∝ exp(-α · distance(o, d))`
+     2. Uniform
+- Good demand: When network is partially congested and routes compete
+- Is also needed to compute centroids (each zone is represented by one point), so that we can be able to measure distanes between zones

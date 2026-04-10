@@ -65,7 +65,8 @@ class Scenario:
             self.network = map
 
     def generate_agents(self):
-        od_s = self.generate_od_agents()
+        # Generate the random edge OD-matrix (origin,destination for the agents)
+        od_s = self.generate_od_for_agents()
         for i in range(self.n_agents):
             origin, dest = od_s[i]
             self.agents.append(
@@ -185,9 +186,10 @@ class Scenario:
 
         return NET
 
-    def generate_od_agents(self):
+    def generate_od_for_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
+            # Generate random ods for the agents
             self.generate_random_trips(trips_file)
             od_s = self.parse_od_agents(trips_file)
         self.write_od_matrix(od_s)
@@ -210,6 +212,7 @@ class Scenario:
             "100",
             "--seed",
             "42",
+            "--validate",
             "-o",
             output_file,
         ]

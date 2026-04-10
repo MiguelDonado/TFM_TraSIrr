@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-04-09 00:58:14.223718 by Eclipse SUMO randomTrips.py v1.26.0
+<!-- generated on 2026-04-10 18:35:09.768171 by Eclipse SUMO randomTrips.py v1.26.0
 <configuration>
     <net-file value="net.net.xml"/>
     <prefix value="veh_"/>
@@ -10,7 +10,7 @@
 </configuration>
 -->
 
-<!-- generated on 2026-04-09T00:58:14.215215+01:00 by Eclipse SUMO duarouter 1.26.0
+<!-- generated on 2026-04-10T18:35:09.760462+01:00 by Eclipse SUMO duarouter 1.26.0
 <duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>

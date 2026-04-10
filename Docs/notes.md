@@ -61,6 +61,7 @@ I had two options:
 - Format in which data is stored for later analysis in R (tidyverse): Flat/tabular structure rather than hierarchical format
 
 **Reasoning**
+- SUMO generates several output files. Some of them generate **aggregated data** (episode-level), that is total travel time of all vehicles per episode... Other files generate vehicle-level data, i.e. travel time of each vehicle per episode
 - I know pretty well ggplot and tidyverse ecosystem in R. I find it pretty easy to perform data wrangling and I like a lot ggplot for visualization. 
 - Is important to highlight the concept of **tidy data**. When working with tidyverse, data is easiest to manipulate when it is flat and tabular, rather than deeply nested (hierarchical).
 ```python
@@ -106,13 +107,7 @@ user_1    25       B        20
 For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
 
 ## Pending
-- Anotar todo lo relativo a TAZ (--junction-taz)
-
-
-
-
 - Luego visualizarla (Quiero hacer grafica con las rutas)
-- En un futuro no guardar lo de "agent_", solamente guardar el numero. Ocupa menos y mas eficiente. Asi luego en R no tengo que eliminarlo
 - Grafica thesis Mari Paz (nº de caminos)
 - Leer paper "Where does this road go"
 - How to incorporate DRL, experience replay...
@@ -124,7 +119,6 @@ For simplicity has to be done in Python, because we have to parse the outputs fi
 - En la del asiatico, la decision_zone length estaba mal la formula
 - Mirar lo de behavioral, bandit...
 - Leer Parquet files libro R.
-- I have two kinds of data (vehicle-level, episode-level)
 - Think about interesting plots
 - Anotar la logica dle algoritmo
 - Quiero que ellos tambien lo puedan tocar el proyecto y jugar.

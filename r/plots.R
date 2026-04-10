@@ -101,7 +101,7 @@ df_vehroute_plot_2 <- df_vehroute |> filter(
   edge %in% top_5_slowest_edges
 ) |> 
   group_by(episode, edge) |> 
-  summarise(mean_time = mean(time_on_edge))
+  summarise(mean_time = mean(time_on_edge), .groups = "drop")
 
 vehroute_plot_2 <- ggplot(
   data = df_vehroute_plot_2,
@@ -201,10 +201,14 @@ df_rawdump_counts <- df_rawdump_expanded |>
   group_by(episode, edge, time) |> 
   summarise(n_vehicles = n(), .groups = "drop")
 
+random_edge <- df_rawdump_counts |> distinct(edge) |> slice(2) |> pull(edge)
+
 df_rawdump_counts_plot_1 <- df_rawdump_counts |> 
-  filter(edge == "-E3") 
+  filter(edge == random_edge) 
 
 write_parquet(df_rawdump_counts, rawdump_parquet_path)
+
+library(glue)
 
 rawdump_plot_1 <- ggplot(
   data = df_rawdump_counts_plot_1,
@@ -213,7 +217,7 @@ rawdump_plot_1 <- ggplot(
   geom_line() +
   facet_wrap(episode ~ edge, scales = "free_y") +
   theme_minimal() +
-  labs(title= "Counts of vehicles on edge -E3 over time across all episodes")
+  labs(title= glue("Counts of vehicles on edge {random_edge} over time across all episodes"))
 
 # Save plot
 ggsave(filename = rawdump_plot_1_path, plot = rawdump_plot_1, dpi = dpi, width = width, height = height)
