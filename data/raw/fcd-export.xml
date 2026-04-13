@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-04-13T22:14:54.518991+01:00 by Eclipse SUMO GUI 1.26.0
+<!-- generated on 2026-04-13T22:51:44.039450+01:00 by Eclipse SUMO GUI 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -9,7 +9,7 @@
     </input>
 
     <output>
-        <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.parquet"/>
+        <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
         <fcd-output.attributes value="x,y"/>
         <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
         <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>

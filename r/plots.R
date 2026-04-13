@@ -1,5 +1,7 @@
-library(arrow)
-library(tidyverse)
+print("Start of R script")
+
+suppressPackageStartupMessages(library(arrow))
+suppressPackageStartupMessages(library(tidyverse))
 
 dpi = 300
 width = 10
@@ -337,7 +339,7 @@ fcd_plot_5 <- ggplot(df_fcd_plot_5, aes(x = x, y = y, group = vehicle_id)) +
   transition_time(timestep) +
   labs(title="Traffic evolution of all vehicles in one episode")
 
-anim <- animate(fcd_plot_5, renderer = av_renderer())
+anim <- suppressMessages(suppressWarnings(animate(fcd_plot_5, renderer = av_renderer())))
 
 anim_save(fcd_parquet_plot_5_path, anim)
 

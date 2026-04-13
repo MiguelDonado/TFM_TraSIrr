@@ -37,7 +37,7 @@ def main():
     # -----------------------------
     # 2. CREATE ENVIRONMENT
     # -----------------------------
-    env = Environment(scenario=scen, episode_with_gui=config.episode_with_gui)
+    env = Environment(scenario=scen)
 
     # -----------------------------
     # 3. CREATE AGENTS

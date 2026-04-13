@@ -29,7 +29,7 @@ BM_RESULTS = INTERNAL_DATA_DIR / "BM_results.parquet"
 STATISTICS = RAW_DATA_DIR / "statistics.xml"
 TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
 VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
-FCD = RAW_DATA_DIR / "fcd-export.parquet"
+FCD = RAW_DATA_DIR / "fcd-export.xml"
 OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
 
 # Files

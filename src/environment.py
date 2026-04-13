@@ -12,6 +12,7 @@ import traci
 from prettytable import PrettyTable
 from sklearn import preprocessing
 
+from config.config import config
 from paths import ROUTES, TRIPS_INFO
 
 
@@ -65,8 +66,13 @@ class Environment:
     def run_episode(self, actions, current_episode):
         # This functions creates a rou.xml file that allows to run simulation without traci
         self.generate_routes_file(actions)
-        # Check if we want to enable gui for some episode
-        self.gui = self.episode_with_gui == current_episode
+
+        # Check if we want to visualize this episode
+        if current_episode in config.episodes_gui:
+            self.gui = True
+        else:
+            self.gui = False
+
         cmd = [
             "sumo-gui" if self.gui else "sumo",
             "-c",
