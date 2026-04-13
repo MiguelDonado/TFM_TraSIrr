@@ -10,7 +10,7 @@ class Config:
     memory_level: float = 1  # Traveler memory
 
     # Simulation
-    network: str = "ThirdNetworkDayToDay.net.xml"
+    network: str = "random/FirstRandom.net.xml"
     n_agents: int = 50
     n_episodes: int = 25
     warm_up: int = 10
@@ -22,6 +22,9 @@ class Config:
     learning: bool = True
     # In case I just wanna run the final simulation (from previous script execution)
     run_final_simul: bool = True
+    n_threads: int = 7
+    routing_algorithm: str = "CH"  # CH is faster than Djistra
+    fringe_factor: int = 50
 
     # Constants
     epsilon: float = 1e-8

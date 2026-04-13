@@ -119,12 +119,25 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
+  - Count nodes, links and turns of the network
+
+
+
+  - Network Santiago y BCN similar in size to Mari Paz network
+  - Bottlenecks for large networks
+  - ESCRIBIR
+  - Pytorch RL snake
+  - Sumo docker
+  - Try Barcelona Network or other SUMO networks
   - Check warning messages   
-  - Check they are correct (self.p, self.ET, self.PT, self.stimulus). That the time is correct
   - Grabar video editado con como funciona
   - Quiero que ellos tambien lo puedan tocar el proyecto y jugar. Docker
   - Escribir (asiatico,bm decision zone estaba mal)
   - Preguntar lo de cuando los genero los vehiculos todos en 0, o cambio
+  - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
+  - Be able to visualize first and last to see the difference
+  - Guardar en un archivo los trips y sus generated k routes
+  - Heuristica generar demanda para una network en concreto
 
 - l/p:
   - Leer paper "Where does this road go"
