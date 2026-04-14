@@ -23,7 +23,6 @@ class Environment:
         gui: Decide if running simulation in GUI mode or just CLI
         """
         self.scenario = scenario
-        self.episode_with_gui = episode_with_gui
 
     def generate_routes_file(self, actions):
         """

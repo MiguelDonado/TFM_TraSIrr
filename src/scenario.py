@@ -5,6 +5,7 @@ Class that creates the required files for SUMO simulator in order to run simulat
 import os
 import random
 import subprocess
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -12,7 +13,7 @@ from collections import Counter
 import pandas as pd
 from lxml import etree
 
-from config.config import config
+from config.config import RunMode, config
 from paths import (
     AGENTS_OD,
     FCD,
@@ -49,7 +50,7 @@ class Scenario:
         """
         self.ensure_network(map)
         self.generate_agents()
-        self.generate_routes(seeds)
+        self.ensure_routes(seeds)
         self.save_scenario_data()
         self.conf = self.generate_conf()
 
@@ -73,6 +74,12 @@ class Scenario:
                 {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
             )
 
+    def ensure_routes(self, seeds):
+        if config.have_precomputed_routes:
+            self.reconstruct_od_routes()
+        else:
+            self.generate_routes(seeds)
+
     def generate_routes(self, seeds):
 
         unique_ods = self.get_unique_ods()
@@ -83,6 +90,25 @@ class Scenario:
             self.od_routes[od] = self.compute_k_routes(od, seeds)
 
         UNDESIRED_ROUTE_FILE.unlink()
+
+    def reconstruct_od_routes(self):
+        df = pd.read_parquet(OD_ROUTES)
+
+        df = df.sort_values(["origin", "dest", "route_id", "step"])
+
+        od_routes = {}
+
+        grouped = df.groupby(["origin", "dest", "route_id"])
+
+        for (origin, dest, route_id), group in grouped:
+            route = group["edge"].tolist()
+
+            key = (origin, dest)
+            if key not in od_routes:
+                od_routes[key] = []
+            od_routes[key].append(route)
+
+        self.od_routes = od_routes
 
     def generate_conf(self):
         """
@@ -120,6 +146,11 @@ class Scenario:
         for _, (data, path) in mapping.items():
             df = pd.DataFrame(data)
             df.to_parquet(path, engine="pyarrow")
+
+        # Check RunMode
+        if config.mode == RunMode.COMPUTE_ROUTES:
+            print(f"\nThe OD pairs and its k routes have been saved in {OD_ROUTES}")
+            sys.exit()
 
     def process_od_routes(self):
         """

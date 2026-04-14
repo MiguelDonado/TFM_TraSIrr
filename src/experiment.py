@@ -5,19 +5,24 @@ Purpose of this file: Orchestration + Pipeline
 """
 
 import subprocess
+import sys
 
 import pandas as pd
 import yaml
 
+from config.config import RunMode, config
 from parsing.parser import Parser
 from paths import (
     ACTIONS,
     BM_RESULTS,
     FCD,
     FCD_PROCESSED,
+    OD_ROUTES,
     REWARDS,
+    ROUTES,
     STATISTICS,
     STATISTICS_PROCESSED,
+    SUMO_CONF,
     TRIPS_INFO,
     TRIPS_INFO_PROCESSED,
     VEHROUTE,
@@ -219,3 +224,42 @@ def prepare_BM_data(episode, agents):
                 }
             )
     return rows
+
+
+def log_run_mode(mode, have_precomputed_routes, episodes_gui):
+    print("\n\n#########################")
+    print("RUN MODE")
+    print("#########################")
+    if mode == RunMode.COMPUTE_ROUTES:
+        print(
+            (
+                "The script will generate OD pairs and compute k routes. "
+                f"Results will be saved in {OD_ROUTES}"
+            )
+        )
+    elif mode == RunMode.EVAL_GUI:
+        print("The script will visualize the previous final episode using the GUI.")
+    elif mode in {RunMode.TRAIN}:
+        msg_precomputed_routes = (
+            f"Using precomputed routes from {OD_ROUTES}."
+            if have_precomputed_routes
+            else "k routes will be generated using the duarouter."
+        )
+        msg_gui = f"GUI enabled for episodes {episodes_gui}" if episodes_gui else ""
+
+        print(msg_precomputed_routes)
+        if msg_gui:
+            print(msg_gui)
+    print("\n")
+
+
+def run_final_simulation():
+    cmd = [
+        "sumo-gui",
+        "-c",
+        SUMO_CONF,
+        "--route-files",  # Add the route-files through CLI (for simplicity, avoids having modify config file again)
+        ROUTES,
+    ]
+    subprocess.run(cmd)
+    sys.exit()

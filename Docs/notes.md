@@ -119,25 +119,29 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
-  - Be able to visualize first and last to see the difference
-  
+  - Sumo docker
+
+
+
+
+
+
+
 
   - Network Santiago y BCN similar in size to Mari Paz network
-  - Bottlenecks for large networks
-  - ESCRIBIR
-  - Pytorch RL snake
-  - Sumo docker
-  - Try Barcelona Network or other SUMO networks
+  - ESCRIBIR (Koh (decision zone was bad), BM)
   - Grabar video editado con como funciona
-  - Quiero que ellos tambien lo puedan tocar el proyecto y jugar. Docker
-  - Escribir (asiatico,bm decision zone estaba mal)
   - Preguntar lo de cuando los genero los vehiculos todos en 0, o cambio
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
-
-  - Guardar en un archivo los trips y sus generated k routes
   - Heuristica generar demanda para una network en concreto
 
 - l/p:
+  - Bottlenecks large networks:
+    - compute_k_routes: The problem is that because the trips are generated randomly, we end up having a lot of different od pairs, and so we end up having to call compute_k_routes a lot of times. If the network is small, we do not have any problem because each call goes very fast. But if network is large, calling duarouter to compute shortest path takes a considerable amount of time. Possible solutions:
+      - Reduce number of different od pairs, so that we have to make less calls to duarouter. Maybe instead of generating random trips for all agents, generate random trips for a fraction of the agents, and then assign the rest of the agents proportionally to the generated od pairs.
+      - Find another SUMO tool instead of duarouter that computes shortest path or at least some heuristic/approximation.
+      - Use a network of small/medium size (doenst look like a great solution)
+  - Pytorch RL snake
   - Leer paper "Where does this road go"
   - How to incorporate DRL, experience replay...
   - Check experiment evaluation in papers

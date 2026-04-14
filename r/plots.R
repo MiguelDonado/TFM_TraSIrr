@@ -1,4 +1,6 @@
+print("######################")
 print("Start of R script")
+print("######################")
 
 suppressPackageStartupMessages(library(arrow))
 suppressPackageStartupMessages(library(tidyverse))

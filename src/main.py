@@ -1,25 +1,17 @@
-import subprocess
-import sys
-
 import numpy as np
-import pandas as pd
 
-from agents.agent import BMAgent
 from agents.factory import initialize_agents, select_actions, update_agents
-from config.config import config
+from config.config import RunMode, config
 from environment import Environment
-from experiment import accumulate_results, make_plots, prepare_data, save_processed_data
-from parsing.parser import Parser
-from paths import (
-    FCD_PROCESSED,
-    MAP,
-    ROUTES,
-    STATISTICS,
-    STATISTICS_PROCESSED,
-    SUMO_CONF,
-    TRIPS_INFO_PROCESSED,
-    VEHROUTE_PROCESSED,
+from experiment import (
+    accumulate_results,
+    log_run_mode,
+    make_plots,
+    prepare_data,
+    run_final_simulation,
+    save_processed_data,
 )
+from paths import MAP
 from scenario import Scenario
 
 # Reproducibility
@@ -104,30 +96,13 @@ def main():
     make_plots()
 
 
-####################################
-# Helper functions to execute script
-####################################
-# This logic is introduced JUST FOR being able TO RUN IN GUI
-# the simulation from previous execution
-
-
 def run():
-    if config.learning:
-        main()
+    log_run_mode(config.mode, config.have_precomputed_routes, config.episodes_gui)
 
-    if config.run_final_simul:
+    if config.mode == RunMode.EVAL_GUI:
         run_final_simulation()
 
-
-def run_final_simulation():
-    cmd = [
-        "sumo-gui",
-        "-c",
-        SUMO_CONF,
-        "--route-files",  # Add the route-files through CLI (for simplicity, avoids having modify config file again)
-        ROUTES,
-    ]
-    subprocess.run(cmd)
+    main()
 
 
 if __name__ == "__main__":
