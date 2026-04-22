@@ -10,6 +10,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 from collections import Counter
 
+import numpy as np
 import pandas as pd
 from lxml import etree
 
@@ -220,13 +221,38 @@ class Scenario:
     def generate_od_for_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
-            # Generate random ods for the agents
-            self.generate_random_trips(trips_file)
-            od_s = self.parse_od_agents(trips_file)
+            # Generate random ods for some % (percentage) of the agents
+            self.generate_random_trips_subset_agents(
+                trips_file, config.percentage_agents
+            )
+            # Ods for the subset of agents
+            od_s_subset = self.parse_od_agents(trips_file)
+            # Compute ods for all the agents
+            od_s = self.sample_from_subset(od_s_subset, config.n_agents)
         self.write_od_matrix(od_s)
         return od_s
 
-    def generate_random_trips(self, output_file):
+    def sample_from_subset(self, od_list, n_agents):
+        """
+        Weighted sampling based on frequency of OD pairs
+        """
+        counter = Counter(od_list)
+
+        unique_ods = list(counter.keys())
+        counts = list(counter.values())
+
+        # Convert counts to prob
+        probs = [count / sum(counts) for count in counts]
+
+        # Sample od
+        ods = random.choices(
+            unique_ods,
+            weights=probs,
+            k=n_agents,
+        )
+        return ods
+
+    def generate_random_trips_subset_agents(self, output_file, percentage):
         cmd = [
             "randomTrips.py",
             "-n",
@@ -236,7 +262,7 @@ class Scenario:
             "-e",
             str(config.end_time),
             "-p",
-            str(((config.end_time - 0) / config.n_agents)),
+            str(((config.end_time - 0) / (config.n_agents * percentage))),
             "--fringe-factor",
             str(config.fringe_factor),
             "--min-distance",

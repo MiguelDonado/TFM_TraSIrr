@@ -119,12 +119,6 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
-  - Simulacion de trafico de 1 hora, en lugar de todos en el segundo 0. Use --random-depart. And maybe in the future could be interesting for the thesis to mention how it works the randomtrips.
-
-
-
-
-  - Fix unique number of ods.
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker
