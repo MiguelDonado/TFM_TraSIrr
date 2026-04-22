@@ -46,9 +46,17 @@ class Config:
     #####################
     percentage_agents: float = 0.1
     start_time: int = 0
-    end_time: int = 3600
+    warm_up_time: int = 600
+    # Post warm-up simulation time
+    simulation_time: int = 3600
+    end_time: int = field(init=False)
     network: str = "Koh/FirstNetwork_Koh.net.xml"
-    n_agents: int = 200
+    # Number of RL agents warmup
+    n_agents_warmup: int = field(init=False)
+    # Number of RL agents to analyze
+    n_agents_post_warmup: int = 300
+    # Total number of agents
+    n_agents: int = field(init=False)
     n_episodes: int = 25
     warm_up: int = 10
     random_factor: int = 100  # For duarouter, the random factor it applies to the edges
@@ -65,6 +73,19 @@ class Config:
     # Additional flags for training mode
     have_precomputed_routes: bool = False
     episodes_gui: set[int] = field(default_factory=lambda: {1, 25})
+
+    def __post_init__(self):
+        self.end_time = self.warm_up_time + self.simulation_time
+        # Update the n_agents to use (includes the agents that are gonna have to be used on the warmup)
+        # The agents introduce on warmup wont be analyzed
+        total_time = self.end_time - self.start_time
+        total_time_with_warmup = total_time + self.warm_up_time
+
+        self.n_agents_warmup = int(
+            (self.n_agents_post_warmup * total_time_with_warmup / total_time)
+            - self.n_agents_post_warmup
+        )
+        self.n_agents = self.n_agents_warmup + self.n_agents_post_warmup
 
 
 config = Config()

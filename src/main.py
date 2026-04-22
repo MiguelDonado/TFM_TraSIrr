@@ -24,7 +24,13 @@ def main():
     # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
-    scen = Scenario(map=MAP, n_agents=config.n_agents, seeds=seeds, rng=rng)
+    scen = Scenario(
+        map=MAP,
+        n_agents_warmup=config.n_agents_warmup,
+        n_agents_post_warmup=config.n_agents_post_warmup,
+        seeds=seeds,
+        rng=rng,
+    )
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT

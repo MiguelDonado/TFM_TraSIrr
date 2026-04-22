@@ -31,13 +31,14 @@ from paths import (
 
 
 class Scenario:
-    def __init__(self, map, n_agents, seeds, rng):
+    def __init__(self, map, n_agents_warmup, n_agents_post_warmup, seeds, rng):
         """
         Parameters:
         map: network file or .osm file
         n_agents: number of agents
         """
-        self.n_agents = n_agents
+        self.n_agents_post_warmup = n_agents_post_warmup
+        self.n_agents = n_agents_warmup + n_agents_post_warmup
         # List that store agents (each agent a dictionary with keys id, origin, destination)
         self.agents = []
         # Dictionary that stores set of routes for each OD-pair
@@ -89,11 +90,8 @@ class Scenario:
             self.generate_routes(seeds)
 
     def generate_routes(self, seeds):
-
-        unique_ods = self.get_unique_ods()
-
         # 1. Compute routes per OD
-        for od in unique_ods:
+        for od in self.unique_ods:
             # Store in the dictionary od_routes the set of routes for this od pair.
             self.od_routes[od] = self.compute_k_routes(od, seeds)
 
@@ -235,7 +233,7 @@ class Scenario:
             # Ods for the subset of agents
             od_s_subset = self.parse_od_agents(trips_file)
             # Compute ods for all the agents
-            od_s = self.sample_from_subset(od_s_subset, config.n_agents)
+            od_s = self.sample_from_subset(od_s_subset, self.n_agents)
         self.write_od_matrix(od_s)
         return od_s
 
@@ -250,7 +248,10 @@ class Scenario:
             str(config.end_time),
             "-p",
             str(
-                ((config.end_time - config.start_time) / (config.n_agents * percentage))
+                (
+                    (config.end_time - config.start_time)
+                    / (self.n_agents_post_warmup * percentage)
+                )
             ),
             "--fringe-factor",
             str(config.fringe_factor),
@@ -279,6 +280,7 @@ class Scenario:
         counter = Counter(od_list)
 
         unique_ods = list(counter.keys())
+        self.unique_ods = unique_ods
         counts = list(counter.values())
 
         # Convert counts to prob
@@ -296,7 +298,7 @@ class Scenario:
         departure_times = rng.integers(
             config.start_time,
             config.end_time,
-            size=config.n_agents,
+            size=self.n_agents,
         )
 
         departure_times = [int(departure_time) for departure_time in departure_times]
@@ -316,12 +318,6 @@ class Scenario:
             .astype(int)
         )
         matrix.to_csv(OD_MATRIX)
-
-    def get_unique_ods(self):
-        # Extract unique OD pairs
-        # (agent["origin"], agent["destination"]) for agent in self.agents: List comprenhensions, returns a list
-        # set(): Constructs a set from a list
-        return set((agent["origin"], agent["destination"]) for agent in self.agents)
 
     def compute_k_routes(
         self,
