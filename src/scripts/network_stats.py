@@ -35,7 +35,7 @@ def get_network_characteristics(net=NETWORK_PATH):
     edges = len(edges_elements)
 
     # Lanes
-    lanes_elements = tree.xpath("//edge[@priority]/lane")
+    lanes_elements = tree.xpath("//edge[not(@function='internal')]/lane")
     lanes = len(lanes_elements)
 
     # Connections

@@ -119,24 +119,18 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
-  - Warmup beginning of simulation
+  - Heuristica generar demanda para una network en concreto (y dejarlo explicado en design) (i can do it qualitatively, not congested, partially and heavily) and run experiments for all the scenarios
+
 
 
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker
-  - Heuristica generar demanda para una network en concreto (y dejarlo explicado en design)  
   - Network Santiago y BCN similar in size to Mari Paz network
-  - Preguntar lo de cuando los genero los vehiculos todos en 0, o cambio
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
   - Randomtrips may have options to solve the problem of how to load the network (demand) automatically based on network size (--insertion-density)...
-  - Dejar escrito en design porque en randomtrips elegi --random-depart. Cuales son los beneficios de generar los departure times de esa manera.
 - l/p:
   - Bottlenecks large networks:
-    - compute_k_routes: The problem is that because the trips are generated randomly, we end up having a lot of different od pairs, and so we end up having to call compute_k_routes a lot of times. If the network is small, we do not have any problem because each call goes very fast. But if network is large, calling duarouter to compute shortest path takes a considerable amount of time. Possible solutions:
-      - Reduce number of different od pairs, so that we have to make less calls to duarouter. Maybe instead of generating random trips for all agents, generate random trips for a fraction of the agents, and then assign the rest of the agents proportionally to the generated od pairs.
-      - Find another SUMO tool instead of duarouter that computes shortest path or at least some heuristic/approximation.
-      - Use a network of small/medium size (doenst look like a great-  solution)
   - Leer paper "Where does this road go"
   - Check experiment evaluation in papers
   - Entender lo de preventivo y reactivo
