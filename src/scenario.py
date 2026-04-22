@@ -69,10 +69,17 @@ class Scenario:
     def generate_agents(self):
         # Generate the random edge OD-matrix (origin,destination for the agents)
         od_s = self.generate_od_for_agents()
+        departure_times = self.generate_departure_times()
         for i in range(self.n_agents):
             origin, dest = od_s[i]
+            departure_time = departure_times[i]
             self.agents.append(
-                {"id": f"agent_{i+1}", "origin": origin, "destination": dest}
+                {
+                    "id": f"agent_{i+1}",
+                    "origin": origin,
+                    "destination": dest,
+                    "departure_time": departure_time,
+                }
             )
 
     def ensure_routes(self, seeds):
@@ -232,6 +239,39 @@ class Scenario:
         self.write_od_matrix(od_s)
         return od_s
 
+    def generate_random_trips_subset_agents(self, output_file, percentage):
+        cmd = [
+            "randomTrips.py",
+            "-n",
+            MAP,
+            "-b",
+            str(config.start_time),
+            "-e",
+            str(config.end_time),
+            "-p",
+            str(
+                ((config.end_time - config.start_time) / (config.n_agents * percentage))
+            ),
+            "--fringe-factor",
+            str(config.fringe_factor),
+            "--min-distance",
+            "100",
+            "--seed",
+            str(config.seed),
+            "--validate",
+            "-o",
+            output_file,
+        ]
+
+        subprocess.run(cmd, check=True)
+
+    def parse_od_agents(self, trips_file):
+        tree = etree.parse(trips_file)
+        origins = tree.xpath("//trip/@from")
+        destinies = tree.xpath("//trip/@to")
+        od_s = list(zip(origins, destinies))
+        return od_s
+
     def sample_from_subset(self, od_list, n_agents):
         """
         Weighted sampling based on frequency of OD pairs
@@ -252,37 +292,15 @@ class Scenario:
         )
         return ods
 
-    def generate_random_trips_subset_agents(self, output_file, percentage):
-        cmd = [
-            "randomTrips.py",
-            "-n",
-            MAP,
-            "-b",
-            "0",
-            "-e",
-            str(config.end_time),
-            "-p",
-            str(((config.end_time - 0) / (config.n_agents * percentage))),
-            "--fringe-factor",
-            str(config.fringe_factor),
-            "--min-distance",
-            "100",
-            "--seed",
-            str(config.seed),
-            "--validate",
-            "--random-depart",
-            "-o",
-            output_file,
-        ]
+    def generate_departure_times(self):
+        departure_times = np.random.randint(
+            config.start_time, config.end_time, size=config.n_agents
+        )
 
-        subprocess.run(cmd, check=True)
-
-    def parse_od_agents(self, trips_file):
-        tree = etree.parse(trips_file)
-        origins = tree.xpath("//trip/@from")
-        destinies = tree.xpath("//trip/@to")
-        od_s = list(zip(origins, destinies))
-        return od_s
+        departure_times = [int(departure_time) for departure_time in departure_times]
+        # Sort departure times, to avoid problems in SUMO simulation and for clarity. The agent_1 should be the first to departure, the agent_2 the second...
+        departure_times.sort()
+        return departure_times
 
     def write_od_matrix(self, od_list):
         counts = Counter(od_list)

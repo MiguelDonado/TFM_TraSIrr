@@ -360,7 +360,7 @@ ggsave(filename = fcd_parquet_plot_6_path, plot = fcd_plot_6, dpi = dpi, width =
 ##########################
 ## Internal data
 ##########################
-agents_od_path <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parquet"
+agents_odw <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parquet"
 od_routes_path <- "/home/miguel/6.Projects/Thesis/data/internal/od_routes.parquet"
 actions_path <- "/home/miguel/6.Projects/Thesis/data/internal/actions.parquet"
 rewards_path <- "/home/miguel/6.Projects/Thesis/data/internal/rewards.parquet"

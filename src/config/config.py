@@ -45,6 +45,7 @@ class Config:
     # Simulation
     #####################
     percentage_agents: float = 0.1
+    start_time: int = 0
     end_time: int = 3600
     network: str = "Koh/FirstNetwork_Koh.net.xml"
     n_agents: int = 200

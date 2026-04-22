@@ -43,6 +43,7 @@ class Environment:
         for agent in self.scenario.agents:
             agent_id = agent["id"]
             od = (agent["origin"], agent["destination"])
+            departure_time = agent["departure_time"]
 
             route_idx = actions[agent_id]
             route_edges = self.scenario.od_routes[od][route_idx]
@@ -52,7 +53,11 @@ class Environment:
             veh = ET.SubElement(
                 routes,
                 "vehicle",
-                {"id": str(agent_id), "type": "DEFAULT_VEHTYPE", "depart": "0"},
+                {
+                    "id": str(agent_id),
+                    "type": "DEFAULT_VEHTYPE",
+                    "depart": str(departure_time),
+                },
             )
 
             # Add route inside vehicle

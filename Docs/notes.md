@@ -119,6 +119,9 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
+  - Warmup beginning of simulation
+
+
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker
