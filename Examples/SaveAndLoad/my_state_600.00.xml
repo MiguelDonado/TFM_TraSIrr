@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-04-22T16:18:02.583232+01:00 by Eclipse SUMO sumo 1.26.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/FirstNetwork_Koh.net.xml"/>
+        <route-files value="routes.rou.xml"/>
+    </input>
+
+    <output>
+        <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
+        <fcd-output.attributes value="x,y"/>
+        <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
+        <vehroute-output.exit-times value="true"/>
+        <statistic-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
+        <save-state.times value="600"/>
+        <save-state.files value="/home/miguel/6.Projects/Thesis/Examples/SaveAndLoad/my_state_600.00.xml"/>
+    </output>
+
+    <fcd_device>
+        <device.fcd.probability value="0.2"/>
+    </fcd_device>
+
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+
+</sumoConfiguration>
+-->
+
+<snapshot type="micro" version="1.26.0" time="600.00" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/state_file.xsd">
+    <route id="!agent_38" state="0" edges="E1 E5 E6"/>
+    <route id="!agent_40" state="0" edges="-E6 -E4 -E2 E7"/>
+    <route id="!agent_41" state="0" edges="-E6 -E5 E7"/>
+    <route id="!agent_42" state="0" edges="E0 E1 E7"/>
+    <delay number="1" begin="42" end="38" depart="7.00" time="589.00"/>
+    <vType id="DEFAULT_VEHTYPE"/>
+    <vehicle id="agent_38" type="DEFAULT_VEHTYPE" depart="583.00" route="!agent_38" distance="125.49 0" speedFactor="1.0664" state="2 583000 1 5.10 0 5.40 599000 0 0" pos="13.55 8.55 8.07" speed="8.07 6.85" angle="43.36" posLat="0.00" waitingTime="100000 0">
+        <device id="vehroute_agent_38" state="0 0.00 0.00 5.10 0" exitTimes="588000 598000" edge="E5"/>
+        <device id="tripinfo_agent_38" state="E1_0 0 0 120.39 0 0 0 0 -1 -1000 NONE -1 0 -1"/>
+    </vehicle>
+    <vehicle id="agent_40" type="DEFAULT_VEHTYPE" depart="642.00" route="!agent_40" distance="0 0" speedFactor="0.9163" state="2 9223372036854774807 0 -1.00 0 0.00 0 0 0" pos="0.00 0.00 0.00" speed="0.00 0.00" angle="90.00" posLat="0.00" waitingTime="100000 0">
+        <device id="vehroute_agent_40" state="-1 0.00 -1.00 -1.00 0"/>
+        <device id="tripinfo_agent_40"/>
+    </vehicle>
+    <vehicle id="agent_41" type="DEFAULT_VEHTYPE" depart="684.00" route="!agent_41" distance="0 0" speedFactor="0.8596" state="2 9223372036854774807 0 -1.00 0 0.00 0 0 0" pos="0.00 0.00 0.00" speed="0.00 0.00" angle="90.00" posLat="0.00" waitingTime="100000 0">
+        <device id="vehroute_agent_41" state="-1 0.00 -1.00 -1.00 0"/>
+        <device id="tripinfo_agent_41"/>
+    </vehicle>
+    <vehicle id="agent_42" type="DEFAULT_VEHTYPE" depart="753.00" route="!agent_42" distance="0 0" speedFactor="0.9541" state="2 9223372036854774807 0 -1.00 0 0.00 0 0 0" pos="0.00 0.00 0.00" speed="0.00 0.00" angle="90.00" posLat="0.00" waitingTime="100000 0">
+        <device id="vehroute_agent_42" state="-1 0.00 -1.00 -1.00 0"/>
+        <device id="tripinfo_agent_42"/>
+    </vehicle>
+    <lane id=":J4_2_0">
+        <vehicles value="agent_38"/>
+    </lane>
+</snapshot>

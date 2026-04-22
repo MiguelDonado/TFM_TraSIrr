@@ -31,7 +31,7 @@ from paths import (
 
 
 class Scenario:
-    def __init__(self, map, n_agents, seeds):
+    def __init__(self, map, n_agents, seeds, rng):
         """
         Parameters:
         map: network file or .osm file
@@ -50,7 +50,7 @@ class Scenario:
         3. Creates a config file
         """
         self.ensure_network(map)
-        self.generate_agents()
+        self.generate_agents(rng)
         self.ensure_routes(seeds)
         self.save_scenario_data()
         self.conf = self.generate_conf()
@@ -66,10 +66,10 @@ class Scenario:
         else:
             self.network = map
 
-    def generate_agents(self):
+    def generate_agents(self, rng):
         # Generate the random edge OD-matrix (origin,destination for the agents)
         od_s = self.generate_od_for_agents()
-        departure_times = self.generate_departure_times()
+        departure_times = self.generate_departure_times(rng)
         for i in range(self.n_agents):
             origin, dest = od_s[i]
             departure_time = departure_times[i]
@@ -292,9 +292,11 @@ class Scenario:
         )
         return ods
 
-    def generate_departure_times(self):
-        departure_times = np.random.randint(
-            config.start_time, config.end_time, size=config.n_agents
+    def generate_departure_times(self, rng):
+        departure_times = rng.integers(
+            config.start_time,
+            config.end_time,
+            size=config.n_agents,
         )
 
         departure_times = [int(departure_time) for departure_time in departure_times]
