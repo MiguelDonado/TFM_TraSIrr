@@ -230,6 +230,9 @@ def log_run_mode(mode, have_precomputed_routes, episodes_gui):
     print("\n\n#########################")
     print("RUN MODE")
     print("#########################")
+
+    print(f"Mode '{mode}' has been selected.\n")
+
     if mode == RunMode.COMPUTE_ROUTES:
         print(
             (

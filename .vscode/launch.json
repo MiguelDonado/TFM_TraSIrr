@@ -10,6 +10,14 @@
       "program": "${workspaceFolder}/src/main.py",
       "console": "integratedTerminal",
       "justMyCode": true,
+    },
+    {
+      "name": "Debug network_stats.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/network_stats.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
     }
   ]
 }
