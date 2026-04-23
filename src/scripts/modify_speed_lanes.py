@@ -1,8 +1,3 @@
-"""
-Purpose of this script: parse xml network file to get the characteristics
-of the network (nodes, links, turns)
-"""
-
 import numpy as np
 from lxml import etree
 
@@ -34,9 +29,6 @@ def change_lanes_speed(net=NETWORK_PATH):
     ###########
     # SCRIPT
     ###########
-
-    # Lanes
-    lanes = 0
 
     document = net
     tree = etree.parse(document)
