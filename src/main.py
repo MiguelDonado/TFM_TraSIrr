@@ -1,7 +1,10 @@
+import sys
+
 import numpy as np
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
+from demand_calibration.utils import demand_calibration
 from environment import Environment
 from experiment import (
     accumulate_results,
@@ -22,12 +25,19 @@ seeds = rng.integers(0, 100000, size=config.max_attempts)
 def main():
 
     # -----------------------------
+    # 0. DEMAND CALIBRATION
+    # -----------------------------
+    demand = demand_calibration(last_iteration_gui=False)
+    demand_warmup = int(demand * config.warm_up_time / config.end_time)
+    demand_post_warmup = demand - demand_warmup
+
+    # -----------------------------
     # 1. CREATE SCENARIO (files)
     # -----------------------------
     scen = Scenario(
         map=MAP,
-        n_agents_warmup=config.n_agents_warmup,
-        n_agents_post_warmup=config.n_agents_post_warmup,
+        n_agents_warmup=demand_warmup,
+        n_agents_post_warmup=demand_post_warmup,
         seeds=seeds,
         rng=rng,
     )
@@ -40,7 +50,7 @@ def main():
     # -----------------------------
     # 3. CREATE AGENTS
     # -----------------------------
-    agents = initialize_agents(n=config.n_agents, scen=scen, seed=config.seed)
+    agents = initialize_agents(scen=scen, seed=config.seed)
 
     # -----------------------------
     # 4. TRAINING LOOP

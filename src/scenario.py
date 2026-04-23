@@ -38,6 +38,7 @@ class Scenario:
         map: network file or .osm file
         n_agents: number of agents
         """
+        self.n_agents_warmup = n_agents_warmup
         self.n_agents_post_warmup = n_agents_post_warmup
         self.n_agents = n_agents_warmup + n_agents_post_warmup
         # List that store agents (each agent a dictionary with keys id, origin, destination)
@@ -240,21 +241,17 @@ class Scenario:
         return od_s
 
     def generate_random_trips_subset_agents(self, output_file, percentage):
+        # Subset from the post warmup agents
         cmd = [
             "randomTrips.py",
             "-n",
             MAP,
             "-b",
-            str(config.start_time),
+            str(0),
             "-e",
             str(config.end_time),
             "-p",
-            str(
-                (
-                    (config.end_time - config.start_time)
-                    / (self.n_agents_post_warmup * percentage)
-                )
-            ),
+            str(((config.end_time - 0) / (self.n_agents_post_warmup * percentage))),
             "--fringe-factor",
             str(config.fringe_factor),
             "--min-distance",
@@ -298,7 +295,7 @@ class Scenario:
 
     def generate_departure_times(self, rng):
         departure_times = rng.integers(
-            config.start_time,
+            0,
             config.end_time,
             size=self.n_agents,
         )

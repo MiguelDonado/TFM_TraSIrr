@@ -18,6 +18,14 @@
       "program": "${workspaceFolder}/scripts/network_stats.py",
       "console": "integratedTerminal",
       "justMyCode": true,
-    }
+    },
+    {
+      "name": "Debug demand_calibration.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/demand_calibration.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+    },
   ]
 }

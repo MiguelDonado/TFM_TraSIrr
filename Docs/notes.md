@@ -120,9 +120,10 @@ If when using a network that is very big, I have some scalability issue when wri
 ## Pending
 - c/p:
   - Heuristica generar demanda para una network en concreto (y dejarlo explicado en design) (i can do it qualitatively, not congested, partially and heavily) and run experiments for all the scenarios
-
-
-
+  
+  
+  
+  - Change the convert_map and simplify and create a separate script for converting osm
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker

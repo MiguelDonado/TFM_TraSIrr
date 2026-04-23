@@ -341,9 +341,9 @@ fcd_plot_5 <- ggplot(df_fcd_plot_5, aes(x = x, y = y, group = vehicle_id)) +
   transition_time(timestep) +
   labs(title="Traffic evolution of all vehicles in one episode")
 
-anim <- suppressMessages(suppressWarnings(animate(fcd_plot_5, renderer = av_renderer())))
+# anim <- suppressMessages(suppressWarnings(animate(fcd_plot_5, renderer = av_renderer())))
 
-anim_save(fcd_parquet_plot_5_path, anim)
+# anim_save(fcd_parquet_plot_5_path, anim)
 
 ###############
 ## Plot 6: Traffic density across episodes
@@ -360,7 +360,7 @@ ggsave(filename = fcd_parquet_plot_6_path, plot = fcd_plot_6, dpi = dpi, width =
 ##########################
 ## Internal data
 ##########################
-agents_odw <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parquet"
+agents_od_path <- "/home/miguel/6.Projects/Thesis/data/internal/agents_od.parquet"
 od_routes_path <- "/home/miguel/6.Projects/Thesis/data/internal/od_routes.parquet"
 actions_path <- "/home/miguel/6.Projects/Thesis/data/internal/actions.parquet"
 rewards_path <- "/home/miguel/6.Projects/Thesis/data/internal/rewards.parquet"
