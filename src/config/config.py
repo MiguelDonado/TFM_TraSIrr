@@ -44,6 +44,10 @@ class Config:
     #####################
     # 3. Demand & Calibration
     #####################
+    # ~ 1          -> No congestion
+    # ~ 0.7 - 0.9  -> Light
+    # ~ 0.4 - 0.7  -> Medium
+    # < 0.4        -> Heavy
     target_congestion_ratio: float = 0.6
     tolerance: float = 0.02
     heuristic_veh_km_hour_initial_guess: int = 100

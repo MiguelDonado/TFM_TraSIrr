@@ -1,10 +1,15 @@
 import subprocess
 
-NET = "/home/miguel/6.Projects/Thesis/src/scripts/net.net.xml"
-MAP = "/home/miguel/6.Projects/Thesis/src/scripts/map.osm"
+NETCONVERT_NET_FOLDER = (
+    "/home/miguel/6.Projects/Thesis/sumo/net/Manual/netconvert_network/"
+)
 
 
-def convert_map(map):
+def convert_map():
+    MAP = input("Enter the absolute path of the OSM file: ")
+    NET = input("Enter the filename you wanna give to the NETEDIT network: ")
+    NET = NETCONVERT_NET_FOLDER + NET + ".net.xml"
+
     """
     Converts OSM to SUMO
     It uses netconvert tool with some options
@@ -16,24 +21,25 @@ def convert_map(map):
     cmd = [
         "netconvert",
         "--osm",
-        map,
+        MAP,
+        # Geometry cleanup
         "--geometry.remove",
         "--geometry.min-dist",
         "1.0",
         "--geometry.avoid-overlap",
-        "--ramps.guess",
-        "--roundabouts.guess",
+        # Network structure
         "--junctions.join",
         "--junctions.join-dist",
-        "15",
-        "--junctions.corner-detail",
         "10",
-        "--junctions.internal-link-detail",
-        "10",
+        # Road features
+        "--ramps.guess",
+        "--roundabouts.guess",
         "--osm.turn-lanes",
-        "--tls.guess",
-        "--tls.guess-signals",
-        "--tls.join",
+        # REMOVE traffic lights
+        "--tls.discard-simple",
+        "--tls.discard-loaded",
+        # Simplify
+        "--no-internal-links",
         "-o",
         NET,
     ]
@@ -44,4 +50,4 @@ def convert_map(map):
     return NET
 
 
-convert_map(MAP)
+convert_map()

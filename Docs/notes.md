@@ -119,15 +119,18 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
-  - Change the convert_map and simplify and create a separate script for converting osm
-
-
+  - Network Santiago y BCN (Eixample) similar in size to Mari Paz network
+  
+  
+  
+  
+  - Write all decisions (overpass, warmup...)
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker
-  - Network Santiago y BCN similar in size to Mari Paz network
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
   - Documentation of all the decisions
+
 
 - l/p:
   - Bottlenecks large networks:
@@ -138,6 +141,8 @@ If when using a network that is very big, I have some scalability issue when wri
   - explainability ai
   - decay distinto por agente ?
   - solapamiento rutas
+  - R think about which plots I want plots
+  - Para la thesis probar como funciona con distintos niveles de congestion de la network (ver como aprende el algoritmo)
 
 
 
