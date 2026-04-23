@@ -42,6 +42,8 @@ class Config:
     #####################
     alpha: float = 0.85
     congestion_ratio: float = 0.6
+    tolerance: float = 0.02
+
     #####################
     # Simulation
     #####################

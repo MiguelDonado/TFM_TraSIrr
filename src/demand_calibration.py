@@ -12,25 +12,48 @@ I will use avg_speed / free_flow_speed as the ratio used to measure congestion
 
 from config.config import config
 from demand_calibration_helper import DemandCalibration
-from paths import MAP, SUMMARY
-from scenario import Scenario
-from scripts.get_avg_speed import get_avg_speed
+from paths import MAP
 from scripts.get_free_flow_speed import get_free_flow_speed
 
 # Constants
 TARGET_SPEED_RATIO = config.congestion_ratio
+n_agents = 50
+# Counter number of iterations until convergence
+i = 0
+
+# Compute once the free flow speed of the network
+free_flow_speed = get_free_flow_speed(MAP)
 
 # Calibration loop
-for _ in range(10):
+while True:
+    print("\n\n###############")
+    print(f"Iteration {i}")
+    print("###############")
+
     # Initialize necessary stuff to run the simulation
-    demand_calibration = DemandCalibration(MAP)
+    demand_calibration = DemandCalibration(MAP, n_agents, free_flow_speed)
+    speed_ratio = demand_calibration.compute_congestion_ratio()
 
-    free_flow_speed = get_free_flow_speed(MAP)
+    # Log
+    print(f"Avg speed: {demand_calibration.avg_speed}")
+    print(f"Nº agents: {n_agents}")
 
-    avg_speed = get_avg_speed(config.warm_up_time, summary_filepath=SUMMARY)
+    # Check convergence
+    if abs(speed_ratio - TARGET_SPEED_RATIO) < config.tolerance:
+        break
 
-    target_speed_ratio = round(avg_speed / free_flow_speed, 2)
+    # Not sufficiently congested
+    if speed_ratio > TARGET_SPEED_RATIO:
+        # Increase demand
+        n_agents = int(n_agents * 1.2)
 
-    print(free_flow_speed, avg_speed, target_speed_ratio)
+    # Too congested
+    else:
+        # Decrease demand
+        n_agents = int(n_agents * 0.8)
 
-    break
+    # Increment cunter
+    i += 1
+
+# Visualize last episode
+demand_calibration.run_episode_with_gui()

@@ -8,16 +8,14 @@ from paths import (
     SUMO_CONF_DEMAND_CALIBRATION,
     TRIPS_DEMAND_CALIBRATION,
 )
-
-n_agents = 50
+from scripts.get_avg_speed import get_avg_speed
 
 
 class DemandCalibration:
-    def __init__(self, map):
+    def __init__(self, map, n_agents, free_flow_speed):
         self.ensure_network(map)
-        self.generate_trips()
-        self.conf = self.generate_conf()
-        self.run_episode()
+        self.free_flow_speed = free_flow_speed
+        self.n_agents = n_agents
 
     def ensure_network(self, map):
         """
@@ -79,7 +77,7 @@ class DemandCalibration:
             "-e",
             str(config.end_time),
             "-p",
-            str(((config.end_time - config.start_time) / n_agents)),
+            str(((config.end_time - config.start_time) / self.n_agents)),
             "--fringe-factor",
             str(config.fringe_factor),
             "--min-distance",
@@ -113,8 +111,21 @@ class DemandCalibration:
             conf.write(f"\t\t<seed value='42'/>\n")
             conf.write(f"\t</random>\n")
             conf.write("</configuration>\n")
-        return SUMO_CONF_DEMAND_CALIBRATION
+
+        self.conf = SUMO_CONF_DEMAND_CALIBRATION
 
     def run_episode(self):
         cmd = ["sumo", "-c", self.conf]
         subprocess.run(cmd)
+
+    def run_episode_with_gui(self):
+        cmd = ["sumo-gui", "-c", self.conf]
+        subprocess.run(cmd)
+
+    def compute_congestion_ratio(self):
+        self.generate_trips()
+        self.generate_conf()
+        self.run_episode()
+        self.avg_speed = get_avg_speed(config.warm_up_time, summary_filepath=SUMMARY)
+        target_speed_ratio = round(self.avg_speed / self.free_flow_speed, 2)
+        return target_speed_ratio
