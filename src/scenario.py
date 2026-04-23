@@ -41,6 +41,8 @@ class Scenario:
         self.n_agents_warmup = n_agents_warmup
         self.n_agents_post_warmup = n_agents_post_warmup
         self.n_agents = n_agents_warmup + n_agents_post_warmup
+        self.network = map
+
         # List that store agents (each agent a dictionary with keys id, origin, destination)
         self.agents = []
         # Dictionary that stores set of routes for each OD-pair
@@ -57,17 +59,6 @@ class Scenario:
         self.ensure_routes(seeds)
         self.save_scenario_data()
         self.conf = self.generate_conf()
-
-    def ensure_network(self, map):
-        """
-        Convert map if needed
-        If you give an OpenStreetMap file .osm, it converts it to SUMO format using netconvert
-        Otherwise, it assumes it's already a SUMO network
-        """
-        if map.suffix == ".osm":
-            self.network = self.convert_map(map)
-        else:
-            self.network = map
 
     def generate_agents(self, rng):
         # Generate the random edge OD-matrix (origin,destination for the agents)
@@ -186,45 +177,6 @@ class Scenario:
     ########################
     ### HELPER FUNCTIONS ###
     ########################
-
-    def convert_map(self, map):
-        """
-        Converts OSM to SUMO
-        It uses netconvert tool with some options
-        It outputs a .net.xml file
-
-        It has some extra options, in order to try to make the conversion as good as possible
-        """
-
-        cmd = [
-            "netconvert",
-            "--osm",
-            map,
-            "--geometry.remove",
-            "--geometry.min-dist",
-            "1.0",
-            "--geometry.avoid-overlap",
-            "--ramps.guess",
-            "--roundabouts.guess",
-            "--junctions.join",
-            "--junctions.join-dist",
-            "15",
-            "--junctions.corner-detail",
-            "10",
-            "--junctions.internal-link-detail",
-            "10",
-            "--osm.turn-lanes",
-            "--tls.guess",
-            "--tls.guess-signals",
-            "--tls.join",
-            "-o",
-            NET,
-        ]
-
-        # Runs the command in the OS shell
-        subprocess.run(cmd, check=True)
-
-        return NET
 
     def generate_od_for_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -119,17 +119,16 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:
-  - Heuristica generar demanda para una network en concreto (y dejarlo explicado en design) (i can do it qualitatively, not congested, partially and heavily) and run experiments for all the scenarios
-  
-  
-  
   - Change the convert_map and simplify and create a separate script for converting osm
+
+
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker
   - Network Santiago y BCN similar in size to Mari Paz network
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
-  - Randomtrips may have options to solve the problem of how to load the network (demand) automatically based on network size (--insertion-density)...
+  - Documentation of all the decisions
+
 - l/p:
   - Bottlenecks large networks:
   - Leer paper "Where does this road go"

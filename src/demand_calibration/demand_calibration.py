@@ -13,59 +13,9 @@ from scripts.get_avg_speed import get_avg_speed
 
 class DemandCalibration:
     def __init__(self, map, n_agents, free_flow_speed):
-        self.ensure_network(map)
+        self.network = map
         self.free_flow_speed = free_flow_speed
         self.n_agents = n_agents
-
-    def ensure_network(self, map):
-        """
-        Convert map if needed
-        If you give an OpenStreetMap file .osm, it converts it to SUMO format using netconvert
-        Otherwise, it assumes it's already a SUMO network
-        """
-        if map.suffix == ".osm":
-            self.network = self.convert_map(map)
-        else:
-            self.network = map
-
-    def convert_map(self, map):
-        """
-        Converts OSM to SUMO
-        It uses netconvert tool with some options
-        It outputs a .net.xml file
-
-        It has some extra options, in order to try to make the conversion as good as possible
-        """
-
-        cmd = [
-            "netconvert",
-            "--osm",
-            map,
-            "--geometry.remove",
-            "--geometry.min-dist",
-            "1.0",
-            "--geometry.avoid-overlap",
-            "--ramps.guess",
-            "--roundabouts.guess",
-            "--junctions.join",
-            "--junctions.join-dist",
-            "15",
-            "--junctions.corner-detail",
-            "10",
-            "--junctions.internal-link-detail",
-            "10",
-            "--osm.turn-lanes",
-            "--tls.guess",
-            "--tls.guess-signals",
-            "--tls.join",
-            "-o",
-            NET,
-        ]
-
-        # Runs the command in the OS shell
-        subprocess.run(cmd, check=True)
-
-        return NET
 
     def generate_trips(self):
         cmd = [
