@@ -65,7 +65,7 @@ class Environment:
 
         # Write file
         tree = ET.ElementTree(routes)
-        tree.write(ROUTES, encoding="utf_8", xml_declaration=True, pretty_print=True)
+        tree.write(ROUTES, encoding="utf_8", xml_declaration=True)
 
     def run_episode(self, actions, current_episode):
         # This functions creates a rou.xml file that allows to run simulation without traci

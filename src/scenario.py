@@ -23,6 +23,7 @@ from paths import (
     OD_MATRIX,
     OD_ROUTES,
     STATISTICS,
+    SUMMARY,
     SUMO_CONF,
     TRIPS_INFO,
     UNDESIRED_ROUTE_FILE,
@@ -129,6 +130,7 @@ class Scenario:
             conf.write(f"\t<report>\n")
             conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
             conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
+            conf.write(f'\t\t<summary-output value="{SUMMARY}"/>\n')
             conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
             conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
             conf.write(f'\t\t<fcd-output value="{FCD}"/>\n')

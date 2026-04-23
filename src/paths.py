@@ -30,6 +30,7 @@ STATISTICS = RAW_DATA_DIR / "statistics.xml"
 TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
 VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
 FCD = RAW_DATA_DIR / "fcd-export.xml"
+SUMMARY = RAW_DATA_DIR / "summary.xml"
 OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
 
 # Files
@@ -38,6 +39,11 @@ NET = SUMO_DIR / "net" / "net.net.xml"  # For saving (if OSM file is provided)
 ROUTES = SUMO_DIR / "routes" / "routes.rou.xml"
 SUMO_CONF = SUMO_DIR / "config" / "basic.cfg"
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"
+
+# Demand calibration
+TRIPS_DEMAND_CALIBRATION = SUMO_DIR / "demand_calibration" / "trips.xml"
+ROUTES_DEMAND_CALIBRATION = SUMO_DIR / "demand_calibration" / "routes.xml"
+SUMO_CONF_DEMAND_CALIBRATION = SUMO_DIR / "demand_calibration" / "basic.cfg"
 
 # File automatically generated (used to delete it)
 UNDESIRED_ROUTE_FILE = BASE_DIR / "routes.rou.xml"

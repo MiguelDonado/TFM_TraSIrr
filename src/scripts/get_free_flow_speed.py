@@ -6,13 +6,11 @@ A weighted average of the max speed on each lane. The weights are the length of 
 import numpy as np
 from lxml import etree
 
-rng = np.random.default_rng(42)
-
 # CONSTANTS
 NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/FirstNetwork_Koh.net.xml"
 
 
-def change_lanes_speed(net=NETWORK_PATH):
+def get_free_flow_speed(net=NETWORK_PATH):
     """
     We dont want to get info about internal junctions.
     """
@@ -46,4 +44,4 @@ def change_lanes_speed(net=NETWORK_PATH):
 
 
 if __name__ == "__main__":
-    change_lanes_speed()
+    get_free_flow_speed()
