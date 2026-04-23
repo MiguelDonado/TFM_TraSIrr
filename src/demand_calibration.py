@@ -14,15 +14,20 @@ from config.config import config
 from demand_calibration_helper import DemandCalibration
 from paths import MAP
 from scripts.get_free_flow_speed import get_free_flow_speed
+from scripts.get_total_length_network import get_total_length_network
 
 # Constants
 TARGET_SPEED_RATIO = config.congestion_ratio
-n_agents = 50
 # Counter number of iterations until convergence
 i = 0
 
 # Compute once the free flow speed of the network
 free_flow_speed = get_free_flow_speed(MAP)
+
+# Initial guess (using heuristic length network)
+total_length_network = get_total_length_network(MAP)
+# Heuristic is basically to consider 100 vehicles per kilometer and hour
+n_agents = round(config.heuristic_veh_km_hour_initial_guess * total_length_network, 2)
 
 # Calibration loop
 while True:

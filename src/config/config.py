@@ -43,6 +43,7 @@ class Config:
     alpha: float = 0.85
     congestion_ratio: float = 0.6
     tolerance: float = 0.02
+    heuristic_veh_km_hour_initial_guess = 100
 
     #####################
     # Simulation
