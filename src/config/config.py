@@ -49,7 +49,7 @@ class Config:
     # ~ 0.4 - 0.7  -> Medium
     # < 0.4        -> Heavy
     target_congestion_ratio: float = 0.6
-    tolerance: float = 0.02
+    tolerance: float = 0.1
     heuristic_veh_km_hour_initial_guess: int = 100
 
     #####################
@@ -62,7 +62,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "Koh/FirstNetwork_Koh.net.xml"
+    network: str = "PopularTrafficNetworks/Sioux_Falls.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
@@ -70,6 +70,7 @@ class Config:
     # To reduce OD space (for OD generation).
     # Consider only a percentage of agents when generating od pairs
     percentage_agents: float = 0.1
+    max_od_pairs: int = 10
     fringe_factor: int = 50
 
     #####################

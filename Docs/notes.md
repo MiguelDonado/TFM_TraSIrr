@@ -118,13 +118,10 @@ If when using a network that is very big, I have some scalability issue when wri
 
 
 ## Pending
-- c/p:
-  - Network Santiago y BCN (Eixample) similar in size to Mari Paz network
-  
-  
-  
-  
+- c/p:  
   - Write all decisions (overpass, warmup...)
+
+
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Sumo docker

@@ -25,5 +25,12 @@ netgenerate --rand --rand.grid -o FirstRandom.net.xml \
     --rand.bidi-probability=0.7 \
     --rand.min-angle=25 \
     --default-junction-type=traffic_light
+
+netgenerate --grid --grid.number=10 --grid.length=400 --output-file=GridRandom.net.xml
+
+netconvert --sumo-net-file GridRandom.net.xml \
+           --no-left-connections \
+           --no-turnarounds true \
+           --output-file fixed.net.xml
 ```
 

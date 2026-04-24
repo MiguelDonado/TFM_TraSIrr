@@ -54,7 +54,7 @@ class Scenario:
         2. Generate routes sets per OD
         3. Creates a config file
         """
-        self.ensure_network(map)
+        self.network = map
         self.generate_agents(rng)
         self.ensure_routes(seeds)
         self.save_scenario_data()
@@ -187,6 +187,9 @@ class Scenario:
             )
             # Ods for the subset of agents
             od_s_subset = self.parse_od_agents(trips_file)
+            # Select just X od pairs as maximum
+            od_s_subset = od_s_subset[: config.max_od_pairs]
+
             # Compute ods for all the agents
             od_s = self.sample_from_subset(od_s_subset, self.n_agents)
         self.write_od_matrix(od_s)
