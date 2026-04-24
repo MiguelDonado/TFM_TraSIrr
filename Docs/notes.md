@@ -119,18 +119,14 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
-  - Write all decisions (overpass, warmup...)
-
-
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
-  - Sumo docker
-  - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done
-  - Documentation of all the decisions
+  
+
 
 
 - l/p:
-  - Bottlenecks large networks:
+  - Hacer preguntas intuitivas, todo el mundo se identifica cuando estamos conduciendo. Antes de hacer un experimento saber que quiero respoonder
   - Leer paper "Where does this road go"
   - Check experiment evaluation in papers
   - Entender lo de preventivo y reactivo
@@ -140,7 +136,8 @@ If when using a network that is very big, I have some scalability issue when wri
   - solapamiento rutas
   - R think about which plots I want plots
   - Para la thesis probar como funciona con distintos niveles de congestion de la network (ver como aprende el algoritmo)
-
-
+  - Sumo docker
+  - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done 
+  - Maybe the Nguyen network, it says that usually it has a sparse OD (only a few OD pairs are allowed, instead of todos contra todos). It says that todos contra  todos is allowed, but is not what is done in the benchmark.
 
 

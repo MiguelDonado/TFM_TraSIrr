@@ -101,7 +101,10 @@ Because an empty network is not realistic, we should avoid to include in our ana
          2. *episodes_gui*: Visualize with GUI the given episodes
 
 ## 7. Networks
-- Same networks than the ones used in the papers I read.
+- Networks used in papers I read and some other popular traffic networks
+- All edges have constant speed
+- No traffic lights
+- Any node of my network can be an origin/destination.
   
 **Reasoning**
 - Spend 2 days, trying to build networks from real cities. SUMO is hell for that. 

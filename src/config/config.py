@@ -62,7 +62,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "PopularTrafficNetworks/Sioux_Falls.net.xml"
+    network: str = "DayToDay/3rd_Nguyen–Dupuis.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
