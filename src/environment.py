@@ -2,15 +2,8 @@
 Encapsulate the use of SUMO simulator
 """
 
-import math
-import os
-import statistics
 import subprocess
 import xml.etree.ElementTree as ET
-
-import traci
-from prettytable import PrettyTable
-from sklearn import preprocessing
 
 from config.config import config
 from paths import ROUTES, TRIPS_INFO

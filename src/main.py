@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 
 from agents.factory import initialize_agents, select_actions, update_agents
