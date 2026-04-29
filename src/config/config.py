@@ -62,14 +62,14 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "DayToDay/3rd_Nguyen–Dupuis.net.xml"
+    network: str = "Popular/Sioux_Falls.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
     #####################
     # To reduce OD space (for OD generation).
     # Consider only a percentage of agents when generating od pairs
-    percentage_agents: float = 0.1
+    percentage_agents: float = 1
     max_od_pairs: int = 10
     fringe_factor: int = 50
 

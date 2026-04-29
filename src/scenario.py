@@ -187,11 +187,12 @@ class Scenario:
             )
             # Ods for the subset of agents
             od_s_subset = self.parse_od_agents(trips_file)
-            # Select just X od pairs as maximum
-            od_s_subset = od_s_subset[: config.max_od_pairs]
 
-            # Compute ods for all the agents
-            od_s = self.sample_from_subset(od_s_subset, self.n_agents)
+            # Compute ods for all the agents (sample from reduced OD pool with size <=k)
+            od_s = self.sample_from_subset(
+                od_s_subset, self.n_agents, config.max_od_pairs
+            )
+
         self.write_od_matrix(od_s)
         return od_s
 
@@ -227,20 +228,28 @@ class Scenario:
         od_s = list(zip(origins, destinies))
         return od_s
 
-    def sample_from_subset(self, od_list, n_agents):
+    def sample_from_subset(self, od_list, n_agents, k):
         """
         Weighted sampling based on frequency of OD pairs
+
+        Make sure to reduce the OD pool to <= k unique ODs
+        Then sampled from that reduced pool
         """
         counter = Counter(od_list)
 
-        unique_ods = list(counter.keys())
+        # Step 1: Limit pool to k ODs (e.g., most frequent)
+        # .most_common() returns [(('A','B'), 3), (('C','D'), 2)]
+        most_common = counter.most_common(k)
+
+        unique_ods = [od for od, _ in most_common]
         self.unique_ods = unique_ods
-        counts = list(counter.values())
+        counts = [count for _, count in most_common]
 
-        # Convert counts to prob
-        probs = [count / sum(counts) for count in counts]
+        # Step 2: Probabilities within reduced pool
+        total = sum(counts)
+        probs = [c / total for c in counts]
 
-        # Sample od
+        # Step 3: sample MANY agents from FEW ODs
         ods = random.choices(
             unique_ods,
             weights=probs,
@@ -348,12 +357,10 @@ class Scenario:
     def __write_trip(self, file_path, od):
         origin, destination = od
         with open(file_path, "w") as f:
-            f.write(
-                f"""<routes>
+            f.write(f"""<routes>
     <trip id="t0" from="{origin}" to="{destination}" depart="0"/>
 </routes>
-                    """
-            )
+                    """)
 
     def __parse_route(self, routes_file):
         try:

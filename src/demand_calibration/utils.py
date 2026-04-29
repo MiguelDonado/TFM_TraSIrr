@@ -23,8 +23,23 @@ def demand_calibration(last_iteration_gui=True):
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
-    demand = compute_initial_guess_demand()
+    initial_demand = compute_initial_guess()
+    demand = calibration_loop(initial_demand, last_iteration_gui)
+    return demand
 
+
+def compute_initial_guess():
+    """
+    Initial guess (using heuristic length network)
+    """
+    total_length_network = get_total_length_network(MAP)
+
+    # Heuristic is basically to consider 100 vehicles per kilometer and hour
+    demand = int(config.heuristic_veh_km_hour_initial_guess * total_length_network)
+    return demand
+
+
+def calibration_loop(initial_demand, last_iteration_gui):
     ################################################
     ################################################
     # Calibration loop
@@ -32,6 +47,7 @@ def demand_calibration(last_iteration_gui=True):
     ################################################
     # Compute once the free flow speed of the network
     free_flow_speed = get_free_flow_speed(MAP)
+    demand = initial_demand
 
     # Counter number of iterations until convergence
     i = 0
@@ -67,19 +83,4 @@ def demand_calibration(last_iteration_gui=True):
         # Increment cunter
         i += 1
 
-    # Visualize last iteration
-    if last_iteration_gui:
-        demand_calibration.run_episode_with_gui()
-
     return int(demand)
-
-
-def compute_initial_guess_demand():
-    """
-    Initial guess (using heuristic length network)
-    """
-    total_length_network = get_total_length_network(MAP)
-
-    # Heuristic is basically to consider 100 vehicles per kilometer and hour
-    demand = int(config.heuristic_veh_km_hour_initial_guess * total_length_network)
-    return demand
