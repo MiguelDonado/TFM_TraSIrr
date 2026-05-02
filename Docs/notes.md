@@ -139,6 +139,5 @@ If when using a network that is very big, I have some scalability issue when wri
   - Para la thesis probar como funciona con distintos niveles de congestion de la network (ver como aprende el algoritmo)
   - Sumo docker
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done 
-
-
+  - ET time indexing have it clear
 

@@ -64,6 +64,9 @@ class Scenario:
         # Generate the random edge OD-matrix (origin,destination for the agents)
         od_s = self.generate_od_for_agents()
         departure_times = self.generate_departure_times(rng)
+        self.write_od_matrix(
+            od_s, departure_times, interval_size=config.interval_od_matrix
+        )
         for i in range(self.n_agents):
             origin, dest = od_s[i]
             departure_time = departure_times[i]
@@ -193,8 +196,6 @@ class Scenario:
             od_s = self.sample_od_space(
                 restricted_od_space_counter, self.n_agents, config.max_size_od_space
             )
-
-        self.write_od_matrix(od_s)
         return od_s
 
     def generate_random_trips_agents(self, output_file):
@@ -273,7 +274,40 @@ class Scenario:
         departure_times.sort()
         return departure_times
 
-    def write_od_matrix(self, od_list):
+    def write_od_matrix(self, od_list, departure_times_list, interval_size):
+
+        # Build df
+        df = pd.DataFrame(
+            [(o, d, t) for (o, d), t in zip(od_list, departure_times_list)],
+            columns=["origin", "destination", "departure_time"],
+        )
+
+        # Assign interval index
+        df["interval"] = (df["departure_time"] // interval_size).astype(int)
+
+        # Group and count
+        """
+        interval	origin	destination	    count
+        0	          A	          B	          5
+        """
+        grouped = (
+            df.groupby(["interval", "origin", "destination"])
+            .size()  # Counts how many rows on each group
+            .reset_index(name="count")  # Resets index and creates column count
+        )
+
+        # Generate one OD matrix per interval
+        for interval, subdf in grouped.groupby("interval"):
+            matrix = (
+                # Transforms into contingency table format
+                subdf.pivot(index="origin", columns="destination", values="count")
+                .fillna(0)
+                .astype(int)
+            )
+            start = interval * interval_size
+            end = (interval + 1) * interval_size
+            matrix.to_csv(f"{OD_MATRIX}_{start}_{end}.csv")
+
         counts = Counter(od_list)
         df = pd.DataFrame(
             [(o, d, c) for (o, d), c in counts.items()],

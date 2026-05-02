@@ -47,6 +47,7 @@ class Config:
     # 1. Numerical constants
     #####################
     epsilon: float = 1e-8  # To avoid division by zero
+    interval_od_matrix: int = 900  # (900 = 15 min)
 
     #####################
     # 2. Bush-Mosteller Learning
@@ -87,7 +88,7 @@ class Config:
     min_distance: int = field(init=False)
 
     #####################
-    # 7. Duaroouter
+    # 7. Duarouter
     #####################
     routing_algorithm: str = "CH"  # CH is faster than Djistra
     random_factor: int = 100  # For duarouter, the random factor it applies to the edges
