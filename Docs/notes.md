@@ -122,8 +122,7 @@ If when using a network that is very big, I have some scalability issue when wri
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Implementar lo del BM cuantos episodios meter. Que lo detecte de manera automatica, cuando converga a una prob dist over actions (Quasi-stationary)   
-  - More sophistocated convergence update demand calibration
-  - Escribir en design lo de min-distance heuristic
+  - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions can take agents)
 
 
 - l/p:
@@ -140,4 +139,5 @@ If when using a network that is very big, I have some scalability issue when wri
   - Sumo docker
   - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done 
   - ET time indexing have it clear
+  - Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead
 

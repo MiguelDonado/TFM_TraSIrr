@@ -30,6 +30,7 @@ Because an empty network is not realistic, we should avoid to include in our ana
 - Demand calibration (nº agents): Initial guess we use a simple heuristic, and for the feedback loop we use a simple congestion metric.
 - Route choices (k): 3
 - min-distance: 4 * median edge_length
+- Update rule demand calibration: Proportional (adapts to error)
 
 **Reasoning**
 - Regarding **zonification**, as I have written down in **theory.md**, there are multiple options. Among all the options, the only ones that are reasonable for our case, would be the grid-based, voronoi-based (only for BCN, only place where we might have some counters data), administrative, and graph. 
@@ -52,6 +53,9 @@ Because an empty network is not realistic, we should avoid to include in our ana
   1 edge → too short
   2 edges → still short
   4–5 edges → reasonable trip
+
+- Regarding the update rule used when doing demand calibration. First I was using a fixed number. For example if less congested increase demand by 1.2, and if too congested decrease demand by 0.8. But the problem with this approach is that it can oscillate. Instead we use a proportional update rule. 
+  - The proportional update rule adjusts the demand based on the magnitude of the error. Instead of applying a fixed update factor, the adjusment depends on the deviation from the target congestion level. When the error is large, the update is more aggresive, enabling faster correction. As the error decreases, the updates become smaller, allowing for a smoother and more stable convergence.
 
 **Verified**
 - `scenario.compute_k_routes(od)` has been implemented by calling duarouter multiple times and using option `--weights.random-factor <float>`. This option modifies the edge costs randomly by $x \in [1,<float>]$. Another option would be to use duaIterate.py.
@@ -76,7 +80,7 @@ Because an empty network is not realistic, we should avoid to include in our ana
   - Unused routes PT doesnt affect when computing the ET or updating probabilities, only matters when computing the stimulus, thats why we had to handle it using that heuristic.
 
 - According to the paper *"A Day-to-Day Route Choice Model Based on Reinforcement Learning"*, we use positive travel times as a signal during learning, so we use positive travel time as a cost that we want to minimize.
-- Warm-up in order to encourage exploration in the beginning before starting to learn.
+- Warm-up in order to encourage exploration in the beginning before starting to learn and also to overcome the problem of time indexing for the first timesteps.
 
 ## 5. Randomness
 
@@ -117,3 +121,24 @@ Because an empty network is not realistic, we should avoid to include in our ana
 - Also, random network generation works bad as hell. Turnarounds everywhere and nonsense connections.
 
 
+## 8. Simulation outputs
+- Output files: vehroutes, tripinfo, fcdoutput, summary, statitics
+
+**Reasoning**
+- *vehroutes* contains info for one simulation episode about which route (all the edges) a vehicle took, and all the exit times of each edge, allowing hence to know the travel time on each edge of the route
+- *tripinfo* contains summary information about one simulation episode for each vehicle about several metrics (duration, routeLength...)
+- *statistics* contains summary information about one simulation episode for all the vehicles about several metrics (totalTravelTime, totalrouteLength)
+- *fcdoutput* contains information for each timestep and for each vehicle. For example some metrics like speed...
+- *summary* contains summary information for each timestep (about all the vehicles) 
+
+## 9. Programming languages
+- Python, R
+
+**Reasoning**
+Python is used for the whole experiment setup, program logic. R is used to perform report/analysis
+
+## 10. Hyperparameters
+- File: config.py
+
+**Reasoning**
+To facilitate reproducibility and enabling systematic experimentation

@@ -15,6 +15,7 @@ from demand_calibration.demand_calibration import DemandCalibration
 from paths import MAP
 from scripts.get_free_flow_speed import get_free_flow_speed
 from scripts.get_total_length_network import get_total_length_network
+import numpy as np
 
 
 def demand_calibration(last_iteration_gui=True):
@@ -66,19 +67,16 @@ def calibration_loop(initial_demand, last_iteration_gui):
         print(f"Avg speed: {demand_calibration.avg_speed}")
         print(f"Demand (nº agents): {demand}")
 
+        error = speed_ratio - config.target_congestion_ratio
+
         # Check convergence
-        if abs(speed_ratio - config.target_congestion_ratio) < config.tolerance:
+        if abs(error) < config.tolerance:
             break
 
-        # Not sufficiently congested
-        if speed_ratio > config.target_congestion_ratio:
-            # Increase demand
-            demand = int(demand * 1.2)
+        update_factor = 1 + (config.k_demand_calib * error)
+        update_factor = round(float(np.clip(update_factor, 0.6, 1.4)), 3)
 
-        # Too congested
-        else:
-            # Decrease demand
-            demand = int(demand * 0.8)
+        demand = int(demand * update_factor)
 
         # Increment cunter
         i += 1

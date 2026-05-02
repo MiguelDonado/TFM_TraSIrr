@@ -66,6 +66,7 @@ class Config:
     target_congestion_ratio: float = 0.6
     tolerance: float = 0.1
     heuristic_veh_km_hour_initial_guess: int = 100
+    k_demand_calib: float = 1
 
     #####################
     # 4. Simulation time
