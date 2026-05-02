@@ -83,15 +83,7 @@ class Scenario:
         if config.have_precomputed_routes:
             self.reconstruct_od_routes()
         else:
-            self.generate_routes(seeds)
-
-    def generate_routes(self, seeds):
-        # 1. Compute routes per OD
-        for od in self.unique_ods:
-            # Store in the dictionary od_routes the set of routes for this od pair.
-            self.od_routes[od] = self.compute_k_routes(od, seeds)
-
-        UNDESIRED_ROUTE_FILE.unlink()
+            self.od_routes = self.compute_k_routes(seeds)
 
     def reconstruct_od_routes(self):
         df = pd.read_parquet(OD_ROUTES)
@@ -111,6 +103,65 @@ class Scenario:
             od_routes[key].append(route)
 
         self.od_routes = od_routes
+
+    def compute_k_routes(
+        self,
+        seeds,
+        k=3,
+        max_attempts=config.max_attempts,
+        random_factor=config.random_factor,
+    ):
+        # Weights of edges by default are free-flow travel times
+        # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
+
+        routes_per_od = None
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            trips_file = os.path.join(tmpdir, "trips.xml")
+            routes_file = os.path.join(tmpdir, "routes.xml")
+
+            # 1. Create trips.xml
+            self.__write_trip(trips_file)
+
+            # 2. Compute best route according shortest-path
+            best_routes = self._run_duarouter(
+                trips_file, routes_file, random_factor=1.0, seed=config.seed
+            )
+
+            if not best_routes:
+                return []
+
+            # Initialize structure: one list per OD
+            routes_per_od = [[r] for r in best_routes]
+
+            # 3. Generate alternative routes
+            for seed in seeds:
+                # Early stop
+                if all(len(rlist) >= k for rlist in routes_per_od):
+                    break
+
+                new_routes = self._run_duarouter(
+                    trips_file,
+                    routes_file,
+                    random_factor=random_factor,
+                    seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
+                )
+
+                if not new_routes:
+                    continue
+
+                for i, route in enumerate(new_routes):
+                    # Avoid duplicates per OD
+                    if route not in routes_per_od[i]:
+                        if len(routes_per_od[i]) < k:
+                            routes_per_od[i].append(route)
+
+        # 4. Delete undesired file
+        UNDESIRED_ROUTE_FILE.unlink()
+
+        od_routes = dict(zip(self.unique_ods, routes_per_od))
+        # 5. Return k routes
+        return od_routes
 
     def generate_conf(self):
         """
@@ -320,53 +371,6 @@ class Scenario:
         )
         matrix.to_csv(OD_MATRIX)
 
-    def compute_k_routes(
-        self,
-        od,
-        seeds,
-        k=3,
-        max_attempts=config.max_attempts,
-        random_factor=config.random_factor,
-    ):
-        # Weights of edges by default are free-flow travel times
-        # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
-
-        routes = []
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            trips_file = os.path.join(tmpdir, "trips.xml")
-            routes_file = os.path.join(tmpdir, "routes.xml")
-
-            # 1. Create trips.xml
-            self.__write_trip(trips_file, od)
-
-            # 2. Compute best route according shortest-path
-            best_route = self._run_duarouter(
-                trips_file, routes_file, random_factor=1.0, seed=config.seed
-            )
-
-            if best_route:
-                routes.append(best_route)
-
-            # 3. Try seeds until k routes (applying random factor to edge costs)
-            for seed in seeds:
-                # Early stop
-                if len(routes) == k:
-                    break
-
-                route = self._run_duarouter(
-                    trips_file,
-                    routes_file,
-                    random_factor=random_factor,
-                    seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
-                )
-
-                if route and route not in routes:
-                    routes.append(route)
-
-        # 4. Return k routes
-        return routes
-
     def _run_duarouter(self, trips_file, routes_file, random_factor, seed):
         cmd = [
             "duarouter",
@@ -393,26 +397,24 @@ class Scenario:
 
         return self.__parse_route(routes_file)
 
-    def __write_trip(self, file_path, od):
-        origin, destination = od
+    def __write_trip(self, file_path):
         with open(file_path, "w") as f:
-            f.write(f"""<routes>
-    <trip id="t0" from="{origin}" to="{destination}" depart="0"/>
-</routes>
-                    """)
+            f.write(f"<routes>\n")
+            for i, (origin, destination) in enumerate(self.unique_ods):
+                f.write(
+                    f"""\t<trip id="t{i}" from="{origin}" to="{destination}" depart="0"/>\n"""
+                )
+            f.write("</routes>\n")
 
     def __parse_route(self, routes_file):
         try:
-            tree = ET.parse(routes_file)
-            root = tree.getroot()
+            document = routes_file
+            tree = etree.parse(document)
 
-            vehicle = root.find("vehicle")
-            route = vehicle.find("route")
-            if route is not None:
-                edges = route.attrib["edges"].split()
-                return edges
+            # Routes
+            routes = tree.xpath("//route/@edges")
+            edges = [route.split(" ") for route in routes]
+            return edges
 
         except Exception:
             return None
-
-        return None

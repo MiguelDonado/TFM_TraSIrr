@@ -39,7 +39,7 @@ statistics_plot <- ggplot(
   facet_wrap(~ metric, scales = "free_y") +
   labs(
     title = "Aggregated metrics over episodes",
-    x = "Episode",
+    # x = "Episode",
     y = "Value"
   ) +
   theme_minimal()
