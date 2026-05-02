@@ -10,7 +10,7 @@ from lxml import etree
 NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
 
-def get_network_characteristics(net=NETWORK_PATH):
+def get_edges_lengths_script(net=NETWORK_PATH):
     ###########
     # SCRIPT
     ###########
@@ -29,7 +29,9 @@ def get_network_characteristics(net=NETWORK_PATH):
         delimiter=",",
         fmt="%.2f",
     )
+    mean_length = round(float(np.mean(data)), 2)
+    return mean_length
 
 
 if __name__ == "__main__":
-    get_network_characteristics()
+    get_edges_lengths_script()

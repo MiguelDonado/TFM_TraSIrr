@@ -181,23 +181,23 @@ class Scenario:
     def generate_od_for_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
-            # Generate random ods for some % (percentage) of the agents
-            self.generate_random_trips_subset_agents(
-                trips_file, config.percentage_agents
+            # Generate random ods for agents
+            self.generate_random_trips_agents(trips_file)
+            # OD space
+            od_space = self.parse_od_agents(trips_file)
+            # Restricted/bounded OD space
+            restricted_od_space_counter = self.restrict_od_space(
+                od_space, config.max_size_od_space
             )
-            # Ods for the subset of agents
-            od_s_subset = self.parse_od_agents(trips_file)
-
-            # Compute ods for all the agents (sample from reduced OD pool with size <=k)
-            od_s = self.sample_from_subset(
-                od_s_subset, self.n_agents, config.max_od_pairs
+            # Sample ods for all the agents from the restricted OD space
+            od_s = self.sample_od_space(
+                restricted_od_space_counter, self.n_agents, config.max_size_od_space
             )
 
         self.write_od_matrix(od_s)
         return od_s
 
-    def generate_random_trips_subset_agents(self, output_file, percentage):
-        # Subset from the post warmup agents
+    def generate_random_trips_agents(self, output_file):
         cmd = [
             "randomTrips.py",
             "-n",
@@ -207,11 +207,11 @@ class Scenario:
             "-e",
             str(config.end_time),
             "-p",
-            str(((config.end_time - 0) / (self.n_agents_post_warmup * percentage))),
+            str(((config.end_time - 0) / (self.n_agents_post_warmup))),
             "--fringe-factor",
             str(config.fringe_factor),
             "--min-distance",
-            "100",
+            str(config.min_distance),
             "--seed",
             str(config.seed),
             "--validate",
@@ -228,22 +228,26 @@ class Scenario:
         od_s = list(zip(origins, destinies))
         return od_s
 
-    def sample_from_subset(self, od_list, n_agents, k):
+    def restrict_od_space(self, od_list, k):
         """
-        Weighted sampling based on frequency of OD pairs
-
-        Make sure to reduce the OD pool to <= k unique ODs
-        Then sampled from that reduced pool
+        Make sure to restrict/bound the OD pool to <= k unique ODs
         """
         counter = Counter(od_list)
 
-        # Step 1: Limit pool to k ODs (e.g., most frequent)
+        # Limit pool to k ODs (e.g., most frequent)
         # .most_common() returns [(('A','B'), 3), (('C','D'), 2)]
         most_common = counter.most_common(k)
+        return most_common
 
-        unique_ods = [od for od, _ in most_common]
+    def sample_od_space(self, od_space_counter, n_agents, k):
+        """
+        Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
+        It will receive the reduced OD space counter object
+        """
+
+        unique_ods = [od for od, _ in od_space_counter]
         self.unique_ods = unique_ods
-        counts = [count for _, count in most_common]
+        counts = [count for _, count in od_space_counter]
 
         # Step 2: Probabilities within reduced pool
         total = sum(counts)
@@ -342,6 +346,7 @@ class Scenario:
             str(config.n_threads),
             "--routing-algorithm",
             config.routing_algorithm,
+            # Just in case, even though it seems that this option --max-alternatives does not work (does not compute more than one route)
             "--max-alternatives",
             "1",
             "--weights.random-factor",

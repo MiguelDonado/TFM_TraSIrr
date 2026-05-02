@@ -9,6 +9,9 @@ cd /home/miguel/6.Projects/Thesis/Examples/duarouter
 # 2. Execute duarouter (shortest-path)
 duarouter -n input.net.xml -r input.trips.xml -o output_shortest_path.routes.xml --write-costs
 
+# 2.1 Execute duarouter (shortest-path) with Thesis example
+duarouter -n /home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml -r thesis.trips.xml --alternatives-output test.xml   -o thesis.routes.xml
+
 # 3. Run SUMO-GUI
 sumo-gui -n input.net.xml -r output_shortest_path.routes.xml --delay 500 --step-length 0.1
 

@@ -121,8 +121,9 @@ If when using a network that is very big, I have some scalability issue when wri
 - c/p:  
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
-  
-
+  - Implementar lo del BM cuantos episodios meter. Que lo detecte de manera automatica, cuando converga a una prob dist over actions (Quasi-stationary)   
+  - More sophistocated convergence update demand calibration
+  - Escribir en design lo de min-distance heuristic
 
 
 - l/p:

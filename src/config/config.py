@@ -2,8 +2,22 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+from lxml import etree
+import numpy as np
 
-from scripts.network_stats import get_network_characteristics
+
+def get_edges_lengths_program(net):
+    document = net
+    tree = etree.parse(document)
+
+    # Edges
+    edges_length = tree.xpath("//edge[not(@function='internal')]/lane/@length")
+    edges_length = [float(edge_length) for edge_length in edges_length]
+
+    data = np.array(edges_length)
+    median_length = round(float(np.median(data)), 2)
+    return median_length
+
 
 # Enum: Clean way to represent a variable that can only take a few predefined values
 
@@ -62,16 +76,15 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "Popular/Sioux_Falls.net.xml"
+    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
     #####################
     # To reduce OD space (for OD generation).
-    # Consider only a percentage of agents when generating od pairs
-    percentage_agents: float = 1
-    max_od_pairs: int = 10
+    max_size_od_space: int = 10
     fringe_factor: int = 50
+    min_distance: int = field(init=False)
 
     #####################
     # 7. Duaroouter
@@ -99,6 +112,9 @@ class Config:
     def __post_init__(self):
         # Compute end_time
         self.end_time = self.warm_up_time + self.simulation_time
+
+        # Coompute min distance
+        self.min_distance = int(4 * get_edges_lengths_program(self.network))
 
 
 config = Config()

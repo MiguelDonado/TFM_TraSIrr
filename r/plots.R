@@ -47,80 +47,7 @@ statistics_plot <- ggplot(
 # Save plot
 ggsave(filename = statistics_plot_path, plot = statistics_plot, dpi = dpi, width = width, height = height)
 
-
-
-#################################################
-#################################################
-# 2. "Vehroute" parquet file
-#################################################
-#################################################
-
-vehroute_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/vehroute.parquet"
-vehroute_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_1.png"
-vehroute_plot_2_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_2.png"
-
-df_vehroute <- read_parquet(vehroute_parquet_path)
-
-# lag: Previous edge time
-# First edge time = exit_time - 0
-df_vehroute <- df_vehroute |> 
-  arrange(episode, vehicle_id, exit_times) |> 
-  group_by(episode, vehicle_id) |> 
-  mutate(
-    time_on_edge = exit_times - lag(exit_times, default = 0)
-  ) |> 
-  ungroup()
-
-############
-# FIRST PLOT
-############
-
-# Mean time per edge
-df_vehroute_plot_1 <- df_vehroute |> 
-  group_by(edge) |> 
-  summarise(mean_time = mean(time_on_edge)) |> 
-  slice_max(mean_time, n = 5)
-
-vehroute_plot_1 <- ggplot(
-  data = df_vehroute_plot_1,
-  mapping = aes(x = reorder(edge, desc(mean_time)), y = mean_time)
-  ) + 
-  geom_col() +
-  theme_minimal() +
-  labs(
-    title = "Mean time of top 5 slowest edges over all episodes"
-  )
-
-# Save plot
-ggsave(filename = vehroute_plot_1_path, plot = vehroute_plot_1, dpi = dpi, width = width, height = height)
-
-############
-# SECOND PLOT
-############
-
-# Plot over episodes (top 5 slowest edges)
-top_5_slowest_edges <- df_vehroute_plot_1 |> pull(edge)
-
-df_vehroute_plot_2 <- df_vehroute |> filter(
-  edge %in% top_5_slowest_edges
-) |> 
-  group_by(episode, edge) |> 
-  summarise(mean_time = mean(time_on_edge), .groups = "drop")
-
-vehroute_plot_2 <- ggplot(
-  data = df_vehroute_plot_2,
-  mapping = aes(x = episode, y = mean_time)
-) +
-  geom_line() +
-  facet_wrap(~ edge, scales = "free_y") +
-  labs(
-    title = "Mean time on edge over episodes (5 slowest edges)"
-  )
-
-# Save plot
-ggsave(filename = vehroute_plot_2_path, plot = vehroute_plot_2, dpi = dpi, width = width, height = height)
-
-
+quit()
 
 #################################################
 #################################################
@@ -171,7 +98,81 @@ trips_info_plot_1 <- ggplot(
 # Save plot
 ggsave(filename = trips_info_plot_1_path, plot = trips_info_plot_1, dpi = dpi, width = width, height = height)
 
+rm(df_tripsinfo)
+gc()
 
+
+#################################################
+#################################################
+# 2. "Vehroute" parquet file
+#################################################
+#################################################
+
+vehroute_parquet_path <- "/home/miguel/6.Projects/Thesis/data/processed/vehroute.parquet"
+vehroute_plot_1_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_1.png"
+vehroute_plot_2_path <- "/home/miguel/6.Projects/Thesis/output/figures/vehroute_2.png"
+
+df_vehroute <- read_parquet(vehroute_parquet_path)
+
+# lag: Previous edge time
+# First edge time = exit_time - 0
+df_vehroute <- df_vehroute |> 
+  arrange(episode, vehicle_id, exit_times) |> 
+  group_by(episode, vehicle_id) |> 
+  mutate(
+    time_on_edge = exit_times - lag(exit_times, default = 0)
+  ) |> 
+  ungroup()
+
+############
+# FIRST PLOT
+############
+
+# Mean time per edge
+df_vehroute_plot_1 <- df_vehroute |> 
+  group_by(edge) |> 
+  summarise(mean_time = mean(time_on_edge)) |> 
+  slice_max(mean_time, n = 5)
+
+vehroute_plot_1 <- ggplot(
+  data = df_vehroute_plot_1,
+  mapping = aes(x = reorder(edge, desc(mean_time)), y = mean_time)
+  ) + 
+  geom_col() +
+  theme_minimal() +
+  labs(
+    title = "Mean time of top 5 slowest edges over all episodes"
+  )
+
+# Save plot
+ggsave(filename = vehroute_plot_1_path, plot = vehroute_plot_1, dpi = dpi, width = width, height = height)
+
+
+############
+# SECOND PLOT
+############
+
+# Plot over episodes (top 5 slowest edges)
+top_5_slowest_edges <- df_vehroute_plot_1 |> pull(edge)
+
+df_vehroute_plot_2 <- df_vehroute |> filter(
+  edge %in% top_5_slowest_edges
+) |> 
+  group_by(episode, edge) |> 
+  summarise(mean_time = mean(time_on_edge), .groups = "drop")
+
+vehroute_plot_2 <- ggplot(
+  data = df_vehroute_plot_2,
+  mapping = aes(x = episode, y = mean_time)
+) +
+  geom_line() +
+  facet_wrap(~ edge, scales = "free_y") +
+  labs(
+    title = "Mean time on edge over episodes (5 slowest edges)"
+  )
+
+# Save plot
+ggsave(filename = vehroute_plot_2_path, plot = vehroute_plot_2, dpi = dpi, width = width, height = height)
 
 #################################################
 #################################################
@@ -190,6 +191,9 @@ df_rawdump <- df_vehroute |> mutate(
 ) |> mutate(
   vehicle_id = str_replace(vehicle_id, "agent_", "")
 ) 
+
+rm(df_vehroute)
+gc()
 
 df_rawdump_expanded <- df_rawdump |> 
   # Changes behavior from operate on whole columns to operate row by row
@@ -226,8 +230,6 @@ rawdump_plot_1 <- ggplot(
 # Save plot
 ggsave(filename = rawdump_plot_1_path, plot = rawdump_plot_1, dpi = dpi, width = width, height = height)
 
-
-
 #################################################
 #################################################
 # 5. "FCD" parquet file
@@ -242,7 +244,7 @@ fcd_parquet_plot_5_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_5.
 fcd_parquet_plot_6_path <- "/home/miguel/6.Projects/Thesis/output/figures/fcd_6.png"
 
 
-df_fcd <- read_parquet(fcd_parquet_path)
+df_fcd <- open_dataset(fcd_parquet_path)
 
 # Data wrangling
 df_fcd <- df_fcd |> mutate(
@@ -331,15 +333,15 @@ ggsave(filename = fcd_parquet_plot_4_path, plot = fcd_plot_4, dpi = dpi, width =
 ###############
 ## Plot 5: Animate
 ###############
-library(gganimate)
+# library(gganimate)
 
-df_fcd_plot_5 <- df_fcd |> 
-  filter(episode == 18)
+# df_fcd_plot_5 <- df_fcd |> 
+#  filter(episode == 18)
 
-fcd_plot_5 <- ggplot(df_fcd_plot_5, aes(x = x, y = y, group = vehicle_id)) +
-  geom_point() +
-  transition_time(timestep) +
-  labs(title="Traffic evolution of all vehicles in one episode")
+# fcd_plot_5 <- ggplot(df_fcd_plot_5, aes(x = x, y = y, group = vehicle_id)) +
+#  geom_point() +
+#  transition_time(timestep) +
+#  labs(title="Traffic evolution of all vehicles in one episode")
 
 # anim <- suppressMessages(suppressWarnings(animate(fcd_plot_5, renderer = av_renderer())))
 
@@ -356,6 +358,9 @@ fcd_plot_6 <- ggplot(df_fcd, aes(x = x, y = y)) +
 
 # Save plot
 ggsave(filename = fcd_parquet_plot_6_path, plot = fcd_plot_6, dpi = dpi, width = width, height = height)
+
+rm(df_fcd)
+gc()
 
 ##########################
 ## Internal data

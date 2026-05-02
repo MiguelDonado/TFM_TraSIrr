@@ -34,7 +34,7 @@ SUMMARY = RAW_DATA_DIR / "summary.xml"
 OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
 
 # Files
-MAP = SUMO_DIR / "net" / config.network  # For using (NETEDIT)
+MAP = config.network  # For using (NETEDIT)
 NET = SUMO_DIR / "net" / "net.net.xml"  # For saving (if OSM file is provided)
 ROUTES = SUMO_DIR / "routes" / "routes.rou.xml"
 SUMO_CONF = SUMO_DIR / "config" / "basic.cfg"
