@@ -136,7 +136,7 @@ def policy_stability(
 ##########
 # Total Stability (performance + policy)
 ##########
-def stopping_rule(window, absence_change_count, episode):
+def check_convergence(window, absence_change_count, episode):
     # Log
     if episode > config.warm_up + 1:
         print(f"Absence change count: {absence_change_count}")

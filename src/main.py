@@ -4,7 +4,7 @@ from stopping_rule.stopping_rule import (
     policy_stability,
     performance_stability,
     create_policy_dict,
-    stopping_rule,
+    check_convergence,
 )
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
@@ -136,10 +136,12 @@ def main():
 
         absence_change_count = policy_stability(**input_policy_stability)
         performance_stability(**input_performance_stability)
-        should_stop = stopping_rule(window, absence_change_count, episode)
+        should_stop = check_convergence(window, absence_change_count, episode)
 
         if should_stop:
             break
+
+    run_final_simulation()
     # -----------------------------
     # 7. SAVE OUTPUT
     # -----------------------------

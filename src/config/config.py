@@ -110,7 +110,7 @@ class Config:
     #####################
     mode: RunMode = RunMode.TRAIN
     have_precomputed_routes: bool = False
-    episodes_gui: set[int] = field(default_factory=lambda: {1, 25})
+    episodes_gui: set[int] = field(default_factory=lambda: {1})
 
     #####################
     # Derived values

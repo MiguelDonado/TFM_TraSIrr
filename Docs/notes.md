@@ -119,10 +119,11 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
-  - Write design choices
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions can take agents)
+  - Episodes GUI
+
 
 - l/p:
   - Hacer preguntas intuitivas, todo el mundo se identifica cuando estamos conduciendo. Antes de hacer un experimento saber que quiero respoonder
