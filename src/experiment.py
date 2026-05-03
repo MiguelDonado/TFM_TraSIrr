@@ -6,6 +6,7 @@ Purpose of this file: Orchestration + Pipeline
 
 import subprocess
 import sys
+import numpy as np
 
 import pandas as pd
 import yaml

@@ -1,5 +1,11 @@
 import numpy as np
-
+from collections import deque
+from stopping_rule.stopping_rule import (
+    policy_stability,
+    performance_stability,
+    create_policy_dict,
+    stopping_rule,
+)
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
 from demand_calibration.utils import demand_calibration
@@ -53,6 +59,14 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
+    # > Performance stability (deque: List with max size and LIFO logic)
+    window = deque(maxlen=config.window_size)
+
+    # > Policy stability
+    absence_change_count = 0  # Counter consecutive times with equal policies
+    avg_policies_per_od = []  # Stores all episodes
+
+    # > Data
     results = {
         "aggregated": [],
         "vehroute": [],
@@ -62,7 +76,8 @@ def main():
         "rewards": [],
         "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
     }
-    for episode in range(1, config.n_episodes + 1):
+
+    for episode in range(1, config.max_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
 
@@ -85,6 +100,10 @@ def main():
         # -----------------------------
         # 4. UPDATE AGENTS
         # -----------------------------
+        # Save policy used in THIS EPISODE (For checking policy convergence)
+        # After updating agents, they store the policy for NEXT EPISODE
+        policy_dict = create_policy_dict(agents)
+
         update_agents(
             actions=actions,
             agents=agents,
@@ -99,13 +118,35 @@ def main():
         result = prepare_data(episode, actions, rewards, agents)
         accumulate_results(results, result)
 
+        # -----------------------------
+        # 6. STOPPING RULE
+        # -----------------------------
+        input_policy_stability = {
+            "agents": scen.agents,
+            "policy_dict": policy_dict,
+            "avg_policies_per_od": avg_policies_per_od,
+            "episode": episode,
+            "absence_change_count": absence_change_count,
+        }
+        input_performance_stability = {
+            "agents": scen.agents,
+            "trips_info": result["trips_info_result"],
+            "window": window,
+        }
+
+        absence_change_count = policy_stability(**input_policy_stability)
+        performance_stability(**input_performance_stability)
+        should_stop = stopping_rule(window, absence_change_count, episode)
+
+        if should_stop:
+            break
     # -----------------------------
-    # 6. SAVE OUTPUT
+    # 7. SAVE OUTPUT
     # -----------------------------
     save_processed_data(results)
 
     # -----------------------------
-    # 7. PLOTS
+    # 8. PLOTS
     # -----------------------------
     make_plots()
 

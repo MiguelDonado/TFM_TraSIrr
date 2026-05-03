@@ -78,7 +78,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
@@ -99,7 +99,11 @@ class Config:
     #####################
     # 8. Experiment control
     #####################
-    n_episodes: int = 25
+    max_episodes: int = 100
+    window_size: int = 20
+    threshold_performance: float = 0.01
+    epsilon_policy_convergence: float = 0.01
+    k_absence_change: int = 10
 
     #####################
     # 9. Mode & flags
