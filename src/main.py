@@ -20,10 +20,19 @@ from experiment import (
 )
 from paths import MAP
 from scenario import Scenario
+from DUE_convergence.utils import (
+    get_avg_path_travel_time_per_odtp_k,
+    get_flows_path_per_odtp_k,
+    get_avg_link_travel_time_per_t_k,
+)
 
 # Reproducibility
 rng = np.random.default_rng(config.seed)
 seeds = rng.integers(0, 100000, size=config.max_attempts)
+
+
+def main2():
+    get_avg_link_travel_time_per_t_k()
 
 
 def main():
@@ -164,4 +173,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    # run()
+    main2()

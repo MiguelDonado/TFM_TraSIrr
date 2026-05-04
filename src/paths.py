@@ -25,6 +25,8 @@ OD_ROUTES = INTERNAL_DATA_DIR / "od_routes.parquet"
 ACTIONS = INTERNAL_DATA_DIR / "actions.parquet"
 REWARDS = INTERNAL_DATA_DIR / "rewards.parquet"
 BM_RESULTS = INTERNAL_DATA_DIR / "BM_results.parquet"
+FREE_FLOW_TRAVEL_TIMES = INTERNAL_DATA_DIR / "free_flow_travel_times.parquet"
+AVG_LINK_TRAVEL_TIMES = INTERNAL_DATA_DIR / "avg_link_travel_times.parquet"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
