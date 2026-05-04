@@ -67,6 +67,7 @@ class Config:
     tolerance: float = 0.1
     heuristic_veh_km_hour_initial_guess: int = 100
     k_demand_calib: float = 1
+    time_interval: int = 900  # 900seg = 15 min
 
     #####################
     # 4. Simulation time
@@ -78,7 +79,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
@@ -99,9 +100,9 @@ class Config:
     #####################
     # 8. Experiment control
     #####################
-    max_episodes: int = 100
+    max_episodes: int = 10
     window_size: int = 20
-    threshold_performance: float = 0.01
+    threshold_performance: float = 0.1
     epsilon_policy_convergence: float = 0.01
     k_absence_change: int = 10
 

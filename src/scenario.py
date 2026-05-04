@@ -28,6 +28,8 @@ from paths import (
     TRIPS_INFO,
     UNDESIRED_ROUTE_FILE,
     VEHROUTE,
+    MEANDATA,
+    EDGEDATA,
 )
 
 
@@ -76,6 +78,8 @@ class Scenario:
                     "origin": origin,
                     "destination": dest,
                     "departure_time": departure_time,
+                    # // represents integer division
+                    "time_interval": departure_time // config.time_interval,
                 }
             )
 
@@ -167,11 +171,15 @@ class Scenario:
         """
         Create SUMO Config file
         """
+        # Generate meandata file used for generation of edgedata output
+        self.generate_meandata_file()
+
         with open(SUMO_CONF, "w+") as conf:
             conf.write('<?xml version="1.0"?>\n')
             conf.write("<configuration>\n")
             conf.write("\t<input>\n")
             conf.write(f'\t\t<net-file value="{self.network}"/>\n')
+            conf.write(f'\t\t<additional-files value="{MEANDATA}"/>\n')
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
             conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
@@ -190,6 +198,17 @@ class Scenario:
             conf.write(f"\t</device>\n")
             conf.write("</configuration>\n")
         return SUMO_CONF
+
+    def generate_meandata_file(self):
+        with open(MEANDATA, "w+") as meandata:
+            meandata.write("<additional>\n")
+            meandata.write("\t<edgeData\n")
+            meandata.write(f"\t\tid='density_{config.time_interval}s'\n")
+            meandata.write(f"\t\tfile='{EDGEDATA}'\n")
+            meandata.write(f"\t\tperiod='{config.time_interval}'\n")
+            meandata.write(f"\t\texcludeEmpty='true'\n")
+            meandata.write(f"\t\twriteAttributes='density'/>\n")
+            meandata.write("</additional>\n")
 
     def save_scenario_data(self):
         processed_od_routes = self.process_od_routes()

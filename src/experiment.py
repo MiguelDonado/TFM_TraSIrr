@@ -7,6 +7,7 @@ Purpose of this file: Orchestration + Pipeline
 import subprocess
 import sys
 import numpy as np
+from lxml import etree
 
 import pandas as pd
 import yaml
@@ -29,6 +30,8 @@ from paths import (
     VEHROUTE,
     VEHROUTE_PROCESSED,
     YAML_CONF,
+    EDGEDATA,
+    EDGEDATA_PROCESSED,
 )
 
 # Load YAML file
@@ -47,6 +50,7 @@ def prepare_data(episode, actions, rewards, agents):
     vehroute_result = parse_vehroute(episode)
     trips_info_result = parse_trips_info(episode)
     fcd_result = parse_fcd(episode)
+    edgedata_result = parse_edgedata(episode)
     actions = prepare_actions(episode, actions)
     rewards = prepare_rewards(episode, rewards)
     BM_result = prepare_BM_data(episode, agents)
@@ -55,6 +59,7 @@ def prepare_data(episode, actions, rewards, agents):
         "vehroute_result": vehroute_result,
         "trips_info_result": trips_info_result,
         "fcd_result": fcd_result,
+        "edgedata_result": edgedata_result,
         "actions_result": actions,
         "rewards_result": rewards,
         "BM_result": BM_result,
@@ -67,6 +72,7 @@ def accumulate_results(results, result):
         "vehroute": ("vehroute_result", "extend"),
         "trips_info": ("trips_info_result", "extend"),
         "fcd": ("fcd_result", "extend"),
+        "edgedata": ("edgedata_result", "extend"),
         "actions": ("actions_result", "extend"),
         "rewards": ("rewards_result", "extend"),
         "BM_results": ("BM_result", "extend"),
@@ -98,6 +104,7 @@ def save_processed_data(results):
         "vehroute": VEHROUTE_PROCESSED,
         "trips_info": TRIPS_INFO_PROCESSED,
         "fcd": FCD_PROCESSED,
+        "edgedata": EDGEDATA_PROCESSED,
         "actions": ACTIONS,
         "rewards": REWARDS,
         "BM_results": BM_RESULTS,
@@ -196,6 +203,29 @@ def parse_fcd(episode):
     return data
 
 
+def parse_edgedata(episode):
+    data = []
+
+    document = EDGEDATA
+    tree = etree.parse(document)
+
+    interval_elements = tree.xpath("//interval")
+
+    for i, interval_element in enumerate(interval_elements):
+        edges = interval_element.xpath(".//edge")
+
+        for edge in edges:
+            data.append(
+                {
+                    "episode": episode,
+                    "interval": i,
+                    "edge": edge.get("id"),
+                    "density": edge.get("density"),
+                }
+            )
+    return data
+
+
 def prepare_actions(episode, actions):
     rows = []
     for agent, action in actions.items():
@@ -266,4 +296,3 @@ def run_final_simulation():
         ROUTES,
     ]
     subprocess.run(cmd)
-    sys.exit()

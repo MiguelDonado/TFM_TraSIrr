@@ -20,3 +20,6 @@ metrics:
   fcd: 
     timesteps: "//timestep"
     vehicle: "vehicle"
+  edgedata:
+    id: "//edge/@id"
+    density: "//edge/@density"

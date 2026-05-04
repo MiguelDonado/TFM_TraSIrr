@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <input>
+        <!-- Network -->
+        <net-file value="Sioux_Falls.net.xml"/>
+
+        <!-- Routes -->
+        <route-files value="routes.rou.xml"/>
+
+        <!-- Edge density aggregation -->
+        <additional-files value="meandata.xml"/>
+    </input>
+
+</configuration>

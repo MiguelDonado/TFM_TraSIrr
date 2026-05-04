@@ -35,7 +35,7 @@ def is_performance_stable(window_performance, threshold=config.threshold_perform
 
     sorted_w = np.sort(w)
 
-    trimmed = sorted_w[1:-1]
+    trimmed = sorted_w[3:-3]
 
     normalized_range = round(float((trimmed.max() - trimmed.min()) / trimmed.mean()), 3)
 

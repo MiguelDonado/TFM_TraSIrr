@@ -17,6 +17,7 @@ STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
 VEHROUTE_PROCESSED = PROCESSED_DATA_DIR / "vehroute.parquet"
 TRIPS_INFO_PROCESSED = PROCESSED_DATA_DIR / "trips_info.parquet"
 FCD_PROCESSED = PROCESSED_DATA_DIR / "fcd.parquet"
+EDGEDATA_PROCESSED = PROCESSED_DATA_DIR / "edgedata.parquet"
 
 # Internal data
 AGENTS_OD = INTERNAL_DATA_DIR / "agents_od.parquet"
@@ -26,6 +27,7 @@ REWARDS = INTERNAL_DATA_DIR / "rewards.parquet"
 BM_RESULTS = INTERNAL_DATA_DIR / "BM_results.parquet"
 
 # Output files
+EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
 STATISTICS = RAW_DATA_DIR / "statistics.xml"
 TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
 VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
@@ -39,6 +41,8 @@ NET = SUMO_DIR / "net" / "net.net.xml"  # For saving (if OSM file is provided)
 ROUTES = SUMO_DIR / "routes" / "routes.rou.xml"
 SUMO_CONF = SUMO_DIR / "config" / "basic.cfg"
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"
+# Additional file used when generating file edgedata.xml
+MEANDATA = SUMO_DIR / "config" / "meandata.xml"
 
 # Demand calibration
 TRIPS_DEMAND_CALIBRATION = SUMO_DIR / "demand_calibration" / "trips.xml"

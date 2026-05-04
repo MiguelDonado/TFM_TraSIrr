@@ -1,0 +1,8 @@
+<additional>
+	<edgeData
+		id='density_900s'
+		file='/home/miguel/6.Projects/Thesis/data/raw/edgedata.xml'
+		period='900'
+		excludeEmpty='true'
+		writeAttributes='density'/>
+</additional>

@@ -72,6 +72,7 @@ def main():
         "vehroute": [],
         "trips_info": [],
         "fcd": [],
+        "edgedata": [],
         "actions": [],
         "rewards": [],
         "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
