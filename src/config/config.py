@@ -107,7 +107,16 @@ class Config:
     k_absence_change: int = 10
 
     #####################
-    # 9. Mode & flags
+    # 9. DUE convergence
+    #####################
+    # When computating the Rgap, we need the table of avg travel time on links
+    # This table sometimes have empty cells. To impute missing, we can do a
+    # free_flow_travel_time or a fill forward. The choice depends on the density
+    # of the link. If higher than threshold we assign fill forward. Otherwise free flow.
+    theshold_density: int = 10
+
+    #####################
+    # 10. Mode & flags
     #####################
     mode: RunMode = RunMode.TRAIN
     have_precomputed_routes: bool = False

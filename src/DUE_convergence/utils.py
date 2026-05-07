@@ -235,7 +235,7 @@ def get_avg_link_travel_time_per_t_k():
         }
     )
     # Mask (condition). Select rows with travel_time missing and where density > 0
-    mask = df["travel_time"].isna() & (df["density"] > 0)
+    mask = df["travel_time"].isna() & (df["density"] > config.threshold_density)
     # Apply forward fill (only where mask true, replace travel_time with forward filled value)
     # .loc[rows,columns] It selects rows and columns
     df.loc[mask, "travel_time"] = df.loc[mask, "ffill"]
