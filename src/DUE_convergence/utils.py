@@ -219,7 +219,7 @@ def get_avg_link_travel_time_per_t_k():
     # Missing values. Forward fill
     ###############
 
-    # 1. Apply forward fill in NaN cells where density > 0
+    # 1. Apply forward fill in NaN cells where density > threshold_density
     # Create helper column for ffill
     # For each episode + edge, look at
     # travel time over time (implicitly ordered by interval), copy last known value forward
@@ -234,7 +234,7 @@ def get_avg_link_travel_time_per_t_k():
             "ffill": float,
         }
     )
-    # Mask (condition). Select rows with travel_time missing and where density > 0
+    # Mask (condition). Select rows with travel_time missing and where density > threshold_density
     mask = df["travel_time"].isna() & (df["density"] > config.threshold_density)
     # Apply forward fill (only where mask true, replace travel_time with forward filled value)
     # .loc[rows,columns] It selects rows and columns
@@ -247,7 +247,7 @@ def get_avg_link_travel_time_per_t_k():
     # Add free_flow travel time columns
     df = df.merge(
         free_flow_travel_times[["edge", "free_flow_travel_time"]], on="edge", how="left"
-    )
+    )c one wa
     # For leftover NaN values that are still present after applying fill forward, use free flow travel times
     mask = df["travel_time"].isna()
     df.loc[mask, "travel_time"] = df.loc[mask, "free_flow_travel_time"]

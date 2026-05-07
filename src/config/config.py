@@ -64,7 +64,7 @@ class Config:
     # ~ 0.4 - 0.7  -> Medium
     # < 0.4        -> Heavy
     target_congestion_ratio: float = 0.6
-    tolerance: float = 0.1
+    tolerance_demand_calibration: float = 0.1
     heuristic_veh_km_hour_initial_guess: int = 100
     k_demand_calib: float = 1
     time_interval: int = 900  # 900seg = 15 min
@@ -98,13 +98,11 @@ class Config:
     n_threads: int = 7  # If we want to ensure reproducibility should be 1 :(
 
     #####################
-    # 8. Experiment control
+    # 8. Stopping rule
     #####################
-    max_episodes: int = 10
-    window_size: int = 20
-    threshold_performance: float = 0.1
-    epsilon_policy_convergence: float = 0.01
-    k_absence_change: int = 10
+    max_episodes: int = 100
+    tolerance_stopping_rule: float = 10e-3
+    k_no_change: int = 10
 
     #####################
     # 9. DUE convergence
@@ -113,7 +111,7 @@ class Config:
     # This table sometimes have empty cells. To impute missing, we can do a
     # free_flow_travel_time or a fill forward. The choice depends on the density
     # of the link. If higher than threshold we assign fill forward. Otherwise free flow.
-    theshold_density: int = 10
+    threshold_density: int = 10
 
     #####################
     # 10. Mode & flags

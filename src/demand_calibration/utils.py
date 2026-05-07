@@ -70,7 +70,7 @@ def calibration_loop(initial_demand, last_iteration_gui):
         error = speed_ratio - config.target_congestion_ratio
 
         # Check convergence
-        if abs(error) < config.tolerance:
+        if abs(error) < config.tolerance_demand_calibration:
             break
 
         update_factor = 1 + (config.k_demand_calib * error)

@@ -119,6 +119,15 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
+  - Añadir todo lo que hice de Rgap a la thesis y flowchart. Y dejarlo todo escrito en design.md (incluido imputation missing values link table, )
+    - En la thesis todavía no añadi nada.
+    - En el flowchart todavia no añadi nada.
+    - En design.md todavia no añadi nada.
+    - Lo que si he dejado es bien documentado en "/home/miguel/6.Projects/Thesis/src/DUE_convergence/utils.py"
+
+
+
+
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions can take agents)

@@ -1,9 +1,7 @@
 import numpy as np
 from collections import deque
 from stopping_rule.stopping_rule import (
-    policy_stability,
-    performance_stability,
-    create_policy_dict,
+    create_policies_dict,
     check_convergence,
 )
 from agents.factory import initialize_agents, select_actions, update_agents
@@ -20,11 +18,12 @@ from experiment import (
 )
 from paths import MAP
 from scenario import Scenario
-from DUE_convergence.utils import (
-    get_avg_path_travel_time_per_odtp_k,
-    get_flows_path_per_odtp_k,
-    get_avg_link_travel_time_per_t_k,
-)
+
+# from DUE_convergence.utils import (
+#     get_avg_path_travel_time_per_odtp_k,
+#     get_flows_path_per_odtp_k,
+#     get_avg_link_travel_time_per_t_k,
+# )
 
 # Reproducibility
 rng = np.random.default_rng(config.seed)
@@ -68,12 +67,9 @@ def main():
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
-    # > Performance stability (deque: List with max size and LIFO logic)
-    window = deque(maxlen=config.window_size)
-
     # > Policy stability
-    absence_change_count = 0  # Counter consecutive times with equal policies
-    avg_policies_per_od = []  # Stores all episodes
+    no_change_count = 0  # Counter consecutive times without policy changes
+    policies_history = []  # Stores policies of all agents for all episodes
 
     # > Data
     results = {
@@ -110,9 +106,11 @@ def main():
         # -----------------------------
         # 4. UPDATE AGENTS
         # -----------------------------
-        # Save policy used in THIS EPISODE (For checking policy convergence)
+        # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
         # After updating agents, they store the policy for NEXT EPISODE
-        policy_dict = create_policy_dict(agents)
+        current_policies = create_policies_dict(agents)
+        # Store current policies in history
+        policies_history.append(current_policies)
 
         update_agents(
             actions=actions,
@@ -131,22 +129,11 @@ def main():
         # -----------------------------
         # 6. STOPPING RULE
         # -----------------------------
-        input_policy_stability = {
-            "agents": scen.agents,
-            "policy_dict": policy_dict,
-            "avg_policies_per_od": avg_policies_per_od,
-            "episode": episode,
-            "absence_change_count": absence_change_count,
-        }
-        input_performance_stability = {
-            "agents": scen.agents,
-            "trips_info": result["trips_info_result"],
-            "window": window,
-        }
-
-        absence_change_count = policy_stability(**input_policy_stability)
-        performance_stability(**input_performance_stability)
-        should_stop = check_convergence(window, absence_change_count, episode)
+        should_stop, no_change_count = check_convergence(
+            policies_history=policies_history,
+            episode=episode,
+            no_change_count=no_change_count,
+        )
 
         if should_stop:
             break
@@ -173,5 +160,5 @@ def run():
 
 
 if __name__ == "__main__":
-    # run()
-    main2()
+    run()
+    # main2()
