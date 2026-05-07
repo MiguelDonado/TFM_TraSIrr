@@ -9,20 +9,20 @@ from config.config import config
 def check_convergence(policies_history, episode, no_change_count):
 
     # Get the maximum policy change across all agents
-    max_policy_change = compute_max_policy_change(policies_history, episode)
+    meam_policy_change = compute_mean_policy_change(policies_history, episode)
 
     # Skip warm-up
-    if max_policy_change is None:
+    if meam_policy_change is None:
         return False, no_change_count
 
     # Update counter
-    if max_policy_change < config.tolerance_stopping_rule:
+    if meam_policy_change < config.tolerance_stopping_rule:
         no_change_count += 1
     else:
         no_change_count = 0
 
     # Log
-    print(f"Max policy change: {max_policy_change}")
+    print(f"Mean policy change: {meam_policy_change}")
     print(f"No change count: {no_change_count}")
 
     # Check convergence
@@ -48,12 +48,13 @@ def create_policies_dict(BM_agents):
     return policies_dict
 
 
-def compute_max_policy_change(policies_history, episode):
+def compute_mean_policy_change(policies_history, episode):
     """
-    Computes the maximum L1 change in policy
-    between consecutive episodes across all agents
+    Computes the mean L1 policy change
+    between consecutive episodes across all agents.
 
-    The L1 norm measures the total change
+    The L1 norm measures the total probability mass
+    shift in the policy vector.
     """
 
     # Skip warm-up episodes (uniform distrib)
@@ -64,7 +65,8 @@ def compute_max_policy_change(policies_history, episode):
     current_policies = policies_history[-1]
     previous_policies = policies_history[-2]
 
-    return max(
+    policy_changes = [
         np.linalg.norm(current_policies[agent] - previous_policies[agent], ord=1)
         for agent in current_policies
-    )
+    ]
+    return np.mean(policy_changes)

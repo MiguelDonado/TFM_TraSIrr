@@ -79,7 +79,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)
@@ -100,9 +100,9 @@ class Config:
     #####################
     # 8. Stopping rule
     #####################
-    max_episodes: int = 100
+    max_episodes: int = 200
     tolerance_stopping_rule: float = 10e-3
-    k_no_change: int = 10
+    k_no_change: int = 3
 
     #####################
     # 9. DUE convergence

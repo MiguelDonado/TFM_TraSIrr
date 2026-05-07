@@ -247,12 +247,17 @@ def get_avg_link_travel_time_per_t_k():
     # Add free_flow travel time columns
     df = df.merge(
         free_flow_travel_times[["edge", "free_flow_travel_time"]], on="edge", how="left"
-    )c one wa
+    )
     # For leftover NaN values that are still present after applying fill forward, use free flow travel times
     mask = df["travel_time"].isna()
     df.loc[mask, "travel_time"] = df.loc[mask, "free_flow_travel_time"]
     df = df.drop(["density", "ffill", "free_flow_travel_time"], axis="columns")
     df.to_parquet(AVG_LINK_TRAVEL_TIMES)
+
+
+#####
+# Helper functions
+#####
 
 
 def generate_free_flow_travel_times_links():

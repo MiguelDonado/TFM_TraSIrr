@@ -119,6 +119,22 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
+  1. Implementar time dependence shortest path.
+  2. Compute Rgap
+  3. Anotar todo lo que hice de Rgap:
+     1. Logic to export edgedata (to fill time dependence shortest path table). Contains density of the roads. Criteria used for imputing missing values in table.
+      - Regarding the density rule. The density attribute exported in edgedata is already normalized: density_edge = nºvehicles / edge_length. So it means that I get a normalized version that tells me how many veh/km. I considered the threshold a hyperparameter, but i set it to 10. If larger than 10, then fill forward, if smaller free flow.
+     2. Compute free flow travel times
+     3. Compute flows paths
+     4. Compute avg path travel times
+     5. compute avg link travel times (table)
+  4. Anotar lo que he cambiado de convergence algorithm. The most used approach with Bush Mosteller is probability convergence. Stop when changes in probabilities small. Check individually if each agent has converged. Take maximum of all agents change, abd stop if maximum below tolerance for several consecutive iterations. THe max is a common technique in MARL
+  5. Anotar alternativas de lo que no converge BM algoritmo (learning decay...) para mañana reunion
+  6. Dual graph is important also for TSDP (time dependence shortest path). And as we saw, roads are considered nodes, and feasible movements between roads are considered edges. Because when computing shortest path we need to consider cost of edges, but now edges are feasible movements, what we do is to assign the avg travel time of the road it connects to.
+  7. Explicar time-dependence shortest path logic, and over which graph we apply it. Over dual graph.
+
+
+
   - Añadir todo lo que hice de Rgap a la thesis y flowchart. Y dejarlo todo escrito en design.md (incluido imputation missing values link table, )
     - En la thesis todavía no añadi nada.
     - En el flowchart todavia no añadi nada.
