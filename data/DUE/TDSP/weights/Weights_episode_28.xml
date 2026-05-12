@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<meandata>
+  <interval begin="0" end="900" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="79.66666666666667"/>
+    <edge id="E2_3_WB" traveltime="18.0"/>
+    <edge id="E2_5_NB" traveltime="16.363636363636363"/>
+    <edge id="E2_5_SB" traveltime="16.166666666666668"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="21.934615384615384"/>
+    <edge id="E3_5_NWB" traveltime="24.5"/>
+    <edge id="E3_5_SEB" traveltime="142.0"/>
+    <edge id="E3_6_NWB" traveltime="28.157894736842106"/>
+    <edge id="E3_6_SEB" traveltime="54.5"/>
+    <edge id="E5_6_NEB" traveltime="42.0"/>
+    <edge id="E5_6_SWB" traveltime="12.333333333333334"/>
+    <edge id="E6_7_EB" traveltime="13.102564102564102"/>
+  </interval>
+  <interval begin="900" end="1800" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="13.029517638588912"/>
+    <edge id="E2_3_WB" traveltime="17.22222222222222"/>
+    <edge id="E2_5_NB" traveltime="16.77777777777778"/>
+    <edge id="E2_5_SB" traveltime="13.029517638588912"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="16.875"/>
+    <edge id="E3_5_NWB" traveltime="18.245500359971203"/>
+    <edge id="E3_5_SEB" traveltime="113.33333333333333"/>
+    <edge id="E3_6_NWB" traveltime="26.895833333333332"/>
+    <edge id="E3_6_SEB" traveltime="27.0"/>
+    <edge id="E5_6_NEB" traveltime="38.9"/>
+    <edge id="E5_6_SWB" traveltime="13.333333333333334"/>
+    <edge id="E6_7_EB" traveltime="12.914285714285715"/>
+  </interval>
+  <interval begin="1800" end="2700" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="17.0"/>
+    <edge id="E2_3_WB" traveltime="18.666666666666668"/>
+    <edge id="E2_5_NB" traveltime="17.77777777777778"/>
+    <edge id="E2_5_SB" traveltime="17.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="34.83892617449664"/>
+    <edge id="E3_5_NWB" traveltime="26.0"/>
+    <edge id="E3_5_SEB" traveltime="129.66666666666666"/>
+    <edge id="E3_6_NWB" traveltime="27.64625850340136"/>
+    <edge id="E3_6_SEB" traveltime="46.166666666666664"/>
+    <edge id="E5_6_NEB" traveltime="115.7"/>
+    <edge id="E5_6_SWB" traveltime="12.75"/>
+    <edge id="E6_7_EB" traveltime="13.154098360655738"/>
+  </interval>
+  <interval begin="2700" end="3600" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="40.2"/>
+    <edge id="E2_3_WB" traveltime="19.5"/>
+    <edge id="E2_5_NB" traveltime="19.0"/>
+    <edge id="E2_5_SB" traveltime="18.2"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.46127946127946"/>
+    <edge id="E3_5_NWB" traveltime="26.0"/>
+    <edge id="E3_5_SEB" traveltime="101.5"/>
+    <edge id="E3_6_NWB" traveltime="28.02047781569966"/>
+    <edge id="E3_6_SEB" traveltime="30.4"/>
+    <edge id="E5_6_NEB" traveltime="105.57142857142857"/>
+    <edge id="E5_6_SWB" traveltime="13.0"/>
+    <edge id="E6_7_EB" traveltime="12.923076923076923"/>
+  </interval>
+  <interval begin="3600" end="4200" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="16.0"/>
+    <edge id="E2_3_WB" traveltime="15.5"/>
+    <edge id="E2_5_NB" traveltime="15.0"/>
+    <edge id="E2_5_SB" traveltime="16.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.190751445086704"/>
+    <edge id="E3_5_NWB" traveltime="18.245500359971203"/>
+    <edge id="E3_5_SEB" traveltime="125.75"/>
+    <edge id="E3_6_NWB" traveltime="27.456852791878173"/>
+    <edge id="E3_6_SEB" traveltime="24.0"/>
+    <edge id="E5_6_NEB" traveltime="68.66666666666667"/>
+    <edge id="E5_6_SWB" traveltime="13.5"/>
+    <edge id="E6_7_EB" traveltime="13.061904761904762"/>
+  </interval>
+</meandata>

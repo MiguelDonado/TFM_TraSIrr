@@ -47,7 +47,6 @@ class Config:
     # 1. Numerical constants
     #####################
     epsilon: float = 1e-8  # To avoid division by zero
-    interval_od_matrix: int = 900  # (900 = 15 min)
 
     #####################
     # 2. Bush-Mosteller Learning

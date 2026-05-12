@@ -119,19 +119,34 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
-  1. Implementar time dependence shortest path.
-  2. Compute Rgap
-  3. Anotar todo lo que hice de Rgap:
+  1. En la tabla que cree manualmente de los avg travel time en los link, mi tabla no es FIFO. He visto que SUMO tambien es capaz de generar esa tabla, pero la medida que usa para rellenar el valor en cada celda, no se si es la correcta, o al menos tan sofisticada como la nuestra. Tambien he visto que parece que duarouter tambien implementa un time dependence shortest path, no se si funciona solamente asumiendo FIFO o tambien funciona cuando no es FIFO. Los pasos a seguir son:
+     1. Ver si duarouter funciona con mi tabla creada manualmente (NO FIFO).
+     2. Si no funciona con mi tabla ver si la tabla que genera SUMO es decente, y ejecutar el duarouter con su tabla.
+     3. Tampoco queremos perder mucho tiempo en esto.
+  2. Habia comentado que para mis networks que son pequeñas, los viajes no duran mucho tiempo, supongo que como mucho duran de 1 a 3 minutos o incluso menos. Entonces si cojo un intervalo de tiempo de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que quizas sea buena idea mirar la distribucion de tiempos de viaje (habria que ver si en free-flow o los que obtengo de una simulacion), y ajustar el intervalo de tiempo a la network. Porque tal vez no tenga sentido un intervalo de tiempo de 15 minutos si todos los viajes no duran ni 2 minutos.
+  3. Que el learning rate sea no lineal, que no se reacccione de manera lineal. Por ejemplo, puede ser que el coste que percibimos de la ruta no lo hagamos de manera lineal, es decir, hasta que el travel time no aumenta mucho, no somos capaces de percibir que la ruta aumento de coste.
+  4. En lugar de cambiar la traffic netwoork, queremos cambiar el driver, y ver como afecta.
+  5. Coste generalizado y coste ponderado se refieren cuando ademas del travel time incluimos mas cosas en el coste percibido.
+  6. Lo que habia comentado de link capacity as random variables, para ver si los conductores preferian rutas reliables or not, tambien se puede meter en el coste generalizado la varianza de los past travel times. De esa manera, en la T, estariamos tambien teniendo en cuenta la varianza de la ruta (si es estable o no).
+  7. Cuandoo habia comentado yo, lo de que tenia dudas sobre la utilidad del trabajo, de que me di cuenta de que la mayoria de locales no usan google maps, me dijeron que incluso aunque en la vida real haya un 5-10% de conductores que no usan google maps (irracionales), ese pequeño porcentaje ya es suficiente para cambiar todo el trafico. Entonces en un futuro se podria meter 90% conductores racionales y 10% irracionales.
+
+
+
+  2. Implementar time dependence shortest path.
+   - SUMO already implements time dependence shortest path algorithm.
+ - https://sumo.dlr.de/docs/Demand/Shortest_or_Optimal_Path_Routing.html
+ - https://sumo.dlr.de/docs/Simulation/Output/Lane-_or_Edge-based_Traffic_Measures.html
+  1. Compute Rgap
+  2. Anotar todo lo que hice de Rgap:
      1. Logic to export edgedata (to fill time dependence shortest path table). Contains density of the roads. Criteria used for imputing missing values in table.
       - Regarding the density rule. The density attribute exported in edgedata is already normalized: density_edge = nºvehicles / edge_length. So it means that I get a normalized version that tells me how many veh/km. I considered the threshold a hyperparameter, but i set it to 10. If larger than 10, then fill forward, if smaller free flow.
      2. Compute free flow travel times
      3. Compute flows paths
      4. Compute avg path travel times
      5. compute avg link travel times (table)
-  4. Anotar lo que he cambiado de convergence algorithm. The most used approach with Bush Mosteller is probability convergence. Stop when changes in probabilities small. Check individually if each agent has converged. Take maximum of all agents change, abd stop if maximum below tolerance for several consecutive iterations. THe max is a common technique in MARL
-  5. Anotar alternativas de lo que no converge BM algoritmo (learning decay...) para mañana reunion
-  6. Dual graph is important also for TSDP (time dependence shortest path). And as we saw, roads are considered nodes, and feasible movements between roads are considered edges. Because when computing shortest path we need to consider cost of edges, but now edges are feasible movements, what we do is to assign the avg travel time of the road it connects to.
-  7. Explicar time-dependence shortest path logic, and over which graph we apply it. Over dual graph.
+  3. Anotar lo que he cambiado de convergence algorithm. The most used approach with Bush Mosteller is probability convergence. Stop when changes in probabilities small. Check individually if each agent has converged. Take maximum of all agents change, abd stop if maximum below tolerance for several consecutive iterations. THe max is a common technique in MARL
+  4. Dual graph is important also for TSDP (time dependence shortest path). And as we saw, roads are considered nodes, and feasible movements between roads are considered edges. Because when computing shortest path we need to consider cost of edges, but now edges are feasible movements, what we do is to assign the avg travel time of the road it connects to.
+  5. Explicar time-dependence shortest path logic, and over which graph we apply it. Over dual graph.
 
 
 

@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<meandata>
+  <interval begin="0" end="900" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="54.75"/>
+    <edge id="E2_3_WB" traveltime="17.666666666666668"/>
+    <edge id="E2_5_NB" traveltime="15.916666666666666"/>
+    <edge id="E2_5_SB" traveltime="16.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="21.934615384615384"/>
+    <edge id="E3_5_NWB" traveltime="24.0"/>
+    <edge id="E3_5_SEB" traveltime="118.6"/>
+    <edge id="E3_6_NWB" traveltime="28.18796992481203"/>
+    <edge id="E3_6_SEB" traveltime="54.2"/>
+    <edge id="E5_6_NEB" traveltime="43.38461538461539"/>
+    <edge id="E5_6_SWB" traveltime="12.444444444444445"/>
+    <edge id="E6_7_EB" traveltime="13.106617647058824"/>
+  </interval>
+  <interval begin="900" end="1800" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="13.029517638588912"/>
+    <edge id="E2_3_WB" traveltime="18.333333333333332"/>
+    <edge id="E2_5_NB" traveltime="16.833333333333332"/>
+    <edge id="E2_5_SB" traveltime="13.029517638588912"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="16.879032258064516"/>
+    <edge id="E3_5_NWB" traveltime="18.245500359971203"/>
+    <edge id="E3_5_SEB" traveltime="118.0"/>
+    <edge id="E3_6_NWB" traveltime="26.847736625514404"/>
+    <edge id="E3_6_SEB" traveltime="26.8"/>
+    <edge id="E5_6_NEB" traveltime="43.833333333333336"/>
+    <edge id="E5_6_SWB" traveltime="13.333333333333334"/>
+    <edge id="E6_7_EB" traveltime="12.951417004048583"/>
+  </interval>
+  <interval begin="1800" end="2700" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="17.0"/>
+    <edge id="E2_3_WB" traveltime="18.875"/>
+    <edge id="E2_5_NB" traveltime="16.75"/>
+    <edge id="E2_5_SB" traveltime="17.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="33.97986577181208"/>
+    <edge id="E3_5_NWB" traveltime="25.0"/>
+    <edge id="E3_5_SEB" traveltime="131.33333333333334"/>
+    <edge id="E3_6_NWB" traveltime="27.833898305084745"/>
+    <edge id="E3_6_SEB" traveltime="49.833333333333336"/>
+    <edge id="E5_6_NEB" traveltime="82.66666666666667"/>
+    <edge id="E5_6_SWB" traveltime="12.75"/>
+    <edge id="E6_7_EB" traveltime="13.164473684210526"/>
+  </interval>
+  <interval begin="2700" end="3600" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="27.333333333333332"/>
+    <edge id="E2_3_WB" traveltime="17.857142857142858"/>
+    <edge id="E2_5_NB" traveltime="16.142857142857142"/>
+    <edge id="E2_5_SB" traveltime="20.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.1010101010101"/>
+    <edge id="E3_5_NWB" traveltime="29.0"/>
+    <edge id="E3_5_SEB" traveltime="89.16666666666667"/>
+    <edge id="E3_6_NWB" traveltime="27.352739726027398"/>
+    <edge id="E3_6_SEB" traveltime="28.8"/>
+    <edge id="E5_6_NEB" traveltime="84.66666666666667"/>
+    <edge id="E5_6_SWB" traveltime="13.0"/>
+    <edge id="E6_7_EB" traveltime="12.897009966777409"/>
+  </interval>
+  <interval begin="3600" end="4200" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="17.5"/>
+    <edge id="E2_3_WB" traveltime="16.25"/>
+    <edge id="E2_5_NB" traveltime="16.75"/>
+    <edge id="E2_5_SB" traveltime="17.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.664739884393065"/>
+    <edge id="E3_5_NWB" traveltime="18.245500359971203"/>
+    <edge id="E3_5_SEB" traveltime="104.33333333333333"/>
+    <edge id="E3_6_NWB" traveltime="28.06153846153846"/>
+    <edge id="E3_6_SEB" traveltime="24.0"/>
+    <edge id="E5_6_NEB" traveltime="52.0"/>
+    <edge id="E5_6_SWB" traveltime="13.5"/>
+    <edge id="E6_7_EB" traveltime="13.014423076923077"/>
+  </interval>
+</meandata>

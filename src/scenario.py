@@ -66,9 +66,7 @@ class Scenario:
         # Generate the random edge OD-matrix (origin,destination for the agents)
         od_s = self.generate_od_for_agents()
         departure_times = self.generate_departure_times(rng)
-        self.write_od_matrix(
-            od_s, departure_times, interval_size=config.interval_od_matrix
-        )
+        self.write_od_matrix(od_s, departure_times, interval_size=config.time_interval)
         for i in range(self.n_agents):
             origin, dest = od_s[i]
             departure_time = departure_times[i]

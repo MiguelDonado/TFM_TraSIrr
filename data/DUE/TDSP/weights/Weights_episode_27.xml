@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<meandata>
+  <interval begin="0" end="900" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="58.75"/>
+    <edge id="E2_3_WB" traveltime="17.923076923076923"/>
+    <edge id="E2_5_NB" traveltime="16.46153846153846"/>
+    <edge id="E2_5_SB" traveltime="16.5"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="21.696153846153845"/>
+    <edge id="E3_5_NWB" traveltime="23.666666666666668"/>
+    <edge id="E3_5_SEB" traveltime="204.4"/>
+    <edge id="E3_6_NWB" traveltime="27.90494296577947"/>
+    <edge id="E3_6_SEB" traveltime="83.2"/>
+    <edge id="E5_6_NEB" traveltime="63.06666666666667"/>
+    <edge id="E5_6_SWB" traveltime="12.444444444444445"/>
+    <edge id="E6_7_EB" traveltime="13.040740740740741"/>
+  </interval>
+  <interval begin="900" end="1800" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="13.029517638588912"/>
+    <edge id="E2_3_WB" traveltime="17.714285714285715"/>
+    <edge id="E2_5_NB" traveltime="16.714285714285715"/>
+    <edge id="E2_5_SB" traveltime="13.029517638588912"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="16.875"/>
+    <edge id="E3_5_NWB" traveltime="18.245500359971203"/>
+    <edge id="E3_5_SEB" traveltime="118.0"/>
+    <edge id="E3_6_NWB" traveltime="26.764462809917354"/>
+    <edge id="E3_6_SEB" traveltime="26.8"/>
+    <edge id="E5_6_NEB" traveltime="43.125"/>
+    <edge id="E5_6_SWB" traveltime="13.333333333333334"/>
+    <edge id="E6_7_EB" traveltime="12.858870967741936"/>
+  </interval>
+  <interval begin="1800" end="2700" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="17.0"/>
+    <edge id="E2_3_WB" traveltime="19.285714285714285"/>
+    <edge id="E2_5_NB" traveltime="16.857142857142858"/>
+    <edge id="E2_5_SB" traveltime="17.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="33.25167785234899"/>
+    <edge id="E3_5_NWB" traveltime="22.5"/>
+    <edge id="E3_5_SEB" traveltime="116.33333333333333"/>
+    <edge id="E3_6_NWB" traveltime="27.681355932203388"/>
+    <edge id="E3_6_SEB" traveltime="49.166666666666664"/>
+    <edge id="E5_6_NEB" traveltime="70.66666666666667"/>
+    <edge id="E5_6_SWB" traveltime="12.75"/>
+    <edge id="E6_7_EB" traveltime="13.144262295081967"/>
+  </interval>
+  <interval begin="2700" end="3600" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="27.666666666666668"/>
+    <edge id="E2_3_WB" traveltime="17.666666666666668"/>
+    <edge id="E2_5_NB" traveltime="16.333333333333332"/>
+    <edge id="E2_5_SB" traveltime="19.666666666666668"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.067340067340066"/>
+    <edge id="E3_5_NWB" traveltime="27.25"/>
+    <edge id="E3_5_SEB" traveltime="123.83333333333333"/>
+    <edge id="E3_6_NWB" traveltime="27.457044673539517"/>
+    <edge id="E3_6_SEB" traveltime="47.0"/>
+    <edge id="E5_6_NEB" traveltime="70.66666666666667"/>
+    <edge id="E5_6_SWB" traveltime="13.11111111111111"/>
+    <edge id="E6_7_EB" traveltime="12.886666666666667"/>
+  </interval>
+  <interval begin="3600" end="4200" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="13.029517638588912"/>
+    <edge id="E2_3_WB" traveltime="17.0"/>
+    <edge id="E2_5_NB" traveltime="16.0"/>
+    <edge id="E2_5_SB" traveltime="13.029517638588912"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="24.36994219653179"/>
+    <edge id="E3_5_NWB" traveltime="25.0"/>
+    <edge id="E3_5_SEB" traveltime="86.6"/>
+    <edge id="E3_6_NWB" traveltime="26.850515463917525"/>
+    <edge id="E3_6_SEB" traveltime="82.0"/>
+    <edge id="E5_6_NEB" traveltime="48.333333333333336"/>
+    <edge id="E5_6_SWB" traveltime="13.75"/>
+    <edge id="E6_7_EB" traveltime="12.985645933014354"/>
+  </interval>
+</meandata>

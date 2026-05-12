@@ -1,0 +1,17 @@
+<routes>
+	<trip id="t0" from="E3_4_WB" to="E6_7_EB" depart="1"/>
+	<trip id="t1" from="E3_6_SEB" to="E6_7_EB" depart="1"/>
+	<trip id="t2" from="E5_6_SWB" to="E6_7_EB" depart="1"/>
+	<trip id="t3" from="E3_4_WB" to="E6_7_EB" depart="901"/>
+	<trip id="t4" from="E3_6_SEB" to="E6_7_EB" depart="901"/>
+	<trip id="t5" from="E5_6_SWB" to="E6_7_EB" depart="901"/>
+	<trip id="t6" from="E3_4_WB" to="E6_7_EB" depart="1801"/>
+	<trip id="t7" from="E3_6_SEB" to="E6_7_EB" depart="1801"/>
+	<trip id="t8" from="E5_6_SWB" to="E6_7_EB" depart="1801"/>
+	<trip id="t9" from="E3_4_WB" to="E6_7_EB" depart="2701"/>
+	<trip id="t10" from="E3_6_SEB" to="E6_7_EB" depart="2701"/>
+	<trip id="t11" from="E5_6_SWB" to="E6_7_EB" depart="2701"/>
+	<trip id="t12" from="E3_4_WB" to="E6_7_EB" depart="3601"/>
+	<trip id="t13" from="E3_6_SEB" to="E6_7_EB" depart="3601"/>
+	<trip id="t14" from="E5_6_SWB" to="E6_7_EB" depart="3601"/>
+</routes>

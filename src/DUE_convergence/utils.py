@@ -1,3 +1,4 @@
+import subprocess
 import pandas as pd
 from paths import (
     AGENTS_OD,
@@ -6,14 +7,23 @@ from paths import (
     FREE_FLOW_TRAVEL_TIMES,
     VEHROUTE_PROCESSED,
     EDGEDATA_PROCESSED,
-    AVG_LINK_TRAVEL_TIMES,
+    COST_LINKS,
+    TIMES_INTERVAL,
+    WEIGHTS_DIR,
+    TRIPS_TDSP,
+    SHORTEST_PATHS_DIR,
+    FLOWS_PATHS,
+    COST_PATHS,
+    COST_MIN_PATHS,
 )
 from lxml import etree
 from config.config import config
+import sumolib
 
 
-def get_flows_path_per_odtp_k():
+def compute_flows_odtp_k():
     """
+    Called once per program execution
     This function is used to get the table with all the: "Flows assigned on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
@@ -35,11 +45,12 @@ def get_flows_path_per_odtp_k():
         .size()
         .reset_index(name="count")
     )
-    return flows
+    flows.to_parquet(FLOWS_PATHS)
 
 
-def get_avg_path_travel_time_per_odtp_k():
+def compute_travel_time_paths_odtp_k():
     """
+    Called once per program execution
     This function is used to get the table with all the: "Average path travel times on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
@@ -82,11 +93,12 @@ def get_avg_path_travel_time_per_odtp_k():
         # After grouping is convenient to reset index
         .reset_index()
     )
-    return df_avg_path_travel_time
+    df_avg_path_travel_time.to_parquet(COST_PATHS)
 
 
-def get_avg_link_travel_time_per_t_k():
+def compute_travel_time_links_t_k():
     """
+    Called once per program execution
     This function is used to get the table with all the: "Average link travel times on link j departing at the time interval t, at episode k"
     for all links j, for all time intervals t and for all episodes k
 
@@ -252,15 +264,208 @@ def get_avg_link_travel_time_per_t_k():
     mask = df["travel_time"].isna()
     df.loc[mask, "travel_time"] = df.loc[mask, "free_flow_travel_time"]
     df = df.drop(["density", "ffill", "free_flow_travel_time"], axis="columns")
-    df.to_parquet(AVG_LINK_TRAVEL_TIMES)
+    df.to_parquet(COST_LINKS)
+
+
+def generate_weights_xmls():
+    """
+    Called once per program execution
+    This function creates the xml file containing the time depedent costs of edges for each episode.
+    It does so, for all episodes.
+    It will be passed as input to duarouter. Determines the costs of edges that will be used when computing shortest paths
+    """
+    time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
+
+    # Load parquet file that will be converted to xml file
+    df = pd.read_parquet(COST_LINKS)
+
+    # One xml file per episode
+    for episode in df["episode"].unique():
+
+        root = etree.Element("meandata")
+
+        for interval_id in time_intervals_table["interval"]:
+
+            row = time_intervals_table[
+                (time_intervals_table["interval"] == interval_id)
+            ].iloc[0]
+
+            begin = str(row["start_time"])
+            end = str(row["end_time"])
+
+            # XML Interval element
+            interval_xml = etree.SubElement(
+                root, "interval", begin=begin, end=end, id="whatever"
+            )
+
+            # Filter once
+            filtered_interval = df[
+                (df["episode"] == episode) & (df["time_interval"] == interval_id)
+            ]
+
+            for _, edge_row in filtered_interval.iterrows():
+                # Edge element
+                etree.SubElement(
+                    interval_xml,
+                    "edge",
+                    id=str(edge_row["edge"]),
+                    traveltime=str(edge_row["travel_time"]),
+                )
+
+        # Write XML
+        tree = etree.ElementTree(root)
+
+        output_file = WEIGHTS_DIR / f"Weights_episode_{episode}.xml"
+
+        tree.write(
+            output_file,
+            pretty_print=True,
+            xml_declaration=True,
+            encoding="UTF-8",
+        )
+
+
+def compute_time_dependent_shortest_paths():
+    """
+    This function computes the time dependent shortest path for all od and for all t
+    """
+    episodes = len([f for f in WEIGHTS_DIR.iterdir() if f.is_file()])
+    for episode in range(1, episodes + 1):
+        routes_file = SHORTEST_PATHS_DIR / f"shortest_path_episode_{episode}.xml"
+        weights_file = WEIGHTS_DIR / f"Weights_episode_{episode}.xml"
+        __run_duarouter(TRIPS_TDSP, routes_file, weights_file, config.seed)
+
+
+def compute_cost_min_paths_odt_k():
+    """
+    Computes the table that contains the cost for all time dependent shortest paths
+    """
+    rows = []
+
+    for file in SHORTEST_PATHS_DIR.iterdir():
+        episode = file.stem.split("_")[-1]
+
+        tree = etree.parse(file)
+        odt_s = tree.xpath("//vehicle")
+
+        # For each od pair on each interval
+        for odt in odt_s:
+
+            depart = float(odt.get("depart"))
+            time_interval = int(depart // config.time_interval)
+
+            cost = odt.xpath("route/@cost")[0]
+
+            edges = odt.xpath("route/@edges")[0]
+            edges = edges.split()
+
+            origin = edges[0]
+            destination = edges[-1]
+
+            rows.append(
+                {
+                    "episode": episode,
+                    "origin": origin,
+                    "destination": destination,
+                    "time_interval": time_interval,
+                    "cost": cost,
+                }
+            )
+
+    df = pd.DataFrame(rows)
+    df["episode"] = df["episode"].astype(int)
+    df = df.sort_values(
+        by=["episode", "origin", "destination"],
+    ).reset_index(drop=True)
+    df.to_parquet(COST_MIN_PATHS)
 
 
 #####
 # Helper functions
 #####
+def generate_time_intervals_table():
+    """
+    Called once per program execution.
+    Create a table that contains time interval | start time | end time
+    """
+    starts = list(range(0, config.end_time, config.time_interval))
+    ends = [min(s + config.time_interval, config.end_time) for s in starts]
+    df = pd.DataFrame(
+        {"interval": range(len(starts)), "start_time": starts, "end_time": ends}
+    )
+
+    df.to_parquet(TIMES_INTERVAL)
+
+
+def generate_trips_odt_file():
+    """
+    Called once per program execution.
+    Writes to an xml file, the grid of combinations odt.
+    It will be passed as input to duarouter. So that time dependence shortest paths can be computed
+    """
+    time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
+    agents_ods = pd.read_parquet(AGENTS_OD)
+    unique_ods = (
+        agents_ods[["origin", "destination"]].drop_duplicates().reset_index(drop=True)
+    )
+    unique_ods = list(unique_ods.itertuples(index=False, name=None))
+
+    with open(TRIPS_TDSP, "w") as f:
+
+        f.write("<routes>\n")
+
+        i = 0
+
+        for _, interval_row in time_intervals_table.iterrows():
+
+            depart = interval_row["start_time"] + 1
+
+            for origin, destination in unique_ods:
+
+                f.write(
+                    f'\t<trip id="t{i}" '
+                    f'from="{origin}" '
+                    f'to="{destination}" '
+                    f'depart="{depart}"/>\n'
+                )
+
+                i += 1
+
+        f.write("</routes>\n")
+
+
+def __run_duarouter(trips_file, routes_file, weights_file, seed):
+    cmd = [
+        "duarouter",
+        "-n",
+        config.network,
+        "--route-files",
+        trips_file,
+        "--weight-files",
+        weights_file,
+        "--write-costs",
+        "true",
+        "-o",
+        routes_file,
+        "--seed",
+        str(seed),
+    ]
+
+    subprocess.run(cmd, check=True)
+
+    # Delete alternative route files (undesirable)
+    alt_route_file_to_delete = routes_file.with_name(
+        f"{routes_file.stem}.alt{routes_file.suffix}"
+    )
+    if alt_route_file_to_delete.exists():
+        alt_route_file_to_delete.unlink()
 
 
 def generate_free_flow_travel_times_links():
+    """
+    Called once per program execution
+    Used for imputing missing values link costs table
+    """
     data = []
 
     tree = etree.parse(config.network)

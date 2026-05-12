@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-05-12T17:07:44.531699+01:00 by Eclipse SUMO duarouter 1.26.0
+<duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"/>
+        <route-files value="/home/miguel/6.Projects/Thesis/data/DUE/TDSP/trips/trips.xml"/>
+        <weight-files value="/home/miguel/6.Projects/Thesis/data/DUE/TDSP/weights/Weights_episode_28.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/miguel/6.Projects/Thesis/data/DUE/TDSP/shortest_paths/shortest_path_episode_28.xml"/>
+        <write-costs value="true"/>
+    </output>
+
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+
+</duarouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vehicle id="t0" depart="1.00">
+        <route cost="66.34" edges="E3_4_WB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t1" depart="1.00">
+        <route cost="143.50" edges="E3_6_SEB E3_5_NWB E5_6_NEB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t2" depart="1.00">
+        <route cost="161.04" edges="E5_6_SWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t3" depart="901.00">
+        <route cost="59.83" edges="E3_4_WB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t4" depart="901.00">
+        <route cost="106.46" edges="E3_6_SEB E3_5_NWB E5_6_NEB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t5" depart="901.00">
+        <route cost="90.82" edges="E5_6_SWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t6" depart="1801.00">
+        <route cost="78.79" edges="E3_4_WB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t7" depart="1801.00">
+        <route cost="164.92" edges="E3_6_SEB E3_5_NWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t8" depart="1801.00">
+        <route cost="99.17" edges="E5_6_SWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t9" depart="2701.00">
+        <route cost="68.55" edges="E3_4_WB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t10" depart="2701.00">
+        <route cost="173.70" edges="E3_6_SEB E3_5_NWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t11" depart="2701.00">
+        <route cost="123.96" edges="E5_6_SWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t12" depart="3601.00">
+        <route cost="67.86" edges="E3_4_WB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t13" depart="3601.00">
+        <route cost="132.72" edges="E3_6_SEB E3_5_NWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+    <vehicle id="t14" depart="3601.00">
+        <route cost="97.63" edges="E5_6_SWB E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
+    </vehicle>
+</routes>

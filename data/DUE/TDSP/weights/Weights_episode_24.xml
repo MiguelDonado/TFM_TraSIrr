@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<meandata>
+  <interval begin="0" end="900" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="77.2"/>
+    <edge id="E2_3_WB" traveltime="17.785714285714285"/>
+    <edge id="E2_5_NB" traveltime="16.571428571428573"/>
+    <edge id="E2_5_SB" traveltime="16.2"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="21.696153846153845"/>
+    <edge id="E3_5_NWB" traveltime="23.0"/>
+    <edge id="E3_5_SEB" traveltime="210.0"/>
+    <edge id="E3_6_NWB" traveltime="28.091603053435115"/>
+    <edge id="E3_6_SEB" traveltime="83.2"/>
+    <edge id="E5_6_NEB" traveltime="61.88235294117647"/>
+    <edge id="E5_6_SWB" traveltime="12.444444444444445"/>
+    <edge id="E6_7_EB" traveltime="13.066914498141264"/>
+  </interval>
+  <interval begin="900" end="1800" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="13.029517638588912"/>
+    <edge id="E2_3_WB" traveltime="16.866666666666667"/>
+    <edge id="E2_5_NB" traveltime="16.533333333333335"/>
+    <edge id="E2_5_SB" traveltime="13.029517638588912"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="16.963709677419356"/>
+    <edge id="E3_5_NWB" traveltime="21.0"/>
+    <edge id="E3_5_SEB" traveltime="88.0"/>
+    <edge id="E3_6_NWB" traveltime="26.71794871794872"/>
+    <edge id="E3_6_SEB" traveltime="27.0"/>
+    <edge id="E5_6_NEB" traveltime="40.0625"/>
+    <edge id="E5_6_SWB" traveltime="13.333333333333334"/>
+    <edge id="E6_7_EB" traveltime="12.911646586345382"/>
+  </interval>
+  <interval begin="1800" end="2700" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="17.0"/>
+    <edge id="E2_3_WB" traveltime="18.153846153846153"/>
+    <edge id="E2_5_NB" traveltime="17.384615384615383"/>
+    <edge id="E2_5_SB" traveltime="18.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="35.13422818791946"/>
+    <edge id="E3_5_NWB" traveltime="23.75"/>
+    <edge id="E3_5_SEB" traveltime="132.33333333333334"/>
+    <edge id="E3_6_NWB" traveltime="28.076655052264808"/>
+    <edge id="E3_6_SEB" traveltime="49.0"/>
+    <edge id="E5_6_NEB" traveltime="69.375"/>
+    <edge id="E5_6_SWB" traveltime="12.75"/>
+    <edge id="E6_7_EB" traveltime="13.114754098360656"/>
+  </interval>
+  <interval begin="2700" end="3600" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="24.833333333333332"/>
+    <edge id="E2_3_WB" traveltime="17.857142857142858"/>
+    <edge id="E2_5_NB" traveltime="16.285714285714285"/>
+    <edge id="E2_5_SB" traveltime="18.5"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="23.653198653198654"/>
+    <edge id="E3_5_NWB" traveltime="27.5"/>
+    <edge id="E3_5_SEB" traveltime="244.33333333333334"/>
+    <edge id="E3_6_NWB" traveltime="28.3265306122449"/>
+    <edge id="E3_6_SEB" traveltime="36.8"/>
+    <edge id="E5_6_NEB" traveltime="77.75"/>
+    <edge id="E5_6_SWB" traveltime="13.11111111111111"/>
+    <edge id="E6_7_EB" traveltime="12.937086092715232"/>
+  </interval>
+  <interval begin="3600" end="4200" id="whatever">
+    <edge id="E1_2_EB" traveltime="6.681065514758819"/>
+    <edge id="E2_3_EB" traveltime="63.0"/>
+    <edge id="E2_3_WB" traveltime="15.333333333333334"/>
+    <edge id="E2_5_NB" traveltime="15.333333333333334"/>
+    <edge id="E2_5_SB" traveltime="16.0"/>
+    <edge id="E3_4_EB" traveltime="6.745140388768898"/>
+    <edge id="E3_4_WB" traveltime="23.277456647398843"/>
+    <edge id="E3_5_NWB" traveltime="25.0"/>
+    <edge id="E3_5_SEB" traveltime="114.75"/>
+    <edge id="E3_6_NWB" traveltime="27.2319587628866"/>
+    <edge id="E3_6_SEB" traveltime="24.0"/>
+    <edge id="E5_6_NEB" traveltime="51.25"/>
+    <edge id="E5_6_SWB" traveltime="13.75"/>
+    <edge id="E6_7_EB" traveltime="12.980676328502415"/>
+  </interval>
+</meandata>

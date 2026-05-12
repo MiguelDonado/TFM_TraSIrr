@@ -12,6 +12,11 @@ PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
 INTERNAL_DATA_DIR = BASE_DIR / "data" / "internal"
 FIGURES_DIR = BASE_DIR / "output" / "figures"
 
+DUE_DIR = BASE_DIR / "data" / "DUE"
+TDSP_DIR = DUE_DIR / "TDSP"
+WEIGHTS_DIR = TDSP_DIR / "weights"
+SHORTEST_PATHS_DIR = TDSP_DIR / "shortest_paths"
+
 # Parquet files (outputs that will be analyzed in R)
 STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
 VEHROUTE_PROCESSED = PROCESSED_DATA_DIR / "vehroute.parquet"
@@ -25,8 +30,17 @@ OD_ROUTES = INTERNAL_DATA_DIR / "od_routes.parquet"
 ACTIONS = INTERNAL_DATA_DIR / "actions.parquet"
 REWARDS = INTERNAL_DATA_DIR / "rewards.parquet"
 BM_RESULTS = INTERNAL_DATA_DIR / "BM_results.parquet"
+TIMES_INTERVAL = INTERNAL_DATA_DIR / "times_interval.parquet"
 FREE_FLOW_TRAVEL_TIMES = INTERNAL_DATA_DIR / "free_flow_travel_times.parquet"
-AVG_LINK_TRAVEL_TIMES = INTERNAL_DATA_DIR / "avg_link_travel_times.parquet"
+
+# DUE
+FLOWS_PATHS = DUE_DIR / "flows_paths_odtp_k.parquet"
+COST_PATHS = DUE_DIR / "costs_paths_odtp_k.parquet"
+
+# TDSP (Time-dependence shortest path related files)
+COST_LINKS = TDSP_DIR / "costs_links_t_k.parquet"
+TRIPS_TDSP = TDSP_DIR / "trips" / "trips.xml"
+COST_MIN_PATHS = TDSP_DIR / "costs_min_paths_t_k.parquet"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
