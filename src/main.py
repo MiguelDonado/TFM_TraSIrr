@@ -141,7 +141,12 @@ def main():
     save_processed_data(results)
 
     # -----------------------------
-    # 8. PLOTS
+    # 8. CHECK DUE convergence
+    # -----------------------------
+    check_DUE_convergence()
+
+    # -----------------------------
+    # 9. PLOTS
     # -----------------------------
     make_plots()
 
@@ -156,5 +161,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
-    # main2()
+    # run()
+    main2()

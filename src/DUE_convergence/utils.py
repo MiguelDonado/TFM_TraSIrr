@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import pandas as pd
 from paths import (
+    DEMAND_ODT,
     AGENTS_OD,
     ACTIONS,
     TRIPS_INFO_PROCESSED,
@@ -18,8 +19,6 @@ from paths import (
     COST_MIN_PATHS,
 )
 from lxml import etree
-from config.config import config
-import sumolib
 
 
 def compute_flows_odtp_k():
@@ -97,7 +96,7 @@ def compute_travel_time_paths_odtp_k():
     df_avg_path_travel_time.to_parquet(COST_PATHS)
 
 
-def compute_travel_time_links_t_k():
+def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     """
     Called once per program execution
     This function is used to get the table with all the: "Average link travel times on link j departing at the time interval t, at episode k"
@@ -123,13 +122,12 @@ def compute_travel_time_links_t_k():
     """
 
     # 1. Generate file with free flow travel times of all links in the network and load it
-    generate_free_flow_travel_times_links()
     free_flow_travel_times = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
 
-    delta_t = config.time_interval
+    delta_t = time_interval
 
     # 2. Get edges network
-    document = config.network
+    document = network
     tree = etree.parse(document)
     all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
     all_edges = set(all_edges)
@@ -248,7 +246,7 @@ def compute_travel_time_links_t_k():
         }
     )
     # Mask (condition). Select rows with travel_time missing and where density > threshold_density
-    mask = df["travel_time"].isna() & (df["density"] > config.threshold_density)
+    mask = df["travel_time"].isna() & (df["density"] > threshold_density)
     # Apply forward fill (only where mask true, replace travel_time with forward filled value)
     # .loc[rows,columns] It selects rows and columns
     df.loc[mask, "travel_time"] = df.loc[mask, "ffill"]
@@ -326,7 +324,7 @@ def generate_weights_xmls():
         )
 
 
-def compute_time_dependent_shortest_paths():
+def compute_time_dependent_shortest_paths(network, seed):
     """
     This function computes the time dependent shortest path for all od and for all t
     """
@@ -334,10 +332,10 @@ def compute_time_dependent_shortest_paths():
     for episode in range(1, episodes + 1):
         routes_file = SHORTEST_PATHS_DIR / f"shortest_path_episode_{episode}.xml"
         weights_file = WEIGHTS_DIR / f"Weights_episode_{episode}.xml"
-        __run_duarouter(TRIPS_TDSP, routes_file, weights_file, config.seed)
+        __run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
 
 
-def compute_cost_min_paths_odt_k():
+def compute_cost_min_paths_odt_k(time_interval):
     """
     Computes the table that contains the cost for all time dependent shortest paths
     """
@@ -353,7 +351,7 @@ def compute_cost_min_paths_odt_k():
         for odt in odt_s:
 
             depart = float(odt.get("depart"))
-            time_interval = int(depart // config.time_interval)
+            interval = int(depart // time_interval)
 
             cost = odt.xpath("route/@cost")[0]
 
@@ -368,7 +366,7 @@ def compute_cost_min_paths_odt_k():
                     "episode": episode,
                     "origin": origin,
                     "destination": destination,
-                    "time_interval": time_interval,
+                    "time_interval": interval,
                     "cost": cost,
                 }
             )
@@ -381,16 +379,119 @@ def compute_cost_min_paths_odt_k():
     df.to_parquet(COST_MIN_PATHS)
 
 
+def compute_rgap_and_refined_rgap():
+    flow_df = pd.read_parquet(FLOWS_PATHS)
+    flow_df = flow_df.rename(columns={"count": "flow"})
+    cost_df = pd.read_parquet(COST_PATHS)
+    cost_df = cost_df.rename(columns={"avg_travel_time": "cost"})
+    min_cost_df = pd.read_parquet(COST_MIN_PATHS)
+    min_cost_df = min_cost_df.rename(columns={"cost": "min_cost"})
+    demand_df = pd.read_parquet(DEMAND_ODT)
+    demand_df = demand_df.rename(columns={"count": "demand"})
+
+    # Merge into a single table
+    df = (
+        flow_df.merge(
+            cost_df, on=["episode", "origin", "destination", "time_interval", "path"]
+        )
+        .merge(min_cost_df, on=["episode", "origin", "destination", "time_interval"])
+        .merge(demand_df, on=["origin", "destination", "time_interval"])
+    )
+
+    # Reorder columns
+    df = df[
+        [
+            "episode",
+            "origin",
+            "destination",
+            "time_interval",
+            "path",
+            "flow",
+            "cost",
+            "min_cost",
+            "demand",
+        ]
+    ]
+
+    # Sort df
+    df = df.sort_values(
+        by=["episode", "origin", "destination", "time_interval", "path"]
+    ).reset_index(drop=True)
+
+    # Right column types
+    df["min_cost"] = df["min_cost"].astype("float32")
+
+    # Compute 2 versions rgap
+    rgap = compute_rgap(df)
+    redefined_rgap = compute_redefined_rgap(df)
+    return (rgap, redefined_rgap)
+
+
+def compute_redefined_rgap(df):
+    """
+    Like rgap but for each interval
+    """
+    # Compute numerator rgap per episode
+    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
+    numerator = df.groupby(["episode", "time_interval"])["gap_term"].sum()
+
+    # Compute denominator rgap per episode
+    # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
+    denominator_df = df[
+        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
+    ].drop_duplicates()
+
+    denominator = (
+        (denominator_df["demand"] * denominator_df["min_cost"])
+        .groupby([denominator_df["episode"], denominator_df["time_interval"]])
+        .sum()
+    )
+
+    refined_rgap = numerator / denominator
+
+    refined_rgap = refined_rgap.reset_index(name="refined_rgap")
+    return refined_rgap
+
+
+def compute_rgap(df):
+    # Compute numerator rgap per episode
+    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
+    numerator = df.groupby("episode")["gap_term"].sum()
+
+    # Compute denominator rgap per episode
+    # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
+    denominator_df = df[
+        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
+    ].drop_duplicates()
+    denominator = (
+        (denominator_df["demand"] * denominator_df["min_cost"])
+        .groupby(denominator_df["episode"])
+        .sum()
+    )
+
+    return numerator / denominator
+
+
+def generate_demand_odt():
+    agents_od = pd.read_parquet(AGENTS_OD)
+    demand_odt = (
+        agents_od.groupby(["origin", "destination", "time_interval"])
+        .size()
+        .reset_index(name="count")
+    )
+    demand_odt.to_parquet(DEMAND_ODT)
+
+
 #####
 # Helper functions
 #####
-def generate_time_intervals_table():
+def generate_time_intervals_table(end_time, time_interval):
     """
     Called once per program execution.
     Create a table that contains time interval | start time | end time
     """
-    starts = list(range(0, config.end_time, config.time_interval))
-    ends = [min(s + config.time_interval, config.end_time) for s in starts]
+    starts = list(range(0, end_time, time_interval))
+    ends = [min(s + time_interval, end_time) for s in starts]
     df = pd.DataFrame(
         {"interval": range(len(starts)), "start_time": starts, "end_time": ends}
     )
@@ -435,11 +536,11 @@ def generate_trips_odt_file():
         f.write("</routes>\n")
 
 
-def __run_duarouter(trips_file, routes_file, weights_file, seed):
+def __run_duarouter(network, trips_file, routes_file, weights_file, seed):
     cmd = [
         "duarouter",
         "-n",
-        config.network,
+        network,
         "--route-files",
         trips_file,
         "--weight-files",

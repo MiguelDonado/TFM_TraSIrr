@@ -36,6 +36,7 @@ FREE_FLOW_TRAVEL_TIMES = INTERNAL_DATA_DIR / "free_flow_travel_times.parquet"
 # DUE
 FLOWS_PATHS = DUE_DIR / "flows_paths_odtp_k.parquet"
 COST_PATHS = DUE_DIR / "costs_paths_odtp_k.parquet"
+DEMAND_ODT = DUE_DIR / "demand_odt.parquet"
 
 # TDSP (Time-dependence shortest path related files)
 COST_LINKS = TDSP_DIR / "costs_links_t_k.parquet"

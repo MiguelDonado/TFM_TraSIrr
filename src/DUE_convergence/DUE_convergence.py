@@ -8,31 +8,47 @@ from .utils import (
     generate_trips_odt_file,
     generate_time_intervals_table,
     delete_files_DUE_convergence,
+    compute_rgap_and_refined_rgap,
+    generate_demand_odt,
 )
+from config.config import config
 
 
 def check_DUE_convergence():
-    # 1. Generate essential files
-    ## Parquet
-    generate_time_intervals_table()
+    # # Constants
+    # end_time = 4200
+    # time_interval = 22
 
-    ## XML
-    generate_trips_odt_file()
+    # # 1. Generate essential files
+    # ## Parquet
+    # generate_time_intervals_table(end_time, time_interval)
+    # generate_demand_odt()
 
-    # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
-    compute_flows_odtp_k()
+    # ## XML
+    # generate_trips_odt_file()
 
-    # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
-    compute_travel_time_paths_odtp_k()
+    # # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
+    # compute_flows_odtp_k()
 
-    # 4. TIME DEPENDENCE SHORTEST PATH
-    # 4.1. Compute avg link travel time for all time intervals across all episodes
-    compute_travel_time_links_t_k()
-    # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
-    generate_weights_xmls()
-    # 4.3. Compute the time dependence shortest paths
-    compute_time_dependent_shortest_paths()
-    # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
-    compute_cost_min_paths_odt_k()
-    # 4.5. Delete some files generated on DUE convergence check
-    delete_files_DUE_convergence()
+    # # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
+    # compute_travel_time_paths_odtp_k()
+
+    # # 4. TIME DEPENDENCE SHORTEST PATH
+    # # 4.1. Compute avg link travel time for all time intervals across all episodes
+    # compute_travel_time_links_t_k(
+    #     network=config.network,
+    #     time_interval=time_interval,
+    #     threshold_density=config.threshold_density,
+    # )
+    # # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
+    # generate_weights_xmls()
+    # # 4.3. Compute the time dependence shortest paths
+    # compute_time_dependent_shortest_paths(config.network, config.seed)
+    # # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
+    # compute_cost_min_paths_odt_k(time_interval)
+    # # 4.5. Delete some files generated on DUE convergence check
+    # delete_files_DUE_convergence()
+
+    # Computation Rgap
+    rgap, redefined_rgap = compute_rgap_and_refined_rgap()
+    print(redefined_rgap)
