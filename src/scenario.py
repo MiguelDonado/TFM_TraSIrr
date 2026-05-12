@@ -20,7 +20,8 @@ from paths import (
     FCD,
     MAP,
     NET,
-    OD_MATRIX,
+    OD_MATRIX_INTERVALS,
+    OD_MATRIX_TOTAL,
     OD_ROUTES,
     STATISTICS,
     SUMMARY,
@@ -30,6 +31,7 @@ from paths import (
     VEHROUTE,
     MEANDATA,
     EDGEDATA,
+    FREE_FLOW_TRAVEL_TIMES,
 )
 
 
@@ -64,20 +66,17 @@ class Scenario:
 
     def generate_agents(self, rng):
         # Generate the random edge OD-matrix (origin,destination for the agents)
-        od_s = self.generate_od_for_agents()
-        departure_times = self.generate_departure_times(rng)
-        self.write_od_matrix(od_s, departure_times, interval_size=config.time_interval)
+        self.od_s = self.generate_od_for_agents()
+        self.departure_times = self.generate_departure_times(rng)
         for i in range(self.n_agents):
-            origin, dest = od_s[i]
-            departure_time = departure_times[i]
+            origin, dest = self.od_s[i]
+            departure_time = self.departure_times[i]
             self.agents.append(
                 {
                     "id": f"agent_{i+1}",
                     "origin": origin,
                     "destination": dest,
                     "departure_time": departure_time,
-                    # // represents integer division
-                    "time_interval": departure_time // config.time_interval,
                 }
             )
 
@@ -209,19 +208,21 @@ class Scenario:
             meandata.write("</additional>\n")
 
     def save_scenario_data(self):
-        processed_od_routes = self.process_od_routes()
-        mapping = {
-            "agents_od": (self.agents, AGENTS_OD),
-            "od_routes": (processed_od_routes, OD_ROUTES),
-        }
-        for _, (data, path) in mapping.items():
-            df = pd.DataFrame(data)
-            df.to_parquet(path, engine="pyarrow")
+        self._save_od_routes()
 
-        # Check RunMode
-        if config.mode == RunMode.COMPUTE_ROUTES:
-            print(f"\nThe OD pairs and its k routes have been saved in {OD_ROUTES}")
-            sys.exit()
+        self._generate_free_flow_tt_links()
+
+        self._set_time_interval()
+
+        self._add_time_intervals_to_agents()
+
+        self._save_agents()
+
+        self.write_od_matrix(
+            self.od_s, self.departure_times, interval_size=config.time_interval
+        )
+
+        self._handle_compute_routes_mode()
 
     def process_od_routes(self):
         """
@@ -364,29 +365,18 @@ class Scenario:
             .reset_index(name="count")  # Resets index and creates column count
         )
 
-        # Generate one OD matrix per interval
-        for interval, subdf in grouped.groupby("interval"):
-            matrix = (
-                # Transforms into contingency table format
-                subdf.pivot(index="origin", columns="destination", values="count")
-                .fillna(0)
-                .astype(int)
-            )
-            start = interval * interval_size
-            end = (interval + 1) * interval_size
-            matrix.to_csv(f"{OD_MATRIX}_{start}_{end}.csv")
+        # Save all intervals in one file
+        grouped.to_csv(OD_MATRIX_INTERVALS, index=False)
 
+        # Optional: total OD matrix (without intervals)
         counts = Counter(od_list)
-        df = pd.DataFrame(
+
+        total_df = pd.DataFrame(
             [(o, d, c) for (o, d), c in counts.items()],
             columns=["origin", "destination", "count"],
         )
-        matrix = (
-            df.pivot(index="origin", columns="destination", values="count")
-            .fillna(0)
-            .astype(int)
-        )
-        matrix.to_csv(OD_MATRIX)
+
+        total_df.to_csv(OD_MATRIX_TOTAL, index=False)
 
     def _run_duarouter(self, trips_file, routes_file, random_factor, seed):
         cmd = [
@@ -435,3 +425,69 @@ class Scenario:
 
         except Exception:
             return None
+
+    def __compute_median_free_flow_travel_time(self):
+        edge_costs = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
+        edge_costs = edge_costs.set_index("edge")["free_flow_travel_time"].to_dict()
+
+        path_costs = []
+        for od, od_paths in self.od_routes.items():
+
+            for path in od_paths:
+                total_cost = sum(edge_costs[e] for e in path)
+                path_costs.append(total_cost)
+
+        median_free_flow_tt = float(np.median(path_costs))
+        return median_free_flow_tt
+
+    def _generate_free_flow_tt_links(self):
+        """
+        Called once per program execution
+        Used for imputing missing values link costs table
+        """
+        data = []
+
+        tree = etree.parse(config.network)
+        edges = tree.xpath("//edge[not(@function='internal')]")
+        for edge in edges:
+            edge_id = edge.get("id")
+
+            lane = edge.find("lane")
+
+            free_flow_speed = float(lane.get("speed"))
+            length = float(lane.get("length"))
+
+            free_flow_travel_time = length / free_flow_speed
+            data.append(
+                {"edge": edge_id, "free_flow_travel_time": free_flow_travel_time}
+            )
+
+        df = pd.DataFrame(data)
+        df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
+
+    def _save_od_routes(self):
+        processed_od_routes = self.process_od_routes()
+        df = pd.DataFrame(processed_od_routes)
+        df.to_parquet(OD_ROUTES, engine="pyarrow")
+
+    def _set_time_interval(self):
+        # SET TIME INTERVAL USED THROUGHOUT THE PROGRAM (AUTOMATICALLY ADAPTED TO EACH NETWORK)
+        config.time_interval = int(
+            self.__compute_median_free_flow_travel_time()
+            * config.time_interval_heuristic
+        )
+
+    def _add_time_intervals_to_agents(self):
+        # // represents integer division
+        for agent in self.agents:
+            agent["time_interval"] = agent["departure_time"] // config.time_interval
+
+    def _save_agents(self):
+        df = pd.DataFrame(self.agents)
+        df.to_parquet(AGENTS_OD, engine="pyarrow")
+
+    def _handle_compute_routes_mode(self):
+        # Check RunMode
+        if config.mode == RunMode.COMPUTE_ROUTES:
+            print(f"\nThe OD pairs and its k routes have been saved in {OD_ROUTES}")
+            sys.exit()

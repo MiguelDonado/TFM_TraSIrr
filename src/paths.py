@@ -49,7 +49,8 @@ TRIPS_INFO = RAW_DATA_DIR / "tripsinfo.xml"
 VEHROUTE = RAW_DATA_DIR / "vehroute.xml"
 FCD = RAW_DATA_DIR / "fcd-export.xml"
 SUMMARY = RAW_DATA_DIR / "summary.xml"
-OD_MATRIX = PROCESSED_DATA_DIR / "od_matrix.csv"
+OD_MATRIX_INTERVALS = PROCESSED_DATA_DIR / "od_matrix_intervals.csv"
+OD_MATRIX_TOTAL = PROCESSED_DATA_DIR / "od_matrix_total.csv"
 
 # Files
 MAP = config.network  # For using (NETEDIT)

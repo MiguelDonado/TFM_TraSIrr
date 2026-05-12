@@ -7,7 +7,7 @@ from .utils import (
     generate_weights_xmls,
     generate_trips_odt_file,
     generate_time_intervals_table,
-    generate_free_flow_travel_times_links,
+    delete_files_DUE_convergence,
 )
 
 
@@ -15,7 +15,6 @@ def check_DUE_convergence():
     # 1. Generate essential files
     ## Parquet
     generate_time_intervals_table()
-    generate_free_flow_travel_times_links()
 
     ## XML
     generate_trips_odt_file()
@@ -35,3 +34,5 @@ def check_DUE_convergence():
     compute_time_dependent_shortest_paths()
     # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
     compute_cost_min_paths_odt_k()
+    # 4.5. Delete some files generated on DUE convergence check
+    delete_files_DUE_convergence()

@@ -66,7 +66,8 @@ class Config:
     tolerance_demand_calibration: float = 0.1
     heuristic_veh_km_hour_initial_guess: int = 100
     k_demand_calib: float = 1
-    time_interval: int = 900  # 900seg = 15 min
+    time_interval: int = field(init=False)
+    time_interval_heuristic: float = 0.5
 
     #####################
     # 4. Simulation time
@@ -127,7 +128,7 @@ class Config:
         self.end_time = self.warm_up_time + self.simulation_time
 
         # Coompute min distance
-        self.min_distance = int(4 * get_edges_lengths_program(self.network))
+        self.min_distance = int(2 * get_edges_lengths_program(self.network))
 
 
 config = Config()

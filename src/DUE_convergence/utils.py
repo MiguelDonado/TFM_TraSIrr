@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import pandas as pd
 from paths import (
@@ -461,25 +462,15 @@ def __run_duarouter(trips_file, routes_file, weights_file, seed):
         alt_route_file_to_delete.unlink()
 
 
-def generate_free_flow_travel_times_links():
+def delete_files_DUE_convergence():
     """
-    Called once per program execution
-    Used for imputing missing values link costs table
+    This folders may contain too many files
     """
-    data = []
+    # Target folders
+    TARGET_FOLDERS = [WEIGHTS_DIR, SHORTEST_PATHS_DIR]
 
-    tree = etree.parse(config.network)
-    edges = tree.xpath("//edge[not(@function='internal')]")
-    for edge in edges:
-        edge_id = edge.get("id")
-
-        lane = edge.find("lane")
-
-        free_flow_speed = float(lane.get("speed"))
-        length = float(lane.get("length"))
-
-        free_flow_travel_time = length / free_flow_speed
-        data.append({"edge": edge_id, "free_flow_travel_time": free_flow_travel_time})
-
-    df = pd.DataFrame(data)
-    df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
+    for folder in TARGET_FOLDERS:
+        if folder.is_dir():
+            for item in folder.iterdir():
+                if item.is_file():
+                    item.unlink()
