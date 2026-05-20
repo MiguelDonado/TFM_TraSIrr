@@ -7,6 +7,9 @@ import numpy as np
 
 
 def get_edges_lengths_program(net):
+    """
+    Used in demand calibration -> initial guess (heuristic)
+    """
     document = net
     tree = etree.parse(document)
 
@@ -53,7 +56,7 @@ class Config:
     #####################
     learning_rate: float = 0.3
     memory_level: float = 1
-    warm_up: int = 10  # Min number of experiences before learning
+    warm_up: int = field(init=False)  # Min number of experiences before learning
 
     #####################
     # 3. Demand & Calibration
@@ -62,10 +65,26 @@ class Config:
     # ~ 0.7 - 0.9  -> Light
     # ~ 0.4 - 0.7  -> Medium
     # < 0.4        -> Heavy
-    target_congestion_ratio: float = 0.6
-    tolerance_demand_calibration: float = 0.1
+
+    #####
+    # Initial guess
+    #####
+    # Used for initial guess
     heuristic_veh_km_hour_initial_guess: int = 100
+
+    #####
+    # Calibration loop
+    #####
+    # We do calibration loop until the actual congestion ratio reaches the target congestion
+    target_congestion_ratio: float = 0.6
+    # If the actual congestion ratio is closer than this tolerance to the target congestion we considered the calibration done
+    tolerance_demand_calibration: float = 0.1
+    # Proportional term that is used on the update rule in demand calibration
     k_demand_calib: float = 1
+
+    #####
+    # Interval time
+    #####
     time_interval: int = field(init=False)
     time_interval_heuristic: float = 0.5
 
@@ -96,12 +115,15 @@ class Config:
     random_factor: int = 100  # For duarouter, the random factor it applies to the edges
     max_attempts: int = 25  # (duarouter) max number of attempts for the k routes
     n_threads: int = 7  # If we want to ensure reproducibility should be 1 :(
+    n_routes_per_OD: int = 3  # Number of routes per OD (compute_k_routes)
 
     #####################
     # 8. Stopping rule
     #####################
     max_episodes: int = 200
+    # Threshold for policy changes
     tolerance_stopping_rule: float = 10e-3
+    # Nº of consecutive episodes that convergence criteria must be met
     k_no_change: int = 3
 
     #####################
@@ -127,8 +149,11 @@ class Config:
         # Compute end_time
         self.end_time = self.warm_up_time + self.simulation_time
 
-        # Coompute min distance
+        # Compute min distance
         self.min_distance = int(2 * get_edges_lengths_program(self.network))
+
+        # Compute warm-up BM agents
+        self.warm_up = self.n_routes_per_OD * 3
 
 
 config = Config()

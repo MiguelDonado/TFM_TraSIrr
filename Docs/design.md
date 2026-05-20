@@ -144,22 +144,9 @@ Python is used for the whole experiment setup, program logic. R is used to perfo
 To facilitate reproducibility and enabling systematic experimentation
 
 ## 11. Convergence
-- Criteria used: Upper bound, performance stability, policy stability.
+- Criteria used: Upper bound, policy stability.
 
 **Reasoning**
 - *Upper bound* on number of episodes to guarantee termination of the algorithm. Ensures simulation does not run indefinetely in cases where convergence is slow or not achieved.
-- *Performance stability*: Based on the avg travel time of post warm up agents. Even if the system is stable (with the same policy the agents), we will see small fluctuations due to stochasticity of interactions in traffic system (who enters first...). 
-  - Sliding window: Instead of looking at just one value, we look at the last W episodes. We ask ourselves are all these values very similar? `[15.5, 14.8, 15.2, 15.1, 15.0]`
-    - What it does is: Ignore short-term noise and check if the system has consistently stabilized over recent episodes.
-  - Why not just compare t and t-1?: Because `18 → 16 → 14 → 15 → 15.1`, the system is still settling. 
-  - We have to check if it has been stable for a while, not just right now.
-  - Is called a macroscopic because we are looking at the overall system outcome.
-- *Policy stability*: To monitor evolution of agent behavior. To ensure robustness, is declared policy stable when the policy changes remain below a predefined threshold for several consecutive iterations, thereby capturing a persistent absence of learning dynamics. Becuase is directly updated by the learning rule, is not noisy, and we do not need a sliding window.
-
-- Travel time: State of the system (output of complex system) /// Policy: Rate of change of learning (internal state of learning)
-- Travel times are noisy because:
-  1. Random route choices (agents sample from probabilities). Even with the same policy (60% route A, 40% route B), we would get different outcomes.
-  Even when the system is "stable" (same policy), your average travel time looks like:
-  `15.0, 14.7, 15.3, 14.9, 15.1, 14.8, ...`. Thats noise around equilibrium
-- The policies are updated via a formula. 
+- *Policy stability*: To monitor evolution of agent behavior. To ensure robustness, is declared policy stable when the mean of individual policy changes remain below a predefined threshold for several consecutive iterations, thereby capturing a persistent absence of learning dynamics. We basically check for each agents its policy change between consecutive episodes. Because policies are a probability distribution over possible routes, we basically take the L1 norm of vector of probabilities for episode t and t-1. We do that for all agents. And then we take the mean of all those agents policy change. If the mean is below a predefined threshold then we considered the algorithm converged.
  

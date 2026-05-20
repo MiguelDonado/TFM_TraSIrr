@@ -119,16 +119,23 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - c/p:  
-  2. Habia comentado que para mis networks que son pequeñas, los viajes no duran mucho tiempo, supongo que como mucho duran de 1 a 3 minutos o incluso menos. Entonces si cojo un intervalo de tiempo de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que quizas sea buena idea mirar la distribucion de tiempos de viaje (habria que ver si en free-flow o los que obtengo de una simulacion), y ajustar el intervalo de tiempo a la network. Porque tal vez no tenga sentido un intervalo de tiempo de 15 minutos si todos los viajes no duran ni 2 minutos. He usado como heuristica, calcular el free flow travel time de todos los path, y coger la median. A esa median la multiplico por 1/2 o 1/3 y ese es mi time interval. Cojo free flow tt y no experienced travel time, porque asi de esta manera el free flow tt da el mismo time interval para todos los episodios.
-  2. Anotar lo que he cambiado de convergence algorithm. The most used approach with Bush Mosteller is probability convergence. Stop when changes in probabilities small. Check individually if each agent has converged. Take maximum of all agents change, abd stop if maximum below tolerance for several consecutive iterations. THe max is a common technique in MARL. I took the mean instead because the max was very strict
+  - Write about all other heuristics in my project
+
+
+
+
+
+
+
+  - Comprobar rgap and redefined rgap computations are ok (write about all the rgap stuff)
+  - Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
+  1. Habia comentado que para mis networks que son pequeñas, los viajes no duran mucho tiempo, supongo que como mucho duran de 1 a 3 minutos o incluso menos. Entonces si cojo un intervalo de tiempo de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que quizas sea buena idea mirar la distribucion de tiempos de viaje (habria que ver si en free-flow o los que obtengo de una simulacion), y ajustar el intervalo de tiempo a la network. Porque tal vez no tenga sentido un intervalo de tiempo de 15 minutos si todos los viajes no duran ni 2 minutos. He usado como heuristica, calcular el free flow travel time de todos los path, y coger la median. A esa median la multiplico por 1/2 o 1/3 y ese es mi time interval. Cojo free flow tt y no experienced travel time, porque asi de esta manera el free flow tt da el mismo time interval para todos los episodios.
   - Important conversation about bandit...
    https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
   - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions can take agents)
-
-
-
-
+  - For sioux falls there was a demand that is used normally in research. Could be great to use that demand for benchmark.
 - l/p:
+  - Thompson Sampling Bayesian Project, check if it can be integrated somehow in my thesis (if it provides some value).
   - Hacer preguntas intuitivas, todo el mundo se identifica cuando estamos conduciendo. Antes de hacer un experimento saber que quiero respoonder
   - Leer paper "Where does this road go"
   - Check experiment evaluation in papers

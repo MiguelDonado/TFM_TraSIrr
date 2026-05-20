@@ -108,7 +108,7 @@ class Scenario:
     def compute_k_routes(
         self,
         seeds,
-        k=3,
+        k=config.n_routes_per_OD,
         max_attempts=config.max_attempts,
         random_factor=config.random_factor,
     ):

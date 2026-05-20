@@ -146,7 +146,14 @@ class BMAgent:
     def update(self, chosen, reward, warm_up, episode):
         self.update_history(chosen, reward)
 
-        if episode > warm_up:
+        # Before learning starts, two conditions must be satisfied:
+        # 1. A minimum number of episodes must have elapsed
+        # 2. The agent must have visited all routes at least once
+        # The following conditional checks it:
+        if (
+            episode > warm_up
+            and len({route for route, _ in self.history}) == self.n_routes
+        ):
             self.compute_ET()
             self.compute_PT()
 

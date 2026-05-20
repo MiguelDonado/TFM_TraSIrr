@@ -1,5 +1,5 @@
 """
-Purpose of this script is to get the free flow speed of the network
+Purpose of this script is to get the avg free flow speed of the network
 A weighted average of the max speed on each lane. The weights are the length of the lanes
 """
 
