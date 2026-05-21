@@ -49,6 +49,9 @@ MISSINGNESS_EDGE = MISSINGNESS_DIR / "missingness_by_edge.parquet"
 MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
 MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 TRIPS_DUEITERATE = DUEITERATE_DIR / "trips_dueIterate.xml"
+OD_ROUTES_DUEITERATE = DUEITERATE_DIR / "od_routes_dueiterate.parquet"
+ACTIONS_DUEITERATE = DUEITERATE_DIR / "actions_dueiterate.parquet"
+
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"

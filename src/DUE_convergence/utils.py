@@ -1,3 +1,5 @@
+from collections import defaultdict
+import gzip
 import shutil
 import subprocess
 import pandas as pd
@@ -23,6 +25,8 @@ from paths import (
     MISSINGNESS_REPORT,
     TRIPS_DUEITERATE,
     BASE_DIR,
+    OD_ROUTES_DUEITERATE,
+    ACTIONS_DUEITERATE,
 )
 from lxml import etree
 
@@ -630,7 +634,7 @@ def generate_trips_file_duaIterate(agents):
         f.write(f"<routes>\n")
         for i, agent in enumerate(agents):
             f.write(
-                f"""\t<trip id="t{i}" from="{agent["origin"]}" to="{agent["destination"]}" depart="{agent["departure_time"]}"/>\n"""
+                f"""\t<trip id="{agent["id"]}" from="{agent["origin"]}" to="{agent["destination"]}" depart="{agent["departure_time"]}"/>\n"""
             )
         f.write("</routes>\n")
 
@@ -658,8 +662,140 @@ def run_simulation_dueIterate(max_iterations):
 
 
 def delete_dueIterate_folders(max_iterations):
-    target_numbers = [str(number).zfill(3) for number in max_iterations]
+    target_numbers = [str(number).zfill(3) for number in range(max_iterations)]
 
     for number in target_numbers:
         path_to_delete = BASE_DIR / number
         shutil.rmtree(path_to_delete)
+
+
+def extract_routes_file_dueiterate(max_iterations):
+    # Name of the folder that contains the last iteration of dueIterate
+    folder_number = max_iterations - 1
+
+    # Add padding
+    folder_number = str(folder_number).zfill(3)
+
+    # Path of the folder that contains last iteration dueIterate
+    folder_path = BASE_DIR / folder_number
+
+    # Path of gzip file that contains routes generated from dueIterate
+    gzip_path = folder_path / f"trips_dueIterate_{folder_number}.rou.xml.gz"
+
+    # Path of xml file that contains routes generated from dueIterate
+    xml_path = folder_path / f"trips_dueIterate_{folder_number}.rou.xml"
+
+    # Decompress gzip file to get xml file with routes generated from dueIterate
+    __decompress_gzip(gzip_path, xml_path)
+
+    return xml_path
+
+
+def __decompress_gzip(gzip_path, xml_path):
+    """
+    Decompress a gzip file
+    """
+    with gzip.open(gzip_path, "rb") as f_in:
+        with open(xml_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+
+def compute_od_routes_table(unique_ods, routes_file, max_iterations):
+    """
+    This function computes the od routes table used during computation Rgap
+    """
+    # Dictionary with agents_id as keys, and routes (list of edges) as values
+    dict_agent_routes = __parse_routes(routes_file)
+
+    # Extract all routes used by agents (route = all its edges)
+    all_routes = dict_agent_routes.values()
+
+    # Get unique routes (route = all its edges)
+    unique_routes = __get_unique_routes(all_routes)
+
+    # Build od_routes dictionary
+    od_routes = __build_od_routes_dict(unique_routes)
+
+    # Put od_routes in right format to store in parquet file
+    processed_od_routes = __process_od_routes(od_routes)
+
+    df = pd.DataFrame(processed_od_routes)
+    df.to_parquet(OD_ROUTES_DUEITERATE, engine="pyarrow")
+
+    return dict_agent_routes, od_routes
+
+
+def __parse_routes(routes_file):
+    """
+    Returns a dictionary that contains:
+    - keys: agents_id
+    - values: route (list with all the edges)
+    """
+    document = routes_file
+    tree = etree.parse(document)
+
+    # Routes
+    vehicles = tree.xpath("//vehicle")
+    agents_id = [vehicle.xpath("@id")[0] for vehicle in vehicles]
+    routes = [vehicle.xpath("route/@edges")[0] for vehicle in vehicles]
+    edges = [route.split(" ") for route in routes]
+    print("pepe")
+
+    # Check
+    assert len(edges) == len(agents_id)
+
+    return dict(zip(agents_id, edges))
+
+
+def __get_unique_routes(routes):
+    unique_routes = [list(x) for x in set(tuple(inner) for inner in routes)]
+    return unique_routes
+
+
+def __build_od_routes_dict(unique_routes):
+    # Initialize dictionary that will store as keys unique ods, and as values a list with all the used routes for that od
+    od_routes = defaultdict(list)
+    for route in unique_routes:
+        od = (route[0], route[-1])
+        od_routes[od].append(route)
+    return od_routes
+
+
+def __process_od_routes(od_routes):
+    """
+    I want this format
+    origin | dest | route_id | step | edge
+    A         B      1          1       e1
+    A         B      1          2       e5 ...
+    """
+    rows = []
+    for (origin, dest), routes in od_routes.items():
+        for route_id, route in enumerate(routes):
+            for step, edge in enumerate(route):
+                rows.append(
+                    {
+                        "origin": origin,
+                        "dest": dest,
+                        "route_id": route_id,
+                        "step": step,
+                        "edge": edge,
+                    }
+                )
+    return rows
+
+
+def compute_actions_table(agents, dict_agent_routes, od_routes):
+    """
+    Compute actions table used during Rgap computation
+    """
+    actions = []
+
+    for agent in agents:
+        agent_id = agent["id"]
+        od = (agent["origin"], agent["destination"])
+        route = dict_agent_routes[agent_id]
+        idx_route = od_routes[od].index(route)
+        actions.append({"episode": 1, "agent_id": agent_id, "action": idx_route})
+
+    df = pd.DataFrame(actions)
+    df.to_parquet(ACTIONS_DUEITERATE, engine="pyarrow")

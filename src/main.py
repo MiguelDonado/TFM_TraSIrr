@@ -19,7 +19,11 @@ from experiment import (
 from paths import MAP
 from scenario import Scenario
 
-from DUE_convergence.DUE_convergence import check_DUE_convergence
+from DUE_convergence.DUE_convergence import (
+    check_DUE_convergence,
+    check_dueIterate,
+    generate_generic_files_DUE_convergence,
+)
 
 # Reproducibility
 rng = np.random.default_rng(config.seed)
@@ -49,6 +53,12 @@ def main():
         seeds=seeds,
         rng=rng,
     )
+
+    # -----------------------------
+    # 2. CHECK DUEIERATE RGAP (DUE)
+    # -----------------------------
+    generate_generic_files_DUE_convergence()
+    check_dueIterate(scen)
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT
