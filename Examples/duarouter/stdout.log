@@ -1,141 +1,141 @@
 > Executing step 0
 >> Running router on input.trips.xml
->>> Begin time: 2026-05-21 13:43:36.095119
->>> End time: 2026-05-21 13:43:36.231520
->>> Duration: 0:00:00.136401
+>>> Begin time: 2026-05-21 21:33:02.306779
+>>> End time: 2026-05-21 21:33:02.395626
+>>> Duration: 0:00:00.088847
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:36.231575
->>> End time: 2026-05-21 13:43:37.584754
->>> Duration: 0:00:01.353179
+>>> Begin time: 2026-05-21 21:33:02.395674
+>>> End time: 2026-05-21 21:33:03.606900
+>>> Duration: 0:00:01.211226
 <<
-< Step 0 ended (duration: 0:00:01.489741)
+< Step 0 ended (duration: 0:00:01.300321)
 ------------------
 
 > Executing step 1
 >> Running router on 000/input_000.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:37.591109
->>> End time: 2026-05-21 13:43:37.750993
->>> Duration: 0:00:00.159884
+>>> Begin time: 2026-05-21 21:33:03.608578
+>>> End time: 2026-05-21 21:33:03.741444
+>>> Duration: 0:00:00.132866
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:37.751058
->>> End time: 2026-05-21 13:43:38.926731
->>> Duration: 0:00:01.175673
+>>> Begin time: 2026-05-21 21:33:03.741534
+>>> End time: 2026-05-21 21:33:04.916988
+>>> Duration: 0:00:01.175454
 <<
-< Step 1 ended (duration: 0:00:01.335728)
+< Step 1 ended (duration: 0:00:01.308549)
 ------------------
 
 > Executing step 2
 >> Running router on 001/input_001.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:38.928831
->>> End time: 2026-05-21 13:43:39.099544
->>> Duration: 0:00:00.170713
+>>> Begin time: 2026-05-21 21:33:04.918348
+>>> End time: 2026-05-21 21:33:05.051822
+>>> Duration: 0:00:00.133474
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:39.099605
->>> End time: 2026-05-21 13:43:40.224905
->>> Duration: 0:00:01.125300
+>>> Begin time: 2026-05-21 21:33:05.051869
+>>> End time: 2026-05-21 21:33:06.078421
+>>> Duration: 0:00:01.026552
 <<
-< Step 2 ended (duration: 0:00:01.296207)
+< Step 2 ended (duration: 0:00:01.160146)
 ------------------
 
 > Executing step 3
 >> Running router on 002/input_002.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:40.231028
->>> End time: 2026-05-21 13:43:40.430144
->>> Duration: 0:00:00.199116
+>>> Begin time: 2026-05-21 21:33:06.079816
+>>> End time: 2026-05-21 21:33:06.215106
+>>> Duration: 0:00:00.135290
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:40.430203
->>> End time: 2026-05-21 13:43:41.558739
->>> Duration: 0:00:01.128536
+>>> Begin time: 2026-05-21 21:33:06.215152
+>>> End time: 2026-05-21 21:33:07.273463
+>>> Duration: 0:00:01.058311
 <<
-< Step 3 ended (duration: 0:00:01.327841)
+< Step 3 ended (duration: 0:00:01.193731)
 ------------------
 
 > Executing step 4
 >> Running router on 003/input_003.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:41.565117
->>> End time: 2026-05-21 13:43:41.762486
->>> Duration: 0:00:00.197369
+>>> Begin time: 2026-05-21 21:33:07.277658
+>>> End time: 2026-05-21 21:33:07.412507
+>>> Duration: 0:00:00.134849
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:41.762542
->>> End time: 2026-05-21 13:43:42.791349
->>> Duration: 0:00:01.028807
+>>> Begin time: 2026-05-21 21:33:07.412553
+>>> End time: 2026-05-21 21:33:08.428845
+>>> Duration: 0:00:01.016292
 <<
-< Step 4 ended (duration: 0:00:01.226402)
+< Step 4 ended (duration: 0:00:01.151273)
 ------------------
 
 > Executing step 5
 >> Running router on 004/input_004.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:42.797506
->>> End time: 2026-05-21 13:43:42.968111
->>> Duration: 0:00:00.170605
+>>> Begin time: 2026-05-21 21:33:08.432668
+>>> End time: 2026-05-21 21:33:08.568244
+>>> Duration: 0:00:00.135576
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:42.968165
->>> End time: 2026-05-21 13:43:44.081757
->>> Duration: 0:00:01.113592
+>>> Begin time: 2026-05-21 21:33:08.568328
+>>> End time: 2026-05-21 21:33:09.569841
+>>> Duration: 0:00:01.001513
 <<
-< Step 5 ended (duration: 0:00:01.284371)
+< Step 5 ended (duration: 0:00:01.137251)
 ------------------
 
 > Executing step 6
 >> Running router on 005/input_005.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:44.088065
->>> End time: 2026-05-21 13:43:44.265246
->>> Duration: 0:00:00.177181
+>>> Begin time: 2026-05-21 21:33:09.574118
+>>> End time: 2026-05-21 21:33:09.711121
+>>> Duration: 0:00:00.137003
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:44.265298
->>> End time: 2026-05-21 13:43:45.342168
->>> Duration: 0:00:01.076870
+>>> Begin time: 2026-05-21 21:33:09.711169
+>>> End time: 2026-05-21 21:33:10.726768
+>>> Duration: 0:00:01.015599
 <<
-< Step 6 ended (duration: 0:00:01.254203)
+< Step 6 ended (duration: 0:00:01.152732)
 ------------------
 
 > Executing step 7
 >> Running router on 006/input_006.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:45.348383
->>> End time: 2026-05-21 13:43:45.523231
->>> Duration: 0:00:00.174848
+>>> Begin time: 2026-05-21 21:33:10.731074
+>>> End time: 2026-05-21 21:33:10.865092
+>>> Duration: 0:00:00.134018
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:45.523286
->>> End time: 2026-05-21 13:43:46.605206
->>> Duration: 0:00:01.081920
+>>> Begin time: 2026-05-21 21:33:10.865137
+>>> End time: 2026-05-21 21:33:11.924557
+>>> Duration: 0:00:01.059420
 <<
-< Step 7 ended (duration: 0:00:01.256925)
+< Step 7 ended (duration: 0:00:01.193568)
 ------------------
 
 > Executing step 8
 >> Running router on 007/input_007.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:46.611407
->>> End time: 2026-05-21 13:43:46.808452
->>> Duration: 0:00:00.197045
+>>> Begin time: 2026-05-21 21:33:11.928131
+>>> End time: 2026-05-21 21:33:12.061851
+>>> Duration: 0:00:00.133720
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:46.808503
->>> End time: 2026-05-21 13:43:47.857565
->>> Duration: 0:00:01.049062
+>>> Begin time: 2026-05-21 21:33:12.061900
+>>> End time: 2026-05-21 21:33:13.105769
+>>> Duration: 0:00:01.043869
 <<
-< Step 8 ended (duration: 0:00:01.246292)
+< Step 8 ended (duration: 0:00:01.177723)
 ------------------
 
 > Executing step 9
 >> Running router on 008/input_008.rou.alt.xml.gz
->>> Begin time: 2026-05-21 13:43:47.863863
->>> End time: 2026-05-21 13:43:48.039503
->>> Duration: 0:00:00.175640
+>>> Begin time: 2026-05-21 21:33:13.110142
+>>> End time: 2026-05-21 21:33:13.244096
+>>> Duration: 0:00:00.133954
 <<
 >> Running simulation
->>> Begin time: 2026-05-21 13:43:48.039574
->>> End time: 2026-05-21 13:43:49.080731
->>> Duration: 0:00:01.041157
+>>> Begin time: 2026-05-21 21:33:13.244180
+>>> End time: 2026-05-21 21:33:14.290745
+>>> Duration: 0:00:01.046565
 <<
-< Step 9 ended (duration: 0:00:01.216976)
+< Step 9 ended (duration: 0:00:01.180700)
 ------------------
 
-dua-iterate ended (duration: 0:00:12.991931)
+dua-iterate ended (duration: 0:00:11.985763)

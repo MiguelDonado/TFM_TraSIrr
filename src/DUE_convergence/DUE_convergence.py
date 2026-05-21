@@ -18,6 +18,7 @@ from .utils import (
     extract_routes_file_dueIterate,
     compute_actions_table_dueIterate,
     process_trips_info_dueiterate,
+    process_vehroute_dueIterate,
 )
 from config.config import config
 
@@ -33,6 +34,9 @@ from paths import (
     OD_ROUTES_DUEITERATE,
     TRIPS_INFO_PROCESSED_DUEITERATE,
     COST_PATHS_DUEITERATE,
+    COST_MIN_PATHS,
+    COST_MIN_PATHS_DUEITERATE,
+    VEHROUTE_DUEITERATE_PROCESSED,
 )
 
 
@@ -68,6 +72,7 @@ def check_DUE_convergence_BM(end_time, time_interval):
         network=config.network,
         time_interval=time_interval,
         threshold_density=config.threshold_density,
+        output_file=COST_MIN_PATHS,
     )
     # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
     generate_weights_xmls()
@@ -131,6 +136,22 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
         actions_path=ACTIONS_DUEITERATE,
         trips_info_processed_path=TRIPS_INFO_PROCESSED_DUEITERATE,
         output_file=COST_PATHS_DUEITERATE,
+    )
+
+    # 10. Process vehroute dueIterate
+    process_vehroute_dueIterate(
+        max_iterations=config.dueIterate_max_iterations,
+        output_file=VEHROUTE_DUEITERATE_PROCESSED,
+    )
+
+    ######
+    # 10. TIME DEPENDENCE SHORTEST PATH
+    # 10.1. Compute avg link travel time for all time intervals across all episodes
+    compute_travel_time_links_t_k(
+        network=config.network,
+        time_interval=time_interval,
+        threshold_density=config.threshold_density,
+        output_file=COST_MIN_PATHS_DUEITERATE,
     )
 
     ################

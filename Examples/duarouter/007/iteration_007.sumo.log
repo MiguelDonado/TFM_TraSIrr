@@ -1,4 +1,4 @@
-Loading net-file from '007/../input.net.xml' ... done (1ms).
+Loading net-file from '007/../input.net.xml' ... done (0ms).
 Loading additional-files from '007/../edgedata.add.xml' ... done (1ms).
 Loading route-files incrementally from '007/input_007.rou.xml.gz'
 Loading done.
@@ -6,9 +6,9 @@ Simulation version 1.26.0 started with time: 0.00.
 Simulation ended at time: 6444.00.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 0.97s
- Real time factor: 6643.3
- UPS: 202274.226804
+ Duration: 1.00s
+ Real time factor: 6469.88
+ UPS: 196993.975904
 Vehicles:
  Inserted: 2400
  Running: 0

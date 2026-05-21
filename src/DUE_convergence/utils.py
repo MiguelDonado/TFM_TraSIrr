@@ -1,4 +1,4 @@
-from experiment import parse_trips_info
+from experiment import parse_trips_info, parse_vehroute
 from collections import defaultdict
 import gzip
 import shutil
@@ -110,7 +110,17 @@ def compute_travel_time_paths_odtp_k(
     df_avg_path_travel_time.to_parquet(output_file)
 
 
-def compute_travel_time_links_t_k(time_interval, network, threshold_density):
+def compute_travel_time_links_t_k(
+    time_interval,
+    network,
+    threshold_density,
+    output_file,
+    agents_od_file,
+    missingness_report_file,
+    missingness_interval_file,
+    missingness_edge_file,
+    missingness_episode_file,
+):
     """
     Called once per program execution
     This function is used to get the table with all the: "Average link travel times on link j departing at the time interval t, at episode k"
@@ -151,7 +161,7 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     df_edges.rename(columns={"vehicle_id": "agent_id"}, inplace=True)
 
     # 4. Read agents_od to get departure_times of each agent
-    df_agents_od = pd.read_parquet(AGENTS_OD)
+    df_agents_od = pd.read_parquet(agents_od_file)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
 
     # 5. Merge
@@ -209,7 +219,7 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     ######################
     # Study of missingness
     ######################
-    with open(MISSINGNESS_REPORT, "w") as f:
+    with open(missingness_report_file, "w") as f:
 
         # 1. Proportion of missing values
         prop_missing = avg_travel_time_links["travel_time"].isna().mean()
@@ -227,18 +237,18 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     missing_by_interval = (
         df_missingness.groupby("time_interval")["col_missing"].sum().reset_index()
     )
-    missing_by_interval.to_parquet(MISSINGNESS_INT, index=False)
+    missing_by_interval.to_parquet(missingness_interval_file, index=False)
 
     # 4. Missingness by edge
     # It may allow us to justify that most missingness occurs on low-traffic edges
     missing_by_edge = df_missingness.groupby("edge")["col_missing"].sum().reset_index()
-    missing_by_edge.to_parquet(MISSINGNESS_EDGE, index=False)
+    missing_by_edge.to_parquet(missingness_edge_file, index=False)
 
     # 5. Missingness by episode
     missing_by_episode = (
         df_missingness.groupby("episode")["col_missing"].sum().reset_index()
     )
-    missing_by_episode.to_parquet(MISSINGNESS_EPISODE, index=False)
+    missing_by_episode.to_parquet(missingness_episode_file, index=False)
 
     ###############
     # GOTCHA LOGIC (FILL MISSING VALUES)
@@ -311,7 +321,7 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     mask = df["travel_time"].isna()
     df.loc[mask, "travel_time"] = df.loc[mask, "free_flow_travel_time"]
     df = df.drop(["density", "ffill", "free_flow_travel_time"], axis="columns")
-    df.to_parquet(COST_LINKS)
+    df.to_parquet(output_file)
 
 
 def generate_weights_xmls():
@@ -654,6 +664,10 @@ def call_dueIterate(network, max_iterations):
         str(max_iterations),
         "sumo--step-length",
         "0.1",
+        "sumo--vehroute-output",
+        "vehroute.xml",
+        "sumo--vehroute-output.exit-times",
+        "true",
     ]
 
     subprocess.run(cmd, check=True)
@@ -828,5 +842,29 @@ def process_trips_info_dueiterate(max_iterations, output_file):
     )
 
     # Save trips info processed data in a parquet file
+    df = pd.DataFrame(processed_data)
+    df.to_parquet(output_file, engine="pyarrow")
+
+
+def process_vehroute_dueIterate(max_iterations, output_file):
+    """
+    Builds the processed vehroute file
+    """
+    # Name of the folder that contains the last iteration of dueIterate
+    folder_number = max_iterations - 1
+
+    # Add padding
+    folder_number = str(folder_number).zfill(3)
+
+    # Path of the folder that contains last iteration dueIterate
+    folder_path = BASE_DIR / folder_number
+
+    # Raw vehroutes path
+    vehroute_path = folder_path / "vehroute.xml"
+
+    # Parse vehroutes
+    processed_data = parse_vehroute(episode=1, vehroute_path=vehroute_path)
+
+    # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
     df.to_parquet(output_file, engine="pyarrow")

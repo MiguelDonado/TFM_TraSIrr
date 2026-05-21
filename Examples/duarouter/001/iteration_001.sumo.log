@@ -7,8 +7,8 @@ Simulation ended at time: 7162.00.
 Reason: All vehicles have left the simulation.
 Performance:
  Duration: 1.10s
- Real time factor: 6522.77
- UPS: 170321.493625
+ Real time factor: 6487.32
+ UPS: 169395.833333
 Vehicles:
  Inserted: 2400
  Running: 0

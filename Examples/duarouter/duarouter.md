@@ -16,7 +16,7 @@ duarouter -n /home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml
 sumo-gui -n input.net.xml -r output_shortest_path.routes.xml --delay 500 --step-length 0.1
 
 # 4. Execute duarouter (DUE)
-duaIterate.py -n input.net.xml -t input.trips.xml --last-step 10
+duaIterate.py -n input.net.xml -t input.trips.xml --last-step 10 sumo--vehroute-output vehroute.xml sumo--vehroute-output.exit-times true
 
 # 5. Run SUMO-GUI
 sumo-gui -c 009/iteration_009.sumocfg --delay 500 --step-length 0.1

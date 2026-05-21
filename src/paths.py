@@ -56,6 +56,8 @@ TRIPS_INFO_PROCESSED_DUEITERATE = (
     DUEITERATE_DIR / "trips_info_processed_duaiterate.parquet"
 )
 COST_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_paths_odtp_k_dueIterate.parquet"
+COST_MIN_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_min_paths_odtp_k_dueIterate.parquet"
+VEHROUTE_DUEITERATE_PROCESSED = DUEITERATE_DIR / "vehroute_dueiterate.parquet"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
