@@ -20,8 +20,8 @@ from paths import MAP
 from scenario import Scenario
 
 from DUE_convergence.DUE_convergence import (
-    check_DUE_convergence,
-    check_dueIterate,
+    check_DUE_convergence_BM,
+    check_DUE_convergence_dueIterate,
     generate_generic_files_DUE_convergence,
 )
 
@@ -31,7 +31,7 @@ seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
 def main2():
-    check_DUE_convergence()
+    check_DUE_convergence_BM()
 
 
 def main():
@@ -58,7 +58,9 @@ def main():
     # 2. CHECK DUEIERATE RGAP (DUE)
     # -----------------------------
     generate_generic_files_DUE_convergence()
-    check_dueIterate(scen)
+    check_DUE_convergence_dueIterate(
+        scen, end_time=config.end_time, time_interval=config.time_interval
+    )
 
     # -----------------------------
     # 2. CREATE ENVIRONMENT
@@ -153,7 +155,9 @@ def main():
     # -----------------------------
     # 8. CHECK DUE convergence
     # -----------------------------
-    check_DUE_convergence(scen.agents)
+    check_DUE_convergence_BM(
+        end_time=config.end_time, time_interval=config.time_interval
+    )
 
     # -----------------------------
     # 9. PLOTS

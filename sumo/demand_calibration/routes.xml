@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-05-21 16:44:46.922636 by Eclipse SUMO randomTrips.py v1.26.0
+<!-- generated on 2026-05-21 18:34:52.479236 by Eclipse SUMO randomTrips.py v1.26.0
 <configuration>
     <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"/>
     <output-trip-file value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/trips.xml"/>
@@ -12,7 +12,7 @@
 </configuration>
 -->
 
-<!-- generated on 2026-05-21T16:44:46.900998+01:00 by Eclipse SUMO duarouter 1.26.0
+<!-- generated on 2026-05-21T18:34:52.452293+01:00 by Eclipse SUMO duarouter 1.26.0
 <duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>

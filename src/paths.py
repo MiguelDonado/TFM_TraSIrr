@@ -51,7 +51,11 @@ MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 TRIPS_DUEITERATE = DUEITERATE_DIR / "trips_dueIterate.xml"
 OD_ROUTES_DUEITERATE = DUEITERATE_DIR / "od_routes_dueiterate.parquet"
 ACTIONS_DUEITERATE = DUEITERATE_DIR / "actions_dueiterate.parquet"
-
+FLOWS_PATH_DUEITERATE = DUEITERATE_DIR / "flows_path_dueiterate.parquet"
+TRIPS_INFO_PROCESSED_DUEITERATE = (
+    DUEITERATE_DIR / "trips_info_processed_duaiterate.parquet"
+)
+COST_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_paths_odtp_k_dueIterate.parquet"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"

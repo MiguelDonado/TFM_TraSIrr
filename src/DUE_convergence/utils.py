@@ -1,3 +1,4 @@
+from experiment import parse_trips_info
 from collections import defaultdict
 import gzip
 import shutil
@@ -6,6 +7,7 @@ import pandas as pd
 from paths import (
     DEMAND_ODT,
     AGENTS_OD,
+    TRIPS_INFO_PROCESSED_DUEITERATE,
     ACTIONS,
     TRIPS_INFO_PROCESSED,
     FREE_FLOW_TRAVEL_TIMES,
@@ -31,14 +33,14 @@ from paths import (
 from lxml import etree
 
 
-def compute_flows_odtp_k():
+def compute_flows_odtp_k(actions_path, output_file):
     """
     Called once per program execution
     This function is used to get the table with all the: "Flows assigned on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
     # Observations table (fact table)
-    df_actions = pd.read_parquet(ACTIONS)
+    df_actions = pd.read_parquet(actions_path)
     df_actions.rename(columns={"action": "path"}, inplace=True)
     # Lookup table
     df_agents_od = pd.read_parquet(AGENTS_OD)
@@ -55,24 +57,26 @@ def compute_flows_odtp_k():
         .size()
         .reset_index(name="count")
     )
-    flows.to_parquet(FLOWS_PATHS)
+    flows.to_parquet(output_file)
 
 
-def compute_travel_time_paths_odtp_k():
+def compute_travel_time_paths_odtp_k(
+    actions_path, trips_info_processed_path, output_file
+):
     """
     Called once per program execution
     This function is used to get the table with all the: "Average path travel times on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
     # Observations table (fact table)
-    df_actions = pd.read_parquet(ACTIONS)
+    df_actions = pd.read_parquet(actions_path)
     df_actions.rename(columns={"action": "path"}, inplace=True)
     # Lookup table
     df_agents_od = pd.read_parquet(AGENTS_OD)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
     # Observations table (fact table). Trips info contains data about the whole episode for each vehicle (Duration = travel time...)
     df_travel_times = pd.read_parquet(
-        TRIPS_INFO_PROCESSED, columns=["episode", "vehicle_id", "duration"]
+        trips_info_processed_path, columns=["episode", "vehicle_id", "duration"]
     )
     # Cast
     df_travel_times["episode"] = df_travel_times["episode"].astype("int32")
@@ -103,7 +107,7 @@ def compute_travel_time_paths_odtp_k():
         # After grouping is convenient to reset index
         .reset_index()
     )
-    df_avg_path_travel_time.to_parquet(COST_PATHS)
+    df_avg_path_travel_time.to_parquet(output_file)
 
 
 def compute_travel_time_links_t_k(time_interval, network, threshold_density):
@@ -648,6 +652,8 @@ def call_dueIterate(network, max_iterations):
         TRIPS_DUEITERATE,
         "--last-step",
         str(max_iterations),
+        "sumo--step-length",
+        "0.1",
     ]
 
     subprocess.run(cmd, check=True)
@@ -669,7 +675,7 @@ def delete_dueIterate_folders(max_iterations):
         shutil.rmtree(path_to_delete)
 
 
-def extract_routes_file_dueiterate(max_iterations):
+def extract_routes_file_dueIterate(max_iterations):
     # Name of the folder that contains the last iteration of dueIterate
     folder_number = max_iterations - 1
 
@@ -700,7 +706,7 @@ def __decompress_gzip(gzip_path, xml_path):
             shutil.copyfileobj(f_in, f_out)
 
 
-def compute_od_routes_table(unique_ods, routes_file, max_iterations):
+def compute_od_routes_table_dueIterate(routes_file, output_file):
     """
     This function computes the od routes table used during computation Rgap
     """
@@ -720,7 +726,7 @@ def compute_od_routes_table(unique_ods, routes_file, max_iterations):
     processed_od_routes = __process_od_routes(od_routes)
 
     df = pd.DataFrame(processed_od_routes)
-    df.to_parquet(OD_ROUTES_DUEITERATE, engine="pyarrow")
+    df.to_parquet(output_file, engine="pyarrow")
 
     return dict_agent_routes, od_routes
 
@@ -739,7 +745,6 @@ def __parse_routes(routes_file):
     agents_id = [vehicle.xpath("@id")[0] for vehicle in vehicles]
     routes = [vehicle.xpath("route/@edges")[0] for vehicle in vehicles]
     edges = [route.split(" ") for route in routes]
-    print("pepe")
 
     # Check
     assert len(edges) == len(agents_id)
@@ -784,7 +789,7 @@ def __process_od_routes(od_routes):
     return rows
 
 
-def compute_actions_table(agents, dict_agent_routes, od_routes):
+def compute_actions_table_dueIterate(agents, dict_agent_routes, od_routes, output_file):
     """
     Compute actions table used during Rgap computation
     """
@@ -798,4 +803,30 @@ def compute_actions_table(agents, dict_agent_routes, od_routes):
         actions.append({"episode": 1, "agent_id": agent_id, "action": idx_route})
 
     df = pd.DataFrame(actions)
-    df.to_parquet(ACTIONS_DUEITERATE, engine="pyarrow")
+    df.to_parquet(output_file, engine="pyarrow")
+
+
+def process_trips_info_dueiterate(max_iterations, output_file):
+    """
+    Builds the processed trips info file
+    """
+    # Name of the folder that contains the last iteration of dueIterate
+    folder_number = max_iterations - 1
+
+    # Add padding
+    folder_number = str(folder_number).zfill(3)
+
+    # Path of the folder that contains last iteration dueIterate
+    folder_path = BASE_DIR / folder_number
+
+    # Raw trips info path
+    trips_info_dueiterate_path = folder_path / f"tripinfo_{folder_number}.xml"
+
+    # Parse trips info
+    processed_data = parse_trips_info(
+        episode=1, trips_info_path=trips_info_dueiterate_path
+    )
+
+    # Save trips info processed data in a parquet file
+    df = pd.DataFrame(processed_data)
+    df.to_parquet(output_file, engine="pyarrow")

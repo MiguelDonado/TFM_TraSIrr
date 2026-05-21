@@ -48,7 +48,7 @@ with open(YAML_CONF, "r") as file:
 def prepare_data(episode, actions, rewards, agents):
     aggregated_result = parse_aggregated_data(episode)
     vehroute_result = parse_vehroute(episode)
-    trips_info_result = parse_trips_info(episode)
+    trips_info_result = parse_trips_info(episode, TRIPS_INFO)
     fcd_result = parse_fcd(episode)
     edgedata_result = parse_edgedata(episode)
     actions = prepare_actions(episode, actions)
@@ -164,9 +164,9 @@ def parse_vehroute(episode):
     return data
 
 
-def parse_trips_info(episode):
+def parse_trips_info(episode, trips_info_path):
     data = []
-    parser = Parser(TRIPS_INFO)
+    parser = Parser(trips_info_path)
 
     data_dict = extract_dict(parser, config["metrics"]["tripsinfo"])
 
