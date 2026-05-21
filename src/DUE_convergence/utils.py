@@ -21,6 +21,8 @@ from paths import (
     MISSINGNESS_EDGE,
     MISSINGNESS_EPISODE,
     MISSINGNESS_REPORT,
+    TRIPS_DUEITERATE,
+    BASE_DIR,
 )
 from lxml import etree
 
@@ -616,3 +618,48 @@ def delete_files_DUE_convergence():
             for item in folder.iterdir():
                 if item.is_file():
                     item.unlink()
+
+
+#####################
+#####################
+# DUEITERATE
+#####################
+#####################
+def generate_trips_file_duaIterate(agents):
+    with open(TRIPS_DUEITERATE, "w") as f:
+        f.write(f"<routes>\n")
+        for i, agent in enumerate(agents):
+            f.write(
+                f"""\t<trip id="t{i}" from="{agent["origin"]}" to="{agent["destination"]}" depart="{agent["departure_time"]}"/>\n"""
+            )
+        f.write("</routes>\n")
+
+
+def call_dueIterate(network, max_iterations):
+    cmd = [
+        "duaIterate.py",
+        "-n",
+        network,
+        "-t",
+        TRIPS_DUEITERATE,
+        "--last-step",
+        str(max_iterations),
+    ]
+
+    subprocess.run(cmd, check=True)
+
+
+def run_simulation_dueIterate(max_iterations):
+    number_path = max_iterations - 1
+    number_path = str(number_path).zfill(3)
+    path_config_file = BASE_DIR / number_path / f"iteration_{number_path}.sumocfg"
+    cmd = ["sumo-gui", "-c", path_config_file]
+    subprocess.run(cmd, check=True)
+
+
+def delete_dueIterate_folders(max_iterations):
+    target_numbers = [str(number).zfill(3) for number in max_iterations]
+
+    for number in target_numbers:
+        path_to_delete = BASE_DIR / number
+        shutil.rmtree(path_to_delete)

@@ -1,0 +1,15 @@
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml' ... done (2ms).
+Loading additional-files from '002/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '002/trips_dueIterate_002.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4266.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.31s
+ Real time factor: 13586
+ UPS: 267353.503185
+Vehicles:
+ Inserted: 1332
+ Running: 0
+ Waiting: 0

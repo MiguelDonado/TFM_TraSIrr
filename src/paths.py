@@ -17,6 +17,7 @@ TDSP_DIR = DUE_DIR / "TDSP"
 MISSINGNESS_DIR = DUE_DIR / "missingness"
 WEIGHTS_DIR = TDSP_DIR / "weights"
 SHORTEST_PATHS_DIR = TDSP_DIR / "shortest_paths"
+DUEITERATE_DIR = DUE_DIR / "dueIterate"
 
 # Parquet files (outputs that will be analyzed in R)
 STATISTICS_PROCESSED = PROCESSED_DATA_DIR / "statistics.parquet"
@@ -47,6 +48,7 @@ MISSINGNESS_INT = MISSINGNESS_DIR / "missingness_by_int.parquet"
 MISSINGNESS_EDGE = MISSINGNESS_DIR / "missingness_by_edge.parquet"
 MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
 MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
+TRIPS_DUEITERATE = DUEITERATE_DIR / "trips_dueIterate.xml"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"

@@ -144,6 +144,9 @@ class Config:
     # of the link. If higher than threshold we assign fill forward. Otherwise free flow.
     threshold_density: int = 10
 
+    # dueIterate
+    dueIterate_max_iterations: int = 10
+
     #####################
     # 10. Mode & flags
     #####################

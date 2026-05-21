@@ -1,0 +1,200 @@
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '000/iteration_000_input.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '000/iteration_000.sumocfg']
+Loading net-file from '000/../input.net.xml' ... done (1ms).
+Loading additional-files from '000/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '000/input_000.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 8100.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 1.26s
+ Real time factor: 6443.91
+ UPS: 92132.060461
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '001/iteration_001_input_000.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '001/iteration_001.sumocfg']
+Loading net-file from '001/../input.net.xml' ... done (1ms).
+Loading additional-files from '001/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '001/input_001.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 7162.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 1.10s
+ Real time factor: 6522.77
+ UPS: 170321.493625
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '002/iteration_002_input_001.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '002/iteration_002.sumocfg']
+Loading net-file from '002/../input.net.xml' ... done (0ms).
+Loading additional-files from '002/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '002/input_002.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6710.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 1.03s
+ Real time factor: 6495.64
+ UPS: 190664.085189
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '003/iteration_003_input_002.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '003/iteration_003.sumocfg']
+Loading net-file from '003/../input.net.xml' ... done (1ms).
+Loading additional-files from '003/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '003/input_003.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6688.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 1.04s
+ Real time factor: 6424.59
+ UPS: 186698.366955
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '004/iteration_004_input_003.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '004/iteration_004.sumocfg']
+Loading net-file from '004/../input.net.xml' ... done (1ms).
+Loading additional-files from '004/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '004/input_004.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6466.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.96s
+ Real time factor: 6763.6
+ UPS: 194420.502092
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '005/iteration_005_input_004.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '005/iteration_005.sumocfg']
+Loading net-file from '005/../input.net.xml' ... done (0ms).
+Loading additional-files from '005/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '005/input_005.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6499.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 1.01s
+ Real time factor: 6460.24
+ UPS: 191187.872763
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '006/iteration_006_input_005.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '006/iteration_006.sumocfg']
+Loading net-file from '006/../input.net.xml' ... done (1ms).
+Loading additional-files from '006/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '006/input_006.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6442.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.99s
+ Real time factor: 6487.41
+ UPS: 193075.528701
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '007/iteration_007_input_006.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '007/iteration_007.sumocfg']
+Loading net-file from '007/../input.net.xml' ... done (1ms).
+Loading additional-files from '007/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '007/input_007.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6444.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.97s
+ Real time factor: 6643.3
+ UPS: 202274.226804
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '008/iteration_008_input_007.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '008/iteration_008.sumocfg']
+Loading net-file from '008/../input.net.xml' ... done (1ms).
+Loading additional-files from '008/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '008/input_008.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6485.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.96s
+ Real time factor: 6727.18
+ UPS: 202199.170124
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '009/iteration_009_input_008.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '009/iteration_009.sumocfg']
+Loading net-file from '009/../input.net.xml' ... done (1ms).
+Loading additional-files from '009/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '009/input_009.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 6462.00.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 0.97s
+ Real time factor: 6696.37
+ UPS: 197985.492228
+Vehicles:
+ Inserted: 2400
+ Running: 0
+ Waiting: 0

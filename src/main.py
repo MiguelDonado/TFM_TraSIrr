@@ -143,7 +143,7 @@ def main():
     # -----------------------------
     # 8. CHECK DUE convergence
     # -----------------------------
-    check_DUE_convergence()
+    check_DUE_convergence(scen.agents)
 
     # -----------------------------
     # 9. PLOTS
