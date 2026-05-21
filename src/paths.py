@@ -14,6 +14,7 @@ FIGURES_DIR = BASE_DIR / "output" / "figures"
 
 DUE_DIR = BASE_DIR / "data" / "DUE"
 TDSP_DIR = DUE_DIR / "TDSP"
+MISSINGNESS_DIR = DUE_DIR / "missingness"
 WEIGHTS_DIR = TDSP_DIR / "weights"
 SHORTEST_PATHS_DIR = TDSP_DIR / "shortest_paths"
 
@@ -42,6 +43,10 @@ DEMAND_ODT = DUE_DIR / "demand_odt.parquet"
 COST_LINKS = TDSP_DIR / "costs_links_t_k.parquet"
 TRIPS_TDSP = TDSP_DIR / "trips" / "trips.xml"
 COST_MIN_PATHS = TDSP_DIR / "costs_min_paths_t_k.parquet"
+MISSINGNESS_INT = MISSINGNESS_DIR / "missingness_by_int.parquet"
+MISSINGNESS_EDGE = MISSINGNESS_DIR / "missingness_by_edge.parquet"
+MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
+MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"

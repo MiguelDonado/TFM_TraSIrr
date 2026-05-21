@@ -19,7 +19,7 @@ I wanna focus on behavioral heterogeinity (aversion traffic lights...) instead o
 
 **Reasoning**
 
-Because an empty network is not realistic, we should avoid to include in our analysis unrealistic things. So, in traffic simulation they solve that by doing a warm-up (to not start with the network empty). Many ways to implement it, but I choose to make my simulation to last 1hour and 10 minutes, and analyze only the agents from minute 10 onwards.
+Because an empty network is not realistic, we should avoid to include in our analysis unrealistic things. So, in traffic simulation they solve that by doing a warm-up (to not start with the network empty). Many ways to implement it, but I choose to make my simulation to last 1hour and 10 minutes, and analyze only the agents from minute 10 onwards. (analyze only agents of the post-warm up period.)
 
 
 ## 3. Demand generation
@@ -29,7 +29,7 @@ Because an empty network is not realistic, we should avoid to include in our ana
 - Departures times: Random (uniform)
 - Demand calibration (nº agents): Initial guess we use a simple heuristic, and for the feedback loop we use a simple congestion metric.
 - Route choices (k): 3
-- min-distance: 4 * median edge_length
+- min-distance: alpha * median edge_length
 - Update rule demand calibration: Proportional (adapts to error)
 
 **Reasoning**
@@ -42,6 +42,7 @@ Because an empty network is not realistic, we should avoid to include in our ana
 
 - We restrict the OD space to have size k. We generate with randomTrips for all agents, and we use the k most common ods as our restricted OD space, and force all the agents to sample from those restricted OD space, not uniformly random but according the normalized weights of those ods on initial distribution.
 
+- The simple heuristic used for min-distance: alpha * median edge_length, is capturing the intuition of ensuring that trips span at least several edges.
 
 - To compute the initial guess, we compute the total_length_network and introduce X vehicles per kilometer and hour of simulation.
   
@@ -56,6 +57,9 @@ Because an empty network is not realistic, we should avoid to include in our ana
 
 - Regarding the update rule used when doing demand calibration. First I was using a fixed number. For example if less congested increase demand by 1.2, and if too congested decrease demand by 0.8. But the problem with this approach is that it can oscillate. Instead we use a proportional update rule. 
   - The proportional update rule adjusts the demand based on the magnitude of the error. Instead of applying a fixed update factor, the adjusment depends on the deviation from the target congestion level. When the error is large, the update is more aggresive, enabling faster correction. As the error decreases, the updates become smaller, allowing for a smoother and more stable convergence.
+
+- The computation of k routes is done for all ODs at the same time, until all ODs have k routes or until maximum nº tries.
+
 
 **Verified**
 - `scenario.compute_k_routes(od)` has been implemented by calling duarouter multiple times and using option `--weights.random-factor <float>`. This option modifies the edge costs randomly by $x \in [1,<float>]$. Another option would be to use duaIterate.py.
@@ -76,11 +80,13 @@ Because an empty network is not realistic, we should avoid to include in our ana
 
 **Reasoning**
 - At the beginning, the agent has no preference or prior knowledge. So all routes have the same probability.
-- For the unused routes, when computing the PT (weighted average of past travel times for that route) we get `nan`, because there is no past travel times. To avoid problems when computing the stimulus, we set for the unused routes the PT equal to the ET. That way they dont affect when computing the normalization constant. 
+- **OLD**: For the unused routes, when computing the PT (weighted average of past travel times for that route) we get `nan`, because there is no past travel times. To avoid problems when computing the stimulus, we set for the unused routes the PT equal to the ET. That way they dont affect when computing the normalization constant. 
   - Unused routes PT doesnt affect when computing the ET or updating probabilities, only matters when computing the stimulus, thats why we had to handle it using that heuristic.
+- **NEW**: Each agent, before start learning must have visited all routes at least once. So we already avoid the previous problem.
+  
+- We use a warm-up in the beginning to induce exploration and to avoid aspiration and PT initialization problems (because they assumed we have past travel times, but for the first episodes thats not true).
 
 - According to the paper *"A Day-to-Day Route Choice Model Based on Reinforcement Learning"*, we use positive travel times as a signal during learning, so we use positive travel time as a cost that we want to minimize.
-- Warm-up in order to encourage exploration in the beginning before starting to learn and also to overcome the problem of time indexing for the first timesteps.
 
 ## 5. Randomness
 
@@ -150,3 +156,9 @@ To facilitate reproducibility and enabling systematic experimentation
 - *Upper bound* on number of episodes to guarantee termination of the algorithm. Ensures simulation does not run indefinetely in cases where convergence is slow or not achieved.
 - *Policy stability*: To monitor evolution of agent behavior. To ensure robustness, is declared policy stable when the mean of individual policy changes remain below a predefined threshold for several consecutive iterations, thereby capturing a persistent absence of learning dynamics. We basically check for each agents its policy change between consecutive episodes. Because policies are a probability distribution over possible routes, we basically take the L1 norm of vector of probabilities for episode t and t-1. We do that for all agents. And then we take the mean of all those agents policy change. If the mean is below a predefined threshold then we considered the algorithm converged.
  
+## 12. Time discretization
+- Width of time interval: Proportional to the median free flow travel time
+
+**Reasoning**
+- Basically the time interval is proportional to the median duration of trips in the network. This median is computed over the whole free-flow travel times of available routes. The proportion term used depends, but there is a tradeoff. The smaller the more precise but more computationally expensive. For TDSP is better that is smaller in principle, because captures the idea that a trip should span several time intervals, and hence TDSP makes sense. 
+  - In real life, usually time interval is never smaller than 15 minutes, because there is no more detailed info than that.  

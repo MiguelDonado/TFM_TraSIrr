@@ -17,6 +17,10 @@ from paths import (
     FLOWS_PATHS,
     COST_PATHS,
     COST_MIN_PATHS,
+    MISSINGNESS_INT,
+    MISSINGNESS_EDGE,
+    MISSINGNESS_EPISODE,
+    MISSINGNESS_REPORT,
 )
 from lxml import etree
 
@@ -164,7 +168,7 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     # 10. Check travel times on links are OK.
     assert (df_edges["travel_time"] >= 0).all()
 
-    # 11. Create time interval (15 mins)
+    # 11. Create time interval
     df_edges["time_interval"] = (df_edges["entry_time"] // delta_t).astype(int)
 
     # 12. Compute avg travel times on links (per episode, edge and time interval)
@@ -191,6 +195,40 @@ def compute_travel_time_links_t_k(time_interval, network, threshold_density):
     )
     # Reindex to force all combinations (missing combinations become travel_time = NaN)
     avg_travel_time_links = avg_travel_time_links.reindex(full_index).reset_index()
+
+    ######################
+    # Study of missingness
+    ######################
+    with open(MISSINGNESS_REPORT, "w") as f:
+
+        # 1. Proportion of missing values
+        prop_missing = avg_travel_time_links["travel_time"].isna().mean()
+        f.write(f"Proportion of missing values: {prop_missing:.4f}\n")
+
+        # 2. Total missing values
+        total_missing = avg_travel_time_links["travel_time"].isna().sum()
+        f.write(f"Total missing values: {total_missing}\n\n")
+
+        df_missingness = avg_travel_time_links.copy()
+        df_missingness["col_missing"] = df_missingness["travel_time"].isna().astype(int)
+
+    # 3. Missingness by time interval
+    # It may allow us to justify that most missingness occurs during sparse intervals
+    missing_by_interval = (
+        df_missingness.groupby("time_interval")["col_missing"].sum().reset_index()
+    )
+    missing_by_interval.to_parquet(MISSINGNESS_INT, index=False)
+
+    # 4. Missingness by edge
+    # It may allow us to justify that most missingness occurs on low-traffic edges
+    missing_by_edge = df_missingness.groupby("edge")["col_missing"].sum().reset_index()
+    missing_by_edge.to_parquet(MISSINGNESS_EDGE, index=False)
+
+    # 5. Missingness by episode
+    missing_by_episode = (
+        df_missingness.groupby("episode")["col_missing"].sum().reset_index()
+    )
+    missing_by_episode.to_parquet(MISSINGNESS_EPISODE, index=False)
 
     ###############
     # GOTCHA LOGIC (FILL MISSING VALUES)
@@ -473,6 +511,9 @@ def compute_rgap(df):
 
 
 def generate_demand_odt():
+    """
+    This method basically generates a table that contains the demand for each od for all time intervals
+    """
     agents_od = pd.read_parquet(AGENTS_OD)
     demand_odt = (
         agents_od.groupby(["origin", "destination", "time_interval"])
@@ -502,7 +543,7 @@ def generate_time_intervals_table(end_time, time_interval):
 def generate_trips_odt_file():
     """
     Called once per program execution.
-    Writes to an xml file, the grid of combinations odt.
+    Writes to an xml file, the grid of combinations od and t.
     It will be passed as input to duarouter. So that time dependence shortest paths can be computed
     """
     time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
