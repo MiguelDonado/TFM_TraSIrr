@@ -50,7 +50,7 @@ def prepare_data(episode, actions, rewards, agents):
     vehroute_result = parse_vehroute(episode, VEHROUTE)
     trips_info_result = parse_trips_info(episode, TRIPS_INFO)
     fcd_result = parse_fcd(episode)
-    edgedata_result = parse_edgedata(episode)
+    edgedata_result = parse_edgedata(episode, EDGEDATA)
     actions = prepare_actions(episode, actions)
     rewards = prepare_rewards(episode, rewards)
     BM_result = prepare_BM_data(episode, agents)
@@ -203,10 +203,10 @@ def parse_fcd(episode):
     return data
 
 
-def parse_edgedata(episode):
+def parse_edgedata(episode, edgedata_path):
     data = []
 
-    document = EDGEDATA
+    document = edgedata_path
     tree = etree.parse(document)
 
     interval_elements = tree.xpath("//interval")

@@ -1,0 +1,8 @@
+<additional>
+	<edgeData
+		id='density_21s'
+		file='edgedata_dueiterate.xml'
+		period='21'
+		excludeEmpty='true'
+		writeAttributes='density'/>
+</additional>

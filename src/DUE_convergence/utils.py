@@ -1,6 +1,7 @@
-from experiment import parse_trips_info, parse_vehroute
+from experiment import parse_trips_info, parse_vehroute, parse_edgedata
 from collections import defaultdict
 import gzip
+from lxml import etree
 import shutil
 import subprocess
 import pandas as pd
@@ -31,6 +32,7 @@ from paths import (
     ACTIONS_DUEITERATE,
 )
 from lxml import etree
+from config.config import config
 
 
 def compute_flows_odtp_k(actions_path, output_file):
@@ -116,6 +118,8 @@ def compute_travel_time_links_t_k(
     threshold_density,
     output_file,
     agents_od_file,
+    vehroute_file,
+    edgedata_file,
     missingness_report_file,
     missingness_interval_file,
     missingness_edge_file,
@@ -157,7 +161,7 @@ def compute_travel_time_links_t_k(
     all_edges = set(all_edges)
 
     # 3. Read vehroute file (travel time edges)
-    df_edges = pd.read_parquet(VEHROUTE_PROCESSED)
+    df_edges = pd.read_parquet(vehroute_file)
     df_edges.rename(columns={"vehicle_id": "agent_id"}, inplace=True)
 
     # 4. Read agents_od to get departure_times of each agent
@@ -254,7 +258,7 @@ def compute_travel_time_links_t_k(
     # GOTCHA LOGIC (FILL MISSING VALUES)
     ###############
     # 1. Read edgedata parquet (density edges by intervals)
-    df_density = pd.read_parquet(EDGEDATA_PROCESSED)
+    df_density = pd.read_parquet(edgedata_file)
     df_density.rename(columns={"interval": "time_interval"}, inplace=True)
 
     # 2. Ensure full grid (edges,episode,intervals) (even edges with zero density appear)
@@ -324,7 +328,7 @@ def compute_travel_time_links_t_k(
     df.to_parquet(output_file)
 
 
-def generate_weights_xmls():
+def generate_weights_xmls(cost_links, weights_dir):
     """
     Called once per program execution
     This function creates the xml file containing the time depedent costs of edges for each episode.
@@ -334,7 +338,7 @@ def generate_weights_xmls():
     time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
 
     # Load parquet file that will be converted to xml file
-    df = pd.read_parquet(COST_LINKS)
+    df = pd.read_parquet(cost_links)
 
     # One xml file per episode
     for episode in df["episode"].unique():
@@ -372,7 +376,7 @@ def generate_weights_xmls():
         # Write XML
         tree = etree.ElementTree(root)
 
-        output_file = WEIGHTS_DIR / f"Weights_episode_{episode}.xml"
+        output_file = weights_dir / f"Weights_episode_{episode}.xml"
 
         tree.write(
             output_file,
@@ -382,24 +386,26 @@ def generate_weights_xmls():
         )
 
 
-def compute_time_dependent_shortest_paths(network, seed):
+def compute_time_dependent_shortest_paths(
+    network, seed, weights_dir, shortest_path_dir
+):
     """
     This function computes the time dependent shortest path for all od and for all t
     """
-    episodes = len([f for f in WEIGHTS_DIR.iterdir() if f.is_file()])
+    episodes = len([f for f in weights_dir.iterdir() if f.is_file()])
     for episode in range(1, episodes + 1):
-        routes_file = SHORTEST_PATHS_DIR / f"shortest_path_episode_{episode}.xml"
-        weights_file = WEIGHTS_DIR / f"Weights_episode_{episode}.xml"
+        routes_file = shortest_path_dir / f"shortest_path_episode_{episode}.xml"
+        weights_file = weights_dir / f"Weights_episode_{episode}.xml"
         __run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
 
 
-def compute_cost_min_paths_odt_k(time_interval):
+def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_paths):
     """
     Computes the table that contains the cost for all time dependent shortest paths
     """
     rows = []
 
-    for file in SHORTEST_PATHS_DIR.iterdir():
+    for file in shortest_path_dir.iterdir():
         episode = file.stem.split("_")[-1]
 
         tree = etree.parse(file)
@@ -434,15 +440,15 @@ def compute_cost_min_paths_odt_k(time_interval):
     df = df.sort_values(
         by=["episode", "origin", "destination"],
     ).reset_index(drop=True)
-    df.to_parquet(COST_MIN_PATHS)
+    df.to_parquet(cost_min_paths)
 
 
-def compute_rgap_and_refined_rgap():
-    flow_df = pd.read_parquet(FLOWS_PATHS)
+def compute_rgap_and_refined_rgap(flow_paths, cost_paths, cost_min_paths):
+    flow_df = pd.read_parquet(flow_paths)
     flow_df = flow_df.rename(columns={"count": "flow"})
-    cost_df = pd.read_parquet(COST_PATHS)
+    cost_df = pd.read_parquet(cost_paths)
     cost_df = cost_df.rename(columns={"avg_travel_time": "cost"})
-    min_cost_df = pd.read_parquet(COST_MIN_PATHS)
+    min_cost_df = pd.read_parquet(cost_min_paths)
     min_cost_df = min_cost_df.rename(columns={"cost": "min_cost"})
     demand_df = pd.read_parquet(DEMAND_ODT)
     demand_df = demand_df.rename(columns={"count": "demand"})
@@ -624,12 +630,12 @@ def __run_duarouter(network, trips_file, routes_file, weights_file, seed):
         alt_route_file_to_delete.unlink()
 
 
-def delete_files_DUE_convergence():
+def delete_files_DUE_convergence(weights_dir, shortest_paths_dir):
     """
     This folders may contain too many files
     """
     # Target folders
-    TARGET_FOLDERS = [WEIGHTS_DIR, SHORTEST_PATHS_DIR]
+    TARGET_FOLDERS = [weights_dir, shortest_paths_dir]
 
     for folder in TARGET_FOLDERS:
         if folder.is_dir():
@@ -864,6 +870,81 @@ def process_vehroute_dueIterate(max_iterations, output_file):
 
     # Parse vehroutes
     processed_data = parse_vehroute(episode=1, vehroute_path=vehroute_path)
+
+    # Save vehroutes processed data in a parquet file
+    df = pd.DataFrame(processed_data)
+    df.to_parquet(output_file, engine="pyarrow")
+
+
+def generate_meandata_file(max_iterations):
+    # Name of the folder that contains the last iteration of dueIterate
+    folder_number = max_iterations - 1
+
+    # Add padding
+    folder_number = str(folder_number).zfill(3)
+
+    # Path of the folder that contains last iteration dueIterate
+    folder_path = BASE_DIR / folder_number
+
+    meandata_dueiterate_path = folder_path / "meandata_dueiterate.xml"
+
+    with open(meandata_dueiterate_path, "w+") as meandata:
+        meandata.write("<additional>\n")
+        meandata.write("\t<edgeData\n")
+        meandata.write(f"\t\tid='density_{config.time_interval}s'\n")
+        meandata.write(f"\t\tfile='../edgedata_dueiterate.xml'\n")
+        meandata.write(f"\t\tperiod='{config.time_interval}'\n")
+        meandata.write(f"\t\texcludeEmpty='true'\n")
+        meandata.write(f"\t\twriteAttributes='density'/>\n")
+        meandata.write("</additional>\n")
+
+    return meandata_dueiterate_path
+
+
+def generate_edgedata_file(max_iterations, network, meandata_dueiterate_file):
+    number_path = max_iterations - 1
+    number_path = str(number_path).zfill(3)
+    path_config_file = BASE_DIR / number_path / f"iteration_{number_path}.sumocfg"
+
+    tree = etree.parse(path_config_file)
+
+    # Find and remove the additional-files element
+    for elem in tree.xpath("//additional-files"):
+        elem.getparent().remove(elem)
+
+    tree.write(
+        path_config_file, pretty_print=True, xml_declaration=True, encoding="UTF-8"
+    )
+
+    cmd = [
+        "sumo-gui",
+        "-c",
+        path_config_file,
+        "--additional-files",
+        meandata_dueiterate_file,
+    ]
+
+    subprocess.run(cmd, check=True)
+
+
+def process_edgedata_file(max_iterations, output_file):
+    """
+    Builds the processed vehroute file
+    """
+    # Name of the folder that contains the last iteration of dueIterate
+    folder_number = max_iterations - 1
+
+    # Add padding
+    folder_number = str(folder_number).zfill(3)
+
+    # Path of the folder that contains last iteration dueIterate
+    folder_path = BASE_DIR / folder_number
+
+    # Raw edgedata path
+    edgedata_path = folder_path / "edgedata_dueiterate.xml"
+
+    # Parse edgedata
+    processed_data = parse_edgedata(episode=1, edgedata_path=edgedata_path)
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)

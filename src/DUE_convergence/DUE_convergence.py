@@ -19,12 +19,22 @@ from .utils import (
     compute_actions_table_dueIterate,
     process_trips_info_dueiterate,
     process_vehroute_dueIterate,
+    generate_meandata_file,
+    generate_edgedata_file,
+    process_edgedata_file,
 )
 from config.config import config
 
 from paths import (
     Path,
+    WEIGHTS_DIR,
+    COST_MIN_PATHS_DUEITERATE,
+    SHORTEST_PATHS_DUEITERATE_DIR,
+    SHORTEST_PATHS_DIR,
+    WEIGHTS_DIR_DUEITERATE,
+    COST_LINKS,
     ACTIONS,
+    COST_LINKS_DUEITERATE,
     ACTIONS_DUEITERATE,
     FLOWS_PATHS,
     TRIPS_INFO_PROCESSED_DUEITERATE,
@@ -37,6 +47,18 @@ from paths import (
     COST_MIN_PATHS,
     COST_MIN_PATHS_DUEITERATE,
     VEHROUTE_DUEITERATE_PROCESSED,
+    EDGEDATA_DUEITERATE_PROCESSED,
+    AGENTS_OD,
+    MISSINGNESS_DUEITERATE_INT,
+    MISSINGNESS_DUEITERATE_EDGE,
+    MISSINGNESS_DUEITERATE_EPISODE,
+    MISSINGNESS_DUEITERATE_REPORT,
+    VEHROUTE_PROCESSED,
+    EDGEDATA_PROCESSED,
+    MISSINGNESS_EDGE,
+    MISSINGNESS_EPISODE,
+    MISSINGNESS_INT,
+    MISSINGNESS_REPORT,
 )
 
 
@@ -69,22 +91,44 @@ def check_DUE_convergence_BM(end_time, time_interval):
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
     compute_travel_time_links_t_k(
-        network=config.network,
         time_interval=time_interval,
+        network=config.network,
         threshold_density=config.threshold_density,
-        output_file=COST_MIN_PATHS,
+        output_file=COST_LINKS,
+        agents_od_file=AGENTS_OD,
+        vehroute_file=VEHROUTE_PROCESSED,
+        edgedata_file=EDGEDATA_PROCESSED,
+        missingness_edge_file=MISSINGNESS_EDGE,
+        missingness_episode_file=MISSINGNESS_EPISODE,
+        missingness_interval_file=MISSINGNESS_INT,
+        missingness_report_file=MISSINGNESS_REPORT,
     )
     # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
-    generate_weights_xmls()
+    generate_weights_xmls(cost_links=COST_LINKS, weights_dir=WEIGHTS_DIR)
     # 4.3. Compute the time dependence shortest paths
-    compute_time_dependent_shortest_paths(config.network, config.seed)
+    compute_time_dependent_shortest_paths(
+        config.network,
+        config.seed,
+        weights_dir=WEIGHTS_DIR,
+        shortest_path_dir=SHORTEST_PATHS_DIR,
+    )
     # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
-    compute_cost_min_paths_odt_k(time_interval)
+    compute_cost_min_paths_odt_k(
+        time_interval=time_interval,
+        cost_min_paths=COST_MIN_PATHS,
+        shortest_path_dir=SHORTEST_PATHS_DIR,
+    )
     # 4.5. Delete some files generated on DUE convergence check
-    delete_files_DUE_convergence()
+    delete_files_DUE_convergence(
+        weights_dir=WEIGHTS_DIR, shortest_paths_dir=SHORTEST_PATHS_DIR
+    )
 
     # Computation Rgap
-    rgap, redefined_rgap = compute_rgap_and_refined_rgap()
+    rgap, redefined_rgap = compute_rgap_and_refined_rgap(
+        flow_paths=FLOWS_PATHS,
+        cost_paths=COST_PATHS,
+        cost_min_paths=COST_MIN_PATHS,
+    )
     print(rgap)
     print(redefined_rgap)
 
@@ -144,16 +188,76 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
         output_file=VEHROUTE_DUEITERATE_PROCESSED,
     )
 
-    ######
-    # 10. TIME DEPENDENCE SHORTEST PATH
-    # 10.1. Compute avg link travel time for all time intervals across all episodes
-    compute_travel_time_links_t_k(
-        network=config.network,
-        time_interval=time_interval,
-        threshold_density=config.threshold_density,
-        output_file=COST_MIN_PATHS_DUEITERATE,
+    # 11. Generate meandata_file
+    meandata_dueiterate_file = generate_meandata_file(
+        max_iterations=config.dueIterate_max_iterations
     )
 
+    # 12. Generate edgedata file
+    generate_edgedata_file(
+        max_iterations=config.dueIterate_max_iterations,
+        network=config.network,
+        meandata_dueiterate_file=meandata_dueiterate_file,
+    )
+
+    # 13. Process edgedata file
+    process_edgedata_file(
+        max_iterations=config.dueIterate_max_iterations,
+        output_file=EDGEDATA_DUEITERATE_PROCESSED,
+    )
+
+    ######
+    # 14. TIME DEPENDENCE SHORTEST PATH
+    # 14.1. Compute avg link travel time for all time intervals across all episodes
+    compute_travel_time_links_t_k(
+        time_interval=time_interval,
+        network=config.network,
+        threshold_density=config.threshold_density,
+        output_file=COST_LINKS_DUEITERATE,
+        agents_od_file=AGENTS_OD,
+        vehroute_file=VEHROUTE_DUEITERATE_PROCESSED,
+        edgedata_file=EDGEDATA_DUEITERATE_PROCESSED,
+        missingness_edge_file=MISSINGNESS_DUEITERATE_EDGE,
+        missingness_episode_file=MISSINGNESS_DUEITERATE_EPISODE,
+        missingness_interval_file=MISSINGNESS_DUEITERATE_INT,
+        missingness_report_file=MISSINGNESS_DUEITERATE_REPORT,
+    )
+
+    # 14.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
+    generate_weights_xmls(
+        cost_links=COST_LINKS_DUEITERATE, weights_dir=WEIGHTS_DIR_DUEITERATE
+    )
+
+    # 14.3. Compute the time dependence shortest paths
+    compute_time_dependent_shortest_paths(
+        config.network,
+        config.seed,
+        weights_dir=WEIGHTS_DIR_DUEITERATE,
+        shortest_path_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+    )
+
+    # 14.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
+    compute_cost_min_paths_odt_k(
+        time_interval=time_interval,
+        shortest_path_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+    )
+
+    # 14.5. Delete some files generated on DUE convergence check
+    delete_files_DUE_convergence(
+        weights_dir=WEIGHTS_DIR_DUEITERATE,
+        shortest_paths_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+    )
+
+    # Computation Rgap
+    rgap, redefined_rgap = compute_rgap_and_refined_rgap(
+        flow_paths=FLOWS_PATH_DUEITERATE,
+        cost_paths=COST_PATHS_DUEITERATE,
+        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+    )
+    print(rgap)
+    print(redefined_rgap)
+
     ################
-    # 7. Delete dueIterate folders
+    # 15. Delete dueIterate folders
     delete_dueIterate_folders(config.dueIterate_max_iterations)

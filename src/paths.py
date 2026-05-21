@@ -48,6 +48,9 @@ MISSINGNESS_INT = MISSINGNESS_DIR / "missingness_by_int.parquet"
 MISSINGNESS_EDGE = MISSINGNESS_DIR / "missingness_by_edge.parquet"
 MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
 MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
+
+# Dueiterate
+WEIGHTS_DIR_DUEITERATE = DUEITERATE_DIR / "weights"
 TRIPS_DUEITERATE = DUEITERATE_DIR / "trips_dueIterate.xml"
 OD_ROUTES_DUEITERATE = DUEITERATE_DIR / "od_routes_dueiterate.parquet"
 ACTIONS_DUEITERATE = DUEITERATE_DIR / "actions_dueiterate.parquet"
@@ -58,6 +61,15 @@ TRIPS_INFO_PROCESSED_DUEITERATE = (
 COST_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_paths_odtp_k_dueIterate.parquet"
 COST_MIN_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_min_paths_odtp_k_dueIterate.parquet"
 VEHROUTE_DUEITERATE_PROCESSED = DUEITERATE_DIR / "vehroute_dueiterate.parquet"
+EDGEDATA_DUEITERATE_PROCESSED = DUEITERATE_DIR / "edgedata_dueiterate.parquet"
+MISSINGNESS_DUEITERATE_INT = DUEITERATE_DIR / "missingness_dueiterate_by_int.parquet"
+MISSINGNESS_DUEITERATE_EDGE = DUEITERATE_DIR / "missingness_dueiterate_by_edge.parquet"
+MISSINGNESS_DUEITERATE_EPISODE = (
+    DUEITERATE_DIR / "missingness_dueiterate_by_episode.parquet"
+)
+MISSINGNESS_DUEITERATE_REPORT = DUEITERATE_DIR / "missingness_dueiterate_report.txt"
+COST_LINKS_DUEITERATE = TDSP_DIR / "costs_links_dueiterate_t_k.parquet"
+SHORTEST_PATHS_DUEITERATE_DIR = DUEITERATE_DIR / "shortest_paths"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
