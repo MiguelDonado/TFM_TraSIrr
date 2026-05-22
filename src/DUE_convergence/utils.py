@@ -488,13 +488,38 @@ def compute_rgap_and_refined_rgap(flow_paths, cost_paths, cost_min_paths):
     # Compute 2 versions rgap
     rgap = compute_rgap(df)
     redefined_rgap = compute_redefined_rgap(df)
-    return (rgap, redefined_rgap)
+
+    # Compute rgap versions by od
+    rgap_by_od = compute_rgap_by_od(df)
+    redefined_rgap_by_od = compute_redefined_rgap_by_od(df)
+    return (rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od)
+
+
+def compute_rgap(df):
+    df = df.copy()
+    # Compute numerator rgap per episode
+    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
+    numerator = df.groupby("episode")["gap_term"].sum()
+
+    # Compute denominator rgap per episode
+    # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
+    denominator_df = df[
+        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
+    ].drop_duplicates()
+    denominator = (
+        (denominator_df["demand"] * denominator_df["min_cost"])
+        .groupby(denominator_df["episode"])
+        .sum()
+    )
+
+    return numerator / denominator
 
 
 def compute_redefined_rgap(df):
     """
     Like rgap but for each interval
     """
+    df = df.copy()
     # Compute numerator rgap per episode
     df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
     numerator = df.groupby(["episode", "time_interval"])["gap_term"].sum()
@@ -517,23 +542,71 @@ def compute_redefined_rgap(df):
     return refined_rgap
 
 
-def compute_rgap(df):
-    # Compute numerator rgap per episode
+def compute_rgap_by_od(df):
+    """
+    Compute relative gap (rgap) for each episode and OD pair
+    """
+    # Numerator
+    df = df.copy()
     df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
-    numerator = df.groupby("episode")["gap_term"].sum()
 
-    # Compute denominator rgap per episode
-    # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
+    numerator = df.groupby(["episode", "origin", "destination"])["gap_term"].sum()
+
+    # Denominator
     denominator_df = df[
         ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
     ].drop_duplicates()
+
     denominator = (
         (denominator_df["demand"] * denominator_df["min_cost"])
-        .groupby(denominator_df["episode"])
+        .groupby(
+            [
+                denominator_df["episode"],
+                denominator_df["origin"],
+                denominator_df["destination"],
+            ]
+        )
         .sum()
     )
 
-    return numerator / denominator
+    rgap_od = numerator / denominator
+
+    return rgap_od.reset_index(name="rgap")
+
+
+def compute_redefined_rgap_by_od(df):
+    """
+    Compute redefined rgap, for each episode, OD pair and time interval
+    """
+
+    # Numerator
+    df = df.copy()
+    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
+
+    numerator = df.groupby(["episode", "origin", "destination", "time_interval"])[
+        "gap_term"
+    ].sum()
+
+    # Denominator
+    denominator_df = df[
+        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
+    ].drop_duplicates()
+
+    denominator = (
+        (denominator_df["demand"] * denominator_df["min_cost"])
+        .groupby(
+            [
+                denominator_df["episode"],
+                denominator_df["origin"],
+                denominator_df["destination"],
+                denominator_df["time_interval"],
+            ]
+        )
+        .sum()
+    )
+    redefined_rgap_od = numerator / denominator
+
+    return redefined_rgap_od.reset_index(name="refined_rgap")
 
 
 def generate_demand_odt():

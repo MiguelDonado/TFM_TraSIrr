@@ -124,13 +124,17 @@ def check_DUE_convergence_BM(end_time, time_interval):
     )
 
     # Computation Rgap
-    rgap, redefined_rgap = compute_rgap_and_refined_rgap(
-        flow_paths=FLOWS_PATHS,
-        cost_paths=COST_PATHS,
-        cost_min_paths=COST_MIN_PATHS,
+    rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od = (
+        compute_rgap_and_refined_rgap(
+            flow_paths=FLOWS_PATHS,
+            cost_paths=COST_PATHS,
+            cost_min_paths=COST_MIN_PATHS,
+        )
     )
     print(rgap)
     print(redefined_rgap)
+    print(rgap_by_od)
+    print(redefined_rgap_by_od)
 
 
 def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
@@ -250,13 +254,17 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     )
 
     # Computation Rgap
-    rgap, redefined_rgap = compute_rgap_and_refined_rgap(
-        flow_paths=FLOWS_PATH_DUEITERATE,
-        cost_paths=COST_PATHS_DUEITERATE,
-        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+    rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od = (
+        compute_rgap_and_refined_rgap(
+            flow_paths=FLOWS_PATH_DUEITERATE,
+            cost_paths=COST_PATHS_DUEITERATE,
+            cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+        )
     )
     print(rgap)
     print(redefined_rgap)
+    print(rgap_by_od)
+    print(redefined_rgap_by_od)
 
     ################
     # 15. Delete dueIterate folders
