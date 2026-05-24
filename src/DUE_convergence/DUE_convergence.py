@@ -1,3 +1,4 @@
+from shutil import copy2
 from .utils import (
     compute_flows_odtp_k,
     compute_travel_time_paths_odtp_k,
@@ -34,6 +35,7 @@ from paths import (
     WEIGHTS_DIR_DUEITERATE,
     COST_LINKS,
     ACTIONS,
+    ROUTES_DUEITERATE,
     COST_LINKS_DUEITERATE,
     ACTIONS_DUEITERATE,
     FLOWS_PATHS,
@@ -154,7 +156,7 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
 
     # 4. Extract routes file last iteration dueIterate
     routes_file = extract_routes_file_dueIterate(config.dueIterate_max_iterations)
-
+    copy2(routes_file, ROUTES_DUEITERATE)
     # 5. Compute od routes table
     dict_agent_routes, od_routes = compute_od_routes_table_dueIterate(
         routes_file=routes_file, output_file=OD_ROUTES_DUEITERATE

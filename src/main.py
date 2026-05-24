@@ -27,6 +27,7 @@ from paths import (
     ROUTES,
     MEANDATA,
     MEANDATA_AGGREGATED,
+    ROUTES_DUEITERATE,
 )
 from scenario import Scenario
 
@@ -36,7 +37,7 @@ from DUE_convergence.DUE_convergence import (
     generate_generic_files_DUE_convergence,
 )
 
-from analysis.sumo_edges_visualization import run_episode_color_edges, cmd
+from analysis.sumo_edges_visualization import run_episode_color_edges
 
 # Reproducibility
 rng = np.random.default_rng(config.seed)
@@ -44,20 +45,22 @@ seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
 def main2():
-    run_episode_color_edges(
-        cmd=cmd,
-        aggregated=True,
-        config_visualization=SUMO_CONF_AGGREGATED,
-        generic_config=SUMO_CONF,
-        generic_gui_settings=GUI_SETTINGS,
-        gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
-        edgedata_BM_file=EDGEDATA_PROCESSED,
-        edgedata_dueIterate_file=EDGEDATA_DUEITERATE_PROCESSED,
-        generic_meandata=MEANDATA,
-        meandata_visualization=MEANDATA_AGGREGATED,
-        routes_file=ROUTES,
-        metric="entered",
-    )
+    routes = [ROUTES, ROUTES_DUEITERATE]
+    for route in routes:
+        run_episode_color_edges(
+            aggregated=False,
+            config_visualization=SUMO_CONF_AGGREGATED,
+            generic_config=SUMO_CONF,
+            generic_gui_settings=GUI_SETTINGS,
+            gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
+            edgedata_BM_file=EDGEDATA_PROCESSED,
+            edgedata_dueIterate_file=EDGEDATA_DUEITERATE_PROCESSED,
+            generic_meandata=MEANDATA,
+            meandata_visualization=MEANDATA_AGGREGATED,
+            routes_file=route,
+            period=900,
+            metric="entered",
+        )
 
 
 def main():

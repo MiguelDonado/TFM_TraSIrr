@@ -1,0 +1,141 @@
+> Executing step 0
+>> Running router on /home/miguel/6.Projects/Thesis/data/DUE/dueIterate/trips_dueIterate.xml
+>>> Begin time: 2026-05-24 16:26:20.553948
+>>> End time: 2026-05-24 16:26:20.690658
+>>> Duration: 0:00:00.136710
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:20.690752
+>>> End time: 2026-05-24 16:26:25.294549
+>>> Duration: 0:00:04.603797
+<<
+< Step 0 ended (duration: 0:00:04.740699)
+------------------
+
+> Executing step 1
+>> Running router on 000/trips_dueIterate_000.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:25.356261
+>>> End time: 2026-05-24 16:26:25.504041
+>>> Duration: 0:00:00.147780
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:25.504087
+>>> End time: 2026-05-24 16:26:30.025644
+>>> Duration: 0:00:04.521557
+<<
+< Step 1 ended (duration: 0:00:04.669480)
+------------------
+
+> Executing step 2
+>> Running router on 001/trips_dueIterate_001.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:30.107900
+>>> End time: 2026-05-24 16:26:30.263139
+>>> Duration: 0:00:00.155239
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:30.263186
+>>> End time: 2026-05-24 16:26:34.828261
+>>> Duration: 0:00:04.565075
+<<
+< Step 2 ended (duration: 0:00:04.720483)
+------------------
+
+> Executing step 3
+>> Running router on 002/trips_dueIterate_002.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:34.843277
+>>> End time: 2026-05-24 16:26:35.012442
+>>> Duration: 0:00:00.169165
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:35.012491
+>>> End time: 2026-05-24 16:26:39.552279
+>>> Duration: 0:00:04.539788
+<<
+< Step 3 ended (duration: 0:00:04.709106)
+------------------
+
+> Executing step 4
+>> Running router on 003/trips_dueIterate_003.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:39.558318
+>>> End time: 2026-05-24 16:26:39.716967
+>>> Duration: 0:00:00.158649
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:39.717014
+>>> End time: 2026-05-24 16:26:44.037693
+>>> Duration: 0:00:04.320679
+<<
+< Step 4 ended (duration: 0:00:04.479482)
+------------------
+
+> Executing step 5
+>> Running router on 004/trips_dueIterate_004.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:44.043689
+>>> End time: 2026-05-24 16:26:44.197915
+>>> Duration: 0:00:00.154226
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:44.197977
+>>> End time: 2026-05-24 16:26:48.715447
+>>> Duration: 0:00:04.517470
+<<
+< Step 5 ended (duration: 0:00:04.671840)
+------------------
+
+> Executing step 6
+>> Running router on 005/trips_dueIterate_005.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:48.721946
+>>> End time: 2026-05-24 16:26:48.883463
+>>> Duration: 0:00:00.161517
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:48.883513
+>>> End time: 2026-05-24 16:26:53.337343
+>>> Duration: 0:00:04.453830
+<<
+< Step 6 ended (duration: 0:00:04.615495)
+------------------
+
+> Executing step 7
+>> Running router on 006/trips_dueIterate_006.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:53.343602
+>>> End time: 2026-05-24 16:26:53.500892
+>>> Duration: 0:00:00.157290
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:53.500942
+>>> End time: 2026-05-24 16:26:57.795058
+>>> Duration: 0:00:04.294116
+<<
+< Step 7 ended (duration: 0:00:04.451545)
+------------------
+
+> Executing step 8
+>> Running router on 007/trips_dueIterate_007.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:26:57.796269
+>>> End time: 2026-05-24 16:26:57.949504
+>>> Duration: 0:00:00.153235
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:26:57.949598
+>>> End time: 2026-05-24 16:27:02.527714
+>>> Duration: 0:00:04.578116
+<<
+< Step 8 ended (duration: 0:00:04.731536)
+------------------
+
+> Executing step 9
+>> Running router on 008/trips_dueIterate_008.rou.alt.xml.gz
+>>> Begin time: 2026-05-24 16:27:02.533779
+>>> End time: 2026-05-24 16:27:02.689961
+>>> Duration: 0:00:00.156182
+<<
+>> Running simulation
+>>> Begin time: 2026-05-24 16:27:02.690011
+>>> End time: 2026-05-24 16:27:07.241050
+>>> Duration: 0:00:04.551039
+<<
+< Step 9 ended (duration: 0:00:04.707367)
+------------------
+
+dua-iterate ended (duration: 0:00:46.693367)

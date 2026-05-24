@@ -1,4 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <additional>
-	<edgeData id="aggregated" file="/home/miguel/6.Projects/Thesis/data/raw/edgedata.xml" excludeEmpty="true" writeAttributes="entered density"/>
+	<edgeData id="dissagregated" file="/home/miguel/6.Projects/Thesis/data/raw/edgedata.xml" period="900" excludeEmpty="true" writeAttributes="entered density"/>
 </additional>

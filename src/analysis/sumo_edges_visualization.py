@@ -1,19 +1,13 @@
 import subprocess
-from paths import ROUTES, SUMO_CONF_AGGREGATED
+from paths import TIMES_INTERVAL
 import pandas as pd
 from shutil import copy2
 from lxml import etree
 import numpy as np
-
-cmd = [
-    "sumo-gui",
-    "-c",
-    SUMO_CONF_AGGREGATED,
-]
+from config.config import config
 
 
 def run_episode_color_edges(
-    cmd,
     generic_config,
     config_visualization,
     generic_gui_settings,
@@ -24,10 +18,17 @@ def run_episode_color_edges(
     meandata_visualization,
     routes_file,
     metric,
+    period,
     aggregated=True,
 ):
+    """
+    The purpose of this function is to run the final episode of whatever algorithm,
+    and perform the one of the following visualizations:
+        - overall edge usage ("entered" metric)
+        - interval specific visualizations ("entered" metric)
+    """
 
-    # 1. Create config file
+    # 1. Create separate config file to run the episode in which edges are colored
     create_config(
         generic_config=generic_config,
         config_visualization=config_visualization,
@@ -43,6 +44,7 @@ def run_episode_color_edges(
         edgedata_BM_file=edgedata_BM_file,
         edgedata_dueIterate_file=edgedata_dueIterate_file,
         metric=metric,
+        period=period,
     )
 
     # 3. Create meandata file
@@ -50,6 +52,7 @@ def run_episode_color_edges(
         meandata_visualization=meandata_visualization,
         aggregated=aggregated,
         generic_meandata=generic_meandata,
+        period=period,
     )
 
     # 3. Update config file (add gui-settings file)
@@ -60,6 +63,11 @@ def run_episode_color_edges(
     )
 
     # 4. Run episode
+    cmd = [
+        "sumo-gui",
+        "-c",
+        config_visualization,
+    ]
     subprocess.run(cmd)
 
     # # Then is gonna be run on interval specific mode
@@ -83,6 +91,12 @@ def run_episode_color_edges(
 
 
 def create_config(generic_config, config_visualization, aggregated, routes_file):
+    """
+    Basically:
+        1. Make a copy of config file
+        2. Remove unnecesary things config file
+        3. Add route file
+    """
     # 1. Copy basic config file
     copy2(generic_config, config_visualization)
 
@@ -93,20 +107,19 @@ def create_config(generic_config, config_visualization, aggregated, routes_file)
     device = tree.xpath("//device")[0]
     device.getparent().remove(device)
 
-    if aggregated:
-        # Update meandata file
-        additional_files = tree.xpath("//additional-files")[0]
-        additional_files.attrib.pop("value", None)
+    # Clean values of additional file element
+    additional_files = tree.xpath("//additional-files")[0]
+    additional_files.attrib.pop("value", None)
 
     # 3. Add route file
-    # Find input section
+    # 3.1. Find input section
     input_section = tree.find(".//input")
 
-    # Create route-files element
+    # 3.2. Create route-files element
     route_files = etree.Element("route-files")
     route_files.attrib["value"] = str(routes_file)
 
-    # Append to input section
+    # 3.3. Append to input section
     input_section.append(route_files)
 
     # 4. Write updated XML back to file
@@ -125,67 +138,74 @@ def create_gui_settings(
     edgedata_dueIterate_file,
     edgedata_BM_file,
     aggregated,
+    period,
 ):
+    """
+    Basically:
+    1. Copy the generic gui-settings file
+    2. Handle different cases:
+        - Aggregated and metric entered
+        - ...
+    """
     # 1. Copy generic gui-settings file
     copy2(generic_gui_settings, gui_settings_visualization)
 
     # 2. Get max value of given metric (between BM and dueIterate) edgeData file
     if aggregated:
         if metric == "entered":
-            # Get max dueIterate (last iteration)
-            df = pd.read_parquet(edgedata_dueIterate_file)
-            # Convert the entered column to integer
-            df[metric] = df[metric].astype(int)
-            df_grouped = df.groupby("edge", as_index=False)["entered"].sum()
-            max_value_dueIterate = df_grouped["entered"].max()
-
-            # Get max BM (last episode)
-            df = pd.read_parquet(edgedata_BM_file)
-            last_episode = df["episode"].max()
-            df_last_episode = df[df["episode"] == last_episode]
-            # Convert the entered column to integer
-            df_last_episode[metric] = df_last_episode[metric].astype(int)
-            df_grouped = df_last_episode.groupby("edge", as_index=False)[
-                "entered"
-            ].sum()
-            max_value_BM = df_grouped["entered"].max()
-
-    max_value = max(max_value_dueIterate, max_value_BM)
+            max_value = __get_max_value(
+                metric=metric,
+                edgedata_dueIterate_file=edgedata_dueIterate_file,
+                edgedata_BM_file=edgedata_BM_file,
+            )
+    if not aggregated:
+        if metric == "entered":
+            max_value = __get_max_value(
+                metric=metric,
+                edgedata_dueIterate_file=edgedata_dueIterate_file,
+                edgedata_BM_file=edgedata_BM_file,
+                aggregated=aggregated,
+            )
 
     # 3. Compute the right threholds
-    list_color_thresholds = compute_color_scale(max_value)
+    list_color_thresholds = __compute_color_scale(max_value)
 
     # 4. Update gui_settings with the right thresholds
-    set_color_scale_gui_settings(
+    __set_color_scale_gui_settings(
         gui_settings_visualization, list_color_thresholds, aggregated
     )
 
+    # 5. Set breakpoints
+    if not aggregated:
+        __set_breakpoints_gui_settings(
+            gui_settings_visualization=gui_settings_visualization, period=period
+        )
 
-def compute_color_scale(max_value):
-    return np.round(np.linspace(0, max_value, 7), 2)
 
+def create_meandata(generic_meandata, meandata_visualization, aggregated, period):
+    """
+    Create the right meandata file, depending if we are in aggregate case or interval-specific
+    """
 
-def set_color_scale_gui_settings(
-    gui_settings_visualization, list_color_thresholds, aggregated
-):
-    tree = etree.parse(gui_settings_visualization)
+    # 1. Copy generic meandata file
+    copy2(generic_meandata, meandata_visualization)
+
+    # 2. Handle different cases
+    tree = etree.parse(meandata_visualization)
+    edge_data = tree.find(".//edgeData")
 
     if aggregated:
-        edges = tree.find(".//edges")
-        edges.attrib["edgeDataID"] = "aggregated"
-    # Get color schema
-    color_scheme = tree.xpath("//colorScheme[@name='by live edgeData']")[0]
+        # The aggregation period the values the detector collects shall be summed up.
+        # If not given the whole time interval from begin to end (see below) is aggregated.
+        edge_data.attrib.pop("period", None)
+        edge_data.attrib["id"] = "aggregated"
 
-    # Get entries that have a threshold attribute
-    entries = color_scheme.xpath("./entry[@threshold]")
+    else:
+        edge_data.attrib["period"] = str(period)
+        edge_data.attrib["id"] = "dissagregated"
 
-    # Update thresholds
-    for entry, threshold in zip(entries, list_color_thresholds):
-        entry.attrib["threshold"] = str(threshold)
-
-    # Write back to file
     tree.write(
-        str(gui_settings_visualization),
+        str(meandata_visualization),
         pretty_print=True,
         xml_declaration=True,
         encoding="UTF-8",
@@ -195,20 +215,19 @@ def set_color_scale_gui_settings(
 def update_config(
     config_visualization, gui_settings_visualization, meandata_visualization
 ):
+    """
+    Add gui-settings to config file
+    """
+
+    # Add gui-settings to config file
     tree = etree.parse(config_visualization)
-
-    # Find input section
     input_section = tree.find(".//input")
-
-    # Create gui-settings-file element
     gui_settings = etree.Element("gui-settings-file")
     gui_settings.attrib["value"] = str(gui_settings_visualization)
-
-    # Append element
     input_section.append(gui_settings)
 
+    # Add meandata to config file
     additional_files = tree.xpath("//additional-files")[0]
-
     additional_files.attrib["value"] = str(meandata_visualization)
 
     # Pretty formatting
@@ -222,27 +241,106 @@ def update_config(
     )
 
 
-def create_meandata(generic_meandata, meandata_visualization, aggregated):
-    # 1. Copy generic gui-settings file
-    copy2(generic_meandata, meandata_visualization)
+############
+# HELPERS
+############
+
+
+def __get_max_value(
+    metric, edgedata_dueIterate_file, edgedata_BM_file, aggregated, period=900
+):
+    """
+    Get the max value of the metric, so the scale of colors can be set appropiately
+    We only care about last episodes, that is what we want to analyze
+    """
+
+    def process_df(df, aggregated):
+        # Dimension table
+        times_interval = pd.read_parquet(TIMES_INTERVAL)
+        # Fact table
+        df = df.copy()
+        # Join
+        df = df.merge(times_interval, on="interval")
+        df[metric] = df[metric].astype(float)
+
+        if aggregated:
+            df_grouped = df.groupby("edge", as_index=False)[metric].sum()
+
+        else:
+            df["period"] = df["start_time"] // period
+            df_grouped = df.groupby(["edge", "period"], as_index=False)[metric].sum()
+
+        return df_grouped[metric].max()
+
+    # dueIterate
+    df_due = pd.read_parquet(edgedata_dueIterate_file)
+    max_value_dueIterate = process_df(df_due, aggregated)
+
+    # BM last episode
+    df_BM = pd.read_parquet(edgedata_BM_file)
+    last_episode = df_BM["episode"].max()
+    df_BM = df_BM[df_BM["episode"] == last_episode]
+    max_value_BM = process_df(df_BM, aggregated)
+
+    return max(max_value_dueIterate, max_value_BM)
+
+
+def __compute_color_scale(max_value):
+    """
+    Compute the appropiate thresholds for the scale of colors
+    """
+    return np.round(np.linspace(0, max_value, 7), 2)
+
+
+def __set_color_scale_gui_settings(
+    gui_settings_visualization, list_color_thresholds, aggregated
+):
+    """
+    Update the scale of colors thresholds in gui-settings
+    """
+
+    # 1. Name our color scheme for live edge data consistently
+    tree = etree.parse(gui_settings_visualization)
+    edges = tree.find(".//edges")
 
     if aggregated:
-        tree = etree.parse(meandata_visualization)
-        edge_data = tree.find(".//edgeData")
-        edge_data.attrib.pop("period", None)
-        edge_data.attrib["id"] = "aggregated"
+        edges.attrib["edgeDataID"] = "aggregated"
+    else:
+        edges.attrib["edgeDataID"] = "dissagregated"
 
-        tree.write(
-            str(meandata_visualization),
-            pretty_print=True,
-            xml_declaration=True,
-            encoding="UTF-8",
-        )
+    # 2. Update threshold values
+    color_scheme = tree.xpath("//colorScheme[@name='by live edgeData']")[0]
+    entries = color_scheme.xpath("./entry[@threshold]")
+    for entry, threshold in zip(entries, list_color_thresholds):
+        entry.attrib["threshold"] = str(threshold)
+
+    # 3. Write back to gui-settings file
+    tree.write(
+        str(gui_settings_visualization),
+        pretty_print=True,
+        xml_declaration=True,
+        encoding="UTF-8",
+    )
 
 
-# def generate_breakpoints(times_interval_file):
-#     df = pd.read_parquet(times_interval_file)
+def __set_breakpoints_gui_settings(
+    gui_settings_visualization,
+    period,
+):
+    # 0. Compute list of breakpoints
+    breakpoints = list(range(period - 2, config.end_time + period - 2, period))
 
-#     breakpoints = df["end_time"].astype(str).tolist()
+    # 1. Add breakpoints
+    tree = etree.parse(gui_settings_visualization)
+    root = tree.getroot()
 
-#     return ",".join(breakpoints[0:5])
+    for bp in breakpoints:
+        breakpoint_elem = etree.Element("breakpoint")
+        breakpoint_elem.attrib["time"] = f"{bp:.2f}"
+        root.append(breakpoint_elem)
+
+    # Pretty formatting
+    etree.indent(tree, space="    ")
+
+    # Write back
+    tree.write(str(gui_settings_visualization), xml_declaration=True, encoding="UTF-8")

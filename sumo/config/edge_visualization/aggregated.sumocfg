@@ -3,7 +3,7 @@
     <input>
         <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"/>
         <additional-files value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/meandata_aggregated.xml"/>
-        <route-files value="/home/miguel/6.Projects/Thesis/sumo/routes/routes.rou.xml"/>
+        <route-files value="/home/miguel/6.Projects/Thesis/sumo/routes/routes_dueiterate.rou.xml"/>
         <gui-settings-file value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/gui_settings_aggregated.xml"/>
     </input>
     <random>

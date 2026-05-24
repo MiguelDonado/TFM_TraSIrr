@@ -1,0 +1,222 @@
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '000/iteration_000_trips_dueIterate.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '000/iteration_000.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '000/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '000/trips_dueIterate_000.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.40.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.50s
+ Real time factor: 954.786
+ UPS: 401802.798135
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '001/iteration_001_trips_dueIterate_000.duarcfg']
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '001/iteration_001.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (6ms).
+Loading additional-files from '001/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '001/trips_dueIterate_001.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.60.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.43s
+ Real time factor: 971.003
+ UPS: 402245.257453
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '002/iteration_002_trips_dueIterate_001.duarcfg']
+Warning: No interval matches passed time=65.16 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '002/iteration_002.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '002/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '002/trips_dueIterate_002.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Warning: Teleporting vehicle 'agent_194'; waited too long (yield), lane='E10_17_NWB_0', time=843.80.
+Warning: Vehicle 'agent_194' ends teleporting on edge 'E10_15_SB', time=843.80.
+Simulation ended at time: 4299.60.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.49s
+ Real time factor: 957.381
+ UPS: 402932.309063
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+ Teleports: 1 (Yield: 1)
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '003/iteration_003_trips_dueIterate_002.duarcfg']
+Warning: No interval matches passed time=65.74 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '003/iteration_003.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '003/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '003/trips_dueIterate_003.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Warning: Teleporting vehicle 'agent_244'; waited too long (yield), lane='E10_17_NWB_0', time=843.80.
+Warning: Vehicle 'agent_244' ends teleporting on edge 'E10_15_SB', time=843.80.
+Simulation ended at time: 4299.40.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.45s
+ Real time factor: 965.506
+ UPS: 397479.676623
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+ Teleports: 1 (Yield: 1)
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '004/iteration_004_trips_dueIterate_003.duarcfg']
+Warning: No interval matches passed time=64.64 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '004/iteration_004.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (6ms).
+Loading additional-files from '004/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '004/trips_dueIterate_004.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.30.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.25s
+ Real time factor: 1011.6
+ UPS: 414357.882353
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '005/iteration_005_trips_dueIterate_004.duarcfg']
+Warning: No interval matches passed time=65.68 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '005/iteration_005.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '005/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '005/trips_dueIterate_005.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.80.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.44s
+ Real time factor: 968.423
+ UPS: 396786.486486
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '006/iteration_006_trips_dueIterate_005.duarcfg']
+Warning: No interval matches passed time=64.63 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '006/iteration_006.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (6ms).
+Loading additional-files from '006/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '006/trips_dueIterate_006.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.70.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.38s
+ Real time factor: 981.219
+ UPS: 401363.989046
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '007/iteration_007_trips_dueIterate_006.duarcfg']
+Warning: No interval matches passed time=64.64 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '007/iteration_007.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (6ms).
+Loading additional-files from '007/../edgedata.add.xml' ... done (0ms).
+Loading route-files incrementally from '007/trips_dueIterate_007.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.90.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.22s
+ Real time factor: 1018.69
+ UPS: 415603.411514
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '008/iteration_008_trips_dueIterate_007.duarcfg']
+Warning: No interval matches passed time=64.66 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '008/iteration_008.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '008/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '008/trips_dueIterate_008.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.50.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.51s
+ Real time factor: 954.172
+ UPS: 392354.860186
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/duarouter', '-c', '009/iteration_009_trips_dueIterate_008.duarcfg']
+Warning: No interval matches passed time=64.66 in edge 'E14_23_SB'.
+ Using edge's length / max speed.
+Success.
+-------------------------------------------------------------------------------
+['/usr/share/sumo/bin/sumo', '-c', '009/iteration_009.sumocfg']
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
+Loading additional-files from '009/../edgedata.add.xml' ... done (1ms).
+Loading route-files incrementally from '009/trips_dueIterate_009.rou.xml.gz'
+Loading done.
+Simulation version 1.26.0 started with time: 0.00.
+Simulation ended at time: 4299.20.
+Reason: All vehicles have left the simulation.
+Performance:
+ Duration: 4.48s
+ Real time factor: 959.857
+ UPS: 393876.088413
+Vehicles:
+ Inserted: 2251
+ Running: 0
+ Waiting: 0

@@ -72,6 +72,7 @@ MISSINGNESS_DUEITERATE_EPISODE = (
 MISSINGNESS_DUEITERATE_REPORT = DUEITERATE_DIR / "missingness_dueiterate_report.txt"
 COST_LINKS_DUEITERATE = TDSP_DIR / "costs_links_dueiterate_t_k.parquet"
 SHORTEST_PATHS_DUEITERATE_DIR = DUEITERATE_DIR / "shortest_paths"
+ROUTES_DUEITERATE = SUMO_DIR / "routes" / "routes_dueiterate.rou.xml"
 
 # Output files
 EDGEDATA = RAW_DATA_DIR / "edgedata.xml"
