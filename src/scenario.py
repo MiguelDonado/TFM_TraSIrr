@@ -204,7 +204,7 @@ class Scenario:
             meandata.write(f"\t\tfile='{EDGEDATA}'\n")
             meandata.write(f"\t\tperiod='{config.time_interval}'\n")
             meandata.write(f"\t\texcludeEmpty='true'\n")
-            meandata.write(f"\t\twriteAttributes='density'/>\n")
+            meandata.write(f"\t\twriteAttributes='entered density'/>\n")
             meandata.write("</additional>\n")
 
     def save_scenario_data(self):

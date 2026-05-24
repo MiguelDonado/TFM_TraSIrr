@@ -259,6 +259,10 @@ def compute_travel_time_links_t_k(
     ###############
     # 1. Read edgedata parquet (density edges by intervals)
     df_density = pd.read_parquet(edgedata_file)
+
+    # Drop the "entered" column
+    df_density = df_density.drop(columns=["entered"])
+
     df_density.rename(columns={"interval": "time_interval"}, inplace=True)
 
     # 2. Ensure full grid (edges,episode,intervals) (even edges with zero density appear)
@@ -968,7 +972,7 @@ def generate_meandata_file(max_iterations):
         meandata.write(f"\t\tfile='../edgedata_dueiterate.xml'\n")
         meandata.write(f"\t\tperiod='{config.time_interval}'\n")
         meandata.write(f"\t\texcludeEmpty='true'\n")
-        meandata.write(f"\t\twriteAttributes='density'/>\n")
+        meandata.write(f"\t\twriteAttributes='entered density'/>\n")
         meandata.write("</additional>\n")
 
     return meandata_dueiterate_path

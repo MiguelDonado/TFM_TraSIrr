@@ -107,7 +107,7 @@ class Config:
     #####################
     # 5. Network & scenario
     #####################
-    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+    network: str = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
     #####################
     # 6. RandomTrips (generating od pairs)

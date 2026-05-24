@@ -16,7 +16,18 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
-from paths import MAP
+from paths import (
+    MAP,
+    SUMO_CONF,
+    SUMO_CONF_AGGREGATED,
+    GUI_SETTINGS,
+    GUI_SETTINGS_AGGREGATED,
+    EDGEDATA_PROCESSED,
+    EDGEDATA_DUEITERATE_PROCESSED,
+    ROUTES,
+    MEANDATA,
+    MEANDATA_AGGREGATED,
+)
 from scenario import Scenario
 
 from DUE_convergence.DUE_convergence import (
@@ -25,13 +36,28 @@ from DUE_convergence.DUE_convergence import (
     generate_generic_files_DUE_convergence,
 )
 
+from analysis.sumo_edges_visualization import run_episode_color_edges, cmd
+
 # Reproducibility
 rng = np.random.default_rng(config.seed)
 seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
 def main2():
-    check_DUE_convergence_BM()
+    run_episode_color_edges(
+        cmd=cmd,
+        aggregated=True,
+        config_visualization=SUMO_CONF_AGGREGATED,
+        generic_config=SUMO_CONF,
+        generic_gui_settings=GUI_SETTINGS,
+        gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
+        edgedata_BM_file=EDGEDATA_PROCESSED,
+        edgedata_dueIterate_file=EDGEDATA_DUEITERATE_PROCESSED,
+        generic_meandata=MEANDATA,
+        meandata_visualization=MEANDATA_AGGREGATED,
+        routes_file=ROUTES,
+        metric="entered",
+    )
 
 
 def main():
@@ -175,5 +201,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
-    # main2()
+    # run()
+    main2()

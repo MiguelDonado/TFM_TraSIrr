@@ -61,7 +61,9 @@ TRIPS_INFO_PROCESSED_DUEITERATE = (
 COST_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_paths_odtp_k_dueIterate.parquet"
 COST_MIN_PATHS_DUEITERATE = DUEITERATE_DIR / "costs_min_paths_odtp_k_dueIterate.parquet"
 VEHROUTE_DUEITERATE_PROCESSED = DUEITERATE_DIR / "vehroute_dueiterate.parquet"
-EDGEDATA_DUEITERATE_PROCESSED = DUEITERATE_DIR / "edgedata_dueiterate.parquet"
+EDGEDATA_DUEITERATE_PROCESSED = (
+    DUEITERATE_DIR / "edgedata" / "edgedata_dueiterate.parquet"
+)
 MISSINGNESS_DUEITERATE_INT = DUEITERATE_DIR / "missingness_dueiterate_by_int.parquet"
 MISSINGNESS_DUEITERATE_EDGE = DUEITERATE_DIR / "missingness_dueiterate_by_edge.parquet"
 MISSINGNESS_DUEITERATE_EPISODE = (
@@ -85,7 +87,7 @@ OD_MATRIX_TOTAL = PROCESSED_DATA_DIR / "od_matrix_total.csv"
 MAP = config.network  # For using (NETEDIT)
 NET = SUMO_DIR / "net" / "net.net.xml"  # For saving (if OSM file is provided)
 ROUTES = SUMO_DIR / "routes" / "routes.rou.xml"
-SUMO_CONF = SUMO_DIR / "config" / "basic.cfg"
+SUMO_CONF = SUMO_DIR / "config" / "basic.sumocfg"
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"
 # Additional file used when generating file edgedata.xml
 MEANDATA = SUMO_DIR / "config" / "meandata.xml"
@@ -97,3 +99,13 @@ SUMO_CONF_DEMAND_CALIBRATION = SUMO_DIR / "demand_calibration" / "basic.cfg"
 
 # File automatically generated (used to delete it)
 UNDESIRED_ROUTE_FILE = BASE_DIR / "routes.rou.xml"
+
+# Edge visualization
+SUMO_CONF_AGGREGATED = SUMO_DIR / "config" / "edge_visualization" / "aggregated.sumocfg"
+GUI_SETTINGS = SUMO_DIR / "config" / "gui_settings.xml"
+GUI_SETTINGS_AGGREGATED = (
+    SUMO_DIR / "config" / "edge_visualization" / "gui_settings_aggregated.xml"
+)
+MEANDATA_AGGREGATED = (
+    SUMO_DIR / "config" / "edge_visualization" / "meandata_aggregated.xml"
+)

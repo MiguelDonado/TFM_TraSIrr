@@ -3,6 +3,6 @@
         id="density_900s"
         file="edge_density_output.xml"
         period="900"
-        excludeEmpty="true"
-        writeAttributes="density"/>
+        excludeEmpty="true"/>
+
 </additional>

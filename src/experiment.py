@@ -220,6 +220,7 @@ def parse_edgedata(episode, edgedata_path):
                     "episode": episode,
                     "interval": i,
                     "edge": edge.get("id"),
+                    "entered": edge.get("entered"),
                     "density": edge.get("density"),
                 }
             )
