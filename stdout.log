@@ -1,141 +1,141 @@
 > Executing step 0
 >> Running router on /home/miguel/6.Projects/Thesis/data/DUE/dueIterate/trips_dueIterate.xml
->>> Begin time: 2026-05-24 16:26:20.553948
->>> End time: 2026-05-24 16:26:20.690658
->>> Duration: 0:00:00.136710
+>>> Begin time: 2026-05-25 17:31:07.098479
+>>> End time: 2026-05-25 17:31:07.214886
+>>> Duration: 0:00:00.116407
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:20.690752
->>> End time: 2026-05-24 16:26:25.294549
->>> Duration: 0:00:04.603797
+>>> Begin time: 2026-05-25 17:31:07.214944
+>>> End time: 2026-05-25 17:31:12.037145
+>>> Duration: 0:00:04.822201
 <<
-< Step 0 ended (duration: 0:00:04.740699)
+< Step 0 ended (duration: 0:00:04.938754)
 ------------------
 
 > Executing step 1
 >> Running router on 000/trips_dueIterate_000.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:25.356261
->>> End time: 2026-05-24 16:26:25.504041
->>> Duration: 0:00:00.147780
+>>> Begin time: 2026-05-25 17:31:12.043298
+>>> End time: 2026-05-25 17:31:12.202460
+>>> Duration: 0:00:00.159162
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:25.504087
->>> End time: 2026-05-24 16:26:30.025644
->>> Duration: 0:00:04.521557
+>>> Begin time: 2026-05-25 17:31:12.202510
+>>> End time: 2026-05-25 17:31:16.777972
+>>> Duration: 0:00:04.575462
 <<
-< Step 1 ended (duration: 0:00:04.669480)
+< Step 1 ended (duration: 0:00:04.734781)
 ------------------
 
 > Executing step 2
 >> Running router on 001/trips_dueIterate_001.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:30.107900
->>> End time: 2026-05-24 16:26:30.263139
->>> Duration: 0:00:00.155239
+>>> Begin time: 2026-05-25 17:31:16.784206
+>>> End time: 2026-05-25 17:31:16.943644
+>>> Duration: 0:00:00.159438
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:30.263186
->>> End time: 2026-05-24 16:26:34.828261
->>> Duration: 0:00:04.565075
+>>> Begin time: 2026-05-25 17:31:16.943698
+>>> End time: 2026-05-25 17:31:21.926080
+>>> Duration: 0:00:04.982382
 <<
-< Step 2 ended (duration: 0:00:04.720483)
+< Step 2 ended (duration: 0:00:05.142077)
 ------------------
 
 > Executing step 3
 >> Running router on 002/trips_dueIterate_002.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:34.843277
->>> End time: 2026-05-24 16:26:35.012442
->>> Duration: 0:00:00.169165
+>>> Begin time: 2026-05-25 17:31:21.927640
+>>> End time: 2026-05-25 17:31:22.088888
+>>> Duration: 0:00:00.161248
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:35.012491
->>> End time: 2026-05-24 16:26:39.552279
->>> Duration: 0:00:04.539788
+>>> Begin time: 2026-05-25 17:31:22.088946
+>>> End time: 2026-05-25 17:31:26.944620
+>>> Duration: 0:00:04.855674
 <<
-< Step 3 ended (duration: 0:00:04.709106)
+< Step 3 ended (duration: 0:00:05.017125)
 ------------------
 
 > Executing step 4
 >> Running router on 003/trips_dueIterate_003.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:39.558318
->>> End time: 2026-05-24 16:26:39.716967
->>> Duration: 0:00:00.158649
+>>> Begin time: 2026-05-25 17:31:26.950710
+>>> End time: 2026-05-25 17:31:27.115748
+>>> Duration: 0:00:00.165038
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:39.717014
->>> End time: 2026-05-24 16:26:44.037693
->>> Duration: 0:00:04.320679
+>>> Begin time: 2026-05-25 17:31:27.115813
+>>> End time: 2026-05-25 17:31:31.852353
+>>> Duration: 0:00:04.736540
 <<
-< Step 4 ended (duration: 0:00:04.479482)
+< Step 4 ended (duration: 0:00:04.901742)
 ------------------
 
 > Executing step 5
 >> Running router on 004/trips_dueIterate_004.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:44.043689
->>> End time: 2026-05-24 16:26:44.197915
->>> Duration: 0:00:00.154226
+>>> Begin time: 2026-05-25 17:31:31.858694
+>>> End time: 2026-05-25 17:31:32.032829
+>>> Duration: 0:00:00.174135
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:44.197977
->>> End time: 2026-05-24 16:26:48.715447
->>> Duration: 0:00:04.517470
+>>> Begin time: 2026-05-25 17:31:32.032891
+>>> End time: 2026-05-25 17:31:36.937933
+>>> Duration: 0:00:04.905042
 <<
-< Step 5 ended (duration: 0:00:04.671840)
+< Step 5 ended (duration: 0:00:05.079347)
 ------------------
 
 > Executing step 6
 >> Running router on 005/trips_dueIterate_005.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:48.721946
->>> End time: 2026-05-24 16:26:48.883463
->>> Duration: 0:00:00.161517
+>>> Begin time: 2026-05-25 17:31:36.939191
+>>> End time: 2026-05-25 17:31:37.135520
+>>> Duration: 0:00:00.196329
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:48.883513
->>> End time: 2026-05-24 16:26:53.337343
->>> Duration: 0:00:04.453830
+>>> Begin time: 2026-05-25 17:31:37.135573
+>>> End time: 2026-05-25 17:31:42.121032
+>>> Duration: 0:00:04.985459
 <<
-< Step 6 ended (duration: 0:00:04.615495)
+< Step 6 ended (duration: 0:00:05.181917)
 ------------------
 
 > Executing step 7
 >> Running router on 006/trips_dueIterate_006.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:53.343602
->>> End time: 2026-05-24 16:26:53.500892
->>> Duration: 0:00:00.157290
+>>> Begin time: 2026-05-25 17:31:42.127005
+>>> End time: 2026-05-25 17:31:42.292769
+>>> Duration: 0:00:00.165764
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:53.500942
->>> End time: 2026-05-24 16:26:57.795058
->>> Duration: 0:00:04.294116
+>>> Begin time: 2026-05-25 17:31:42.292816
+>>> End time: 2026-05-25 17:31:46.972238
+>>> Duration: 0:00:04.679422
 <<
-< Step 7 ended (duration: 0:00:04.451545)
+< Step 7 ended (duration: 0:00:04.845340)
 ------------------
 
 > Executing step 8
 >> Running router on 007/trips_dueIterate_007.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:26:57.796269
->>> End time: 2026-05-24 16:26:57.949504
->>> Duration: 0:00:00.153235
+>>> Begin time: 2026-05-25 17:31:46.978346
+>>> End time: 2026-05-25 17:31:47.138854
+>>> Duration: 0:00:00.160508
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:26:57.949598
->>> End time: 2026-05-24 16:27:02.527714
->>> Duration: 0:00:04.578116
+>>> Begin time: 2026-05-25 17:31:47.138950
+>>> End time: 2026-05-25 17:31:51.814589
+>>> Duration: 0:00:04.675639
 <<
-< Step 8 ended (duration: 0:00:04.731536)
+< Step 8 ended (duration: 0:00:04.836341)
 ------------------
 
 > Executing step 9
 >> Running router on 008/trips_dueIterate_008.rou.alt.xml.gz
->>> Begin time: 2026-05-24 16:27:02.533779
->>> End time: 2026-05-24 16:27:02.689961
->>> Duration: 0:00:00.156182
+>>> Begin time: 2026-05-25 17:31:51.820636
+>>> End time: 2026-05-25 17:31:51.981328
+>>> Duration: 0:00:00.160692
 <<
 >> Running simulation
->>> Begin time: 2026-05-24 16:27:02.690011
->>> End time: 2026-05-24 16:27:07.241050
->>> Duration: 0:00:04.551039
+>>> Begin time: 2026-05-25 17:31:51.981376
+>>> End time: 2026-05-25 17:31:56.641497
+>>> Duration: 0:00:04.660121
 <<
-< Step 9 ended (duration: 0:00:04.707367)
+< Step 9 ended (duration: 0:00:04.820964)
 ------------------
 
-dua-iterate ended (duration: 0:00:46.693367)
+dua-iterate ended (duration: 0:00:49.549308)

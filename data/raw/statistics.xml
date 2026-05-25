@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-05-24T15:20:10.351489+01:00 by Eclipse SUMO GUI 1.26.0
+<!-- generated on 2026-05-25T17:33:14.520410+01:00 by Eclipse SUMO GUI 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../net/Popular/Sioux_Falls.net.xml"/>
-        <route-files value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../routes/routes.rou.xml"/>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"/>
+        <route-files value="/home/miguel/6.Projects/Thesis/sumo/routes/routes.rou.xml"/>
+        <additional-files value="/home/miguel/6.Projects/Thesis/sumo/config/meandata.xml"/>
     </input>
 
     <output>
-        <fcd-output value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../../data/raw/fcd-export.xml"/>
+        <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
         <fcd-output.attributes value="x,y"/>
-        <summary-output value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../../data/raw/summary.xml"/>
-        <tripinfo-output value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../../data/raw/tripsinfo.xml"/>
-        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../../data/raw/vehroute.xml"/>
+        <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/summary.xml"/>
+        <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
         <vehroute-output.exit-times value="true"/>
-        <statistic-output value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/../../../data/raw/statistics.xml"/>
+        <statistic-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
     </output>
 
     <fcd_device>
@@ -26,21 +27,17 @@
         <seed value="42"/>
     </random_number>
 
-    <gui_only>
-        <gui-settings-file value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/gui_settings_aggregated.xml"/>
-    </gui_only>
-
 </sumoConfiguration>
 -->
 
 <statistics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/statistic_file.xsd">
-    <performance clockBegin="1779628810.35" clockEnd="1779628840.65" clockDuration="30.30" traciDuration="0.00" realTimeFactor="7.59" vehicleUpdatesPerSecond="247.25" personUpdatesPerSecond="0.00" begin="0.00" end="230.00" duration="230.00"/>
-    <vehicles loaded="207" inserted="122" running="37" waiting="0"/>
+    <performance clockBegin="1779723194.53" clockEnd="1779723198.12" clockDuration="3.59" traciDuration="0.00" realTimeFactor="1199.11" vehicleUpdatesPerSecond="53975.77" personUpdatesPerSecond="0.00" begin="0.00" end="4306.00" duration="4306.00"/>
+    <vehicles loaded="2251" inserted="2251" running="0" waiting="0"/>
     <teleports total="0" jam="0" yield="0" wrongLane="0"/>
     <safety collisions="0" emergencyStops="0" emergencyBraking="0"/>
     <persons loaded="0" running="0" jammed="0"/>
     <personTeleports total="0" abortWait="0" wrongDest="0"/>
-    <vehicleTripStatistics count="85" routeLength="701.32" speed="9.64" duration="72.45" waitingTime="4.83" timeLoss="19.55" departDelay="0.75" departDelayWaiting="-1.00" totalTravelTime="6158.00" totalDepartDelay="64.00"/>
+    <vehicleTripStatistics count="2251" routeLength="775.67" speed="9.17" duration="86.11" waitingTime="9.77" timeLoss="27.34" departDelay="0.95" departDelayWaiting="-1.00" totalTravelTime="193827.00" totalDepartDelay="2146.00"/>
     <pedestrianStatistics number="0" routeLength="0.00" duration="0.00" timeLoss="0.00"/>
     <rideStatistics number="0"/>
     <transportStatistics number="0"/>

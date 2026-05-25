@@ -119,6 +119,7 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - **Implementations**:
+  0. Write down important things previous meetings.
   1. Implement all MLFlow logic, for tracking parameters (learning rate, memory decay...), metrics per episode(R-gap...), artifacts (Automatically save plots, parquet files...)
   2. Analisis FIFO violations on avg travel time link table
   3. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
@@ -145,4 +146,5 @@ If when using a network that is very big, I have some scalability issue when wri
   2. Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
   3. When using R combine with sf package (represent networks greatly)
   
+
 

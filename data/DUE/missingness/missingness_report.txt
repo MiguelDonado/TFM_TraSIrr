@@ -1,3 +1,3 @@
-Proportion of missing values: 0.5203
-Total missing values: 226772
+Proportion of missing values: 0.5169
+Total missing values: 219194
 
