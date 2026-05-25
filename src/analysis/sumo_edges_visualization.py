@@ -267,7 +267,14 @@ def __get_max_value(
 
         else:
             df["period"] = df["start_time"] // period
-            df_grouped = df.groupby(["edge", "period"], as_index=False)[metric].sum()
+            if metric == "entered":
+                df_grouped = df.groupby(["edge", "period"], as_index=False)[
+                    metric
+                ].sum()
+            elif metric == "density":
+                df_grouped = df.groupby(["edge", "period"], as_index=False)[
+                    metric
+                ].mean()
 
         return df_grouped[metric].max()
 

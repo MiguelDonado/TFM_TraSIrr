@@ -48,7 +48,7 @@ def main2():
     routes = [ROUTES, ROUTES_DUEITERATE]
     for route in routes:
         run_episode_color_edges(
-            aggregated=True,
+            aggregated=False,
             config_visualization=SUMO_CONF_AGGREGATED,
             generic_config=SUMO_CONF,
             generic_gui_settings=GUI_SETTINGS,
