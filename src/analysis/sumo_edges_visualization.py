@@ -1,3 +1,28 @@
+"""
+This file is used to handle the color edge visualization in SUMO.
+We will compare results of last episode BM with results of last iteration dueIterate
+
+Several metrics could be used:
+1. entered: Measures edge usage
+2. density: Measures congestion
+3. travel time: Great for DUE analysis (compare costs)
+
+It is important to make sure that we are using the same scale for both visualizations (BM and dueIterate) and for all intervals,
+the function max_value implements that logic.
+
+Some gotchas regarding the metrics:
+1. entered: When aggregating it we have to sum over intervals, and we would get right entered value for the aggregated case
+2. density: When aggregating we have to do the mean over intervals to get the right value.
+    Intuition why density has to be aggregated that manner:
+        - Density is computed the following way: Take the nº vehicles on the edge for each timestep, and takes average
+        (sum all nº vehicles divided by nºtimesteps).
+    So the density represents the avg nº of cars over the time interval.
+    So if we want the density over a bigger time interval, we have to take the average of the averages over small intervals.
+
+Already checked in sumo-gui that density metric makes sense (not monotonic increasing, because is an avg)
+
+"""
+
 import subprocess
 from paths import TIMES_INTERVAL
 import pandas as pd

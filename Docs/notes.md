@@ -118,37 +118,31 @@ If when using a network that is very big, I have some scalability issue when wri
 
 
 ## Pending
-- c/p:  
-  - Comprobar rgap and redefined rgap computations are ok (write about all the rgap stuff) 
-  - Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
+- **Implementations**:
+  1. Implement all MLFlow logic, for tracking parameters (learning rate, memory decay...), metrics per episode(R-gap...), artifacts (Automatically save plots, parquet files...)
+  2. Analisis FIFO violations on avg travel time link table
+  3. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
+  4. SUMO docker
+  5. Check if Thompsom Sampling Bayesian Project can be useful, and implemented here somehow.
 
+- **To write**:
+  - Escribir shortest path and TDSP sections
+  - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions, rewards, states... can take agents)
+   
+- **Doubts**: 
+  1. For Sioux Falls should I use my own created OD matrix, or the standards OD matrices that I found. More details in "/home/miguel/6.Projects/Thesis/sumo/net/Popular/BenchmarkDemands".
+  2. Saber que time interval voy a usar (15 min or smaller). Y tener claro que cosas se consideran a la hora decantarme por uno o por otro.
+     - Para mis networks (son pequeñas), los viajes no duran mucho (1-3 minutos o incluso menos). Si el intervalo de tiempo es de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que estaría bien que el intervalo de tiempo en lugar de ser un número fijo que se adaptara al tamaño de la network (con la intuición de que un intervalo de tiempo de 15 minutos no tiene sentido si los viajes duran 2 minutos). Ahora mismo tengo implementado las dos opciones, es decir se puede elegir hacer adaptive (proportional to median free flow travel time de todos los path) or fixed. Cojo free flow tt y no experienced travel time, porque asi de esta manera el free flow tt da el mismo time interval para todos los episodios.
+  3. Al final que se hace con lo del warm-up.
 
+- **To read**:
+  1. Important conversation about bandit: https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
+  2. Leer regret papers brasileiros (multi armed bandit)
+  3. Leer paper "Where does this road go"
 
-
-
-
-
-  1. Habia comentado que para mis networks que son pequeñas, los viajes no duran mucho tiempo, supongo que como mucho duran de 1 a 3 minutos o incluso menos. Entonces si cojo un intervalo de tiempo de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que quizas sea buena idea mirar la distribucion de tiempos de viaje (habria que ver si en free-flow o los que obtengo de una simulacion), y ajustar el intervalo de tiempo a la network. Porque tal vez no tenga sentido un intervalo de tiempo de 15 minutos si todos los viajes no duran ni 2 minutos. He usado como heuristica, calcular el free flow travel time de todos los path, y coger la median. A esa median la multiplico por 1/2 o 1/3 y ese es mi time interval. Cojo free flow tt y no experienced travel time, porque asi de esta manera el free flow tt da el mismo time interval para todos los episodios.
-  - Important conversation about bandit...
-   https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
-  - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions can take agents)
-  - Revisar al final que se hacia con lo del warm-up
-  - For sioux falls there was a demand that is used normally in research. Could be great to use that demand for benchmark.
-- l/p:
-  - Thompson Sampling Bayesian Project, check if it can be integrated somehow in my thesis (if it provides some value).
-  - Hacer preguntas intuitivas, todo el mundo se identifica cuando estamos conduciendo. Antes de hacer un experimento saber que quiero respoonder
-  - Leer paper "Where does this road go"
-  - Check experiment evaluation in papers
-  - Entender lo de preventivo y reactivo
-  - State space (informacion historica de mi camino y tambien estaria bien ver que links fueron problematicos)
-  - explainability ai
-  - decay distinto por agente ?
-  - solapamiento rutas
-  - R think about which plots I want plots
-  - Para la thesis probar como funciona con distintos niveles de congestion de la network (ver como aprende el algoritmo)
-  - Sumo docker
-  - Ensure reproducibility in my simulations, for that I guess that I have to store as well the hyperparameters that I used, maybe using MLFlow or lets see how its done 
-  - ET time indexing have it clear
-  - Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead Cargar solo por episodio...
-  - Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
+- **R**:
+  1. Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead Cargar solo por episodio...
+  2. Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
+  3. When using R combine with sf package (represent networks greatly)
+  
 
