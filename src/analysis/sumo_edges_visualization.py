@@ -151,31 +151,27 @@ def create_gui_settings(
     copy2(generic_gui_settings, gui_settings_visualization)
 
     # 2. Get max value of given metric (between BM and dueIterate) edgeData file
-    if aggregated:
-        if metric == "entered":
-            max_value = __get_max_value(
-                metric=metric,
-                edgedata_dueIterate_file=edgedata_dueIterate_file,
-                edgedata_BM_file=edgedata_BM_file,
-            )
-    if not aggregated:
-        if metric == "entered":
-            max_value = __get_max_value(
-                metric=metric,
-                edgedata_dueIterate_file=edgedata_dueIterate_file,
-                edgedata_BM_file=edgedata_BM_file,
-                aggregated=aggregated,
-            )
+    max_value = __get_max_value(
+        metric=metric,
+        edgedata_dueIterate_file=edgedata_dueIterate_file,
+        edgedata_BM_file=edgedata_BM_file,
+        aggregated=aggregated,
+    )
 
     # 3. Compute the right threholds
     list_color_thresholds = __compute_color_scale(max_value)
 
     # 4. Update gui_settings with the right thresholds
-    __set_color_scale_gui_settings(
-        gui_settings_visualization, list_color_thresholds, aggregated
+    __set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds)
+
+    # 5. Update attributes gui-settings
+    __set_attributes_gui_settings(
+        metric=metric,
+        aggregated=aggregated,
+        gui_settings_visualization=gui_settings_visualization,
     )
 
-    # 5. Set breakpoints
+    # 6. Set breakpoints
     if not aggregated:
         __set_breakpoints_gui_settings(
             gui_settings_visualization=gui_settings_visualization, period=period
@@ -264,7 +260,10 @@ def __get_max_value(
         df[metric] = df[metric].astype(float)
 
         if aggregated:
-            df_grouped = df.groupby("edge", as_index=False)[metric].sum()
+            if metric == "entered":
+                df_grouped = df.groupby("edge", as_index=False)[metric].sum()
+            elif metric == "density":
+                df_grouped = df.groupby("edge", as_index=False)[metric].mean()
 
         else:
             df["period"] = df["start_time"] // period
@@ -292,21 +291,39 @@ def __compute_color_scale(max_value):
     return np.round(np.linspace(0, max_value, 7), 2)
 
 
-def __set_color_scale_gui_settings(
-    gui_settings_visualization, list_color_thresholds, aggregated
-):
+def __set_attributes_gui_settings(aggregated, gui_settings_visualization, metric):
+    """
+    Update edgeDataID and edgeData attributes
+    """
+
+    tree = etree.parse(gui_settings_visualization)
+    edges = tree.find(".//edges")
+    if aggregated:
+        edges.attrib["edgeDataID"] = "aggregated"
+    else:
+        edges.attrib["edgeDataID"] = "dissagregated"
+
+    if metric == "entered":
+        edges.attrib["edgeData"] = "entered"
+    elif metric == "density":
+        edges.attrib["edgeData"] = "density"
+
+    # 3. Write back to gui-settings file
+    tree.write(
+        str(gui_settings_visualization),
+        pretty_print=True,
+        xml_declaration=True,
+        encoding="UTF-8",
+    )
+
+
+def __set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds):
     """
     Update the scale of colors thresholds in gui-settings
     """
 
     # 1. Name our color scheme for live edge data consistently
     tree = etree.parse(gui_settings_visualization)
-    edges = tree.find(".//edges")
-
-    if aggregated:
-        edges.attrib["edgeDataID"] = "aggregated"
-    else:
-        edges.attrib["edgeDataID"] = "dissagregated"
 
     # 2. Update threshold values
     color_scheme = tree.xpath("//colorScheme[@name='by live edgeData']")[0]
