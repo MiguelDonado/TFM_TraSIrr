@@ -17,21 +17,21 @@ from parsing.parser import Parser
 from paths import (
     ACTIONS,
     BM_RESULTS,
-    FCD,
-    FCD_PROCESSED,
+    FCD_XML,
+    FCD_PARQUET,
     OD_ROUTES,
     REWARDS,
     ROUTES,
-    STATISTICS,
-    STATISTICS_PROCESSED,
+    STATISTICS_XML,
+    STATISTICS_PARQUET,
     SUMO_CONF,
-    TRIPS_INFO,
-    TRIPS_INFO_PROCESSED,
-    VEHROUTE,
-    VEHROUTE_PROCESSED,
+    TRIPS_INFO_XML,
+    TRIPS_INFO_PARQUET,
+    VEHROUTE_XML,
+    VEHROUTE_PARQUET,
     YAML_CONF,
-    EDGEDATA,
-    EDGEDATA_PROCESSED,
+    EDGEDATA_XML,
+    EDGEDATA_PARQUET,
 )
 
 # Load YAML file
@@ -47,10 +47,10 @@ with open(YAML_CONF, "r") as file:
 
 def prepare_data(episode, actions, rewards, agents):
     aggregated_result = parse_aggregated_data(episode)
-    vehroute_result = parse_vehroute(episode, VEHROUTE)
-    trips_info_result = parse_trips_info(episode, TRIPS_INFO)
+    vehroute_result = parse_vehroute(episode, VEHROUTE_XML)
+    trips_info_result = parse_trips_info(episode, TRIPS_INFO_XML)
     fcd_result = parse_fcd(episode)
-    edgedata_result = parse_edgedata(episode, EDGEDATA)
+    edgedata_result = parse_edgedata(episode, EDGEDATA_XML)
     actions = prepare_actions(episode, actions)
     rewards = prepare_rewards(episode, rewards)
     BM_result = prepare_BM_data(episode, agents)
@@ -100,11 +100,11 @@ def accumulate_results(results, result):
 
 def save_processed_data(results):
     mapping = {
-        "aggregated": STATISTICS_PROCESSED,
-        "vehroute": VEHROUTE_PROCESSED,
-        "trips_info": TRIPS_INFO_PROCESSED,
-        "fcd": FCD_PROCESSED,
-        "edgedata": EDGEDATA_PROCESSED,
+        "aggregated": STATISTICS_PARQUET,
+        "vehroute": VEHROUTE_PARQUET,
+        "trips_info": TRIPS_INFO_PARQUET,
+        "fcd": FCD_PARQUET,
+        "edgedata": EDGEDATA_PARQUET,
         "actions": ACTIONS,
         "rewards": REWARDS,
         "BM_results": BM_RESULTS,
@@ -128,7 +128,7 @@ def make_plots():
 
 def parse_aggregated_data(episode):
     data = {}
-    parser = Parser(STATISTICS)
+    parser = Parser(STATISTICS_XML)
 
     for name, xpath in config["metrics"]["statistics"].items():
         value = parser.extract_one(xpath, float)
@@ -197,7 +197,7 @@ def extract_dict(parser, config_section):
 
 
 def parse_fcd(episode):
-    parser = Parser(FCD)
+    parser = Parser(FCD_XML)
     data = parser.extract_fcd_flat(episode)
 
     return data

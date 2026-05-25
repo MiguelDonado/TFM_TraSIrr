@@ -17,20 +17,20 @@ from lxml import etree
 from config.config import RunMode, config
 from paths import (
     AGENTS_OD,
-    FCD,
+    FCD_XML,
     MAP,
     NET,
     OD_MATRIX_INTERVALS,
     OD_MATRIX_TOTAL,
     OD_ROUTES,
-    STATISTICS,
-    SUMMARY,
+    STATISTICS_XML,
+    SUMMARY_XML,
     SUMO_CONF,
-    TRIPS_INFO,
+    TRIPS_INFO_XML,
     UNDESIRED_ROUTE_FILE,
-    VEHROUTE,
+    VEHROUTE_XML,
     MEANDATA,
-    EDGEDATA,
+    EDGEDATA_XML,
     FREE_FLOW_TRAVEL_TIMES,
 )
 
@@ -179,12 +179,12 @@ class Scenario:
             conf.write(f'\t\t<additional-files value="{MEANDATA}"/>\n')
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO}"/>\n')
-            conf.write(f'\t\t<statistic-output value="{STATISTICS}"/>\n')
-            conf.write(f'\t\t<summary-output value="{SUMMARY}"/>\n')
-            conf.write(f'\t\t<vehroute-output value="{VEHROUTE}"/>\n')
+            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO_XML}"/>\n')
+            conf.write(f'\t\t<statistic-output value="{STATISTICS_XML}"/>\n')
+            conf.write(f'\t\t<summary-output value="{SUMMARY_XML}"/>\n')
+            conf.write(f'\t\t<vehroute-output value="{VEHROUTE_XML}"/>\n')
             conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
-            conf.write(f'\t\t<fcd-output value="{FCD}"/>\n')
+            conf.write(f'\t\t<fcd-output value="{FCD_XML}"/>\n')
             conf.write(f'\t\t<fcd-output.attributes value="x,y"/>\n')
             conf.write(f"\t</report>\n")
             conf.write(f"\t<random>\n")
@@ -201,7 +201,7 @@ class Scenario:
             meandata.write("<additional>\n")
             meandata.write("\t<edgeData\n")
             meandata.write(f"\t\tid='density_{config.time_interval}s'\n")
-            meandata.write(f"\t\tfile='{EDGEDATA}'\n")
+            meandata.write(f"\t\tfile='{EDGEDATA_XML}'\n")
             meandata.write(f"\t\tperiod='{config.time_interval}'\n")
             meandata.write(f"\t\texcludeEmpty='true'\n")
             meandata.write(f"\t\twriteAttributes='entered density'/>\n")

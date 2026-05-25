@@ -31,8 +31,25 @@ from lxml import etree
 import numpy as np
 from config.config import config
 
+# routes = [ROUTES, ROUTES_DUEITERATE]
+# for route in routes:
+#     run_edge_visualization(
+#         aggregated=False,
+#         config_visualization=SUMO_CONF_AGGREGATED,
+#         generic_config=SUMO_CONF,
+#         generic_gui_settings=GUI_SETTINGS,
+#         gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
+#         edgedata_BM_file=EDGEDATA_PARQUET,
+#         edgedata_dueIterate_file=EDGEDATA_DUEITERATE_PROCESSED,
+#         generic_meandata=MEANDATA,
+#         meandata_visualization=MEANDATA_AGGREGATED,
+#         routes_file=route,
+#         period=900,
+#         metric="density",
+#     )
 
-def run_episode_color_edges(
+
+def run_edge_visualization(
     generic_config,
     config_visualization,
     generic_gui_settings,
@@ -57,7 +74,6 @@ def run_episode_color_edges(
     create_config(
         generic_config=generic_config,
         config_visualization=config_visualization,
-        aggregated=aggregated,
         routes_file=routes_file,
     )
 
@@ -95,27 +111,8 @@ def run_episode_color_edges(
     ]
     subprocess.run(cmd)
 
-    # # Then is gonna be run on interval specific mode
-    # if times_interval_file:
-    #     # So we have to do a few things:
 
-    #     # 1. Set breakpoints
-    #     str_breakpoints = generate_breakpoints(times_interval_file)
-    #     additional_cmd_b = [
-    #         "--breakpoints",
-    #         str_breakpoints,
-    #     ]
-
-    #     # 2. Set meandata file
-
-    # additional_cmd = [
-    #     "--gui-settings-file",
-    #     GUI_SETTINGS,
-    # ]
-    # cmd.extend(additional_cmd)
-
-
-def create_config(generic_config, config_visualization, aggregated, routes_file):
+def create_config(generic_config, config_visualization, routes_file):
     """
     Basically:
         1. Make a copy of config file

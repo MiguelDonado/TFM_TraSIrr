@@ -30,7 +30,7 @@ from paths import (
     Path,
     WEIGHTS_DIR,
     COST_MIN_PATHS_DUEITERATE,
-    SHORTEST_PATHS_DUEITERATE_DIR,
+    SHORTEST_PATHS_DIR_DUEITERATE,
     SHORTEST_PATHS_DIR,
     WEIGHTS_DIR_DUEITERATE,
     COST_LINKS,
@@ -41,7 +41,7 @@ from paths import (
     FLOWS_PATHS,
     TRIPS_INFO_PROCESSED_DUEITERATE,
     FLOWS_PATH_DUEITERATE,
-    TRIPS_INFO_PROCESSED,
+    TRIPS_INFO_PARQUET,
     COST_PATHS,
     OD_ROUTES_DUEITERATE,
     TRIPS_INFO_PROCESSED_DUEITERATE,
@@ -55,13 +55,26 @@ from paths import (
     MISSINGNESS_DUEITERATE_EDGE,
     MISSINGNESS_DUEITERATE_EPISODE,
     MISSINGNESS_DUEITERATE_REPORT,
-    VEHROUTE_PROCESSED,
-    EDGEDATA_PROCESSED,
+    VEHROUTE_PARQUET,
+    EDGEDATA_PARQUET,
     MISSINGNESS_EDGE,
     MISSINGNESS_EPISODE,
     MISSINGNESS_INT,
     MISSINGNESS_REPORT,
+    UNDESIRED_DUEITERATE_FILE_1,
+    UNDESIRED_DUEITERATE_FILE_2,
+    UNDESIRED_DUEITERATE_FILE_3,
 )
+
+
+def run_DUE_convergence_checks(scen, end_time, time_interval):
+    generate_generic_files_DUE_convergence()
+
+    check_DUE_convergence_dueIterate(
+        scen, end_time=end_time, time_interval=time_interval
+    )
+
+    check_DUE_convergence_BM(end_time=end_time, time_interval=time_interval)
 
 
 def generate_generic_files_DUE_convergence():
@@ -86,7 +99,7 @@ def check_DUE_convergence_BM(end_time, time_interval):
     # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
         actions_path=ACTIONS,
-        trips_info_processed_path=TRIPS_INFO_PROCESSED,
+        trips_info_processed_path=TRIPS_INFO_PARQUET,
         output_file=COST_PATHS,
     )
 
@@ -98,8 +111,8 @@ def check_DUE_convergence_BM(end_time, time_interval):
         threshold_density=config.threshold_density,
         output_file=COST_LINKS,
         agents_od_file=AGENTS_OD,
-        vehroute_file=VEHROUTE_PROCESSED,
-        edgedata_file=EDGEDATA_PROCESSED,
+        vehroute_file=VEHROUTE_PARQUET,
+        edgedata_file=EDGEDATA_PARQUET,
         missingness_edge_file=MISSINGNESS_EDGE,
         missingness_episode_file=MISSINGNESS_EPISODE,
         missingness_interval_file=MISSINGNESS_INT,
@@ -239,20 +252,20 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
         config.network,
         config.seed,
         weights_dir=WEIGHTS_DIR_DUEITERATE,
-        shortest_path_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+        shortest_path_dir=SHORTEST_PATHS_DIR_DUEITERATE,
     )
 
     # 14.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
     compute_cost_min_paths_odt_k(
         time_interval=time_interval,
-        shortest_path_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+        shortest_path_dir=SHORTEST_PATHS_DIR_DUEITERATE,
         cost_min_paths=COST_MIN_PATHS_DUEITERATE,
     )
 
     # 14.5. Delete some files generated on DUE convergence check
     delete_files_DUE_convergence(
         weights_dir=WEIGHTS_DIR_DUEITERATE,
-        shortest_paths_dir=SHORTEST_PATHS_DUEITERATE_DIR,
+        shortest_paths_dir=SHORTEST_PATHS_DIR_DUEITERATE,
     )
 
     # Computation Rgap
@@ -271,3 +284,6 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     ################
     # 15. Delete dueIterate folders
     delete_dueIterate_folders(config.dueIterate_max_iterations)
+    UNDESIRED_DUEITERATE_FILE_1.unlink()
+    UNDESIRED_DUEITERATE_FILE_2.unlink()
+    UNDESIRED_DUEITERATE_FILE_3.unlink()

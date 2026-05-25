@@ -6,7 +6,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 
 from config.config import config
-from paths import ROUTES, TRIPS_INFO
+from paths import ROUTES, TRIPS_INFO_XML
 
 
 class Environment:
@@ -82,7 +82,7 @@ class Environment:
     def get_rewards(self):
         travel_times = {}
 
-        tree = ET.parse(TRIPS_INFO)
+        tree = ET.parse(TRIPS_INFO_XML)
         root = tree.getroot()
 
         for trip in root.findall("tripinfo"):

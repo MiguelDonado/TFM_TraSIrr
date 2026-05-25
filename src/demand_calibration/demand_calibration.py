@@ -4,7 +4,7 @@ from config.config import config
 from paths import (
     NET,
     ROUTES_DEMAND_CALIBRATION,
-    SUMMARY,
+    SUMMARY_XML,
     SUMO_CONF_DEMAND_CALIBRATION,
     TRIPS_DEMAND_CALIBRATION,
 )
@@ -55,7 +55,7 @@ class DemandCalibration:
             conf.write(f'\t\t<route-files value="{ROUTES_DEMAND_CALIBRATION}"/>\n')
             conf.write("\t</input>\n")
             conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<summary-output value="{SUMMARY}"/>\n')
+            conf.write(f'\t\t<summary-output value="{SUMMARY_XML}"/>\n')
             conf.write(f"\t</report>\n")
             conf.write(f"\t<random>\n")
             conf.write(f"\t\t<seed value='42'/>\n")
@@ -76,6 +76,8 @@ class DemandCalibration:
         self.generate_trips()
         self.generate_conf()
         self.run_episode()
-        self.avg_speed = get_avg_speed(config.warm_up_time, summary_filepath=SUMMARY)
+        self.avg_speed = get_avg_speed(
+            config.warm_up_time, summary_filepath=SUMMARY_XML
+        )
         target_speed_ratio = round(self.avg_speed / self.free_flow_speed, 2)
         return target_speed_ratio
