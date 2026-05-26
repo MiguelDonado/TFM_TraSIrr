@@ -106,11 +106,18 @@ TIMES_INTERVAL = INTERNAL_DATA_DIR / "times_interval.parquet"
 TDSP_DIR = DUE_DATA_BM / "TDSP"
 WEIGHTS_DIR = TDSP_DIR / "weights"
 SHORTEST_PATHS_DIR = TDSP_DIR / "shortest_paths"
+RGAP_DIR = DUE_DATA_BM / "R-gap"
 
 FLOWS_PATHS = DUE_DATA_BM / "flows_paths_odtp_k.parquet"
 COST_PATHS = DUE_DATA_BM / "costs_paths_odtp_k.parquet"
 COST_LINKS = TDSP_DIR / "costs_links_t_k.parquet"
 COST_MIN_PATHS = TDSP_DIR / "costs_min_paths_t_k.parquet"
+
+
+RGAP = RGAP_DIR / "rgap.parquet"
+REFINED_RGAP = RGAP_DIR / "refined_rgap.parquet"
+RGAP_BY_OD = RGAP_DIR / "rgap_by_od.parquet"
+REFINED_RGAP_BY_OD = RGAP_DIR / "refined_rgap_by_od.parquet"
 
 # All grid of combinations odt, to generate TDSP for all of them
 TRIPS_TDSP = TDSP_DIR / "trips" / "trips.xml"
@@ -131,6 +138,7 @@ MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 TDSP_DIR_DUEITERATE = DUE_DATA_dueIterate / "TDSP"
 WEIGHTS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "weights"
 SHORTEST_PATHS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "shortest_paths"
+RGAP_DIR_DUEITERATE = DUE_DATA_dueIterate / "R-gap"
 
 FLOWS_PATH_DUEITERATE = DUE_DATA_dueIterate / "flows_path_dueiterate.parquet"
 COST_PATHS_DUEITERATE = DUE_DATA_dueIterate / "costs_paths_odtp_k_dueIterate.parquet"
@@ -148,6 +156,11 @@ VEHROUTE_DUEITERATE_PROCESSED = DUE_DATA_dueIterate / "vehroute_dueiterate.parqu
 EDGEDATA_DUEITERATE_PROCESSED = (
     DUE_DATA_dueIterate / "edgedata" / "edgedata_dueiterate.parquet"
 )
+
+RGAP_DUEITERATE = RGAP_DIR_DUEITERATE / "rgap.parquet"
+REFINED_RGAP_DUEITERATE = RGAP_DIR_DUEITERATE / "refined_rgap.parquet"
+RGAP_BY_OD_DUEITERATE = RGAP_DIR_DUEITERATE / "rgap_by_od.parquet"
+REFINED_RGAP_BY_OD_DUEITERATE = RGAP_DIR_DUEITERATE / "refined_rgap_by_od.parquet"
 
 ROUTES_DUEITERATE = SUMO_DIR / "routes" / "routes_dueiterate.rou.xml"
 

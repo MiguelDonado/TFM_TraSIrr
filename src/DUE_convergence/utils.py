@@ -430,7 +430,15 @@ def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_path
     df.to_parquet(cost_min_paths)
 
 
-def compute_rgap_and_refined_rgap(flow_paths, cost_paths, cost_min_paths):
+def compute_rgap_and_refined_rgap(
+    flow_paths,
+    cost_paths,
+    cost_min_paths,
+    rgap_path,
+    refined_rgap_path,
+    rgap_by_od_path,
+    refined_rgap_by_od_path,
+):
     flow_df = pd.read_parquet(flow_paths)
     flow_df = flow_df.rename(columns={"count": "flow"})
     cost_df = pd.read_parquet(cost_paths)
@@ -473,16 +481,15 @@ def compute_rgap_and_refined_rgap(flow_paths, cost_paths, cost_min_paths):
     df["min_cost"] = df["min_cost"].astype("float32")
 
     # Compute 2 versions rgap
-    rgap = compute_rgap(df)
-    redefined_rgap = compute_redefined_rgap(df)
+    compute_rgap(df, rgap_path)
+    compute_redefined_rgap(df, refined_rgap_path)
 
     # Compute rgap versions by od
-    rgap_by_od = compute_rgap_by_od(df)
-    redefined_rgap_by_od = compute_redefined_rgap_by_od(df)
-    return (rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od)
+    compute_rgap_by_od(df, rgap_by_od_path)
+    compute_redefined_rgap_by_od(df, refined_rgap_by_od_path)
 
 
-def compute_rgap(df):
+def compute_rgap(df, rgap_path):
     df = df.copy()
     # Compute numerator rgap per episode
     df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
@@ -499,10 +506,11 @@ def compute_rgap(df):
         .sum()
     )
 
-    return numerator / denominator
+    rgap = numerator / denominator
+    rgap.to_frame(name="rgap").to_parquet(rgap_path)
 
 
-def compute_redefined_rgap(df):
+def compute_redefined_rgap(df, refined_rgap_path):
     """
     Like rgap but for each interval
     """
@@ -526,10 +534,10 @@ def compute_redefined_rgap(df):
     refined_rgap = numerator / denominator
 
     refined_rgap = refined_rgap.reset_index(name="refined_rgap")
-    return refined_rgap
+    refined_rgap.to_parquet(refined_rgap_path)
 
 
-def compute_rgap_by_od(df):
+def compute_rgap_by_od(df, rgap_by_od_path):
     """
     Compute relative gap (rgap) for each episode and OD pair
     """
@@ -557,11 +565,11 @@ def compute_rgap_by_od(df):
     )
 
     rgap_od = numerator / denominator
+    rgap_od = rgap_od.reset_index(name="rgap")
+    rgap_od.to_parquet(rgap_by_od_path)
 
-    return rgap_od.reset_index(name="rgap")
 
-
-def compute_redefined_rgap_by_od(df):
+def compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
     """
     Compute redefined rgap, for each episode, OD pair and time interval
     """
@@ -593,7 +601,9 @@ def compute_redefined_rgap_by_od(df):
     )
     redefined_rgap_od = numerator / denominator
 
-    return redefined_rgap_od.reset_index(name="refined_rgap")
+    redefined_rgap_od = redefined_rgap_od.reset_index(name="refined_rgap")
+
+    redefined_rgap_od.to_parquet(refined_rgap_by_od_path)
 
 
 def generate_demand_odt():

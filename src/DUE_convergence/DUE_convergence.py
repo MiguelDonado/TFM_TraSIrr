@@ -28,6 +28,14 @@ from config.config import config
 
 from paths import (
     Path,
+    RGAP,
+    RGAP_DUEITERATE,
+    REFINED_RGAP,
+    RGAP_BY_OD,
+    REFINED_RGAP_BY_OD,
+    REFINED_RGAP_DUEITERATE,
+    RGAP_BY_OD_DUEITERATE,
+    REFINED_RGAP_BY_OD_DUEITERATE,
     WEIGHTS_DIR,
     COST_MIN_PATHS_DUEITERATE,
     SHORTEST_PATHS_DIR_DUEITERATE,
@@ -137,17 +145,15 @@ def check_DUE_convergence_BM(end_time, time_interval):
     )
 
     # Computation Rgap
-    rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od = (
-        compute_rgap_and_refined_rgap(
-            flow_paths=FLOWS_PATHS,
-            cost_paths=COST_PATHS,
-            cost_min_paths=COST_MIN_PATHS,
-        )
+    compute_rgap_and_refined_rgap(
+        flow_paths=FLOWS_PATHS,
+        cost_paths=COST_PATHS,
+        cost_min_paths=COST_MIN_PATHS,
+        rgap_path=RGAP,
+        refined_rgap_path=REFINED_RGAP,
+        rgap_by_od_path=RGAP_BY_OD,
+        refined_rgap_by_od_path=REFINED_RGAP_BY_OD,
     )
-    print(rgap)
-    print(redefined_rgap)
-    print(rgap_by_od)
-    print(redefined_rgap_by_od)
 
 
 def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
@@ -267,17 +273,15 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     )
 
     # Computation Rgap
-    rgap, redefined_rgap, rgap_by_od, redefined_rgap_by_od = (
-        compute_rgap_and_refined_rgap(
-            flow_paths=FLOWS_PATH_DUEITERATE,
-            cost_paths=COST_PATHS_DUEITERATE,
-            cost_min_paths=COST_MIN_PATHS_DUEITERATE,
-        )
+    compute_rgap_and_refined_rgap(
+        flow_paths=FLOWS_PATH_DUEITERATE,
+        cost_paths=COST_PATHS_DUEITERATE,
+        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+        rgap_path=RGAP_DUEITERATE,
+        refined_rgap_path=REFINED_RGAP_DUEITERATE,
+        rgap_by_od_path=RGAP_BY_OD_DUEITERATE,
+        refined_rgap_by_od_path=REFINED_RGAP_BY_OD_DUEITERATE,
     )
-    print(rgap)
-    print(redefined_rgap)
-    print(rgap_by_od)
-    print(redefined_rgap_by_od)
 
     ################
     # 15. Delete dueIterate folders
