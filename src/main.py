@@ -146,7 +146,8 @@ def main():
         if should_stop:
             break
 
-    run_final_simulation()
+    if config.last_episode_gui_BM:
+        run_final_simulation()
     # -----------------------------
     # 7. SAVE OUTPUT
     # -----------------------------

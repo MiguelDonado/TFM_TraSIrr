@@ -119,7 +119,6 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - **Implementations**:
-  0. Write down important things previous meetings.
   1. Implement all MLFlow logic, for tracking parameters (learning rate, memory decay...), metrics per episode(R-gap...), artifacts (Automatically save plots, parquet files...)
   2. Analisis FIFO violations on avg travel time link table
   3. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo

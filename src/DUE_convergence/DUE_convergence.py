@@ -61,9 +61,7 @@ from paths import (
     MISSINGNESS_EPISODE,
     MISSINGNESS_INT,
     MISSINGNESS_REPORT,
-    UNDESIRED_DUEITERATE_FILE_1,
-    UNDESIRED_DUEITERATE_FILE_2,
-    UNDESIRED_DUEITERATE_FILE_3,
+    UNDESIRED_DUEITERATE_FILES,
 )
 
 
@@ -165,7 +163,8 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     call_dueIterate(config.network, config.dueIterate_max_iterations)
 
     # 3. Run simulation
-    run_simulation_dueIterate(config.dueIterate_max_iterations)
+    if config.last_episode_gui_dueIterate:
+        run_simulation_dueIterate(config.dueIterate_max_iterations)
 
     # 4. Extract routes file last iteration dueIterate
     routes_file = extract_routes_file_dueIterate(config.dueIterate_max_iterations)
@@ -215,7 +214,6 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     # 12. Generate edgedata file
     generate_edgedata_file(
         max_iterations=config.dueIterate_max_iterations,
-        network=config.network,
         meandata_dueiterate_file=meandata_dueiterate_file,
     )
 
@@ -284,6 +282,5 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
     ################
     # 15. Delete dueIterate folders
     delete_dueIterate_folders(config.dueIterate_max_iterations)
-    UNDESIRED_DUEITERATE_FILE_1.unlink()
-    UNDESIRED_DUEITERATE_FILE_2.unlink()
-    UNDESIRED_DUEITERATE_FILE_3.unlink()
+    for file in UNDESIRED_DUEITERATE_FILES:
+        file.unlink()

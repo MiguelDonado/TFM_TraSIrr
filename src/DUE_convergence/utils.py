@@ -961,7 +961,7 @@ def generate_meandata_file(max_iterations):
     return meandata_dueiterate_path
 
 
-def generate_edgedata_file(max_iterations, network, meandata_dueiterate_file):
+def generate_edgedata_file(max_iterations, meandata_dueiterate_file):
     number_path = max_iterations - 1
     number_path = str(number_path).zfill(3)
     path_config_file = BASE_DIR / number_path / f"iteration_{number_path}.sumocfg"
@@ -977,7 +977,7 @@ def generate_edgedata_file(max_iterations, network, meandata_dueiterate_file):
     )
 
     cmd = [
-        "sumo-gui",
+        "sumo",
         "-c",
         path_config_file,
         "--additional-files",

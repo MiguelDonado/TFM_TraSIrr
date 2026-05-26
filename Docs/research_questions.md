@@ -201,5 +201,5 @@ Introduction: Congestion level fundamentally changes the difficulty of the routi
 
 - Expected insight: The analysis may reveal whether the Bush--Mosteller model is capable of dynamically re-adapting to temporary disruptions and subsequently recovering equilibrium-like traffic conditions once the degraded link capacity is restored. In particular, the experiment may help identify: how rapidly agents adapt their route choices after the disruption, whether the original traffic distribution is recovered, whether persistent oscillations remain after restoration, and how strongly temporary disruptions affect the stability of the learning dynamics.
 
-Other not revelant questions: 
-- Effect of memory level and learning rate is opposite on flow evolution (higher memory levels more stable flow evolution, while higher learning rate more oscillations).
+Other questions: 
+- (Not relevant) Effect of memory level and learning rate is opposite on flow evolution (higher memory levels more stable flow evolution, while higher learning rate more oscillations).

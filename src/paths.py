@@ -119,7 +119,7 @@ TRIPS_TDSP = TDSP_DIR / "trips" / "trips.xml"
 # Missingness BM-specific
 # =============
 
-MISSINGNESS_DIR = DUE_DATA_DIR / "missingness"
+MISSINGNESS_DIR = DUE_DATA_BM / "missingness"
 MISSINGNESS_INT = MISSINGNESS_DIR / "missingness_by_int.parquet"
 MISSINGNESS_EDGE = MISSINGNESS_DIR / "missingness_by_edge.parquet"
 MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
@@ -129,8 +129,8 @@ MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 # DUE data dueIterate-specific
 # ============================================================
 TDSP_DIR_DUEITERATE = DUE_DATA_dueIterate / "TDSP"
-WEIGHTS_DIR_DUEITERATE = DUE_DATA_dueIterate / "weights"
-SHORTEST_PATHS_DIR_DUEITERATE = DUE_DATA_dueIterate / "shortest_paths"
+WEIGHTS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "weights"
+SHORTEST_PATHS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "shortest_paths"
 
 FLOWS_PATH_DUEITERATE = DUE_DATA_dueIterate / "flows_path_dueiterate.parquet"
 COST_PATHS_DUEITERATE = DUE_DATA_dueIterate / "costs_paths_odtp_k_dueIterate.parquet"
@@ -138,7 +138,7 @@ COST_LINKS_DUEITERATE = TDSP_DIR_DUEITERATE / "costs_links_dueiterate_t_k.parque
 COST_MIN_PATHS_DUEITERATE = (
     DUE_DATA_dueIterate / "costs_min_paths_odtp_k_dueIterate.parquet"
 )
-TRIPS_DUEITERATE = DUE_DATA_dueIterate / "trips_dueIterate.xml"
+TRIPS_DUEITERATE = TDSP_DIR_DUEITERATE / "trips_dueIterate.xml"
 OD_ROUTES_DUEITERATE = DUE_DATA_dueIterate / "od_routes_dueiterate.parquet"
 ACTIONS_DUEITERATE = DUE_DATA_dueIterate / "actions_dueiterate.parquet"
 TRIPS_INFO_PROCESSED_DUEITERATE = (
@@ -154,7 +154,7 @@ ROUTES_DUEITERATE = SUMO_DIR / "routes" / "routes_dueiterate.rou.xml"
 # =============
 # Missingness dueIterate-specific
 # =============
-MISSINGNESS_DIR_DUEITERATE = DUE_DATA_DIR / "missingness"
+MISSINGNESS_DIR_DUEITERATE = DUE_DATA_dueIterate / "missingness"
 MISSINGNESS_DUEITERATE_INT = (
     MISSINGNESS_DIR_DUEITERATE / "missingness_dueiterate_by_int.parquet"
 )
