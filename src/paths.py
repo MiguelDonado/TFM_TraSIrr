@@ -17,6 +17,7 @@ DATA_DIR = BASE_DIR / "data"
 
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
+OD_MATRIX_DIR = DATA_DIR / "od_matrix"
 INTERNAL_DATA_DIR = DATA_DIR / "internal"
 DUE_DATA_DIR = DATA_DIR / "DUE"
 DUE_DATA_BM = DUE_DATA_DIR / "BM"
@@ -76,8 +77,8 @@ TRIPS_INFO_PARQUET = PROCESSED_DATA_DIR / "trips_info.parquet"
 VEHROUTE_PARQUET = PROCESSED_DATA_DIR / "vehroute.parquet"
 FCD_PARQUET = PROCESSED_DATA_DIR / "fcd.parquet"
 
-OD_MATRIX_INTERVALS = PROCESSED_DATA_DIR / "od_matrix_intervals.csv"
-OD_MATRIX_TOTAL = PROCESSED_DATA_DIR / "od_matrix_total.csv"
+OD_MATRIX_INTERVALS = OD_MATRIX_DIR / "od_matrix_intervals.csv"
+OD_MATRIX_TOTAL = OD_MATRIX_DIR / "od_matrix_total.csv"
 
 
 # ============================================================

@@ -112,7 +112,14 @@ def save_processed_data(results):
 
     for key, path in mapping.items():
         df = pd.DataFrame(results[key])
-        df.to_parquet(path, engine="pyarrow")
+        # Extra code to make fcd smaller
+        if key == "fcd":
+            categorical_cols = ["vehicle_id"]
+            for col in categorical_cols:
+                df[col] = df[col].astype("category")
+            df.to_parquet(path, compression="zstd", compression_level=9)
+        else:
+            df.to_parquet(path, engine="pyarrow")
 
 
 def make_plots():

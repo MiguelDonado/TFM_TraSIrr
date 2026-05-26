@@ -507,7 +507,8 @@ def compute_rgap(df, rgap_path):
     )
 
     rgap = numerator / denominator
-    rgap.to_frame(name="rgap").to_parquet(rgap_path)
+    rgap = rgap.reset_index(name="rgap")
+    rgap.to_parquet(rgap_path)
 
 
 def compute_redefined_rgap(df, refined_rgap_path):

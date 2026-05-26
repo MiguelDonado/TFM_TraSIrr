@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from lxml import etree
 import numpy as np
+from pathlib import Path
 
 
 def get_edges_lengths_program(net):

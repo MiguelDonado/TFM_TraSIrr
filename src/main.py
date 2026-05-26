@@ -1,5 +1,5 @@
+import mlflow
 import numpy as np
-from collections import deque
 from stopping_rule.stopping_rule import (
     create_policies_dict,
     check_convergence,
@@ -11,26 +11,13 @@ from environment import Environment
 from experiment import (
     accumulate_results,
     log_run_mode,
-    make_plots,
     prepare_data,
     run_final_simulation,
     save_processed_data,
 )
-from paths import (
-    MAP,
-    SUMO_CONF,
-    SUMO_CONF_AGGREGATED,
-    GUI_SETTINGS,
-    GUI_SETTINGS_AGGREGATED,
-    EDGEDATA_PARQUET,
-    EDGEDATA_DUEITERATE_PROCESSED,
-    ROUTES,
-    MEANDATA,
-    MEANDATA_AGGREGATED,
-    ROUTES_DUEITERATE,
-)
+from paths import MAP
 from scenario import Scenario
-
+from MLflow.mlflow_utils import log_simulation_mlflow
 from DUE_convergence.DUE_convergence import run_DUE_convergence_checks
 
 # Reproducibility
@@ -44,121 +31,132 @@ def main2():
 
 def main():
 
-    # -----------------------------
-    # 0. DEMAND CALIBRATION
-    # -----------------------------
-    demand = demand_calibration(last_iteration_gui=False)
-    demand_warmup = int(demand * config.warm_up_time / config.end_time)
-    demand_post_warmup = demand - demand_warmup
+    # Log system metrics (must be called before start_run)
+    mlflow.enable_system_metrics_logging()
 
-    # -----------------------------
-    # 1. CREATE SCENARIO (files)
-    # -----------------------------
-    scen = Scenario(
-        map=MAP,
-        n_agents_warmup=demand_warmup,
-        n_agents_post_warmup=demand_post_warmup,
-        seeds=seeds,
-        rng=rng,
-    )
-
-    # -----------------------------
-    # 2. CREATE ENVIRONMENT
-    # -----------------------------
-    env = Environment(scenario=scen)
-
-    # -----------------------------
-    # 3. CREATE AGENTS
-    # -----------------------------
-    agents = initialize_agents(scen=scen, seed=config.seed)
-
-    # -----------------------------
-    # 4. TRAINING LOOP
-    # -----------------------------
-    # > Policy stability
-    no_change_count = 0  # Counter consecutive times without policy changes
-    policies_history = []  # Stores policies of all agents for all episodes
-
-    # > Data
-    results = {
-        "aggregated": [],
-        "vehroute": [],
-        "trips_info": [],
-        "fcd": [],
-        "edgedata": [],
-        "actions": [],
-        "rewards": [],
-        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
-    }
-
-    for episode in range(1, config.max_episodes + 1):
-
-        print(f"\n--- Episode {episode} ---")
+    mlflow.set_experiment("BM Thesis")
+    with mlflow.start_run() as run:
 
         # -----------------------------
-        # 1. AGENTS CHOOSE ACTIONS
+        # 0. DEMAND CALIBRATION
         # -----------------------------
-        # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
-        actions = select_actions(agents)
+        demand = demand_calibration(last_iteration_gui=False)
+        demand_warmup = int(demand * config.warm_up_time / config.end_time)
+        demand_post_warmup = demand - demand_warmup
 
         # -----------------------------
-        # 2. RUN EPISODE
+        # 1. CREATE SCENARIO (files)
         # -----------------------------
-        env.run_episode(actions, episode)
-
-        # -----------------------------
-        # 3. GET REWARDS
-        # -----------------------------
-        rewards = env.get_rewards()
-
-        # -----------------------------
-        # 4. UPDATE AGENTS
-        # -----------------------------
-        # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
-        # After updating agents, they store the policy for NEXT EPISODE
-        current_policies = create_policies_dict(agents)
-        # Store current policies in history
-        policies_history.append(current_policies)
-
-        update_agents(
-            actions=actions,
-            agents=agents,
-            episode=episode,
-            rewards=rewards,
-            warm_up=config.warm_up,
+        scen = Scenario(
+            map=MAP,
+            n_agents_warmup=demand_warmup,
+            n_agents_post_warmup=demand_post_warmup,
+            seeds=seeds,
+            rng=rng,
         )
 
         # -----------------------------
-        # 5. PREPARE GENERATED DATA
+        # 2. CREATE ENVIRONMENT
         # -----------------------------
-        result = prepare_data(episode, actions, rewards, agents)
-        accumulate_results(results, result)
+        env = Environment(scenario=scen)
 
         # -----------------------------
-        # 6. STOPPING RULE
+        # 3. CREATE AGENTS
         # -----------------------------
-        should_stop, no_change_count = check_convergence(
-            policies_history=policies_history,
-            episode=episode,
-            no_change_count=no_change_count,
+        agents = initialize_agents(scen=scen, seed=config.seed)
+
+        # -----------------------------
+        # 4. TRAINING LOOP
+        # -----------------------------
+        # > Policy stability
+        no_change_count = 0  # Counter consecutive times without policy changes
+        policies_history = []  # Stores policies of all agents for all episodes
+
+        # > Data
+        results = {
+            "aggregated": [],
+            "vehroute": [],
+            "trips_info": [],
+            "fcd": [],
+            "edgedata": [],
+            "actions": [],
+            "rewards": [],
+            "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
+        }
+
+        for episode in range(1, config.max_episodes + 1):
+
+            print(f"\n--- Episode {episode} ---")
+
+            # -----------------------------
+            # 1. AGENTS CHOOSE ACTIONS
+            # -----------------------------
+            # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
+            actions = select_actions(agents)
+
+            # -----------------------------
+            # 2. RUN EPISODE
+            # -----------------------------
+            env.run_episode(actions, episode)
+
+            # -----------------------------
+            # 3. GET REWARDS
+            # -----------------------------
+            rewards = env.get_rewards()
+
+            # -----------------------------
+            # 4. UPDATE AGENTS
+            # -----------------------------
+            # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
+            # After updating agents, they store the policy for NEXT EPISODE
+            current_policies = create_policies_dict(agents)
+            # Store current policies in history
+            policies_history.append(current_policies)
+
+            update_agents(
+                actions=actions,
+                agents=agents,
+                episode=episode,
+                rewards=rewards,
+                warm_up=config.warm_up,
+            )
+
+            # -----------------------------
+            # 5. PREPARE GENERATED DATA
+            # -----------------------------
+            result = prepare_data(episode, actions, rewards, agents)
+            accumulate_results(results, result)
+
+            # -----------------------------
+            # 6. STOPPING RULE
+            # -----------------------------
+            should_stop, no_change_count = check_convergence(
+                policies_history=policies_history,
+                episode=episode,
+                no_change_count=no_change_count,
+            )
+
+            if should_stop:
+                break
+
+        if config.last_episode_gui_BM:
+            run_final_simulation()
+        # -----------------------------
+        # 7. SAVE OUTPUT
+        # -----------------------------
+        save_processed_data(results)
+
+        # -----------------------------
+        # 8. CHECK DUE convergence
+        # -----------------------------
+        run_DUE_convergence_checks(
+            scen=scen, end_time=config.end_time, time_interval=config.time_interval
         )
 
-        if should_stop:
-            break
-
-    if config.last_episode_gui_BM:
-        run_final_simulation()
-    # -----------------------------
-    # 7. SAVE OUTPUT
-    # -----------------------------
-    save_processed_data(results)
-
-    # -----------------------------
-    # 8. CHECK DUE convergence
-    # -----------------------------
-    run_DUE_convergence_checks(
-        scen=scen, end_time=config.end_time, time_interval=config.time_interval
-    )
+        # -----------------------------
+        # 9. MLflow (Artifact storage, Experiment tracking)
+        # -----------------------------
+        log_simulation_mlflow()
 
 
 def run():
