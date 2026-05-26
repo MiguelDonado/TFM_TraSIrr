@@ -322,50 +322,72 @@ def generate_weights_xmls(cost_links, weights_dir):
     It does so, for all episodes.
     It will be passed as input to duarouter. Determines the costs of edges that will be used when computing shortest paths
     """
+    # 1. Load intervals table
     time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
 
-    # Load parquet file that will be converted to xml file
+    # 2. Load avg travel time links table (episode, edge, time_interval, travel_time)
     df = pd.read_parquet(cost_links)
 
-    # One xml file per episode
+    # 3. Precompute interval lookup (creates a dictionary for fast lookup)
+    interval_info = time_intervals_table.set_index("interval")[
+        ["start_time", "end_time"]
+    ].to_dict("index")
+
+    # 4. Group dataframe once (instead of repeatedly filtering episode, interval...)
+    """
+    Conceptually:
+    (episode=0, interval=0)
+        -> dataframe chunk
+
+    (episode=0, interval=1)
+        -> dataframe chunk
+    """
+    grouped = df.groupby(["episode", "time_interval"])
+
+    # 5. Loop episodes (one XML file per episode)
     for episode in df["episode"].unique():
 
         root = etree.Element("meandata")
 
-        for interval_id in time_intervals_table["interval"]:
+        """
+        k: key    
+        v: value
+        
+        Suppose grouped keys are: 
+        ep|time_interval
+        (0,0)
+        (0,1)
+        (1,0)
 
-            row = time_intervals_table[
-                (time_intervals_table["interval"] == interval_id)
-            ].iloc[0]
+        If episode = 0, then episode_groups =
+        {
+            0: df_for_interval_0,
+            1: df_for_interval_1
+        }
+        """
+        # Already filtered df
+        episode_groups = {k[1]: v for k, v in grouped if k[0] == episode}
 
-            begin = str(row["start_time"])
-            end = str(row["end_time"])
+        # filtered_interval: All the edges weights for a particular time interval
+        for interval_id, filtered_interval in episode_groups.items():
 
-            # XML Interval element
+            begin = str(interval_info[interval_id]["start_time"])
+            end = str(interval_info[interval_id]["end_time"])
             interval_xml = etree.SubElement(
                 root, "interval", begin=begin, end=end, id="whatever"
             )
 
-            # Filter once
-            filtered_interval = df[
-                (df["episode"] == episode) & (df["time_interval"] == interval_id)
-            ]
-
-            for _, edge_row in filtered_interval.iterrows():
-                # Edge element
+            for edge_row in filtered_interval.itertuples():
                 etree.SubElement(
                     interval_xml,
                     "edge",
-                    id=str(edge_row["edge"]),
-                    traveltime=str(edge_row["travel_time"]),
+                    id=str(edge_row.edge),
+                    traveltime=str(edge_row.travel_time),
                 )
-
-        # Write XML
-        tree = etree.ElementTree(root)
 
         output_file = weights_dir / f"Weights_episode_{episode}.xml"
 
-        tree.write(
+        etree.ElementTree(root).write(
             output_file,
             pretty_print=True,
             xml_declaration=True,
@@ -740,7 +762,7 @@ def call_dueIterate(network, max_iterations):
         "--last-step",
         str(max_iterations),
         "sumo--step-length",
-        "0.1",
+        "1",
         "sumo--vehroute-output",
         "vehroute.xml",
         "sumo--vehroute-output.exit-times",

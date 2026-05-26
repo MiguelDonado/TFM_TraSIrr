@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import mlflow
 import numpy as np
@@ -161,6 +162,9 @@ def main():
         # 9. MLflow (Artifact storage, Experiment tracking)
         # -----------------------------
         log_simulation_mlflow()
+
+        # Play sound to signal end of script
+        os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
 
 
 def run():
