@@ -87,6 +87,7 @@ OD_MATRIX_TOTAL = OD_MATRIX_DIR / "od_matrix_total.csv"
 
 AGENTS_OD = INTERNAL_DATA_DIR / "agents_od.parquet"
 OD_ROUTES = INTERNAL_DATA_DIR / "od_routes.parquet"
+POLICY_CHANGE_BM = INTERNAL_DATA_DIR / "policy_change_BM.parquet"
 DEMAND_ODT = DUE_DATA_BM / "demand_odt.parquet"
 
 ACTIONS = INTERNAL_DATA_DIR / "actions.parquet"

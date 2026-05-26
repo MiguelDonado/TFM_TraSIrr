@@ -59,9 +59,9 @@ Basic concept: Coste generalizado y coste ponderado se refieren cuando ademas de
 
 - Variables involved: R-gap
 
-- Possible plots: R-gap evolution across episodes, comparison final r-gap against duaIterate. Analyze different r-gap formulations (aggregated, interval specific, od specific). Convergence speed analysis. Variance analysis across episodes.
+- Possible plots: R-gap evolution across episodes, comparison final r-gap against duaIterate. Analyze different r-gap formulations (aggregated, interval specific, od specific). Convergence speed analysis. Variance analysis across episodes. On the OD specific we can compute the maximum r-gap, or std. deviation of od-specific r-gaps.
 
-- Expected insight: The analysis may reveal whether RL approaches can converge to a DUE state using a traffic microsimulator.
+- Expected insight: The analysis may reveal whether RL approaches can converge to a DUE state using a traffic microsimulator. First intervals have better R-gap.
 
 2. **Question: Analyze whether the learning rate parameter affects the convergence speed of the BM model without significantly altering the final ability of the system to approach a DUE state.**
 
@@ -179,7 +179,7 @@ Introduction: Congestion level fundamentally changes the difficulty of the routi
 
 - Variables involved: R-gap, target congestion level, route diversity, variance of experienced travel times, congestion metrics
 
-- Possible plots: R-gap evaluation for different congestion levels, congestion map, route diversity vs congestion level, convergence speed vs congestion level, boxplots of experienced travel times, average travel time vs congestion level.
+- Possible plots: R-gap evaluation for different congestion levels (check at which demand R-gap starts to explode), congestion map, route diversity vs congestion level, convergence speed vs congestion level, boxplots of experienced travel times, average travel time vs congestion level.
 
 - Expected insight: Expected insight: The analysis may reveal whether the Bush--Mosteller model remains stable and capable of approaching DUE-like states under increasing congestion levels. In particular, higher congestion regimes may produce slower convergence, increased oscillatory behavior, and greater route diversity due to stronger interactions among agents. Additionally, the experiment may help identify congestion regimes under which the learning mechanism performs robustly, as well as scenarios where the complexity of the traffic dynamics significantly affects the stability and realism of the resulting traffic patterns.
 

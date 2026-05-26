@@ -9,20 +9,20 @@ from config.config import config
 def check_convergence(policies_history, episode, no_change_count):
 
     # Get the maximum policy change across all agents
-    meam_policy_change = compute_mean_policy_change(policies_history, episode)
+    mean_policy_change = compute_mean_policy_change(policies_history, episode)
 
     # Skip warm-up
-    if meam_policy_change is None:
-        return False, no_change_count
+    if mean_policy_change is None:
+        return False, no_change_count, None
 
     # Update counter
-    if meam_policy_change < config.tolerance_stopping_rule:
+    if mean_policy_change < config.tolerance_stopping_rule:
         no_change_count += 1
     else:
         no_change_count = 0
 
     # Log
-    print(f"Mean policy change: {meam_policy_change}")
+    print(f"Mean policy change: {mean_policy_change}")
     print(f"No change count: {no_change_count}")
 
     # Check convergence
@@ -31,7 +31,7 @@ def check_convergence(policies_history, episode, no_change_count):
     if converged:
         print(f"Converged at episode {episode}")
 
-    return converged, no_change_count
+    return (converged, no_change_count, mean_policy_change)
 
 
 ##################

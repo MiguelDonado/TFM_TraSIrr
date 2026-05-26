@@ -1,3 +1,4 @@
+import pandas as pd
 import mlflow
 import numpy as np
 from stopping_rule.stopping_rule import (
@@ -15,7 +16,7 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
-from paths import MAP
+from paths import MAP, POLICY_CHANGE_BM
 from scenario import Scenario
 from MLflow.mlflow_utils import log_simulation_mlflow
 from DUE_convergence.DUE_convergence import run_DUE_convergence_checks
@@ -30,9 +31,6 @@ def main2():
 
 
 def main():
-
-    # Log system metrics (must be called before start_run)
-    mlflow.enable_system_metrics_logging()
 
     mlflow.set_experiment("BM Thesis")
     with mlflow.start_run() as run:
@@ -71,6 +69,7 @@ def main():
         # > Policy stability
         no_change_count = 0  # Counter consecutive times without policy changes
         policies_history = []  # Stores policies of all agents for all episodes
+        policy_change_history = []
 
         # > Data
         results = {
@@ -130,11 +129,15 @@ def main():
             # -----------------------------
             # 6. STOPPING RULE
             # -----------------------------
-            should_stop, no_change_count = check_convergence(
+            should_stop, no_change_count, mean_policy_change = check_convergence(
                 policies_history=policies_history,
                 episode=episode,
                 no_change_count=no_change_count,
             )
+            if mean_policy_change:
+                policy_change_history.append(
+                    {"episode": episode, "mean_policy_change": mean_policy_change}
+                )
 
             if should_stop:
                 break
@@ -145,7 +148,8 @@ def main():
         # 7. SAVE OUTPUT
         # -----------------------------
         save_processed_data(results)
-
+        df_policy_change = pd.DataFrame(policy_change_history)
+        df_policy_change.to_parquet(POLICY_CHANGE_BM)
         # -----------------------------
         # 8. CHECK DUE convergence
         # -----------------------------
