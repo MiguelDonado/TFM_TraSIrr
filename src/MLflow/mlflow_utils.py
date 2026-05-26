@@ -11,10 +11,30 @@ from paths import (
     RGAP_DUEITERATE,
     STATISTICS_PARQUET,
     POLICY_CHANGE_BM,
+    DB_PATH,
+    ARTIFACTS_PATH,
 )
 from pathlib import Path
 from dataclasses import asdict
 import pandas as pd
+
+
+def set_up_mlflow():
+    """
+    We should explicitly control the location fo both:
+    1. backend database (mlflow.db)
+    2. artifact storage (mlruns/)
+    """
+    mlflow.set_tracking_uri(f"sqlite:///{DB_PATH}")
+
+    experiment_name = "BM thesis"
+
+    if mlflow.get_experiment_by_name(experiment_name) is None:
+        mlflow.create_experiment(
+            experiment_name, artifact_location=f"file://{ARTIFACTS_PATH}"
+        )
+
+    mlflow.set_experiment("BM Thesis")
 
 
 def log_simulation_mlflow():
@@ -76,10 +96,8 @@ def log_mlflow_metrics():
     __log_metric_over_time(
         df=df_rgap_BM, metric_name="bm_rgap", col_metric="rgap", col_step="episode"
     )
-    # 1.2. Log final episode rgap (scalar)
+    # 1.2. Log episodes to converge (scalar)
     last_row_BM = df_rgap_BM.iloc[-1]
-    bm_final_rgap = last_row_BM["rgap"]
-    # 1.3. Log episodes to converge (scalar)
     bm_convergence_episodes = last_row_BM["episode"]
 
     # 2. Log BM mean travel time related metrics
@@ -91,13 +109,10 @@ def log_mlflow_metrics():
         col_metric="mean_travel_time",
         col_step="episode",
     )
-    # 2.2. Log final episode mean travel time (scalar)
-    last_row_statistics_BM = df_mean_tt_BM.iloc[-1]
-    bm_final_mean_tt = last_row_statistics_BM["mean_travel_time"]
 
     # 3. Log dueIterate final iteration rgap (scalar)
     df_rgap_dueIterate = pd.read_parquet(RGAP_DUEITERATE)
-    dueiterate_final_rgap = df_rgap_dueIterate["rgap"]
+    dueiterate_final_rgap = float(df_rgap_dueIterate["rgap"].iloc[-1])
 
     # 4. Log BM policy change
     df_policy_change_BM = pd.read_parquet(POLICY_CHANGE_BM)
@@ -110,10 +125,8 @@ def log_mlflow_metrics():
 
     # Log metrics
     mlflow_metrics = {
-        "bm_final_rgap": round(bm_final_rgap, 5),
         "dueiterate_final_rgap": round(dueiterate_final_rgap, 5),
         "bm_convergence_episodes": bm_convergence_episodes,
-        "bm_final_mean_travel_time": round(bm_final_mean_tt, 5),
     }
     mlflow.log_metrics(mlflow_metrics)
 

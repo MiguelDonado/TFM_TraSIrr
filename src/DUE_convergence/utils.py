@@ -176,7 +176,12 @@ def compute_travel_time_links_t_k(
     assert (df_edges["travel_time"] >= 0).all()
 
     # 11. Create time interval
+    time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
+    # Clamp to handle dueIterate case (some vehicles insertion is delayed, and so departure time is change a little bit, and some vehicles depart beyond 4200 sec,
+    # and so it creates artificial intervals. We just change interval to which those vehicles belong, but their travel times and everything else remain equal
+    max_interval = (time_intervals_table["interval"]).max()
     df_edges["time_interval"] = (df_edges["entry_time"] // delta_t).astype(int)
+    df_edges["time_interval"] = df_edges["time_interval"].clip(upper=max_interval)
 
     # 12. Compute avg travel times on links (per episode, edge and time interval)
     avg_travel_time_links = df_edges.groupby(["episode", "edge", "time_interval"])[
@@ -762,7 +767,7 @@ def call_dueIterate(network, max_iterations):
         "--last-step",
         str(max_iterations),
         "sumo--step-length",
-        "1",
+        "0.1",
         "sumo--vehroute-output",
         "vehroute.xml",
         "sumo--vehroute-output.exit-times",

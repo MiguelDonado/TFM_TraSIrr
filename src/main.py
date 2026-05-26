@@ -19,7 +19,7 @@ from experiment import (
 )
 from paths import MAP, POLICY_CHANGE_BM
 from scenario import Scenario
-from MLflow.mlflow_utils import log_simulation_mlflow
+from MLflow.mlflow_utils import log_simulation_mlflow, set_up_mlflow
 from DUE_convergence.DUE_convergence import run_DUE_convergence_checks
 
 # Reproducibility
@@ -32,8 +32,7 @@ def main2():
 
 
 def main():
-
-    mlflow.set_experiment("BM Thesis")
+    set_up_mlflow()
     with mlflow.start_run() as run:
 
         # -----------------------------

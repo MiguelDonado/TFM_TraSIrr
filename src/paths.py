@@ -8,6 +8,11 @@ from config.config import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ============================================================
+# MLFlow database
+# ============================================================
+DB_PATH = BASE_DIR / "mlflow.db"
+ARTIFACTS_PATH = BASE_DIR / "mlruns"
 
 # ============================================================
 # Main folders
