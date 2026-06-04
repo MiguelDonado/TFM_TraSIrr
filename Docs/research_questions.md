@@ -113,7 +113,7 @@ The SUMO plots are already implemented in "/home/miguel/6.Projects/Thesis/src/an
 1. **Question: Compare if the paths used by DUE (dueIterate) are the same than the ones used by BM algorithm.**
   
 - Why it matters: 
-  Multiple traffic distributions may produce similar aggregate performance. So comparin paths help understand the following areas.
+  Multiple traffic distributions may produce similar aggregate performance. So comparing paths help understand the following areas.
   - **Route diversity**: One method may concentrate most traffic on very few routes, while another distributes traffic across many alternatives. Excessive concentration may produce unrealistic congestion, and excessive dispersion unrealistic exploratory behavior. This aspect provides insight into how traffic is distributed over the network. Also look at the traffic concentration on each route.
   - **Behavioral realism**: Allows evaluating whether the chosen routes are plausible, and the resulting behavior resembles realistic navigation patterns.
   - **Spatial traffic distribution**: Even if aggregate metrics are similar, congestion may appear in different areas, different corridors may become dominat.
@@ -123,12 +123,131 @@ The SUMO plots are already implemented in "/home/miguel/6.Projects/Thesis/src/an
 
 - Possible plot: SUMO plot overall edge usage, SUMO plot interval specific, R/Tidyverse OD-specific, R/Tidyverse temporal evolution route choice
 
-- Quantitative path-comparison metric: 
+- **Quantitative path-comparison metric**:  Following I would explain the reasoning used on this subject. After using Deep Research from ChatGPT, https://chatgpt.com/share/6a214c1a-f080-8326-8c75-af82c52cd321, it suggest me several metrics.
+1. Overlap-Based Indices (Set Similarity)
+
+## Taxonomy
+
+- **Edge-overlap similarity** or **Length-overlap similarity**.
+- **Pairwise** or **Set-based** metrics.
+
+## Pairwise overlap metrics (edge-overlap or length-overlap)
+
+Examples include:
+
+- Jaccard Index
+- Edge Overlap Ratio
+- Sørensen–Dice Coefficient
+
+These metrics can be used to evaluate the **coverage of the RL route set with respect to the routes used by DUE**.
+
+A possible methodology would be:
+
+1. Compute a pairwise distance (or similarity) matrix between all RL routes and all DUE routes.
+2. For each DUE route, identify the most similar RL route (nearest-neighbor approach).
+3. Compute a weighted average of these minimum distances, weighting each DUE route by its flow. This checks basically if every important DUE route have a similar counterpart in the RL route set.
+
+Additionally, dimensionality reduction techniques such as **Multidimensional Scaling (MDS)** could be applied to the distance matrix in order to obtain a two-dimensional representation of the route space. If routes from both sets occupy similar regions in the MDS representation, this would provide visual evidence that the RL route set spans a route space similar to that used by DUE.
+
+## Set-based overlap metrics (length-overlap)
+
+Examples include:
+
+- Commonality Factor (CF)
+- Path-Size Factor (PS)
+
+These metrics require the entire route set and are designed to measure how unique or overlapping a route is relative to the rest of the alternatives.
+
+Such metrics would be useful for evaluating the **quality and diversity of the predefined route set**. For example, they can help determine whether the generated routes represent genuinely different alternatives or whether they are largely the same route with only minor variations.
+
+A useful distinction is:
+
+| Question | Metric type |
+|-----------|-------------|
+| Are RL routes similar to DUE routes? | Pairwise overlap metrics |
+| Are RL routes sufficiently diverse among themselves? | CF / Path-Size metrics |
+
+## Conclusion
+
+Given that the main objective of the thesis is **behavioral reinforcement learning**, overlap-based metrics should be viewed primarily as **validation or diagnostic tools rather than primary behavioral performance measures**.
+
+These metrics do not directly assess how agents learn or make decisions. Instead, they help answer questions related to route-set generation and route-set coverage.
+
+Their main relevance arises when comparing RL outcomes against a DUE benchmark. If the route set available to RL does not contain routes similar to those used by DUE, then discrepancies between RL and DUE may be attributable to the route generation procedure rather than to the learning algorithm itself.
+
+However, a lack of route overlap does not necessarily prevent the RL model from achieving low network-level disequilibrium measures (e.g., low Relative Gap). Different route sets may still produce similar network-level outcomes, average travel times, or link flows. Nevertheless, limited overlap may reduce the ability of the RL model to reproduce the specific route patterns observed in the DUE solution.
+
+  - Conclusion: Given that our main goal is behavioral RL, so focusing on the decisions made by agent, and the route set generation is not part of the RL algorithm, but it is instead handled by randomTrips I believe it is not a main research question. The only caveat would be when checking if our algorithm achieves DUE state (by computing Rgap). Because if the route set available to RL does not contain routes similar to those used by DUE, then any discrepancy between RL and DUE could be because of the route generation procedure (even though I said there may be different ways to converge to DUE, so the fact that it does not contain similar route to those used by DUE does not have to imply that DUE state cannot be achieved).
+
+**Open question:** Do you agree with me that this kind of metrics are not needed in the thesis?
+
+### Behavioral diversity (effective number of routes)
+
+This is another metric that could be used to compare route-choice behavior. The raw number of used routes is not always informative. For example, if in DUE 500 travelers use route A and 500 use route B, while in RL 999 travelers use route A and only 1 uses route B, it does not seem reasonable to conclude that both exhibit the same route diversity simply because two routes are used in each case.
+
+A common solution is to compute the **effective number of routes**, an entropy-based measure that accounts for both the number of routes used and how traffic is distributed among them.
+
+This metric can be computed at two levels:
+
+- **Flow level:** Uses realized route flows. It answers the question: *How many routes are effectively used by the traffic system?*
+
+- **Agent level:** Uses the route-choice probabilities (policies) of individual agents. It answers the question: *How many routes does a typical agent consider plausible?* This perspective may be particularly relevant in our case, given the behavioral/RL focus of the work.
+
+#### Example
+
+```sh
+Algorithm A
+
+Every agent:
+A: 50%
+B: 50%
+
+Result:
+Agent-level N_eff ≈ 2
+Flow-level  N_eff ≈ 2
+```
+
+```sh
+Algorithm B
+
+50% of agents:
+A: 100%
+B:   0%
+
+50% of agents:
+A:   0%
+B: 100%
+
+Result:
+Agent-level N_eff = 1
+Flow-level  N_eff = 2
+```
+
+The aggregate traffic pattern is identical in both cases:
+
+```sh
+Route A: 50%
+Route B: 50%
+```
+
+However, the underlying behavior is fundamentally different.
+
+Potential confounding factor:
+
+Differences in the effective number of routes may arise from:
+
+1. The learning algorithm itself.
+2. The diversity of the resulting route set.
+
+Although RL and duaIterate use route sets of the same maximum size, the actual routes may differ. The routes available to RL may contain one dominant alternative. Therefore, observed differences in effective number of routes cannot necessarily be attributed solely to the learning mechanism. This doesnt mean the metric is not valid, just that this caveat should be acknowledge in the discussion.
+
+**Open question:** Is this relevant quantitative metric to compare paths? If so, should be measured at the flow level, the agent level, or both?
+
 
 - **Expected insight:** The analysis may reveal differences in how traffic is distributed across alternative routes. In particular, it may help identify whether one approach concentrates traffic on fewer dominant paths, while the other produces a more dispersed routing pattern. Additionally, the comparison may provide insight into the realism and plausibility of the generated route choices, as well as into the spatial distribution of congestion over the network.
 
   
-2. **Question: Compare whether the congestion patterns generated by dueIterate are similar to those produced by BM algorithm.**
+1. **Question: Compare whether the congestion patterns generated by dueIterate are similar to those produced by BM algorithm.**
 - Why it matters: Similar aggregate performance metrics do not necessarily imply similar congestion dynamics over the network. Compare congestion patterns helps understand the following aspects:
   - Spatial concentration of congestion: One method may concentrate congestion on a few critical bottlenecks, while another may distribute congestion more evenly across the network.
   A more balanced distribution of congestion may suggest better utilization of the network infrastructure.
@@ -203,3 +322,4 @@ Introduction: Congestion level fundamentally changes the difficulty of the routi
 
 Other questions: 
 - (Not relevant) Effect of memory level and learning rate is opposite on flow evolution (higher memory levels more stable flow evolution, while higher learning rate more oscillations).
+- Role of k (RL route set size): I could study how does the size of k influence learning and equilibrium outcomes. I could analyze r-gap, convergence speed, effective number of routes

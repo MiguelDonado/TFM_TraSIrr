@@ -124,6 +124,7 @@ If when using a network that is very big, I have some scalability issue when wri
   3. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
   4. SUMO docker
   5. Check if Thompsom Sampling Bayesian Project can be useful, and implemented here somehow.
+  6. Compute Rgap for all iterations DUE?
 
 - **To write**:
   - Escribir shortest path and TDSP sections
@@ -145,5 +146,7 @@ If when using a network that is very big, I have some scalability issue when wri
   2. Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
   3. When using R combine with sf package (represent networks greatly)
   
+- **Meeting**:
+  Show them MLFlow UI, and if the metrics used are useful, and if Im missing some metric.
 
 
