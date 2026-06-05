@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ============================================================
 # MLFlow database
 # ============================================================
-DB_PATH = BASE_DIR / "mlflow.db"
-ARTIFACTS_PATH = BASE_DIR / "mlruns"
+BACKEND_DB = BASE_DIR / "mlflow_db" / "mlflow.db"
+ARTIFACTS_STORAGE = BASE_DIR / "mlruns" / "mlruns"
 
 # ============================================================
 # Main folders
