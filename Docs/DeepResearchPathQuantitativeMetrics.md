@@ -54,7 +54,7 @@ These assume each path is a geometric curve (sequence of coordinates) rather tha
 
 - **Fréchet Distance:** A metric of curve similarity that respects the order of traversal.  Intuitively (dog-walk metaphor), it is the minimum leash length needed so a person and dog can walk along the two paths without backtracking.  Formally, it is 
   \[
-    F(A,B) = \inf_{\alpha,\beta} \max_{t\in[0,1]} d\bigl(A(\alpha(t)),B(\beta(t))\bigr),
+  F(A,B) = \inf_{\alpha,\beta} \max_{t\in[0,1]} d\bigl(A(\alpha(t)),B(\beta(t))\bigr),
   \]
   optimizing reparameterizations $\alpha,\beta$.  Fréchet is symmetric and sensitive to **geometry, ordering and direction**: reversing a path can dramatically increase $F$.  It is more robust to outliers than Hausdorff, since it looks at continuous matching.  Complexity for discrete Fréchet is $O(mn)$ with DP, but can be high in practice.  Robustness: moderate; a detour increases distance but local deviations may be accommodated by reparameterization.  Suitable when comparing physical trajectories.  SUMO: use edge center coordinates or nodes to form point curves.
 
@@ -63,26 +63,22 @@ These compare two *distributions* of paths or flows rather than individual paths
 
 - **Kullback–Leibler Divergence (KL):** Given two probability distributions $P$ and $Q$ over paths (or links), 
   \[
-    D_{KL}(P\parallel Q) = \sum_i P(i)\,\ln\frac{P(i)}{Q(i)}.
+  D_{KL}(P\parallel Q) = \sum_i P(i)\,\ln\frac{P(i)}{Q(i)}.
   \]
   It measures the “information gain” from $Q$ to $P$.  $D_{KL}\ge 0$, zero iff $P=Q$.  Asymmetric ($D_{KL}(P||Q)\neq D_{KL}(Q||P)$).  It is **highly sensitive to small probabilities**: if $Q(i)=0$ for a path with $P(i)>0$, $D_{KL}$ is infinite (requires smoothing).  Complexity $O(K)$ for $K$ support points (paths or links).  Robustness: *not robust* to zero-prob events; small probability discrepancies have large effect.  Suitable for *global distributional comparison* of route-choice probabilities or link flows (by treating each path or link as an event).  In SUMO, one can derive a distribution of path frequencies (normalized counts) or of link flows and compute KL.  
 
-- **Earth Mover’s Distance (EMD) / Wasserstein Metric:** Interprets two distributions (e.g. path-flow histograms) as piles of “earth” and computes the minimum cost to transform one into the other【50†L125-L132】.  Cost is mass times ground distance between bins.  Formally the Wasserstein-$1$ distance.  Unlike KL, EMD is a true metric and can handle partial mismatches gracefully.  Complexity: solving an optimal transport (network flow) problem, typically $O(K^3)$ or using approximations.  Sensitivity: robust to small discrepancies because it accounts for how far probability mass moves.  Requires a distance matrix between elements: e.g. define distance between paths (could use Jaccard or geometric distance as ground cost)【50†L125-L132】.  Suitable for distributions where “nearby” mismatches are less severe.  For SUMO, EMD could compare path-flow distributions with ground distance defined by, e.g. Jaccard or Hausdorff between paths, or compare link-flow distributions with link-distance.
+- **Earth Mover’s Distance (EMD) / Wasserstein Metric:** Interprets two distributions (e.g. path-flow histograms) as piles of “earth” and computes the minimum cost to transform one into the other.  Cost is mass times ground distance between bins.  Formally the Wasserstein-$1$ distance.  Unlike KL, EMD is a true metric and can handle partial mismatches gracefully.  Complexity: solving an optimal transport (network flow) problem, typically $O(K^3)$ or using approximations.  Sensitivity: robust to small discrepancies because it accounts for how far probability mass moves.  Requires a distance matrix between elements: e.g. define distance between paths (could use Jaccard or geometric distance as ground cost).  Suitable for distributions where “nearby” mismatches are less severe.  For SUMO, EMD could compare path-flow distributions with ground distance defined by, e.g. Jaccard or Hausdorff between paths, or compare link-flow distributions with link-distance.
 
 ### Flow and Time Differences
 - **Mean Path Travel Time Difference:** Compute average travel time over all trips for each scenario (or each path) and compare (difference of means or KS distance between time distributions).  Simple metric (e.g. $|\overline{T}_{RL}-\overline{T}_{DUE}|$ or distributional tests).  Sensitive to global travel time changes; ignores route geometry.  Complexity trivial.  Suitable to capture overall performance change.
 
 - **Link-Flow RMSE:** If $f_i,f'_i$ are flows (vehicles per interval or per hour) on each link $i$ under RL vs DUE, compute 
   \[
-    \text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^N (f_i - f'_i)^2}.
+  \text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^N (f_i - f'_i)^2}.
   \]
-  This measures aggregate difference in network usage.  Scale-dependent (large networks give larger RMSE); can be normalized by average flow.  Complexity $O(N_{\rm links})$.  Robustness: emphasizes large errors (squared term).  Suitable for *network-level flow comparison*.  SUMO provides edge flows in edgeData output (attribute `flow`, see【61†L109-L113】).  
+  This measures aggregate difference in network usage.  Scale-dependent (large networks give larger RMSE); can be normalized by average flow.  Complexity $O(N_{\rm links})$.  Robustness: emphasizes large errors (squared term).  Suitable for *network-level flow comparison*.  SUMO provides edge flows in edgeData output (attribute `flow`).  
 
 - **Path-Flow Correlation:** If corresponding paths can be matched, one can compute Pearson or Spearman correlation between the vector of path flows under RL and DUE.  Complexity $O(K)$ for $K$ paths.  Sensitive to ordering: paths need one-to-one matching (identity check by exact edge sequence).  Robust to scale if normalized.  Useful to see if overall pattern is linear.  
-
-- **Network-Based Metrics:** These include any graph-theoretic comparison of flow patterns. Examples: difference in network travel time (sum of link travel times), changes in node/edge centralities, or similarity of shortest-path trees.  These tend to be complex and situation-specific, so we focus on the above core metrics.  
-
-Each metric’s suitability depends on the data: edge-based (Jaccard, edit, flows) vs geometry-based (Hausdorff, Fréchet require coordinates).  Most sequence/set metrics (Jaccard, Dice, CF, edit) require extracting each trip’s edge sequence (SUMO’s `<vehroute>` output【62†L51-L54】). Distribution metrics (KL, EMD) need aggregated path frequency or link-flow distributions (from tripinfo or edgeData). Flow/time metrics use link flow or travel-time outputs (SUMO’s edgeData or tripinfo**).  
 
 ## Practical Guidance: Choosing and Interpreting Metrics
 

@@ -1,22 +1,24 @@
-import mlflow
-from config.config import config
 import json
-from tempfile import NamedTemporaryFile
 import os
+from dataclasses import asdict
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+import mlflow
+import pandas as pd
+
+from config.config import config
 from paths import (
-    INTERNAL_DATA_DIR,
-    PROCESSED_DATA_DIR,
+    ARTIFACTS_PATH,
+    DB_PATH,
     DUE_DATA_DIR,
+    INTERNAL_DATA_DIR,
+    POLICY_CHANGE_BM,
+    PROCESSED_DATA_DIR,
     RGAP,
     RGAP_DUEITERATE,
     STATISTICS_PARQUET,
-    POLICY_CHANGE_BM,
-    DB_PATH,
-    ARTIFACTS_PATH,
 )
-from pathlib import Path
-from dataclasses import asdict
-import pandas as pd
 
 
 def set_up_mlflow():
@@ -27,14 +29,15 @@ def set_up_mlflow():
     """
     mlflow.set_tracking_uri(f"sqlite:///{DB_PATH}")
 
-    experiment_name = "BM thesis"
+    experiment_name = "BM Thesis"
 
+    # Check if experiment is already created
     if mlflow.get_experiment_by_name(experiment_name) is None:
         mlflow.create_experiment(
             experiment_name, artifact_location=f"file://{ARTIFACTS_PATH}"
         )
 
-    mlflow.set_experiment("BM Thesis")
+    mlflow.set_experiment(experiment_name)
 
 
 def log_simulation_mlflow():
