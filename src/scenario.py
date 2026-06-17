@@ -132,39 +132,48 @@ class Scenario:
             )
 
             if not best_routes:
-                return []
+                return {}
 
             # Initialize structure: one list per OD
             routes_per_od = [[r] for r in best_routes]
 
             # 3. Generate alternative routes
-            for seed in seeds:
-                # Early stop
-                if all(len(rlist) >= k for rlist in routes_per_od):
-                    break
+            self._fill_alternative_routes(
+                routes_per_od, trips_file, routes_file, seeds, k
+            )
 
-                new_routes = self._run_duarouter(
-                    trips_file,
-                    routes_file,
-                    random_factor=random_factor,
-                    seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
-                )
+            # 4. Delete undesired file
+            UNDESIRED_ROUTE_FILE.unlink()
 
-                if not new_routes:
-                    continue
+            od_routes = dict(zip(self.unique_ods, routes_per_od))
+            # 5. Return k routes
+            return od_routes
+    
+    def _fill_alternative_routes(self, routes_per_od, trips_file, routes_file, seeds, k)
+        '''
+        Does not need to return anything because it is already modifying the 
+        routes_per_od object passed by reference
+        '''
+        for seed in seeds:
+            # Early stop
+            if all(len(rlist) >= k for rlist in routes_per_od):
+                break
 
-                for i, route in enumerate(new_routes):
-                    # Avoid duplicates per OD
-                    if route not in routes_per_od[i]:
-                        if len(routes_per_od[i]) < k:
-                            routes_per_od[i].append(route)
+            new_routes = self._run_duarouter(
+                trips_file,
+                routes_file,
+                random_factor=config.random_factor,
+                seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
+            )
 
-        # 4. Delete undesired file
-        UNDESIRED_ROUTE_FILE.unlink()
+            if not new_routes:
+                continue
 
-        od_routes = dict(zip(self.unique_ods, routes_per_od))
-        # 5. Return k routes
-        return od_routes
+            for i, route in enumerate(new_routes):
+                # Avoid duplicates per OD
+                if route not in routes_per_od[i] and len(routes_per_od[i]) < k:
+                        routes_per_od[i].append(route)
+
 
     def _generate_conf(self):
         """

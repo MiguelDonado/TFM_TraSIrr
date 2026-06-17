@@ -1,14 +1,13 @@
 import os
-import pandas as pd
+
 import mlflow
 import numpy as np
-from stopping_rule.stopping_rule import (
-    create_policies_dict,
-    check_convergence,
-)
+import pandas as pd
+
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
 from demand_calibration.utils import demand_calibration
+from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from environment import Environment
 from experiment import (
     accumulate_results,
@@ -17,10 +16,13 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
+from MLflow.mlflow_utils import log_simulation_mlflow, set_up_mlflow
 from paths import MAP, POLICY_CHANGE_BM
 from scenario import Scenario
-from MLflow.mlflow_utils import log_simulation_mlflow, set_up_mlflow
-from DUE_convergence.DUE_convergence import run_DUE_convergence_checks
+from stopping_rule.stopping_rule import (
+    check_convergence,
+    create_policies_dict,
+)
 
 # Reproducibility
 rng = np.random.default_rng(config.seed)
@@ -153,7 +155,7 @@ def main():
         # -----------------------------
         # 8. CHECK DUE convergence
         # -----------------------------
-        run_DUE_convergence_checks(
+        run_due_convergence_checks(
             scen=scen, end_time=config.end_time, time_interval=config.time_interval
         )
 

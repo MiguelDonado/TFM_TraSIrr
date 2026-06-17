@@ -129,60 +129,83 @@ def compute_travel_time_links_t_k(
         a) Fill forward: We do not have any vehicle entering on link at t (NaN) and density_t > 0  (congestion)
         b) Free-flow: Otherwise
     """
+    all_edges = _load_network_edges(network)
+    df_edges = _compute_edge_travel_times(
+        vehroute_file=vehroute_file,
+        agents_od_file=agents_od_file,
+        time_interval=time_interval,
+    )
+    avg_tt = _build_full_grid(df_edges, all_edges)
+    _save_missingness_report(
+        avg_tt,
+        missingness_report_file,
+        missingness_interval_file,
+        missingness_edge_file,
+        missingness_episode_file,
+    )
+    df_filled = _fill_missing_travel_times(
+        avg_tt, edgedata_file, all_edges, threshold_density
+    )
+    df_filled.to_parquet(output_file)
 
-    # 1. Generate file with free flow travel times of all links in the network and load it
-    free_flow_travel_times = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
 
+def _load_network_edges(network) -> set:
+    # 1. Get edges network
+    tree = etree.parse(network)
+    all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
+    return set(all_edges)
+
+
+def _compute_edge_travel_times(
+    vehroute_file, agents_od_file, time_interval
+) -> pd.DataFrame:
     delta_t = time_interval
 
-    # 2. Get edges network
-    document = network
-    tree = etree.parse(document)
-    all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
-    all_edges = set(all_edges)
-
-    # 3. Read vehroute file (travel time edges)
+    # 1. Read vehroute file (travel time edges)
     df_edges = pd.read_parquet(vehroute_file)
     df_edges.rename(columns={"vehicle_id": "agent_id"}, inplace=True)
 
-    # 4. Read agents_od to get departure_times of each agent
+    # 2. Read agents_od to get departure_times of each agent
     df_agents_od = pd.read_parquet(agents_od_file)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
 
-    # 5. Merge
+    # 3. Merge
     df_edges = df_edges.merge(
         df_agents_od[["agent_id", "departure_time"]], on="agent_id", how="left"
     )
-    # 6. Sort, is not needed, but just in case to make sure
+    # 4. Sort, is not needed, but just in case to make sure
     df_edges = df_edges.sort_values(["episode", "agent_id", "exit_times"])
 
-    # 7. Compute entry time (entry time 2nd edge = exit time 1st edge)
+    # 5. Compute entry time (entry time 2nd edge = exit time 1st edge)
     df_edges["entry_time"] = df_edges.groupby(["episode", "agent_id"])[
         "exit_times"
     ].shift(1)
 
-    # 8. Fill first edge correctly = departure time
+    # 6. Fill first edge correctly = departure time
     # The first edge for each vehicle and episode, I cannot assume that entry time is 0
     # because vehicles have different departure times.
     df_edges["entry_time"] = df_edges["entry_time"].fillna(df_edges["departure_time"])
     df_edges = df_edges.drop("departure_time", axis=1)
 
-    # 9. Compute travel time
+    # 7. Compute travel time
     df_edges["travel_time"] = df_edges["exit_times"] - df_edges["entry_time"]
 
-    # 10. Check travel times on links are OK.
+    # 8. Check travel times on links are OK.
     assert (df_edges["travel_time"] >= 0).all()
 
-    # 11. Create time interval
+    # 9. Create time interval
     time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
     # Clamp to handle duaIterate case (some vehicles insertion is delayed, and so departure time is change a little bit, and some vehicles depart beyond 4200 sec,
     # and so it creates artificial intervals. We just change interval to which those vehicles belong, but their travel times and everything else remain equal
     max_interval = (time_intervals_table["interval"]).max()
     df_edges["time_interval"] = (df_edges["entry_time"] // delta_t).astype(int)
     df_edges["time_interval"] = df_edges["time_interval"].clip(upper=max_interval)
+    return df_edges
 
-    # 12. Compute avg travel times on links (per episode, edge and time interval)
-    avg_travel_time_links = df_edges.groupby(["episode", "edge", "time_interval"])[
+
+def _build_full_grid(df_edges, all_edges):
+    # 1. Compute avg travel times on links (per episode, edge and time interval)
+    avg_tt = df_edges.groupby(["episode", "edge", "time_interval"])[
         "travel_time"
     ].mean()
 
@@ -204,51 +227,52 @@ def compute_travel_time_links_t_k(
         names=["episode", "edge", "time_interval"],
     )
     # Reindex to force all combinations (missing combinations become travel_time = NaN)
-    avg_travel_time_links = avg_travel_time_links.reindex(full_index).reset_index()
+    return avg_tt.reindex(full_index).reset_index()
 
+
+def _save_missingness_report(
+    avg_tt: pd.DataFrame,
+    missingness_report_file,
+    missingness_interval_file,
+    missingness_edge_file,
+    missingness_episode_file,
+):
     ######################
     # Study of missingness
     ######################
+    df = avg_tt.copy()
+    df["col_missing"] = df["travel_time"].isna().astype(int)
     with open(missingness_report_file, "w") as f:
+        f.write(f"Proportion missing: {df['col_missing'].mean():.4f}\n")
+        f.write(f"Total missing: {df['col_missing'].sum()}\n")
 
-        # 1. Proportion of missing values
-        prop_missing = avg_travel_time_links["travel_time"].isna().mean()
-        f.write(f"Proportion of missing values: {prop_missing:.4f}\n")
-
-        # 2. Total missing values
-        total_missing = avg_travel_time_links["travel_time"].isna().sum()
-        f.write(f"Total missing values: {total_missing}\n\n")
-
-        df_missingness = avg_travel_time_links.copy()
-        df_missingness["col_missing"] = df_missingness["travel_time"].isna().astype(int)
-
-    # 3. Missingness by time interval
+    # 1. Missingness by time interval
     # It may allow us to justify that most missingness occurs during sparse intervals
-    missing_by_interval = (
-        df_missingness.groupby("time_interval")["col_missing"].sum().reset_index()
-    )
+    missing_by_interval = df.groupby("time_interval")["col_missing"].sum().reset_index()
     missing_by_interval.to_parquet(missingness_interval_file, index=False)
 
-    # 4. Missingness by edge
+    # 2. Missingness by edge
     # It may allow us to justify that most missingness occurs on low-traffic edges
-    missing_by_edge = df_missingness.groupby("edge")["col_missing"].sum().reset_index()
+    missing_by_edge = df.groupby("edge")["col_missing"].sum().reset_index()
     missing_by_edge.to_parquet(missingness_edge_file, index=False)
 
-    # 5. Missingness by episode
-    missing_by_episode = (
-        df_missingness.groupby("episode")["col_missing"].sum().reset_index()
-    )
+    # 3. Missingness by episode
+    missing_by_episode = df.groupby("episode")["col_missing"].sum().reset_index()
     missing_by_episode.to_parquet(missingness_episode_file, index=False)
+
+
+def _fill_missing_travel_times(
+    avg_tt, edgedata_file, all_edges, threshold_density
+) -> pd.DataFrame:
+    # 1. Generate file with free flow travel times of all links in the network and load it
+    free_flow = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
 
     ###############
     # GOTCHA LOGIC (FILL MISSING VALUES)
     ###############
     # 1. Read edgedata parquet (density edges by intervals)
     df_density = pd.read_parquet(edgedata_file)
-
-    # Drop the "entered" column
     df_density = df_density.drop(columns=["entered"])
-
     df_density.rename(columns={"interval": "time_interval"}, inplace=True)
 
     # 2. Ensure full grid (edges,episode,intervals) (even edges with zero density appear)
@@ -272,9 +296,7 @@ def compute_travel_time_links_t_k(
     )
 
     # 3. Add helper column to avg link travel time table (Densities). Will be used to determine the method of filling NaN
-    df = avg_travel_time_links.merge(
-        df_full, on=["episode", "time_interval", "edge"], how="left"
-    )
+    df = avg_tt.merge(df_full, on=["episode", "time_interval", "edge"], how="left")
     # Sort (important for ffill)
     df = df.sort_values(["episode", "edge", "time_interval"])
 
@@ -298,24 +320,21 @@ def compute_travel_time_links_t_k(
         }
     )
     # Mask (condition). Select rows with travel_time missing and where density > threshold_density
-    mask = df["travel_time"].isna() & (df["density"] > threshold_density)
+    mask_ffill = df["travel_time"].isna() & (df["density"] > threshold_density)
     # Apply forward fill (only where mask true, replace travel_time with forward filled value)
     # .loc[rows,columns] It selects rows and columns
-    df.loc[mask, "travel_time"] = df.loc[mask, "ffill"]
+    df.loc[mask_ffill, "travel_time"] = df.loc[mask_ffill, "ffill"]
 
     ###############
     # Missing values. Free flow travel time
     ###############
 
     # Add free_flow travel time columns
-    df = df.merge(
-        free_flow_travel_times[["edge", "free_flow_travel_time"]], on="edge", how="left"
-    )
+    df = df.merge(free_flow[["edge", "free_flow_travel_time"]], on="edge", how="left")
     # For leftover NaN values that are still present after applying fill forward, use free flow travel times
-    mask = df["travel_time"].isna()
-    df.loc[mask, "travel_time"] = df.loc[mask, "free_flow_travel_time"]
-    df = df.drop(["density", "ffill", "free_flow_travel_time"], axis="columns")
-    df.to_parquet(output_file)
+    mask_fft = df["travel_time"].isna()
+    df.loc[mask_fft, "travel_time"] = df.loc[mask_fft, "free_flow_travel_time"]
+    return df.drop(["density", "ffill", "free_flow_travel_time"], axis="columns")
 
 
 def generate_weights_xmls(cost_links, weights_dir):
@@ -956,3 +975,53 @@ def _load_actions_and_agents(actions_path):
     df_agents_od = pd.read_parquet(AGENTS_OD)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
     return df_actions, df_agents_od
+
+
+def run_tdsp_pipeline(
+    time_interval,
+    vehroute_file,
+    edgedata_file,
+    agents_od_file,
+    missingness_edge_file,
+    missingness_episode_file,
+    missingness_interval_file,
+    missingness_report_file,
+    cost_links,
+    weights_dir,
+    shortest_path_dir,
+    cost_min_paths,
+):
+    # 4. TIME DEPENDENCE SHORTEST PATH
+    # 4.1. Compute avg link travel time for all time intervals across all episodes
+    compute_travel_time_links_t_k(
+        time_interval=time_interval,
+        network=config.network,
+        threshold_density=config.threshold_density,
+        output_file=cost_links,
+        agents_od_file=agents_od_file,
+        vehroute_file=vehroute_file,
+        edgedata_file=edgedata_file,
+        missingness_edge_file=missingness_edge_file,
+        missingness_episode_file=missingness_episode_file,
+        missingness_interval_file=missingness_interval_file,
+        missingness_report_file=missingness_report_file,
+    )
+    # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
+    generate_weights_xmls(cost_links=cost_links, weights_dir=weights_dir)
+    # 4.3. Compute the time dependence shortest paths
+    compute_time_dependent_shortest_paths(
+        config.network,
+        config.seed,
+        weights_dir=weights_dir,
+        shortest_path_dir=shortest_path_dir,
+    )
+    # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
+    compute_cost_min_paths_odt_k(
+        time_interval=time_interval,
+        cost_min_paths=cost_min_paths,
+        shortest_path_dir=shortest_path_dir,
+    )
+    # 4.5. Delete some files generated on due convergence check
+    delete_files_due_convergence(
+        weights_dir=weights_dir, shortest_paths_dir=shortest_path_dir
+    )

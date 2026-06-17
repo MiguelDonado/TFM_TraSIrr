@@ -17,7 +17,7 @@ class Environment:
         """
         self.scenario = scenario
 
-    def generate_routes_file(self, actions):
+    def _generate_routes_file(self, actions):
         """
         Generate a SUMO routes (.rou.xml) file from agent actions.
 
@@ -62,7 +62,7 @@ class Environment:
 
     def run_episode(self, actions, current_episode):
         # This functions creates a rou.xml file that allows to run simulation without traci
-        self.generate_routes_file(actions)
+        self._generate_routes_file(actions)
 
         # Check if we want to visualize this episode
         if current_episode in config.episodes_gui:

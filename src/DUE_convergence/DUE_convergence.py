@@ -69,6 +69,7 @@ from .utils import (
     process_trips_info_duaIterate,
     process_vehroute_duaIterate,
     run_simulation_duaIterate,
+    run_tdsp_pipeline,
 )
 
 
@@ -109,38 +110,19 @@ def _check_due_convergence_BM(end_time, time_interval):
     )
 
     # 4. TIME DEPENDENCE SHORTEST PATH
-    # 4.1. Compute avg link travel time for all time intervals across all episodes
-    compute_travel_time_links_t_k(
+    run_tdsp_pipeline(
         time_interval=time_interval,
-        network=config.network,
-        threshold_density=config.threshold_density,
-        output_file=COST_LINKS,
-        agents_od_file=AGENTS_OD,
         vehroute_file=VEHROUTE_PARQUET,
         edgedata_file=EDGEDATA_PARQUET,
+        agents_od_file=AGENTS_OD,
         missingness_edge_file=MISSINGNESS_EDGE,
         missingness_episode_file=MISSINGNESS_EPISODE,
         missingness_interval_file=MISSINGNESS_INT,
         missingness_report_file=MISSINGNESS_REPORT,
-    )
-    # 4.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
-    generate_weights_xmls(cost_links=COST_LINKS, weights_dir=WEIGHTS_DIR)
-    # 4.3. Compute the time dependence shortest paths
-    compute_time_dependent_shortest_paths(
-        config.network,
-        config.seed,
+        cost_links=COST_LINKS,
         weights_dir=WEIGHTS_DIR,
         shortest_path_dir=SHORTEST_PATHS_DIR,
-    )
-    # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
-    compute_cost_min_paths_odt_k(
-        time_interval=time_interval,
         cost_min_paths=COST_MIN_PATHS,
-        shortest_path_dir=SHORTEST_PATHS_DIR,
-    )
-    # 4.5. Delete some files generated on due convergence check
-    delete_files_due_convergence(
-        weights_dir=WEIGHTS_DIR, shortest_paths_dir=SHORTEST_PATHS_DIR
     )
 
     # Computation Rgap
@@ -230,45 +212,19 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
 
     ######
     # 14. TIME DEPENDENCE SHORTEST PATH
-    # 14.1. Compute avg link travel time for all time intervals across all episodes
-    compute_travel_time_links_t_k(
+    run_tdsp_pipeline(
         time_interval=time_interval,
-        network=config.network,
-        threshold_density=config.threshold_density,
-        output_file=COST_LINKS_duaIterate,
-        agents_od_file=AGENTS_OD,
         vehroute_file=VEHROUTE_duaIterate_PROCESSED,
         edgedata_file=EDGEDATA_duaIterate_PROCESSED,
+        agents_od_file=AGENTS_OD,
         missingness_edge_file=MISSINGNESS_duaIterate_EDGE,
         missingness_episode_file=MISSINGNESS_duaIterate_EPISODE,
         missingness_interval_file=MISSINGNESS_duaIterate_INT,
         missingness_report_file=MISSINGNESS_duaIterate_REPORT,
-    )
-
-    # 14.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
-    generate_weights_xmls(
-        cost_links=COST_LINKS_duaIterate, weights_dir=WEIGHTS_DIR_duaIterate
-    )
-
-    # 14.3. Compute the time dependence shortest paths
-    compute_time_dependent_shortest_paths(
-        config.network,
-        config.seed,
+        cost_links=COST_LINKS_duaIterate,
         weights_dir=WEIGHTS_DIR_duaIterate,
-        shortest_path_dir=SHORTEST_PATHS_DIR_duaIterate,
-    )
-
-    # 14.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
-    compute_cost_min_paths_odt_k(
-        time_interval=time_interval,
         shortest_path_dir=SHORTEST_PATHS_DIR_duaIterate,
         cost_min_paths=COST_MIN_PATHS_duaIterate,
-    )
-
-    # 14.5. Delete some files generated on due convergence check
-    delete_files_due_convergence(
-        weights_dir=WEIGHTS_DIR_duaIterate,
-        shortest_paths_dir=SHORTEST_PATHS_DIR_duaIterate,
     )
 
     # Computation Rgap

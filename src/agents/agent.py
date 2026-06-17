@@ -122,26 +122,33 @@ class BMAgent:
 
         # Good route
         if stimulus >= 0:
-            # Update chosen route
-            p[chosen] += (1 - p[chosen]) * self.beta * stimulus
-            # Adjust other routes
-            for k in range(self.n_routes):
-                if k != chosen:
-                    p[k] -= p[k] * self.beta * stimulus
-
+            p = self._reinforce_chosen(p, chosen, stimulus)
         # Bad route
         else:
-            # Update chosen route
-            p[chosen] += p[chosen] * self.beta * stimulus
-            # Adjust other routes
-            for k in range(self.n_routes):
-                if k != chosen:
-                    p[k] = (p[k] - p[k] * p[chosen] * self.beta * stimulus) / (
-                        1 - p[chosen]
-                    )
+            p = self._penalise_chosen(p, chosen, stimulus)
 
         # Normalize
         self.p = p / np.sum(p)
+
+    def _reinforce_chosen(self, p, chosen, stimulus):
+        # Update chosen route
+        p[chosen] += (1 - p[chosen]) * self.beta * stimulus
+        # Adjust other routes
+        for k in range(self.n_routes):
+            if k != chosen:
+                p[k] -= p[k] * self.beta * stimulus
+        return p
+
+    def _penalise_chosen(self, p, chosen, stimulus):
+        # Update chosen route
+        p[chosen] += p[chosen] * self.beta * stimulus
+        # Adjust other routes
+        for k in range(self.n_routes):
+            if k != chosen:
+                p[k] = (p[k] - p[k] * p[chosen] * self.beta * stimulus) / (
+                    1 - p[chosen]
+                )
+        return p
 
     def _update_history(self, chosen, reward):
         info = (chosen, reward)
