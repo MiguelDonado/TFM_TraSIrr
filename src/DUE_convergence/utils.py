@@ -1,21 +1,24 @@
-from experiment import parse_trips_info, parse_vehroute, parse_edgedata
-from collections import defaultdict
 import gzip
-from lxml import etree
 import shutil
 import subprocess
+from collections import defaultdict
+
 import pandas as pd
+from lxml import etree
+from utils.od_routes import od_routes_to_rows
+from utils.sumo_xml import write_meandata_file
+
+from config.config import config
+from experiment import parse_edgedata, parse_trips_info, parse_vehroute
 from paths import (
-    DEMAND_ODT,
     AGENTS_OD,
+    BASE_DIR,
+    DEMAND_ODT,
     FREE_FLOW_TRAVEL_TIMES,
     TIMES_INTERVAL,
-    TRIPS_TDSP,
     TRIPS_DUEITERATE,
-    BASE_DIR,
+    TRIPS_TDSP,
 )
-from lxml import etree
-from config.config import config
 
 
 def compute_flows_odtp_k(actions_path, output_file):
@@ -24,12 +27,9 @@ def compute_flows_odtp_k(actions_path, output_file):
     This function is used to get the table with all the: "Flows assigned on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
-    # Observations table (fact table)
-    df_actions = pd.read_parquet(actions_path)
-    df_actions.rename(columns={"action": "path"}, inplace=True)
-    # Lookup table
-    df_agents_od = pd.read_parquet(AGENTS_OD)
-    df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
+    # df_actions = Observations table (fact table)
+    # df_agents = Lookup table
+    df_actions, df_agents_od = _load_actions_and_agents(actions_path)
 
     # Left join (one to many)
     df_merged_flows = df_actions.merge(df_agents_od, on="agent_id", how="left")
@@ -53,12 +53,10 @@ def compute_travel_time_paths_odtp_k(
     This function is used to get the table with all the: "Average path travel times on path p for OD pair (o,d) departing at the time interval t, at episode k"
     for all paths p, for all OD pairs, for all time intervals t and for all episodes k
     """
-    # Observations table (fact table)
-    df_actions = pd.read_parquet(actions_path)
-    df_actions.rename(columns={"action": "path"}, inplace=True)
-    # Lookup table
-    df_agents_od = pd.read_parquet(AGENTS_OD)
-    df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
+
+    # df_actions = Observations table (fact table)
+    # df_agents = Lookup table
+    df_actions, df_agents_od = _load_actions_and_agents(actions_path)
     # Observations table (fact table). Trips info contains data about the whole episode for each vehicle (Duration = travel time...)
     df_travel_times = pd.read_parquet(
         trips_info_processed_path, columns=["episode", "vehicle_id", "duration"]
@@ -516,122 +514,61 @@ def compute_rgap_and_refined_rgap(
     compute_redefined_rgap_by_od(df, refined_rgap_by_od_path)
 
 
-def compute_rgap(df, rgap_path):
+def _compute_rgap_generic(df, group_keys, output_col, output_path):
     df = df.copy()
+
     # Compute numerator rgap per episode
     df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
-    numerator = df.groupby("episode")["gap_term"].sum()
+    numerator = df.groupby(group_keys)["gap_term"].sum()
 
     # Compute denominator rgap per episode
     # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
-    denominator_df = df[
+    denom_df = df[
         ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
     ].drop_duplicates()
+
     denominator = (
-        (denominator_df["demand"] * denominator_df["min_cost"])
-        .groupby(denominator_df["episode"])
+        (denom_df["demand"] * denom_df["min_cost"])
+        .groupby([denom_df[k] for k in group_keys])
         .sum()
     )
 
-    rgap = numerator / denominator
-    rgap = rgap.reset_index(name="rgap")
-    rgap.to_parquet(rgap_path)
+    result = (numerator / denominator).reset_index(name=output_col)
+    result.to_parquet(output_path)
+
+
+def compute_rgap(df, rgap_path):
+    _compute_rgap_generic(df, ["episode"], "rgap", rgap_path)
 
 
 def compute_redefined_rgap(df, refined_rgap_path):
     """
     Like rgap but for each interval
     """
-    df = df.copy()
-    # Compute numerator rgap per episode
-    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
-    numerator = df.groupby(["episode", "time_interval"])["gap_term"].sum()
-
-    # Compute denominator rgap per episode
-    # Demand is duplicated. For each episode, origin, destination, time_interval -> demand is duplicated across paths (duplicated path times)
-    denominator_df = df[
-        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
-    ].drop_duplicates()
-
-    denominator = (
-        (denominator_df["demand"] * denominator_df["min_cost"])
-        .groupby([denominator_df["episode"], denominator_df["time_interval"]])
-        .sum()
+    _compute_rgap_generic(
+        df, ["episode", "time_interval"], "refined_rgap", refined_rgap_path
     )
-
-    refined_rgap = numerator / denominator
-
-    refined_rgap = refined_rgap.reset_index(name="refined_rgap")
-    refined_rgap.to_parquet(refined_rgap_path)
 
 
 def compute_rgap_by_od(df, rgap_by_od_path):
     """
     Compute relative gap (rgap) for each episode and OD pair
     """
-    # Numerator
-    df = df.copy()
-    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
-
-    numerator = df.groupby(["episode", "origin", "destination"])["gap_term"].sum()
-
-    # Denominator
-    denominator_df = df[
-        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
-    ].drop_duplicates()
-
-    denominator = (
-        (denominator_df["demand"] * denominator_df["min_cost"])
-        .groupby(
-            [
-                denominator_df["episode"],
-                denominator_df["origin"],
-                denominator_df["destination"],
-            ]
-        )
-        .sum()
+    _compute_rgap_generic(
+        df, ["episode", "origin", "destination"], "rgap", rgap_by_od_path
     )
-
-    rgap_od = numerator / denominator
-    rgap_od = rgap_od.reset_index(name="rgap")
-    rgap_od.to_parquet(rgap_by_od_path)
 
 
 def compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
     """
     Compute redefined rgap, for each episode, OD pair and time interval
     """
-
-    # Numerator
-    df = df.copy()
-    df["gap_term"] = df["flow"] * (df["cost"] - df["min_cost"])
-
-    numerator = df.groupby(["episode", "origin", "destination", "time_interval"])[
-        "gap_term"
-    ].sum()
-
-    # Denominator
-    denominator_df = df[
-        ["episode", "origin", "destination", "time_interval", "demand", "min_cost"]
-    ].drop_duplicates()
-
-    denominator = (
-        (denominator_df["demand"] * denominator_df["min_cost"])
-        .groupby(
-            [
-                denominator_df["episode"],
-                denominator_df["origin"],
-                denominator_df["destination"],
-                denominator_df["time_interval"],
-            ]
-        )
-        .sum()
+    _compute_rgap_generic(
+        df,
+        ["episode", "origin", "destination", "time_interval"],
+        "refined_rgap",
+        refined_rgap_by_od_path,
     )
-    redefined_rgap_od = numerator / denominator
-
-    redefined_rgap_od = redefined_rgap_od.reset_index(name="refined_rgap")
-
-    redefined_rgap_od.to_parquet(refined_rgap_by_od_path)
 
 
 def generate_demand_odt():
@@ -778,9 +715,8 @@ def call_dueIterate(network, max_iterations):
 
 
 def run_simulation_dueIterate(max_iterations):
-    number_path = max_iterations - 1
-    number_path = str(number_path).zfill(3)
-    path_config_file = BASE_DIR / number_path / f"iteration_{number_path}.sumocfg"
+    folder_number = _last_iteration_folder(max_iterations)
+    path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
     cmd = ["sumo-gui", "-c", path_config_file]
     subprocess.run(cmd, check=True)
 
@@ -794,11 +730,7 @@ def delete_dueIterate_folders(max_iterations):
 
 
 def extract_routes_file_dueIterate(max_iterations):
-    # Name of the folder that contains the last iteration of dueIterate
-    folder_number = max_iterations - 1
-
-    # Add padding
-    folder_number = str(folder_number).zfill(3)
+    folder_number = _last_iteration_folder(max_iterations)
 
     # Path of the folder that contains last iteration dueIterate
     folder_path = BASE_DIR / folder_number
@@ -891,20 +823,7 @@ def __process_od_routes(od_routes):
     A         B      1          1       e1
     A         B      1          2       e5 ...
     """
-    rows = []
-    for (origin, dest), routes in od_routes.items():
-        for route_id, route in enumerate(routes):
-            for step, edge in enumerate(route):
-                rows.append(
-                    {
-                        "origin": origin,
-                        "dest": dest,
-                        "route_id": route_id,
-                        "step": step,
-                        "edge": edge,
-                    }
-                )
-    return rows
+    return od_routes_to_rows(od_routes)
 
 
 def compute_actions_table_dueIterate(agents, dict_agent_routes, od_routes, output_file):
@@ -928,11 +847,7 @@ def process_trips_info_dueiterate(max_iterations, output_file):
     """
     Builds the processed trips info file
     """
-    # Name of the folder that contains the last iteration of dueIterate
-    folder_number = max_iterations - 1
-
-    # Add padding
-    folder_number = str(folder_number).zfill(3)
+    folder_number = _last_iteration_folder(max_iterations)
 
     # Path of the folder that contains last iteration dueIterate
     folder_path = BASE_DIR / folder_number
@@ -954,11 +869,7 @@ def process_vehroute_dueIterate(max_iterations, output_file):
     """
     Builds the processed vehroute file
     """
-    # Name of the folder that contains the last iteration of dueIterate
-    folder_number = max_iterations - 1
-
-    # Add padding
-    folder_number = str(folder_number).zfill(3)
+    folder_number = _last_iteration_folder(max_iterations)
 
     # Path of the folder that contains last iteration dueIterate
     folder_path = BASE_DIR / folder_number
@@ -975,34 +886,21 @@ def process_vehroute_dueIterate(max_iterations, output_file):
 
 
 def generate_meandata_file(max_iterations):
-    # Name of the folder that contains the last iteration of dueIterate
-    folder_number = max_iterations - 1
-
-    # Add padding
-    folder_number = str(folder_number).zfill(3)
+    folder_number = _last_iteration_folder(max_iterations)
 
     # Path of the folder that contains last iteration dueIterate
     folder_path = BASE_DIR / folder_number
 
-    meandata_dueiterate_path = folder_path / "meandata_dueiterate.xml"
+    path = folder_path / "meandata_dueiterate.xml"
 
-    with open(meandata_dueiterate_path, "w+") as meandata:
-        meandata.write("<additional>\n")
-        meandata.write("\t<edgeData\n")
-        meandata.write(f"\t\tid='density_{config.time_interval}s'\n")
-        meandata.write(f"\t\tfile='../edgedata_dueiterate.xml'\n")
-        meandata.write(f"\t\tperiod='{config.time_interval}'\n")
-        meandata.write(f"\t\texcludeEmpty='true'\n")
-        meandata.write(f"\t\twriteAttributes='entered density'/>\n")
-        meandata.write("</additional>\n")
+    write_meandata_file(path, "../edgedata_dueiterate.xml", config.time_interval)
 
-    return meandata_dueiterate_path
+    return path
 
 
 def generate_edgedata_file(max_iterations, meandata_dueiterate_file):
-    number_path = max_iterations - 1
-    number_path = str(number_path).zfill(3)
-    path_config_file = BASE_DIR / number_path / f"iteration_{number_path}.sumocfg"
+    folder_number = _last_iteration_folder(max_iterations)
+    path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
 
     tree = etree.parse(path_config_file)
 
@@ -1029,11 +927,7 @@ def process_edgedata_file(max_iterations, output_file):
     """
     Builds the processed vehroute file
     """
-    # Name of the folder that contains the last iteration of dueIterate
-    folder_number = max_iterations - 1
-
-    # Add padding
-    folder_number = str(folder_number).zfill(3)
+    folder_number = _last_iteration_folder(max_iterations)
 
     # Path of the folder that contains last iteration dueIterate
     folder_path = BASE_DIR / folder_number
@@ -1047,3 +941,18 @@ def process_edgedata_file(max_iterations, output_file):
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
     df.to_parquet(output_file, engine="pyarrow")
+
+
+def _last_iteration_folder(max_iterations: int):
+    """
+    Return zero-padded folder name for the last dueIterate iteration.
+    """
+    return str(max_iterations - 1).zfill(3)
+
+
+def _load_actions_and_agents(actions_path):
+    df_actions = pd.read_parquet(actions_path)
+    df_actions.rename(columns={"action": "path"}, inplace=True)
+    df_agents_od = pd.read_parquet(AGENTS_OD)
+    df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
+    return df_actions, df_agents_od

@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from lxml import etree
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+from lxml import etree
+from utils.network import get_edge_lengths
 
 
 def get_edges_lengths_program(net):
@@ -12,16 +14,7 @@ def get_edges_lengths_program(net):
     Used in demand calibration -> initial guess (heuristic)
     Returns the median length of the edgess
     """
-    document = net
-    tree = etree.parse(document)
-
-    # Edges
-    edges_length = tree.xpath("//edge[not(@function='internal')]/lane/@length")
-    edges_length = [float(edge_length) for edge_length in edges_length]
-
-    data = np.array(edges_length)
-    median_length = round(float(np.median(data)), 2)
-    return median_length
+    return round(float(np.median(get_edge_lengths(net))), 2)
 
 
 # Enum: Clean way to represent a variable that can only take a few predefined values

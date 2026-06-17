@@ -1,5 +1,7 @@
 import subprocess
 
+from utils.sumo_xml import write_sumo_conf
+
 from config.config import config
 from paths import (
     NET,
@@ -47,20 +49,14 @@ class DemandCalibration:
         """
         Create SUMO Config file
         """
-        with open(SUMO_CONF_DEMAND_CALIBRATION, "w+") as conf:
-            conf.write('<?xml version="1.0"?>\n')
-            conf.write("<configuration>\n")
-            conf.write("\t<input>\n")
-            conf.write(f'\t\t<net-file value="{self.network}"/>\n')
-            conf.write(f'\t\t<route-files value="{ROUTES_DEMAND_CALIBRATION}"/>\n')
-            conf.write("\t</input>\n")
-            conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<summary-output value="{SUMMARY_XML}"/>\n')
-            conf.write(f"\t</report>\n")
-            conf.write(f"\t<random>\n")
-            conf.write(f"\t\t<seed value='42'/>\n")
-            conf.write(f"\t</random>\n")
-            conf.write("</configuration>\n")
+
+        write_sumo_conf(
+            output_path=SUMO_CONF_DEMAND_CALIBRATION,
+            net_file=self.network,
+            route_files=ROUTES_DEMAND_CALIBRATION,
+            report_outputs={"summary-output": SUMMARY_XML},
+            seed=config.seed,
+        )
 
         self.conf = SUMO_CONF_DEMAND_CALIBRATION
 

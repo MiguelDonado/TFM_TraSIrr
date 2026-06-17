@@ -13,12 +13,17 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 from lxml import etree
+from utils.od_routes import od_routes_to_rows
+from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 from config.config import RunMode, config
 from paths import (
     AGENTS_OD,
+    EDGEDATA_XML,
     FCD_XML,
+    FREE_FLOW_TRAVEL_TIMES,
     MAP,
+    MEANDATA,
     NET,
     OD_MATRIX_INTERVALS,
     OD_MATRIX_TOTAL,
@@ -29,9 +34,6 @@ from paths import (
     TRIPS_INFO_XML,
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
-    MEANDATA,
-    EDGEDATA_XML,
-    FREE_FLOW_TRAVEL_TIMES,
 )
 
 
@@ -171,41 +173,25 @@ class Scenario:
         # Generate meandata file used for generation of edgedata output
         self.generate_meandata_file()
 
-        with open(SUMO_CONF, "w+") as conf:
-            conf.write('<?xml version="1.0"?>\n')
-            conf.write("<configuration>\n")
-            conf.write("\t<input>\n")
-            conf.write(f'\t\t<net-file value="{self.network}"/>\n')
-            conf.write(f'\t\t<additional-files value="{MEANDATA}"/>\n')
-            conf.write("\t</input>\n")
-            conf.write(f"\t<report>\n")
-            conf.write(f'\t\t<tripinfo-output value="{TRIPS_INFO_XML}"/>\n')
-            conf.write(f'\t\t<statistic-output value="{STATISTICS_XML}"/>\n')
-            conf.write(f'\t\t<summary-output value="{SUMMARY_XML}"/>\n')
-            conf.write(f'\t\t<vehroute-output value="{VEHROUTE_XML}"/>\n')
-            conf.write(f'\t\t<vehroute-output.exit-times value="true"/>\n')
-            conf.write(f'\t\t<fcd-output value="{FCD_XML}"/>\n')
-            conf.write(f'\t\t<fcd-output.attributes value="x,y"/>\n')
-            conf.write(f"\t</report>\n")
-            conf.write(f"\t<random>\n")
-            conf.write(f"\t\t<seed value='42'/>\n")
-            conf.write(f"\t</random>\n")
-            conf.write(f"\t<device>\n")
-            conf.write(f"\t\t<device.fcd.probability value='0.2'/>\n")
-            conf.write(f"\t</device>\n")
-            conf.write("</configuration>\n")
+        write_sumo_conf(
+            output_path=SUMO_CONF,
+            net_file=self.network,
+            additional_files=MEANDATA,
+            report_outputs={
+                "tripinfo-output": TRIPS_INFO_XML,
+                "statistic-output": STATISTICS_XML,
+                "summary-output": STATISTICS_XML,
+                "vehroute-output": VEHROUTE_XML,
+                "vehroute-output.exit-times": "true",
+                "fcd-output": FCD_XML,
+                "fcd-output.attributes": "x,y",
+            },
+            device_outputs={"device.fcd.probability": "0.2"},
+        )
         return SUMO_CONF
 
     def generate_meandata_file(self):
-        with open(MEANDATA, "w+") as meandata:
-            meandata.write("<additional>\n")
-            meandata.write("\t<edgeData\n")
-            meandata.write(f"\t\tid='density_{config.time_interval}s'\n")
-            meandata.write(f"\t\tfile='{EDGEDATA_XML}'\n")
-            meandata.write(f"\t\tperiod='{config.time_interval}'\n")
-            meandata.write(f"\t\texcludeEmpty='true'\n")
-            meandata.write(f"\t\twriteAttributes='entered density'/>\n")
-            meandata.write("</additional>\n")
+        write_meandata_file(MEANDATA, EDGEDATA_XML, config.time_interval)
 
     def save_scenario_data(self):
         self._save_od_routes()
@@ -231,20 +217,7 @@ class Scenario:
         A         B      1          1       e1
         A         B      1          2       e5 ...
         """
-        rows = []
-        for (origin, dest), routes in self.od_routes.items():
-            for route_id, route in enumerate(routes):
-                for step, edge in enumerate(route):
-                    rows.append(
-                        {
-                            "origin": origin,
-                            "dest": dest,
-                            "route_id": route_id,
-                            "step": step,
-                            "edge": edge,
-                        }
-                    )
-        return rows
+        return od_routes_to_rows(self.od_routes)
 
     ########################
     ### HELPER FUNCTIONS ###
