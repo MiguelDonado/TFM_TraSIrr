@@ -13,8 +13,6 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 from lxml import etree
-from utils.od_routes import od_routes_to_rows
-from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 from config.config import RunMode, config
 from paths import (
@@ -35,6 +33,8 @@ from paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
+from utils.od_routes import od_routes_to_rows
+from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
 class Scenario:
@@ -61,17 +61,17 @@ class Scenario:
         3. Creates a config file
         """
         self.network = map
-        self.generate_agents(rng)
-        self.ensure_routes(seeds)
-        self.save_scenario_data()
-        self.conf = self.generate_conf()
+        self._generate_agents(rng)
+        self._load_or_compute_routes(seeds)
+        self._save_scenario_data()
+        self.conf = self._generate_conf()
 
-    def generate_agents(self, rng):
+    def _generate_agents(self, rng):
         # Generate the random edge OD-matrix (origin,destination for the agents)
-        self.od_s = self.generate_od_for_agents()
-        self.departure_times = self.generate_departure_times(rng)
+        self.od_pairs = self._generate_od_for_agents()
+        self.departure_times = self._generate_departure_times(rng)
         for i in range(self.n_agents):
-            origin, dest = self.od_s[i]
+            origin, dest = self.od_pairs[i]
             departure_time = self.departure_times[i]
             self.agents.append(
                 {
@@ -82,7 +82,7 @@ class Scenario:
                 }
             )
 
-    def ensure_routes(self, seeds):
+    def _load_or_compute_routes(self, seeds):
         if config.have_precomputed_routes:
             self.reconstruct_od_routes()
         else:
@@ -124,7 +124,7 @@ class Scenario:
             routes_file = os.path.join(tmpdir, "routes.xml")
 
             # 1. Create trips.xml
-            self.__write_trip(trips_file)
+            self._write_trip(trips_file)
 
             # 2. Compute best route according shortest-path
             best_routes = self._run_duarouter(
@@ -166,12 +166,12 @@ class Scenario:
         # 5. Return k routes
         return od_routes
 
-    def generate_conf(self):
+    def _generate_conf(self):
         """
         Create SUMO Config file
         """
         # Generate meandata file used for generation of edgedata output
-        self.generate_meandata_file()
+        self._generate_meandata_file()
 
         write_sumo_conf(
             output_path=SUMO_CONF,
@@ -190,10 +190,10 @@ class Scenario:
         )
         return SUMO_CONF
 
-    def generate_meandata_file(self):
+    def _generate_meandata_file(self):
         write_meandata_file(MEANDATA, EDGEDATA_XML, config.time_interval)
 
-    def save_scenario_data(self):
+    def _save_scenario_data(self):
         self._save_od_routes()
 
         self._generate_free_flow_tt_links()
@@ -204,13 +204,13 @@ class Scenario:
 
         self._save_agents()
 
-        self.write_od_matrix(
-            self.od_s, self.departure_times, interval_size=config.time_interval
+        self._write_od_matrix(
+            self.od_pairs, self.departure_times, interval_size=config.time_interval
         )
 
         self._handle_compute_routes_mode()
 
-    def process_od_routes(self):
+    def _process_od_routes(self):
         """
         I want this format
         origin | dest | route_id | step | edge
@@ -223,24 +223,24 @@ class Scenario:
     ### HELPER FUNCTIONS ###
     ########################
 
-    def generate_od_for_agents(self):
+    def _generate_od_for_agents(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
             # Generate random ods for agents
-            self.generate_random_trips_agents(trips_file)
+            self._generate_random_trips_agents(trips_file)
             # OD space
-            od_space = self.parse_od_agents(trips_file)
+            od_space = self._parse_od_agents(trips_file)
             # Restricted/bounded OD space
-            restricted_od_space_counter = self.restrict_od_space(
+            restricted_od_space_counter = self._restrict_od_space(
                 od_space, config.max_size_od_space
             )
             # Sample ods for all the agents from the restricted OD space
-            od_s = self.sample_od_space(
+            od_pairs = self._sample_od_space(
                 restricted_od_space_counter, self.n_agents, config.max_size_od_space
             )
-        return od_s
+        return od_pairs
 
-    def generate_random_trips_agents(self, output_file):
+    def _generate_random_trips_agents(self, output_file):
         cmd = [
             "randomTrips.py",
             "-n",
@@ -264,14 +264,14 @@ class Scenario:
 
         subprocess.run(cmd, check=True)
 
-    def parse_od_agents(self, trips_file):
+    def _parse_od_agents(self, trips_file):
         tree = etree.parse(trips_file)
         origins = tree.xpath("//trip/@from")
-        destinies = tree.xpath("//trip/@to")
-        od_s = list(zip(origins, destinies))
-        return od_s
+        destinations = tree.xpath("//trip/@to")
+        od_pairs = list(zip(origins, destinations))
+        return od_pairs
 
-    def restrict_od_space(self, od_list, k):
+    def _restrict_od_space(self, od_list, k):
         """
         Make sure to restrict/bound the OD pool to <= k unique ODs
         """
@@ -282,7 +282,7 @@ class Scenario:
         most_common = counter.most_common(k)
         return most_common
 
-    def sample_od_space(self, od_space_counter, n_agents, k):
+    def _sample_od_space(self, od_space_counter, n_agents, k):
         """
         Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
         It will receive the reduced OD space counter object
@@ -304,7 +304,7 @@ class Scenario:
         )
         return ods
 
-    def generate_departure_times(self, rng):
+    def _generate_departure_times(self, rng):
         departure_times = rng.integers(
             0,
             config.end_time,
@@ -316,7 +316,7 @@ class Scenario:
         departure_times.sort()
         return departure_times
 
-    def write_od_matrix(self, od_list, departure_times_list, interval_size):
+    def _write_od_matrix(self, od_list, departure_times_list, interval_size):
 
         # Build df
         df = pd.DataFrame(
@@ -375,9 +375,9 @@ class Scenario:
 
         subprocess.run(cmd, check=True)
 
-        return self.__parse_route(routes_file)
+        return self._parse_route(routes_file)
 
-    def __write_trip(self, file_path):
+    def _write_trip(self, file_path):
         with open(file_path, "w") as f:
             f.write(f"<routes>\n")
             for i, (origin, destination) in enumerate(self.unique_ods):
@@ -386,7 +386,7 @@ class Scenario:
                 )
             f.write("</routes>\n")
 
-    def __parse_route(self, routes_file):
+    def _parse_route(self, routes_file):
         try:
             document = routes_file
             tree = etree.parse(document)
@@ -399,7 +399,7 @@ class Scenario:
         except Exception:
             return None
 
-    def __compute_median_free_flow_travel_time(self):
+    def _compute_median_free_flow_travel_time(self):
         edge_costs = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
         edge_costs = edge_costs.set_index("edge")["free_flow_travel_time"].to_dict()
 
@@ -439,14 +439,14 @@ class Scenario:
         df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
 
     def _save_od_routes(self):
-        processed_od_routes = self.process_od_routes()
+        processed_od_routes = self._process_od_routes()
         df = pd.DataFrame(processed_od_routes)
         df.to_parquet(OD_ROUTES, engine="pyarrow")
 
     def _set_time_interval(self):
         # SET TIME INTERVAL USED THROUGHOUT THE PROGRAM (AUTOMATICALLY ADAPTED TO EACH NETWORK)
         config.time_interval = int(
-            self.__compute_median_free_flow_travel_time()
+            self._compute_median_free_flow_travel_time()
             * config.time_interval_heuristic
         )
 

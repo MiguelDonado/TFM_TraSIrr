@@ -17,8 +17,8 @@ from paths import (
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     RGAP,
-    RGAP_DUEITERATE,
     STATISTICS_PARQUET,
+    RGAP_duaIterate,
 )
 
 
@@ -51,27 +51,27 @@ def set_up_mlflow():
 def log_simulation_mlflow():
 
     # 1. Log RELEVANT hyperparameters
-    mlflow.log_params(extract_mlflow_hyperparams(config))
+    mlflow.log_params(_extract_mlflow_hyperparams(config))
 
     # 1.2. Log hyperparameter related to git commit
     # Useful, because maybe in six months from now I wanna look which code produced a surprising good result
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-    mlflow.log_params("git_commit", commit_hash)
+    mlflow.log_param("git_commit", commit_hash)
 
     # 2. Log ALL hyperparameters as artifact
-    log_config_artifact()
+    _log_config_artifact()
 
     # 3. Log metrics
-    log_mlflow_metrics()
+    _log_mlflow_metrics()
 
     # Log artifacts
-    log_mlflow_artifacts()
+    _log_mlflow_artifacts()
 
 
 ##########
 # HELPERS
 ##########
-def extract_mlflow_hyperparams(config):
+def _extract_mlflow_hyperparams(config):
     """
     Log only hyperparameters that may vary across runs
     """
@@ -92,14 +92,14 @@ def extract_mlflow_hyperparams(config):
         # Stopping rule
         "max_episodes": config.max_episodes,
         "tolerance_stopping_rule": (config.tolerance_stopping_rule),
-        # dueIterate
-        "dueIterate_max_iterations": (config.dueIterate_max_iterations),
+        # duaIterate
+        "duaIterate_max_iterations": (config.duaIterate_max_iterations),
         # Network
         "network": Path(config.network).stem,
     }
 
 
-def log_config_artifact():
+def _log_config_artifact():
     config_dict = asdict(config)
     config_dict["mode"] = config.mode.value
     with NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
@@ -112,65 +112,65 @@ def log_config_artifact():
     os.remove(temp_path)
 
 
-def log_mlflow_metrics():
+def _log_mlflow_metrics():
 
     # 1. Log Rgap related metrics
-    log_rgap_metrics()
+    _log_rgap_metrics()
 
     # 2. Log additional BM metrics
-    log_BM_metrics()
+    _log_bm_metrics()
 
 
-def log_rgap_metrics():
+def _log_rgap_metrics():
     # 1. Log Rgap metrics related to BM algorithm
-    log_BM_rgap_metric()
+    _log_bm_rgap_metric()
 
-    # 2. Log Rgap metrics related to dueIterate
-    log_dueIterate_rgap_metric()
+    # 2. Log Rgap metrics related to duaIterate
+    _log_duaIterate_rgap_metric()
 
 
-def log_BM_rgap_metric():
+def _log_bm_rgap_metric():
     # 1. Read parquet file that contains "episode | rgap" for BM algorithm
-    df_rgap_BM = pd.read_parquet(RGAP)
+    df_rgap_bm = pd.read_parquet(RGAP)
     # 2. Log time series of the Rgap metric
     metric_name = "bm_rgap"
     col_metric = "rgap"
     col_step = "episode"
 
-    __log_metric_over_time(
-        df=df_rgap_BM, metric_name=metric_name, col_metric=col_metric, col_step=col_step
+    _log_metric_over_time(
+        df=df_rgap_bm, metric_name=metric_name, col_metric=col_metric, col_step=col_step
     )
 
 
-def log_dueIterate_rgap_metric():
-    # 1. Read parquet file that contains "episode | rgap" for dueIterate algorithm
-    # Right now, in dueIterate we are only keeping track of rgap of last episode
-    df_rgap_dueIterate = pd.read_parquet(RGAP_DUEITERATE)
+def _log_duaIterate_rgap_metric():
+    # 1. Read parquet file that contains "episode | rgap" for duaIterate algorithm
+    # Right now, in duaIterate we are only keeping track of rgap of last episode
+    df_rgap_duaIterate = pd.read_parquet(RGAP_duaIterate)
 
     # 2. Log time series of the Rgap metric
-    # (right now dueIterate only contains one timestep, so its a scalar)
-    dueiterate_final_rgap = float(df_rgap_dueIterate["rgap"].iloc[-1])
-    rgap_metric = {"dueiterate_final_rgap": round(dueiterate_final_rgap, 5)}
+    # (right now duaIterate only contains one timestep, so its a scalar)
+    duaIterate_final_rgap = float(df_rgap_duaIterate["rgap"].iloc[-1])
+    rgap_metric = {"duaIterate_final_rgap": round(duaIterate_final_rgap, 5)}
     mlflow.log_metrics(rgap_metric)
 
 
-def log_BM_metrics():
+def _log_bm_metrics():
     # 1. Episodes required for convergence
-    log_BM_episode_convergence()
+    _log_bm_episode_convergence()
 
     # 2. Mean travel time (time series)
-    log_BM_mean_travel_time()
+    _log_bm_mean_travel_time()
 
     # 3. Policy change (time series)
-    log_BM_policy_change()
+    _log_bm_policy_change()
 
 
-def log_BM_episode_convergence():
+def _log_bm_episode_convergence():
     # 1. Read parquet file that contains "episode | rgap" for BM algorithm
-    df_rgap_BM = pd.read_parquet(RGAP)
+    df_rgap_bm = pd.read_parquet(RGAP)
     # 2. Get last episode
-    last_row_rgap_BM = df_rgap_BM.iloc[-1]
-    bm_episode_convergence = last_row_rgap_BM["episode"]
+    last_row_rgap_bm = df_rgap_bm.iloc[-1]
+    bm_episode_convergence = last_row_rgap_bm["episode"]
 
     # Log metrics
     metric = {
@@ -179,44 +179,44 @@ def log_BM_episode_convergence():
     mlflow.log_metrics(metric)
 
 
-def log_BM_mean_travel_time():
+def _log_bm_mean_travel_time():
     # 1. Read parquet file that contains "episode | mean_travel_time" for BM algorithm
-    df_mean_tt_BM = pd.read_parquet(STATISTICS_PARQUET)
+    df_mean_tt_bm = pd.read_parquet(STATISTICS_PARQUET)
     # 2. Log BM mean travel time over time (series)
     metric_name = "bm_mean_travel_time"
     col_metric = "mean_travel_time"
     col_step = "episode"
-    __log_metric_over_time(
-        df=df_mean_tt_BM,
+    _log_metric_over_time(
+        df=df_mean_tt_bm,
         metric_name=metric_name,
         col_metric=col_metric,
         col_step=col_step,
     )
 
 
-def log_BM_policy_change():
+def _log_bm_policy_change():
     # 1. Read parquet file that contains "episode | mean_policy_change"
-    df_policy_change_BM = pd.read_parquet(POLICY_CHANGE_BM)
+    df_policy_change_bm = pd.read_parquet(POLICY_CHANGE_BM)
 
     # 2. Log BM mean_policy_change over time
     metric_name = "bm_mean_policy_change"
     col_metric = "mean_policy_change"
     col_step = "episode"
-    __log_metric_over_time(
-        df=df_policy_change_BM,
+    _log_metric_over_time(
+        df=df_policy_change_bm,
         metric_name=metric_name,
         col_metric=col_metric,
         col_step=col_step,
     )
 
 
-def log_mlflow_artifacts():
+def _log_mlflow_artifacts():
     mlflow.log_artifact(INTERNAL_DATA_DIR)
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)
 
 
-def __log_metric_over_time(df, metric_name, col_metric, col_step):
+def _log_metric_over_time(df, metric_name, col_metric, col_step):
     """
     This function gets as input a df containing a time series of a metric.
     And it logs to MLflow the metric over time.

@@ -1,89 +1,88 @@
 from shutil import copy2
-from .utils import (
-    compute_flows_odtp_k,
-    compute_travel_time_paths_odtp_k,
-    compute_travel_time_links_t_k,
-    compute_time_dependent_shortest_paths,
-    compute_cost_min_paths_odt_k,
-    generate_weights_xmls,
-    generate_trips_odt_file,
-    generate_time_intervals_table,
-    delete_files_DUE_convergence,
-    compute_rgap_and_refined_rgap,
-    generate_demand_odt,
-    call_dueIterate,
-    generate_trips_file_duaIterate,
-    run_simulation_dueIterate,
-    delete_dueIterate_folders,
-    compute_od_routes_table_dueIterate,
-    extract_routes_file_dueIterate,
-    compute_actions_table_dueIterate,
-    process_trips_info_dueiterate,
-    process_vehroute_dueIterate,
-    generate_meandata_file,
-    generate_edgedata_file,
-    process_edgedata_file,
-)
-from config.config import config
 
+from config.config import config
 from paths import (
-    Path,
-    RGAP,
-    RGAP_DUEITERATE,
-    REFINED_RGAP,
-    RGAP_BY_OD,
-    REFINED_RGAP_BY_OD,
-    REFINED_RGAP_DUEITERATE,
-    RGAP_BY_OD_DUEITERATE,
-    REFINED_RGAP_BY_OD_DUEITERATE,
-    WEIGHTS_DIR,
-    COST_MIN_PATHS_DUEITERATE,
-    SHORTEST_PATHS_DIR_DUEITERATE,
-    SHORTEST_PATHS_DIR,
-    WEIGHTS_DIR_DUEITERATE,
-    COST_LINKS,
     ACTIONS,
-    ROUTES_DUEITERATE,
-    COST_LINKS_DUEITERATE,
-    ACTIONS_DUEITERATE,
-    FLOWS_PATHS,
-    TRIPS_INFO_PROCESSED_DUEITERATE,
-    FLOWS_PATH_DUEITERATE,
-    TRIPS_INFO_PARQUET,
-    COST_PATHS,
-    OD_ROUTES_DUEITERATE,
-    TRIPS_INFO_PROCESSED_DUEITERATE,
-    COST_PATHS_DUEITERATE,
-    COST_MIN_PATHS,
-    COST_MIN_PATHS_DUEITERATE,
-    VEHROUTE_DUEITERATE_PROCESSED,
-    EDGEDATA_DUEITERATE_PROCESSED,
     AGENTS_OD,
-    MISSINGNESS_DUEITERATE_INT,
-    MISSINGNESS_DUEITERATE_EDGE,
-    MISSINGNESS_DUEITERATE_EPISODE,
-    MISSINGNESS_DUEITERATE_REPORT,
-    VEHROUTE_PARQUET,
+    COST_LINKS,
+    COST_MIN_PATHS,
+    COST_PATHS,
     EDGEDATA_PARQUET,
+    FLOWS_PATHS,
     MISSINGNESS_EDGE,
     MISSINGNESS_EPISODE,
     MISSINGNESS_INT,
     MISSINGNESS_REPORT,
-    UNDESIRED_DUEITERATE_FILES,
+    REFINED_RGAP,
+    REFINED_RGAP_BY_OD,
+    RGAP,
+    RGAP_BY_OD,
+    SHORTEST_PATHS_DIR,
+    TRIPS_INFO_PARQUET,
+    VEHROUTE_PARQUET,
+    WEIGHTS_DIR,
+    ACTIONS_duaIterate,
+    COST_LINKS_duaIterate,
+    COST_MIN_PATHS_duaIterate,
+    COST_PATHS_duaIterate,
+    EDGEDATA_duaIterate_PROCESSED,
+    FLOWS_PATH_duaIterate,
+    MISSINGNESS_duaIterate_EDGE,
+    MISSINGNESS_duaIterate_EPISODE,
+    MISSINGNESS_duaIterate_INT,
+    MISSINGNESS_duaIterate_REPORT,
+    OD_ROUTES_duaIterate,
+    Path,
+    REFINED_RGAP_BY_OD_duaIterate,
+    REFINED_RGAP_duaIterate,
+    RGAP_BY_OD_duaIterate,
+    RGAP_duaIterate,
+    ROUTES_duaIterate,
+    SHORTEST_PATHS_DIR_duaIterate,
+    TRIPS_INFO_PROCESSED_duaIterate,
+    UNDESIRED_duaIterate_FILES,
+    VEHROUTE_duaIterate_PROCESSED,
+    WEIGHTS_DIR_duaIterate,
+)
+
+from .utils import (
+    call_duaIterate,
+    compute_actions_table_duaIterate,
+    compute_cost_min_paths_odt_k,
+    compute_flows_odtp_k,
+    compute_od_routes_table_duaIterate,
+    compute_rgap_and_refined_rgap,
+    compute_time_dependent_shortest_paths,
+    compute_travel_time_links_t_k,
+    compute_travel_time_paths_odtp_k,
+    delete_duaIterate_folders,
+    delete_files_due_convergence,
+    extract_routes_file_duaIterate,
+    generate_demand_odt,
+    generate_edgedata_file,
+    generate_meandata_file,
+    generate_time_intervals_table,
+    generate_trips_file_duaIterate,
+    generate_trips_odt_file,
+    generate_weights_xmls,
+    process_edgedata_duaIterate,
+    process_trips_info_duaIterate,
+    process_vehroute_duaIterate,
+    run_simulation_duaIterate,
 )
 
 
-def run_DUE_convergence_checks(scen, end_time, time_interval):
-    generate_generic_files_DUE_convergence()
+def run_due_convergence_checks(scen, end_time, time_interval):
+    _generate_generic_files_due_convergence()
 
-    check_DUE_convergence_dueIterate(
+    _check_due_convergence_duaIterate(
         scen, end_time=end_time, time_interval=time_interval
     )
 
-    check_DUE_convergence_BM(end_time=end_time, time_interval=time_interval)
+    _check_due_convergence_BM(end_time=end_time, time_interval=time_interval)
 
 
-def generate_generic_files_DUE_convergence():
+def _generate_generic_files_due_convergence():
     end_time = config.end_time
     time_interval = config.time_interval
 
@@ -96,7 +95,7 @@ def generate_generic_files_DUE_convergence():
     generate_trips_odt_file()
 
 
-def check_DUE_convergence_BM(end_time, time_interval):
+def _check_due_convergence_BM(end_time, time_interval):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
@@ -139,8 +138,8 @@ def check_DUE_convergence_BM(end_time, time_interval):
         cost_min_paths=COST_MIN_PATHS,
         shortest_path_dir=SHORTEST_PATHS_DIR,
     )
-    # 4.5. Delete some files generated on DUE convergence check
-    delete_files_DUE_convergence(
+    # 4.5. Delete some files generated on due convergence check
+    delete_files_due_convergence(
         weights_dir=WEIGHTS_DIR, shortest_paths_dir=SHORTEST_PATHS_DIR
     )
 
@@ -156,77 +155,77 @@ def check_DUE_convergence_BM(end_time, time_interval):
     )
 
 
-def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
+def _check_due_convergence_duaIterate(scen, end_time, time_interval):
     ########################
-    # Check dueIterate Rgap
+    # Check duaIterate Rgap
     ########################
-    print("--- dueIterate ---")
+    print("--- duaIterate ---")
 
-    # 1. Generate trips file used by dueIterate (only ODs, no routes)
+    # 1. Generate trips file used by duaIterate (only ODs, no routes)
     generate_trips_file_duaIterate(scen.agents)
 
-    # 2. Execute dueIterate
-    call_dueIterate(config.network, config.dueIterate_max_iterations)
+    # 2. Execute duaIterate
+    call_duaIterate(config.network, config.duaIterate_max_iterations)
 
     # 3. Run simulation
-    if config.last_episode_gui_dueIterate:
-        run_simulation_dueIterate(config.dueIterate_max_iterations)
+    if config.last_episode_gui_duaIterate:
+        run_simulation_duaIterate(config.duaIterate_max_iterations)
 
-    # 4. Extract routes file last iteration dueIterate
-    routes_file = extract_routes_file_dueIterate(config.dueIterate_max_iterations)
-    copy2(routes_file, ROUTES_DUEITERATE)
+    # 4. Extract routes file last iteration duaIterate
+    routes_file = extract_routes_file_duaIterate(config.duaIterate_max_iterations)
+    copy2(routes_file, ROUTES_duaIterate)
     # 5. Compute od routes table
-    dict_agent_routes, od_routes = compute_od_routes_table_dueIterate(
-        routes_file=routes_file, output_file=OD_ROUTES_DUEITERATE
+    dict_agent_routes, od_routes = compute_od_routes_table_duaIterate(
+        routes_file=routes_file, output_file=OD_ROUTES_duaIterate
     )
 
     # 6. Compute actions table
-    compute_actions_table_dueIterate(
+    compute_actions_table_duaIterate(
         agents=scen.agents,
         dict_agent_routes=dict_agent_routes,
         od_routes=od_routes,
-        output_file=ACTIONS_DUEITERATE,
+        output_file=ACTIONS_duaIterate,
     )
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
     compute_flows_odtp_k(
-        actions_path=ACTIONS_DUEITERATE, output_file=FLOWS_PATH_DUEITERATE
+        actions_path=ACTIONS_duaIterate, output_file=FLOWS_PATH_duaIterate
     )
 
     # 8. Process trips_info file
-    process_trips_info_dueiterate(
-        max_iterations=config.dueIterate_max_iterations,
-        output_file=TRIPS_INFO_PROCESSED_DUEITERATE,
+    process_trips_info_duaIterate(
+        max_iterations=config.duaIterate_max_iterations,
+        output_file=TRIPS_INFO_PROCESSED_duaIterate,
     )
 
     # 9. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
-        actions_path=ACTIONS_DUEITERATE,
-        trips_info_processed_path=TRIPS_INFO_PROCESSED_DUEITERATE,
-        output_file=COST_PATHS_DUEITERATE,
+        actions_path=ACTIONS_duaIterate,
+        trips_info_processed_path=TRIPS_INFO_PROCESSED_duaIterate,
+        output_file=COST_PATHS_duaIterate,
     )
 
-    # 10. Process vehroute dueIterate
-    process_vehroute_dueIterate(
-        max_iterations=config.dueIterate_max_iterations,
-        output_file=VEHROUTE_DUEITERATE_PROCESSED,
+    # 10. Process vehroute duaIterate
+    process_vehroute_duaIterate(
+        max_iterations=config.duaIterate_max_iterations,
+        output_file=VEHROUTE_duaIterate_PROCESSED,
     )
 
     # 11. Generate meandata_file
-    meandata_dueiterate_file = generate_meandata_file(
-        max_iterations=config.dueIterate_max_iterations
+    meandata_duaIterate_file = generate_meandata_file(
+        max_iterations=config.duaIterate_max_iterations
     )
 
     # 12. Generate edgedata file
     generate_edgedata_file(
-        max_iterations=config.dueIterate_max_iterations,
-        meandata_dueiterate_file=meandata_dueiterate_file,
+        max_iterations=config.duaIterate_max_iterations,
+        meandata_duaIterate_file=meandata_duaIterate_file,
     )
 
     # 13. Process edgedata file
-    process_edgedata_file(
-        max_iterations=config.dueIterate_max_iterations,
-        output_file=EDGEDATA_DUEITERATE_PROCESSED,
+    process_edgedata_duaIterate(
+        max_iterations=config.duaIterate_max_iterations,
+        output_file=EDGEDATA_duaIterate_PROCESSED,
     )
 
     ######
@@ -236,55 +235,55 @@ def check_DUE_convergence_dueIterate(scen, end_time, time_interval):
         time_interval=time_interval,
         network=config.network,
         threshold_density=config.threshold_density,
-        output_file=COST_LINKS_DUEITERATE,
+        output_file=COST_LINKS_duaIterate,
         agents_od_file=AGENTS_OD,
-        vehroute_file=VEHROUTE_DUEITERATE_PROCESSED,
-        edgedata_file=EDGEDATA_DUEITERATE_PROCESSED,
-        missingness_edge_file=MISSINGNESS_DUEITERATE_EDGE,
-        missingness_episode_file=MISSINGNESS_DUEITERATE_EPISODE,
-        missingness_interval_file=MISSINGNESS_DUEITERATE_INT,
-        missingness_report_file=MISSINGNESS_DUEITERATE_REPORT,
+        vehroute_file=VEHROUTE_duaIterate_PROCESSED,
+        edgedata_file=EDGEDATA_duaIterate_PROCESSED,
+        missingness_edge_file=MISSINGNESS_duaIterate_EDGE,
+        missingness_episode_file=MISSINGNESS_duaIterate_EPISODE,
+        missingness_interval_file=MISSINGNESS_duaIterate_INT,
+        missingness_report_file=MISSINGNESS_duaIterate_REPORT,
     )
 
     # 14.2. Transform the parquet travel time links file into a XML file for duarouter TDSP
     generate_weights_xmls(
-        cost_links=COST_LINKS_DUEITERATE, weights_dir=WEIGHTS_DIR_DUEITERATE
+        cost_links=COST_LINKS_duaIterate, weights_dir=WEIGHTS_DIR_duaIterate
     )
 
     # 14.3. Compute the time dependence shortest paths
     compute_time_dependent_shortest_paths(
         config.network,
         config.seed,
-        weights_dir=WEIGHTS_DIR_DUEITERATE,
-        shortest_path_dir=SHORTEST_PATHS_DIR_DUEITERATE,
+        weights_dir=WEIGHTS_DIR_duaIterate,
+        shortest_path_dir=SHORTEST_PATHS_DIR_duaIterate,
     )
 
     # 14.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
     compute_cost_min_paths_odt_k(
         time_interval=time_interval,
-        shortest_path_dir=SHORTEST_PATHS_DIR_DUEITERATE,
-        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
+        shortest_path_dir=SHORTEST_PATHS_DIR_duaIterate,
+        cost_min_paths=COST_MIN_PATHS_duaIterate,
     )
 
-    # 14.5. Delete some files generated on DUE convergence check
-    delete_files_DUE_convergence(
-        weights_dir=WEIGHTS_DIR_DUEITERATE,
-        shortest_paths_dir=SHORTEST_PATHS_DIR_DUEITERATE,
+    # 14.5. Delete some files generated on due convergence check
+    delete_files_due_convergence(
+        weights_dir=WEIGHTS_DIR_duaIterate,
+        shortest_paths_dir=SHORTEST_PATHS_DIR_duaIterate,
     )
 
     # Computation Rgap
     compute_rgap_and_refined_rgap(
-        flow_paths=FLOWS_PATH_DUEITERATE,
-        cost_paths=COST_PATHS_DUEITERATE,
-        cost_min_paths=COST_MIN_PATHS_DUEITERATE,
-        rgap_path=RGAP_DUEITERATE,
-        refined_rgap_path=REFINED_RGAP_DUEITERATE,
-        rgap_by_od_path=RGAP_BY_OD_DUEITERATE,
-        refined_rgap_by_od_path=REFINED_RGAP_BY_OD_DUEITERATE,
+        flow_paths=FLOWS_PATH_duaIterate,
+        cost_paths=COST_PATHS_duaIterate,
+        cost_min_paths=COST_MIN_PATHS_duaIterate,
+        rgap_path=RGAP_duaIterate,
+        refined_rgap_path=REFINED_RGAP_duaIterate,
+        rgap_by_od_path=RGAP_BY_OD_duaIterate,
+        refined_rgap_by_od_path=REFINED_RGAP_BY_OD_duaIterate,
     )
 
     ################
-    # 15. Delete dueIterate folders
-    delete_dueIterate_folders(config.dueIterate_max_iterations)
-    for file in UNDESIRED_DUEITERATE_FILES:
+    # 15. Delete duaIterate folders
+    delete_duaIterate_folders(config.duaIterate_max_iterations)
+    for file in UNDESIRED_duaIterate_FILES:
         file.unlink()

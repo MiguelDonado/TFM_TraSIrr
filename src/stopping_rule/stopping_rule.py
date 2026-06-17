@@ -1,4 +1,5 @@
 import numpy as np
+
 from config.config import config
 
 ##########
@@ -9,7 +10,7 @@ from config.config import config
 def check_convergence(policies_history, episode, no_change_count):
 
     # Get the maximum policy change across all agents
-    mean_policy_change = compute_mean_policy_change(policies_history, episode)
+    mean_policy_change = _compute_mean_policy_change(policies_history, episode)
 
     # Skip warm-up
     if mean_policy_change is None:
@@ -48,7 +49,7 @@ def create_policies_dict(BM_agents):
     return policies_dict
 
 
-def compute_mean_policy_change(policies_history, episode):
+def _compute_mean_policy_change(policies_history, episode):
     """
     Computes the mean L1 policy change
     between consecutive episodes across all agents.

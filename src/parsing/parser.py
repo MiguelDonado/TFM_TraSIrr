@@ -36,14 +36,14 @@ class Parser:
         for ts in timesteps:
             t = float(ts.get("time"))
 
-            for v in ts.xpath("vehicle"):
+            for vehicle_elem in ts.xpath("vehicle"):
                 rows.append(
                     {
                         "episode": episode,
                         "timestep": t,
-                        "vehicle_id": v.get("id"),
-                        "x": float(v.get("x")),
-                        "y": float(v.get("y")),
+                        "vehicle_id": vehicle_elem.get("id"),
+                        "x": float(vehicle_elem.get("x")),
+                        "y": float(vehicle_elem.get("y")),
                     }
                 )
         return rows

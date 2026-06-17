@@ -5,8 +5,6 @@ from collections import defaultdict
 
 import pandas as pd
 from lxml import etree
-from utils.od_routes import od_routes_to_rows
-from utils.sumo_xml import write_meandata_file
 
 from config.config import config
 from experiment import parse_edgedata, parse_trips_info, parse_vehroute
@@ -16,9 +14,11 @@ from paths import (
     DEMAND_ODT,
     FREE_FLOW_TRAVEL_TIMES,
     TIMES_INTERVAL,
-    TRIPS_DUEITERATE,
     TRIPS_TDSP,
+    TRIPS_duaIterate,
 )
+from utils.od_routes import od_routes_to_rows
+from utils.sumo_xml import write_meandata_file
 
 
 def compute_flows_odtp_k(actions_path, output_file):
@@ -175,7 +175,7 @@ def compute_travel_time_links_t_k(
 
     # 11. Create time interval
     time_intervals_table = pd.read_parquet(TIMES_INTERVAL)
-    # Clamp to handle dueIterate case (some vehicles insertion is delayed, and so departure time is change a little bit, and some vehicles depart beyond 4200 sec,
+    # Clamp to handle duaIterate case (some vehicles insertion is delayed, and so departure time is change a little bit, and some vehicles depart beyond 4200 sec,
     # and so it creates artificial intervals. We just change interval to which those vehicles belong, but their travel times and everything else remain equal
     max_interval = (time_intervals_table["interval"]).max()
     df_edges["time_interval"] = (df_edges["entry_time"] // delta_t).astype(int)
@@ -408,7 +408,7 @@ def compute_time_dependent_shortest_paths(
     for episode in range(1, episodes + 1):
         routes_file = shortest_path_dir / f"shortest_path_episode_{episode}.xml"
         weights_file = weights_dir / f"Weights_episode_{episode}.xml"
-        __run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
+        run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
 
 
 def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_paths):
@@ -506,12 +506,12 @@ def compute_rgap_and_refined_rgap(
     df["min_cost"] = df["min_cost"].astype("float32")
 
     # Compute 2 versions rgap
-    compute_rgap(df, rgap_path)
-    compute_redefined_rgap(df, refined_rgap_path)
+    _compute_rgap(df, rgap_path)
+    _compute_redefined_rgap(df, refined_rgap_path)
 
     # Compute rgap versions by od
-    compute_rgap_by_od(df, rgap_by_od_path)
-    compute_redefined_rgap_by_od(df, refined_rgap_by_od_path)
+    _compute_rgap_by_od(df, rgap_by_od_path)
+    _compute_redefined_rgap_by_od(df, refined_rgap_by_od_path)
 
 
 def _compute_rgap_generic(df, group_keys, output_col, output_path):
@@ -537,11 +537,11 @@ def _compute_rgap_generic(df, group_keys, output_col, output_path):
     result.to_parquet(output_path)
 
 
-def compute_rgap(df, rgap_path):
+def _compute_rgap(df, rgap_path):
     _compute_rgap_generic(df, ["episode"], "rgap", rgap_path)
 
 
-def compute_redefined_rgap(df, refined_rgap_path):
+def _compute_redefined_rgap(df, refined_rgap_path):
     """
     Like rgap but for each interval
     """
@@ -550,7 +550,7 @@ def compute_redefined_rgap(df, refined_rgap_path):
     )
 
 
-def compute_rgap_by_od(df, rgap_by_od_path):
+def _compute_rgap_by_od(df, rgap_by_od_path):
     """
     Compute relative gap (rgap) for each episode and OD pair
     """
@@ -559,7 +559,7 @@ def compute_rgap_by_od(df, rgap_by_od_path):
     )
 
 
-def compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
+def _compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
     """
     Compute redefined rgap, for each episode, OD pair and time interval
     """
@@ -638,7 +638,7 @@ def generate_trips_odt_file():
         f.write("</routes>\n")
 
 
-def __run_duarouter(network, trips_file, routes_file, weights_file, seed):
+def run_duarouter(network, trips_file, routes_file, weights_file, seed):
     cmd = [
         "duarouter",
         "-n",
@@ -665,14 +665,14 @@ def __run_duarouter(network, trips_file, routes_file, weights_file, seed):
         alt_route_file_to_delete.unlink()
 
 
-def delete_files_DUE_convergence(weights_dir, shortest_paths_dir):
+def delete_files_due_convergence(weights_dir, shortest_paths_dir):
     """
     This folders may contain too many files
     """
     # Target folders
-    TARGET_FOLDERS = [weights_dir, shortest_paths_dir]
+    folders_to_clear = [weights_dir, shortest_paths_dir]
 
-    for folder in TARGET_FOLDERS:
+    for folder in folders_to_clear:
         if folder.is_dir():
             for item in folder.iterdir():
                 if item.is_file():
@@ -681,11 +681,11 @@ def delete_files_DUE_convergence(weights_dir, shortest_paths_dir):
 
 #####################
 #####################
-# DUEITERATE
+# duaIterate
 #####################
 #####################
 def generate_trips_file_duaIterate(agents):
-    with open(TRIPS_DUEITERATE, "w") as f:
+    with open(TRIPS_duaIterate, "w") as f:
         f.write(f"<routes>\n")
         for i, agent in enumerate(agents):
             f.write(
@@ -694,13 +694,13 @@ def generate_trips_file_duaIterate(agents):
         f.write("</routes>\n")
 
 
-def call_dueIterate(network, max_iterations):
+def call_duaIterate(network, max_iterations):
     cmd = [
         "duaIterate.py",
         "-n",
         network,
         "-t",
-        TRIPS_DUEITERATE,
+        TRIPS_duaIterate,
         "--last-step",
         str(max_iterations),
         "sumo--step-length",
@@ -714,14 +714,14 @@ def call_dueIterate(network, max_iterations):
     subprocess.run(cmd, check=True)
 
 
-def run_simulation_dueIterate(max_iterations):
+def run_simulation_duaIterate(max_iterations):
     folder_number = _last_iteration_folder(max_iterations)
     path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
     cmd = ["sumo-gui", "-c", path_config_file]
     subprocess.run(cmd, check=True)
 
 
-def delete_dueIterate_folders(max_iterations):
+def delete_duaIterate_folders(max_iterations):
     target_numbers = [str(number).zfill(3) for number in range(max_iterations)]
 
     for number in target_numbers:
@@ -729,25 +729,25 @@ def delete_dueIterate_folders(max_iterations):
         shutil.rmtree(path_to_delete)
 
 
-def extract_routes_file_dueIterate(max_iterations):
+def extract_routes_file_duaIterate(max_iterations):
     folder_number = _last_iteration_folder(max_iterations)
 
-    # Path of the folder that contains last iteration dueIterate
+    # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
 
-    # Path of gzip file that contains routes generated from dueIterate
-    gzip_path = folder_path / f"trips_dueIterate_{folder_number}.rou.xml.gz"
+    # Path of gzip file that contains routes generated from duaIterate
+    gzip_path = folder_path / f"trips_duaIterate_{folder_number}.rou.xml.gz"
 
-    # Path of xml file that contains routes generated from dueIterate
-    xml_path = folder_path / f"trips_dueIterate_{folder_number}.rou.xml"
+    # Path of xml file that contains routes generated from duaIterate
+    xml_path = folder_path / f"trips_duaIterate_{folder_number}.rou.xml"
 
-    # Decompress gzip file to get xml file with routes generated from dueIterate
-    __decompress_gzip(gzip_path, xml_path)
+    # Decompress gzip file to get xml file with routes generated from duaIterate
+    _decompress_gzip(gzip_path, xml_path)
 
     return xml_path
 
 
-def __decompress_gzip(gzip_path, xml_path):
+def _decompress_gzip(gzip_path, xml_path):
     """
     Decompress a gzip file
     """
@@ -756,24 +756,24 @@ def __decompress_gzip(gzip_path, xml_path):
             shutil.copyfileobj(f_in, f_out)
 
 
-def compute_od_routes_table_dueIterate(routes_file, output_file):
+def compute_od_routes_table_duaIterate(routes_file, output_file):
     """
     This function computes the od routes table used during computation Rgap
     """
     # Dictionary with agents_id as keys, and routes (list of edges) as values
-    dict_agent_routes = __parse_routes(routes_file)
+    dict_agent_routes = _parse_routes(routes_file)
 
     # Extract all routes used by agents (route = all its edges)
     all_routes = dict_agent_routes.values()
 
     # Get unique routes (route = all its edges)
-    unique_routes = __get_unique_routes(all_routes)
+    unique_routes = _get_unique_routes(all_routes)
 
     # Build od_routes dictionary
-    od_routes = __build_od_routes_dict(unique_routes)
+    od_routes = _build_od_routes_dict(unique_routes)
 
     # Put od_routes in right format to store in parquet file
-    processed_od_routes = __process_od_routes(od_routes)
+    processed_od_routes = _process_od_routes(od_routes)
 
     df = pd.DataFrame(processed_od_routes)
     df.to_parquet(output_file, engine="pyarrow")
@@ -781,7 +781,7 @@ def compute_od_routes_table_dueIterate(routes_file, output_file):
     return dict_agent_routes, od_routes
 
 
-def __parse_routes(routes_file):
+def _parse_routes(routes_file):
     """
     Returns a dictionary that contains:
     - keys: agents_id
@@ -792,22 +792,22 @@ def __parse_routes(routes_file):
 
     # Routes
     vehicles = tree.xpath("//vehicle")
-    agents_id = [vehicle.xpath("@id")[0] for vehicle in vehicles]
+    agent_ids = [vehicle.xpath("@id")[0] for vehicle in vehicles]
     routes = [vehicle.xpath("route/@edges")[0] for vehicle in vehicles]
     edges = [route.split(" ") for route in routes]
 
     # Check
-    assert len(edges) == len(agents_id)
+    assert len(edges) == len(agent_ids)
 
-    return dict(zip(agents_id, edges))
+    return dict(zip(agent_ids, edges))
 
 
-def __get_unique_routes(routes):
+def _get_unique_routes(routes):
     unique_routes = [list(x) for x in set(tuple(inner) for inner in routes)]
     return unique_routes
 
 
-def __build_od_routes_dict(unique_routes):
+def _build_od_routes_dict(unique_routes):
     # Initialize dictionary that will store as keys unique ods, and as values a list with all the used routes for that od
     od_routes = defaultdict(list)
     for route in unique_routes:
@@ -816,7 +816,7 @@ def __build_od_routes_dict(unique_routes):
     return od_routes
 
 
-def __process_od_routes(od_routes):
+def _process_od_routes(od_routes):
     """
     I want this format
     origin | dest | route_id | step | edge
@@ -826,7 +826,7 @@ def __process_od_routes(od_routes):
     return od_routes_to_rows(od_routes)
 
 
-def compute_actions_table_dueIterate(agents, dict_agent_routes, od_routes, output_file):
+def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes, output_file):
     """
     Compute actions table used during Rgap computation
     """
@@ -843,21 +843,21 @@ def compute_actions_table_dueIterate(agents, dict_agent_routes, od_routes, outpu
     df.to_parquet(output_file, engine="pyarrow")
 
 
-def process_trips_info_dueiterate(max_iterations, output_file):
+def process_trips_info_duaIterate(max_iterations, output_file):
     """
     Builds the processed trips info file
     """
     folder_number = _last_iteration_folder(max_iterations)
 
-    # Path of the folder that contains last iteration dueIterate
+    # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
 
     # Raw trips info path
-    trips_info_dueiterate_path = folder_path / f"tripinfo_{folder_number}.xml"
+    trips_info_duaIterate_path = folder_path / f"tripinfo_{folder_number}.xml"
 
     # Parse trips info
     processed_data = parse_trips_info(
-        episode=1, trips_info_path=trips_info_dueiterate_path
+        episode=1, trips_info_path=trips_info_duaIterate_path
     )
 
     # Save trips info processed data in a parquet file
@@ -865,13 +865,13 @@ def process_trips_info_dueiterate(max_iterations, output_file):
     df.to_parquet(output_file, engine="pyarrow")
 
 
-def process_vehroute_dueIterate(max_iterations, output_file):
+def process_vehroute_duaIterate(max_iterations, output_file):
     """
     Builds the processed vehroute file
     """
     folder_number = _last_iteration_folder(max_iterations)
 
-    # Path of the folder that contains last iteration dueIterate
+    # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
 
     # Raw vehroutes path
@@ -888,17 +888,17 @@ def process_vehroute_dueIterate(max_iterations, output_file):
 def generate_meandata_file(max_iterations):
     folder_number = _last_iteration_folder(max_iterations)
 
-    # Path of the folder that contains last iteration dueIterate
+    # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
 
-    path = folder_path / "meandata_dueiterate.xml"
+    path = folder_path / "meandata_duaIterate.xml"
 
-    write_meandata_file(path, "../edgedata_dueiterate.xml", config.time_interval)
+    write_meandata_file(path, "../edgedata_duaIterate.xml", config.time_interval)
 
     return path
 
 
-def generate_edgedata_file(max_iterations, meandata_dueiterate_file):
+def generate_edgedata_file(max_iterations, meandata_duaIterate_file):
     folder_number = _last_iteration_folder(max_iterations)
     path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
 
@@ -917,23 +917,23 @@ def generate_edgedata_file(max_iterations, meandata_dueiterate_file):
         "-c",
         path_config_file,
         "--additional-files",
-        meandata_dueiterate_file,
+        meandata_duaIterate_file,
     ]
 
     subprocess.run(cmd, check=True)
 
 
-def process_edgedata_file(max_iterations, output_file):
+def process_edgedata_duaIterate(max_iterations, output_file):
     """
     Builds the processed vehroute file
     """
     folder_number = _last_iteration_folder(max_iterations)
 
-    # Path of the folder that contains last iteration dueIterate
+    # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
 
     # Raw edgedata path
-    edgedata_path = folder_path / "edgedata_dueiterate.xml"
+    edgedata_path = folder_path / "edgedata_duaIterate.xml"
 
     # Parse edgedata
     processed_data = parse_edgedata(episode=1, edgedata_path=edgedata_path)
@@ -945,7 +945,7 @@ def process_edgedata_file(max_iterations, output_file):
 
 def _last_iteration_folder(max_iterations: int):
     """
-    Return zero-padded folder name for the last dueIterate iteration.
+    Return zero-padded folder name for the last duaIterate iteration.
     """
     return str(max_iterations - 1).zfill(3)
 

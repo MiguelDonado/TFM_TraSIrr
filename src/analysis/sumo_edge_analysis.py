@@ -1,13 +1,13 @@
 """
 This file is used to handle the color edge visualization in SUMO.
-We will compare results of last episode BM with results of last iteration dueIterate
+We will compare results of last episode BM with results of last iteration duaIterate
 
 Several metrics could be used:
 1. entered: Measures edge usage
 2. density: Measures congestion
 3. travel time: Great for DUE analysis (compare costs)
 
-It is important to make sure that we are using the same scale for both visualizations (BM and dueIterate) and for all intervals,
+It is important to make sure that we are using the same scale for both visualizations (BM and duaIterate) and for all intervals,
 the function max_value implements that logic.
 
 Some gotchas regarding the metrics:
@@ -24,14 +24,16 @@ Already checked in sumo-gui that density metric makes sense (not monotonic incre
 """
 
 import subprocess
-from paths import TIMES_INTERVAL
-import pandas as pd
 from shutil import copy2
-from lxml import etree
-import numpy as np
-from config.config import config
 
-# routes = [ROUTES, ROUTES_DUEITERATE]
+import numpy as np
+import pandas as pd
+from lxml import etree
+
+from config.config import config
+from paths import TIMES_INTERVAL
+
+# routes = [ROUTES, ROUTES_duaIterate]
 # for route in routes:
 #     run_edge_visualization(
 #         aggregated=False,
@@ -40,7 +42,7 @@ from config.config import config
 #         generic_gui_settings=GUI_SETTINGS,
 #         gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
 #         edgedata_BM_file=EDGEDATA_PARQUET,
-#         edgedata_dueIterate_file=EDGEDATA_DUEITERATE_PROCESSED,
+#         edgedata_duaIterate_file=EDGEDATA_duaIterate_PROCESSED,
 #         generic_meandata=MEANDATA,
 #         meandata_visualization=MEANDATA_AGGREGATED,
 #         routes_file=route,
@@ -55,7 +57,7 @@ def run_edge_visualization(
     generic_gui_settings,
     gui_settings_visualization,
     edgedata_BM_file,
-    edgedata_dueIterate_file,
+    edgedata_duaIterate_file,
     generic_meandata,
     meandata_visualization,
     routes_file,
@@ -65,7 +67,7 @@ def run_edge_visualization(
 ):
     """
     The purpose of this function is to run the final episode of whatever algorithm,
-    and perform the one of the following visualizations:
+    and perform one of the following visualizations:
         - overall edge usage ("entered" metric)
         - interval specific visualizations ("entered" metric)
     """
@@ -83,7 +85,7 @@ def run_edge_visualization(
         gui_settings_visualization=gui_settings_visualization,
         aggregated=aggregated,
         edgedata_BM_file=edgedata_BM_file,
-        edgedata_dueIterate_file=edgedata_dueIterate_file,
+        edgedata_duaIterate_file=edgedata_duaIterate_file,
         metric=metric,
         period=period,
     )
@@ -96,14 +98,14 @@ def run_edge_visualization(
         period=period,
     )
 
-    # 3. Update config file (add gui-settings file)
+    # 4. Update config file (add gui-settings file)
     update_config(
         config_visualization=config_visualization,
         gui_settings_visualization=gui_settings_visualization,
         meandata_visualization=meandata_visualization,
     )
 
-    # 4. Run episode
+    # 5. Run episode
     cmd = [
         "sumo-gui",
         "-c",
@@ -157,7 +159,7 @@ def create_gui_settings(
     generic_gui_settings,
     gui_settings_visualization,
     metric,
-    edgedata_dueIterate_file,
+    edgedata_duaIterate_file,
     edgedata_BM_file,
     aggregated,
     period,
@@ -172,22 +174,22 @@ def create_gui_settings(
     # 1. Copy generic gui-settings file
     copy2(generic_gui_settings, gui_settings_visualization)
 
-    # 2. Get max value of given metric (between BM and dueIterate) edgeData file
-    max_value = __get_max_value(
+    # 2. Get max value of given metric (between BM and duaIterate) edgeData file
+    max_value = get_max_value(
         metric=metric,
-        edgedata_dueIterate_file=edgedata_dueIterate_file,
+        edgedata_duaIterate_file=edgedata_duaIterate_file,
         edgedata_BM_file=edgedata_BM_file,
         aggregated=aggregated,
     )
 
     # 3. Compute the right threholds
-    list_color_thresholds = __compute_color_scale(max_value)
+    list_color_thresholds = compute_color_scale(max_value)
 
     # 4. Update gui_settings with the right thresholds
-    __set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds)
+    set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds)
 
     # 5. Update attributes gui-settings
-    __set_attributes_gui_settings(
+    set_attributes_gui_settings(
         metric=metric,
         aggregated=aggregated,
         gui_settings_visualization=gui_settings_visualization,
@@ -195,7 +197,7 @@ def create_gui_settings(
 
     # 6. Set breakpoints
     if not aggregated:
-        __set_breakpoints_gui_settings(
+        set_breakpoints_gui_settings(
             gui_settings_visualization=gui_settings_visualization, period=period
         )
 
@@ -220,7 +222,7 @@ def create_meandata(generic_meandata, meandata_visualization, aggregated, period
 
     else:
         edge_data.attrib["period"] = str(period)
-        edge_data.attrib["id"] = "dissagregated"
+        edge_data.attrib["id"] = "disaggregated"
 
     tree.write(
         str(meandata_visualization),
@@ -264,8 +266,8 @@ def update_config(
 ############
 
 
-def __get_max_value(
-    metric, edgedata_dueIterate_file, edgedata_BM_file, aggregated, period=900
+def get_max_value(
+    metric, edgedata_duaIterate_file, edgedata_BM_file, aggregated, period=900
 ):
     """
     Get the max value of the metric, so the scale of colors can be set appropiately
@@ -300,9 +302,9 @@ def __get_max_value(
 
         return df_grouped[metric].max()
 
-    # dueIterate
-    df_due = pd.read_parquet(edgedata_dueIterate_file)
-    max_value_dueIterate = process_df(df_due, aggregated)
+    # duaIterate
+    df_due = pd.read_parquet(edgedata_duaIterate_file)
+    max_value_duaIterate = process_df(df_due, aggregated)
 
     # BM last episode
     df_BM = pd.read_parquet(edgedata_BM_file)
@@ -310,17 +312,17 @@ def __get_max_value(
     df_BM = df_BM[df_BM["episode"] == last_episode]
     max_value_BM = process_df(df_BM, aggregated)
 
-    return max(max_value_dueIterate, max_value_BM)
+    return max(max_value_duaIterate, max_value_BM)
 
 
-def __compute_color_scale(max_value):
+def compute_color_scale(max_value):
     """
     Compute the appropiate thresholds for the scale of colors
     """
     return np.round(np.linspace(0, max_value, 7), 2)
 
 
-def __set_attributes_gui_settings(aggregated, gui_settings_visualization, metric):
+def set_attributes_gui_settings(aggregated, gui_settings_visualization, metric):
     """
     Update edgeDataID and edgeData attributes
     """
@@ -330,7 +332,7 @@ def __set_attributes_gui_settings(aggregated, gui_settings_visualization, metric
     if aggregated:
         edges.attrib["edgeDataID"] = "aggregated"
     else:
-        edges.attrib["edgeDataID"] = "dissagregated"
+        edges.attrib["edgeDataID"] = "disaggregated"
 
     if metric == "entered":
         edges.attrib["edgeData"] = "entered"
@@ -346,7 +348,7 @@ def __set_attributes_gui_settings(aggregated, gui_settings_visualization, metric
     )
 
 
-def __set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds):
+def set_color_scale_gui_settings(gui_settings_visualization, list_color_thresholds):
     """
     Update the scale of colors thresholds in gui-settings
     """
@@ -369,12 +371,22 @@ def __set_color_scale_gui_settings(gui_settings_visualization, list_color_thresh
     )
 
 
-def __set_breakpoints_gui_settings(
+def set_breakpoints_gui_settings(
     gui_settings_visualization,
     period,
 ):
+    # SUMO-GUI breakpoint fires 2 s before the interval boundary, otherwise the visualization is reseted and
+    # colors cannot be visualized anymore
+    BREAKPOINT_LEAD_S = 2
+
     # 0. Compute list of breakpoints
-    breakpoints = list(range(period - 2, config.end_time + period - 2, period))
+    breakpoints = list(
+        range(
+            period - BREAKPOINT_LEAD_S,
+            config.end_time + period - BREAKPOINT_LEAD_S,
+            period,
+        )
+    )
 
     # 1. Add breakpoints
     tree = etree.parse(gui_settings_visualization)

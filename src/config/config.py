@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 from lxml import etree
+
 from utils.network import get_edge_lengths
 
 
@@ -138,8 +139,8 @@ class Config:
     # of the link. If higher than threshold we assign fill forward. Otherwise free flow.
     threshold_density: int = 10
 
-    # dueIterate
-    dueIterate_max_iterations: int = 10
+    # duaIterate
+    duaIterate_max_iterations: int = 10
 
     #####################
     # 10. Mode & flags
@@ -148,7 +149,7 @@ class Config:
     have_precomputed_routes: bool = False
     episodes_gui: set[int] = field(default_factory=lambda: {})
     last_episode_gui_BM: bool = False
-    last_episode_gui_dueIterate: bool = False
+    last_episode_gui_duaIterate: bool = False
 
     #####################
     # Derived values

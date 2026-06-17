@@ -10,12 +10,13 @@ I will use avg_speed / free_flow_speed as the ratio used to measure congestion
 
 """
 
+import numpy as np
+
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
 from paths import MAP
 from scripts.get_free_flow_speed import get_free_flow_speed
 from scripts.get_total_length_network import get_total_length_network
-import numpy as np
 
 
 def demand_calibration(last_iteration_gui=True):
@@ -24,12 +25,12 @@ def demand_calibration(last_iteration_gui=True):
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
-    initial_demand = compute_initial_guess()
-    demand = calibration_loop(initial_demand, last_iteration_gui)
+    initial_demand = _compute_initial_guess()
+    demand = _calibration_loop(initial_demand, last_iteration_gui)
     return demand
 
 
-def compute_initial_guess():
+def _compute_initial_guess():
     """
     Initial guess (using heuristic length network)
     """
@@ -40,7 +41,7 @@ def compute_initial_guess():
     return demand
 
 
-def calibration_loop(initial_demand, last_iteration_gui):
+def _calibration_loop(initial_demand, last_iteration_gui):
     ################################################
     ################################################
     # Calibration loop

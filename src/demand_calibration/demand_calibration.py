@@ -1,7 +1,5 @@
 import subprocess
 
-from utils.sumo_xml import write_sumo_conf
-
 from config.config import config
 from paths import (
     NET,
@@ -11,6 +9,7 @@ from paths import (
     TRIPS_DEMAND_CALIBRATION,
 )
 from scripts.get_avg_speed import get_avg_speed
+from utils.sumo_xml import write_sumo_conf
 
 
 class DemandCalibration:
@@ -19,7 +18,7 @@ class DemandCalibration:
         self.free_flow_speed = free_flow_speed
         self.n_agents = n_agents
 
-    def generate_trips(self):
+    def _generate_trips(self):
         cmd = [
             "randomTrips.py",
             "-n",
@@ -45,7 +44,7 @@ class DemandCalibration:
 
         subprocess.run(cmd, check=True)
 
-    def generate_conf(self):
+    def _generate_conf(self):
         """
         Create SUMO Config file
         """
@@ -69,8 +68,8 @@ class DemandCalibration:
         subprocess.run(cmd)
 
     def compute_congestion_ratio(self):
-        self.generate_trips()
-        self.generate_conf()
+        self._generate_trips()
+        self._generate_conf()
         self.run_episode()
         self.avg_speed = get_avg_speed(
             config.warm_up_time, summary_filepath=SUMMARY_XML

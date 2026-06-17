@@ -26,7 +26,7 @@ OD_MATRIX_DIR = DATA_DIR / "od_matrix"
 INTERNAL_DATA_DIR = DATA_DIR / "internal"
 DUE_DATA_DIR = DATA_DIR / "DUE"
 DUE_DATA_BM = DUE_DATA_DIR / "BM"
-DUE_DATA_dueIterate = DUE_DATA_DIR / "dueIterate"
+DUE_DATA_duaIterate = DUE_DATA_DIR / "duaIterate"
 
 FIGURES_DIR = BASE_DIR / "output" / "figures"
 
@@ -140,52 +140,52 @@ MISSINGNESS_EPISODE = MISSINGNESS_DIR / "missingness_by_episode.parquet"
 MISSINGNESS_REPORT = MISSINGNESS_DIR / "missingness_report.txt"
 
 # ============================================================
-# DUE data dueIterate-specific
+# DUE data duaIterate-specific
 # ============================================================
-TDSP_DIR_DUEITERATE = DUE_DATA_dueIterate / "TDSP"
-WEIGHTS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "weights"
-SHORTEST_PATHS_DIR_DUEITERATE = TDSP_DIR_DUEITERATE / "shortest_paths"
-RGAP_DIR_DUEITERATE = DUE_DATA_dueIterate / "R-gap"
+TDSP_DIR_duaIterate = DUE_DATA_duaIterate / "TDSP"
+WEIGHTS_DIR_duaIterate = TDSP_DIR_duaIterate / "weights"
+SHORTEST_PATHS_DIR_duaIterate = TDSP_DIR_duaIterate / "shortest_paths"
+RGAP_DIR_duaIterate = DUE_DATA_duaIterate / "R-gap"
 
-FLOWS_PATH_DUEITERATE = DUE_DATA_dueIterate / "flows_path_dueiterate.parquet"
-COST_PATHS_DUEITERATE = DUE_DATA_dueIterate / "costs_paths_odtp_k_dueIterate.parquet"
-COST_LINKS_DUEITERATE = TDSP_DIR_DUEITERATE / "costs_links_dueiterate_t_k.parquet"
-COST_MIN_PATHS_DUEITERATE = (
-    DUE_DATA_dueIterate / "costs_min_paths_odtp_k_dueIterate.parquet"
+FLOWS_PATH_duaIterate = DUE_DATA_duaIterate / "flows_path_duaIterate.parquet"
+COST_PATHS_duaIterate = DUE_DATA_duaIterate / "costs_paths_odtp_k_duaIterate.parquet"
+COST_LINKS_duaIterate = TDSP_DIR_duaIterate / "costs_links_duaIterate_t_k.parquet"
+COST_MIN_PATHS_duaIterate = (
+    DUE_DATA_duaIterate / "costs_min_paths_odtp_k_duaIterate.parquet"
 )
-TRIPS_DUEITERATE = TDSP_DIR_DUEITERATE / "trips_dueIterate.xml"
-OD_ROUTES_DUEITERATE = DUE_DATA_dueIterate / "od_routes_dueiterate.parquet"
-ACTIONS_DUEITERATE = DUE_DATA_dueIterate / "actions_dueiterate.parquet"
-TRIPS_INFO_PROCESSED_DUEITERATE = (
-    DUE_DATA_dueIterate / "trips_info_processed_duaiterate.parquet"
+TRIPS_duaIterate = TDSP_DIR_duaIterate / "trips_duaIterate.xml"
+OD_ROUTES_duaIterate = DUE_DATA_duaIterate / "od_routes_duaIterate.parquet"
+ACTIONS_duaIterate = DUE_DATA_duaIterate / "actions_duaIterate.parquet"
+TRIPS_INFO_PROCESSED_duaIterate = (
+    DUE_DATA_duaIterate / "trips_info_processed_duaIterate.parquet"
 )
-VEHROUTE_DUEITERATE_PROCESSED = DUE_DATA_dueIterate / "vehroute_dueiterate.parquet"
-EDGEDATA_DUEITERATE_PROCESSED = (
-    DUE_DATA_dueIterate / "edgedata" / "edgedata_dueiterate.parquet"
+VEHROUTE_duaIterate_PROCESSED = DUE_DATA_duaIterate / "vehroute_duaIterate.parquet"
+EDGEDATA_duaIterate_PROCESSED = (
+    DUE_DATA_duaIterate / "edgedata" / "edgedata_duaIterate.parquet"
 )
 
-RGAP_DUEITERATE = RGAP_DIR_DUEITERATE / "rgap.parquet"
-REFINED_RGAP_DUEITERATE = RGAP_DIR_DUEITERATE / "refined_rgap.parquet"
-RGAP_BY_OD_DUEITERATE = RGAP_DIR_DUEITERATE / "rgap_by_od.parquet"
-REFINED_RGAP_BY_OD_DUEITERATE = RGAP_DIR_DUEITERATE / "refined_rgap_by_od.parquet"
+RGAP_duaIterate = RGAP_DIR_duaIterate / "rgap.parquet"
+REFINED_RGAP_duaIterate = RGAP_DIR_duaIterate / "refined_rgap.parquet"
+RGAP_BY_OD_duaIterate = RGAP_DIR_duaIterate / "rgap_by_od.parquet"
+REFINED_RGAP_BY_OD_duaIterate = RGAP_DIR_duaIterate / "refined_rgap_by_od.parquet"
 
-ROUTES_DUEITERATE = SUMO_DIR / "routes" / "routes_dueiterate.rou.xml"
+ROUTES_duaIterate = SUMO_DIR / "routes" / "routes_duaIterate.rou.xml"
 
 # =============
-# Missingness dueIterate-specific
+# Missingness duaIterate-specific
 # =============
-MISSINGNESS_DIR_DUEITERATE = DUE_DATA_dueIterate / "missingness"
-MISSINGNESS_DUEITERATE_INT = (
-    MISSINGNESS_DIR_DUEITERATE / "missingness_dueiterate_by_int.parquet"
+MISSINGNESS_DIR_duaIterate = DUE_DATA_duaIterate / "missingness"
+MISSINGNESS_duaIterate_INT = (
+    MISSINGNESS_DIR_duaIterate / "missingness_duaIterate_by_int.parquet"
 )
-MISSINGNESS_DUEITERATE_EDGE = (
-    MISSINGNESS_DIR_DUEITERATE / "missingness_dueiterate_by_edge.parquet"
+MISSINGNESS_duaIterate_EDGE = (
+    MISSINGNESS_DIR_duaIterate / "missingness_duaIterate_by_edge.parquet"
 )
-MISSINGNESS_DUEITERATE_EPISODE = (
-    MISSINGNESS_DIR_DUEITERATE / "missingness_dueiterate_by_episode.parquet"
+MISSINGNESS_duaIterate_EPISODE = (
+    MISSINGNESS_DIR_duaIterate / "missingness_duaIterate_by_episode.parquet"
 )
-MISSINGNESS_DUEITERATE_REPORT = (
-    MISSINGNESS_DIR_DUEITERATE / "missingness_dueiterate_report.txt"
+MISSINGNESS_duaIterate_REPORT = (
+    MISSINGNESS_DIR_duaIterate / "missingness_duaIterate_report.txt"
 )
 
 
@@ -195,7 +195,7 @@ MISSINGNESS_DUEITERATE_REPORT = (
 
 UNDESIRED_ROUTE_FILE = BASE_DIR / "routes.rou.xml"
 
-UNDESIRED_DUEITERATE_FILES = [
+UNDESIRED_duaIterate_FILES = [
     BASE_DIR / "dua.log",
     BASE_DIR / "stdout.log",
     BASE_DIR / "edgedata.add.xml",

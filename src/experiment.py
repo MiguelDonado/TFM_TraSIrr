@@ -6,32 +6,32 @@ Purpose of this file: Orchestration + Pipeline
 
 import subprocess
 import sys
-import numpy as np
-from lxml import etree
 
+import numpy as np
 import pandas as pd
 import yaml
+from lxml import etree
 
 from config.config import RunMode, config
 from parsing.parser import Parser
 from paths import (
     ACTIONS,
     BM_RESULTS,
-    FCD_XML,
+    EDGEDATA_PARQUET,
+    EDGEDATA_XML,
     FCD_PARQUET,
+    FCD_XML,
     OD_ROUTES,
     REWARDS,
     ROUTES,
-    STATISTICS_XML,
     STATISTICS_PARQUET,
+    STATISTICS_XML,
     SUMO_CONF,
-    TRIPS_INFO_XML,
     TRIPS_INFO_PARQUET,
-    VEHROUTE_XML,
+    TRIPS_INFO_XML,
     VEHROUTE_PARQUET,
+    VEHROUTE_XML,
     YAML_CONF,
-    EDGEDATA_XML,
-    EDGEDATA_PARQUET,
 )
 
 # Load YAML file
@@ -46,14 +46,14 @@ with open(YAML_CONF, "r") as file:
 
 
 def prepare_data(episode, actions, rewards, agents):
-    aggregated_result = parse_aggregated_data(episode)
-    vehroute_result = parse_vehroute(episode, VEHROUTE_XML)
-    trips_info_result = parse_trips_info(episode, TRIPS_INFO_XML)
-    fcd_result = parse_fcd(episode)
-    edgedata_result = parse_edgedata(episode, EDGEDATA_XML)
-    actions = prepare_actions(episode, actions)
-    rewards = prepare_rewards(episode, rewards)
-    BM_result = prepare_BM_data(episode, agents)
+    aggregated_result = _parse_aggregated_data(episode)
+    vehroute_result = _parse_vehroute(episode, VEHROUTE_XML)
+    trips_info_result = _parse_trips_info(episode, TRIPS_INFO_XML)
+    fcd_result = _parse_fcd(episode)
+    edgedata_result = _parse_edgedata(episode, EDGEDATA_XML)
+    actions = _prepare_actions(episode, actions)
+    rewards = _prepare_rewards(episode, rewards)
+    bm_result = _prepare_bm_data(episode, agents)
     return {
         "aggregated_result": aggregated_result,
         "vehroute_result": vehroute_result,
@@ -62,7 +62,7 @@ def prepare_data(episode, actions, rewards, agents):
         "edgedata_result": edgedata_result,
         "actions_result": actions,
         "rewards_result": rewards,
-        "BM_result": BM_result,
+        "BM_result": bm_result,
     }
 
 
@@ -133,7 +133,7 @@ def make_plots():
 ########################################
 
 
-def parse_aggregated_data(episode):
+def _parse_aggregated_data(episode):
     data = {}
     parser = Parser(STATISTICS_XML)
 
@@ -143,11 +143,11 @@ def parse_aggregated_data(episode):
     return {"episode": episode, **data}
 
 
-def parse_vehroute(episode, vehroute_path):
+def _parse_vehroute(episode, vehroute_path):
     data = []
     parser = Parser(vehroute_path)
 
-    data_dict = extract_dict(parser, config["metrics"]["vehroute"])
+    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["vehroute"])
 
     for name, xpath in config["metrics"]["vehroute"].items():
         values = parser.extract_many(xpath, str)
@@ -171,11 +171,11 @@ def parse_vehroute(episode, vehroute_path):
     return data
 
 
-def parse_trips_info(episode, trips_info_path):
+def _parse_trips_info(episode, trips_info_path):
     data = []
     parser = Parser(trips_info_path)
 
-    data_dict = extract_dict(parser, config["metrics"]["tripsinfo"])
+    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["tripsinfo"])
 
     for vid, arrival, duration, length, time_loss in zip(
         data_dict["vehicles"],
@@ -197,20 +197,20 @@ def parse_trips_info(episode, trips_info_path):
     return data
 
 
-def extract_dict(parser, config_section):
+def parse_section_to_raw_strings(parser, config_section):
     return {
         name: parser.extract_many(xpath, str) for name, xpath in config_section.items()
     }
 
 
-def parse_fcd(episode):
+def _parse_fcd(episode):
     parser = Parser(FCD_XML)
     data = parser.extract_fcd_flat(episode)
 
     return data
 
 
-def parse_edgedata(episode, edgedata_path):
+def _parse_edgedata(episode, edgedata_path):
     data = []
 
     document = edgedata_path
@@ -234,21 +234,21 @@ def parse_edgedata(episode, edgedata_path):
     return data
 
 
-def prepare_actions(episode, actions):
+def _prepare_actions(episode, actions):
     rows = []
     for agent, action in actions.items():
         rows.append({"episode": episode, "agent_id": agent, "action": action})
     return rows
 
 
-def prepare_rewards(episode, rewards):
+def _prepare_rewards(episode, rewards):
     rows = []
     for agent, reward in rewards.items():
         rows.append({"episode": episode, "agent_id": agent, "reward": reward})
     return rows
 
 
-def prepare_BM_data(episode, agents):
+def _prepare_bm_data(episode, agents):
     rows = []
     for _, agent in agents.items():
         for route_id, PT in enumerate(agent.PT):
