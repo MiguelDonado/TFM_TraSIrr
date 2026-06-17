@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from dataclasses import asdict
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -52,6 +53,11 @@ def log_simulation_mlflow():
     # 1. Log RELEVANT hyperparameters
     mlflow.log_params(extract_mlflow_hyperparams(config))
 
+    # 1.2. Log hyperparameter related to git commit
+    # Useful, because maybe in six months from now I wanna look which code produced a surprising good result
+    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    mlflow.log_params("git_commit", commit_hash)
+
     # 2. Log ALL hyperparameters as artifact
     log_config_artifact()
 
@@ -69,6 +75,7 @@ def extract_mlflow_hyperparams(config):
     """
     Log only hyperparameters that may vary across runs
     """
+
     return {
         # BM
         "learning_rate": config.learning_rate,

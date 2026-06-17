@@ -6,7 +6,7 @@ of the network (nodes, links, turns)
 from lxml import etree
 
 # CONSTANTS
-NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st_koh_v2.net.xml"
 
 
 def get_network_characteristics(net=NETWORK_PATH):

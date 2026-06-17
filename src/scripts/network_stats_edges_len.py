@@ -7,7 +7,7 @@ import numpy as np
 from lxml import etree
 
 # CONSTANTS
-NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st_koh_v2.net.xml"
 
 
 def get_edges_lengths_script(net=NETWORK_PATH):
@@ -24,12 +24,13 @@ def get_edges_lengths_script(net=NETWORK_PATH):
 
     data = np.array(edges_length)
     np.savetxt(
-        "/home/miguel/6.Projects/Thesis/src/scripts/output/Sioux_Falls.net.csv",
+        "/home/miguel/6.Projects/Thesis/src/scripts/output/1st_koh_v2.net.csv",
         data,
         delimiter=",",
         fmt="%.2f",
     )
     mean_length = round(float(np.mean(data)), 2)
+    print(mean_length)
     return mean_length
 
 
