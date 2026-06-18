@@ -34,10 +34,16 @@ def _compute_initial_guess():
     Initial guess (using heuristic length network)
     """
     total_length_network = get_total_length_network(config.network)
+    hours = (config.end_time / 60) / 60
 
     # Heuristic is basically to consider 100 vehicles per kilometer and hour
-    demand = int(config.heuristic_veh_km_hour_initial_guess * total_length_network)
-    return demand
+    demand = int(
+        config.heuristic_veh_km_hour_initial_guess * total_length_network * hours
+    )
+    # To avoid having a very small demand
+    min_vehicles = 100
+    result = max(demand, min_vehicles)
+    return result
 
 
 def _calibration_loop(initial_demand, last_iteration_gui):

@@ -98,7 +98,7 @@ class BMAgent:
 
     def _compute_stimulus(self, chosen):
         expected_tt = self.expected_travel_time
-        perceived_tt = self.perceived_travel_times.copy()
+        perceived_tt = self.perceived_travel_times
 
         # Heuristic
         # Set value of PT of unused routes to A (expected travel time)

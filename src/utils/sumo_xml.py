@@ -24,7 +24,7 @@ def write_sumo_conf(
 ):
     root = etree.Element("configuration")
     inp = etree.SubElement(root, "input")
-    etree.SubElement(inp, "net_file", value=str(net_file))
+    etree.SubElement(inp, "net-file", value=str(net_file))
 
     if route_files:
         etree.SubElement(inp, "route-files", value=str(route_files))

@@ -32,7 +32,7 @@ def set_up_mlflow():
     1. Set location for storage stuff
     2. Specify which experiment this run belongs to
     """
-    experiment_name = "BM Thesis"
+    experiment_name = config.experiment_name
 
     # 1. Set location backend db
     mlflow.set_tracking_uri(f"sqlite:///{BACKEND_DB}")

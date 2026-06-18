@@ -1,11 +1,11 @@
 configuration_name:
-  config_name: dev
+  config_name: production
 
 randomness:
   seed: 42
 
 numerical_constants:
-  epsilon: 1e-8
+  epsilon: 1.0e-8
 
 learning:
   learning_rate: 0.3
@@ -15,8 +15,8 @@ simulation:
   warm_up_time: 600
   simulation_time: 3600
 
-network:
-  file: "sumo/net/Popular/Sioux_Falls.net.xml"
+network_path:
+  network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
 duarouter:
   routing_algorithm: "CH"
@@ -27,7 +27,7 @@ duarouter:
 
 stopping_rule:
   max_episodes: 200
-  tolerance: 0.01
+  tolerance_stopping_rule: 0.01
   k_no_change: 3
 
 demand_calibration:
@@ -51,3 +51,6 @@ mode_and_flags:
   have_precomputed_routes: false
   last_episode_gui_BM: false
   last_episode_gui_duaIterate: false
+
+mlflow:
+  experiment_name: "BM_Thesis"

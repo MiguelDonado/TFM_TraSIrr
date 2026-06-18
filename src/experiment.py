@@ -42,10 +42,6 @@ from paths import (
     YAML_CONF,
 )
 
-# Load YAML file
-with open(YAML_CONF, "r") as file:
-    config = yaml.safe_load(file)
-
 ########################################
 ########################################
 #  CORE LOGIC FUNCTIONS
@@ -158,15 +154,15 @@ def _prepare_rewards(episode, rewards):
 def _prepare_bm_data(episode, agents):
     rows = []
     for _, agent in agents.items():
-        for route_id, PT in enumerate(agent.PT):
+        for route_id, perceived_travel_time in enumerate(agent.perceived_travel_times):
             rows.append(
                 {
                     "episode": episode,
                     "agent_id": agent.id,
-                    "ET": agent.ET,
+                    "ET": agent.expected_travel_time,
                     "stimulus": agent.stimulus,
                     "route_id": route_id,
-                    "PT": float(PT),
+                    "PT": float(perceived_travel_time),
                 }
             )
     return rows

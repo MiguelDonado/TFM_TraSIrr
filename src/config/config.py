@@ -38,6 +38,11 @@ class RunMode(Enum):
 @dataclass
 class Config:
     #####################
+    # 0. MLflow
+    #####################
+    experiment_name: str
+
+    #####################
     # 0. Randomness
     #####################
     seed: int  # Seed used for the random number generator object numpy
@@ -144,12 +149,12 @@ class Config:
     #####################
     # 10. Mode & flags
     #####################
-    mode: RunMode = RunMode.TRAIN
-    episodes_gui: set[int] = field(default_factory=lambda: {})
     have_precomputed_routes: bool
     last_episode_gui_BM: bool
     last_episode_gui_duaIterate: bool
     config_name: str
+    mode: RunMode = RunMode.TRAIN
+    episodes_gui: set[int] = field(default_factory=lambda: {})
 
     #####################
     # Derived values
@@ -163,5 +168,5 @@ class Config:
 
 
 # Initialize config
-path = "src/config/configs/config_dev.yaml"
+path = "/home/miguel/6.Projects/Thesis/src/config/configs/production.yaml"
 config = load_config(path)

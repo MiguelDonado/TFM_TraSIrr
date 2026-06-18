@@ -1,17 +1,20 @@
 import yaml
 from lxml import etree
 
-from config.config import config
 from paths import FCD_XML, STATISTICS_XML, YAML_CONF
 
 from .parser import Parser
+
+# Load YAML file
+with open(YAML_CONF, "r") as file:
+    config_parser = yaml.safe_load(file)
 
 
 def parse_aggregated_data(episode):
     data = {}
     parser = Parser(STATISTICS_XML)
 
-    for name, xpath in config["metrics"]["statistics"].items():
+    for name, xpath in config_parser["metrics"]["statistics"].items():
         value = parser.extract_one(xpath, float)
         data[name] = value
     return {"episode": episode, **data}
@@ -21,9 +24,11 @@ def parse_vehroute(episode, vehroute_path):
     data = []
     parser = Parser(vehroute_path)
 
-    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["vehroute"])
+    data_dict = parse_section_to_raw_strings(
+        parser, config_parser["metrics"]["vehroute"]
+    )
 
-    for name, xpath in config["metrics"]["vehroute"].items():
+    for name, xpath in config_parser["metrics"]["vehroute"].items():
         values = parser.extract_many(xpath, str)
         data_dict[name] = values
 
@@ -49,7 +54,9 @@ def parse_trips_info(episode, trips_info_path):
     data = []
     parser = Parser(trips_info_path)
 
-    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["tripsinfo"])
+    data_dict = parse_section_to_raw_strings(
+        parser, config_parser["metrics"]["tripsinfo"]
+    )
 
     for vid, arrival, duration, length, time_loss in zip(
         data_dict["vehicles"],

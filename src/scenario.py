@@ -119,7 +119,9 @@ class Scenario:
 
         k = k if k is not None else config.n_routes_per_OD
         max_attempts = max_attempts if max_attempts is not None else config.max_attempts
-        random_factor = random_factor if random_factor is not None else config.random_factor
+        random_factor = (
+            random_factor if random_factor is not None else config.random_factor
+        )
 
         routes_per_od = None
 
@@ -152,12 +154,14 @@ class Scenario:
             od_routes = dict(zip(self.unique_ods, routes_per_od))
             # 5. Return k routes
             return od_routes
-    
-    def _fill_alternative_routes(self, routes_per_od, trips_file, routes_file, seeds, k)
-        '''
-        Does not need to return anything because it is already modifying the 
+
+    def _fill_alternative_routes(
+        self, routes_per_od, trips_file, routes_file, seeds, k
+    ):
+        """
+        Does not need to return anything because it is already modifying the
         routes_per_od object passed by reference
-        '''
+        """
         for seed in seeds:
             # Early stop
             if all(len(rlist) >= k for rlist in routes_per_od):
@@ -176,8 +180,7 @@ class Scenario:
             for i, route in enumerate(new_routes):
                 # Avoid duplicates per OD
                 if route not in routes_per_od[i] and len(routes_per_od[i]) < k:
-                        routes_per_od[i].append(route)
-
+                    routes_per_od[i].append(route)
 
     def _generate_conf(self):
         """
@@ -189,6 +192,7 @@ class Scenario:
         write_sumo_conf(
             output_path=SUMO_CONF,
             net_file=self.network,
+            seed=config.seed,
             additional_files=MEANDATA,
             report_outputs={
                 "tripinfo-output": TRIPS_INFO_XML,
@@ -256,7 +260,7 @@ class Scenario:
     def _generate_random_trips_agents(self, output_file):
         min_distance = int(2 * get_edges_lengths_program(config.network))
         config.min_distance = min_distance
-        
+
         cmd = [
             "randomTrips.py",
             "-n",
