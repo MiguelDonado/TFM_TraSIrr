@@ -20,7 +20,6 @@ from paths import (
     EDGEDATA_XML,
     FCD_XML,
     FREE_FLOW_TRAVEL_TIMES,
-    MAP,
     MEANDATA,
     NET,
     OD_MATRIX_INTERVALS,
@@ -33,6 +32,7 @@ from paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
+from utils.network import get_edges_lengths_program
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
@@ -110,12 +110,16 @@ class Scenario:
     def compute_k_routes(
         self,
         seeds,
-        k=config.n_routes_per_OD,
-        max_attempts=config.max_attempts,
-        random_factor=config.random_factor,
+        k=None,
+        max_attempts=None,
+        random_factor=None,
     ):
         # Weights of edges by default are free-flow travel times
         # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
+
+        k = k if k is not None else config.n_routes_per_OD
+        max_attempts = max_attempts if max_attempts is not None else config.max_attempts
+        random_factor = random_factor if random_factor is not None else config.random_factor
 
         routes_per_od = None
 
@@ -250,10 +254,13 @@ class Scenario:
         return od_pairs
 
     def _generate_random_trips_agents(self, output_file):
+        min_distance = int(2 * get_edges_lengths_program(config.network))
+        config.min_distance = min_distance
+        
         cmd = [
             "randomTrips.py",
             "-n",
-            MAP,
+            config.network,
             "-b",
             str(0),
             "-e",
@@ -364,7 +371,7 @@ class Scenario:
         cmd = [
             "duarouter",
             "-n",
-            MAP,
+            config.network,
             "--route-files",
             trips_file,
             "-o",

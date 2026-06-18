@@ -17,7 +17,7 @@ from experiment import (
     save_processed_data,
 )
 from MLflow.mlflow_utils import log_simulation_mlflow, set_up_mlflow
-from paths import MAP, POLICY_CHANGE_BM
+from paths import POLICY_CHANGE_BM
 from scenario import Scenario
 from stopping_rule.stopping_rule import (
     check_convergence,
@@ -29,8 +29,89 @@ rng = np.random.default_rng(config.seed)
 seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
-def main2():
-    pass
+def _run_training_loop(
+    env,
+    agents,
+):
+    # -----------------------------
+    # 4. TRAINING LOOP
+    # -----------------------------
+    # > Policy stability
+    no_change_count = 0  # Counter consecutive times without policy changes
+    policies_history = []  # Stores policies of all agents for all episodes
+    policy_change_history = []
+
+    # > Data
+    results = {
+        "aggregated": [],
+        "vehroute": [],
+        "trips_info": [],
+        "fcd": [],
+        "edgedata": [],
+        "actions": [],
+        "rewards": [],
+        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
+    }
+
+    for episode in range(1, config.max_episodes + 1):
+
+        print(f"\n--- Episode {episode} ---")
+
+        # -----------------------------
+        # 1. AGENTS CHOOSE ACTIONS
+        # -----------------------------
+        # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
+        actions = select_actions(agents)
+
+        # -----------------------------
+        # 2. RUN EPISODE
+        # -----------------------------
+        env.run_episode(actions, episode)
+
+        # -----------------------------
+        # 3. GET REWARDS
+        # -----------------------------
+        rewards = env.get_rewards()
+
+        # -----------------------------
+        # 4. UPDATE AGENTS
+        # -----------------------------
+        # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
+        # After updating agents, they store the policy for NEXT EPISODE
+        current_policies = create_policies_dict(agents)
+        # Store current policies in history
+        policies_history.append(current_policies)
+
+        update_agents(
+            actions=actions,
+            agents=agents,
+            episode=episode,
+            rewards=rewards,
+            warm_up=config.warm_up,
+        )
+
+        # -----------------------------
+        # 5. PREPARE GENERATED DATA
+        # -----------------------------
+        result = prepare_data(episode, actions, rewards, agents)
+        accumulate_results(results, result)
+
+        # -----------------------------
+        # 6. STOPPING RULE
+        # -----------------------------
+        should_stop, no_change_count, mean_policy_change = check_convergence(
+            policies_history=policies_history,
+            episode=episode,
+            no_change_count=no_change_count,
+        )
+        if mean_policy_change:
+            policy_change_history.append(
+                {"episode": episode, "mean_policy_change": mean_policy_change}
+            )
+
+        if should_stop:
+            break
+    return results, policy_change_history
 
 
 def main():
@@ -48,7 +129,7 @@ def main():
         # 1. CREATE SCENARIO (files)
         # -----------------------------
         scen = Scenario(
-            map=MAP,
+            map=config.network,
             n_agents_warmup=demand_warmup,
             n_agents_post_warmup=demand_post_warmup,
             seeds=seeds,
@@ -65,102 +146,29 @@ def main():
         # -----------------------------
         agents = initialize_agents(scen=scen, seed=config.seed)
 
+        if config.last_episode_gui_BM:
+            run_final_simulation()
+
         # -----------------------------
         # 4. TRAINING LOOP
         # -----------------------------
-        # > Policy stability
-        no_change_count = 0  # Counter consecutive times without policy changes
-        policies_history = []  # Stores policies of all agents for all episodes
-        policy_change_history = []
+        results, policy_change_history = _run_training_loop(env=env, agents=agents)
 
-        # > Data
-        results = {
-            "aggregated": [],
-            "vehroute": [],
-            "trips_info": [],
-            "fcd": [],
-            "edgedata": [],
-            "actions": [],
-            "rewards": [],
-            "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
-        }
-
-        for episode in range(1, config.max_episodes + 1):
-
-            print(f"\n--- Episode {episode} ---")
-
-            # -----------------------------
-            # 1. AGENTS CHOOSE ACTIONS
-            # -----------------------------
-            # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
-            actions = select_actions(agents)
-
-            # -----------------------------
-            # 2. RUN EPISODE
-            # -----------------------------
-            env.run_episode(actions, episode)
-
-            # -----------------------------
-            # 3. GET REWARDS
-            # -----------------------------
-            rewards = env.get_rewards()
-
-            # -----------------------------
-            # 4. UPDATE AGENTS
-            # -----------------------------
-            # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
-            # After updating agents, they store the policy for NEXT EPISODE
-            current_policies = create_policies_dict(agents)
-            # Store current policies in history
-            policies_history.append(current_policies)
-
-            update_agents(
-                actions=actions,
-                agents=agents,
-                episode=episode,
-                rewards=rewards,
-                warm_up=config.warm_up,
-            )
-
-            # -----------------------------
-            # 5. PREPARE GENERATED DATA
-            # -----------------------------
-            result = prepare_data(episode, actions, rewards, agents)
-            accumulate_results(results, result)
-
-            # -----------------------------
-            # 6. STOPPING RULE
-            # -----------------------------
-            should_stop, no_change_count, mean_policy_change = check_convergence(
-                policies_history=policies_history,
-                episode=episode,
-                no_change_count=no_change_count,
-            )
-            if mean_policy_change:
-                policy_change_history.append(
-                    {"episode": episode, "mean_policy_change": mean_policy_change}
-                )
-
-            if should_stop:
-                break
-
-        if config.last_episode_gui_BM:
-            run_final_simulation()
         # -----------------------------
-        # 7. SAVE OUTPUT
+        # 5. SAVE OUTPUT
         # -----------------------------
         save_processed_data(results)
         df_policy_change = pd.DataFrame(policy_change_history)
         df_policy_change.to_parquet(POLICY_CHANGE_BM)
         # -----------------------------
-        # 8. CHECK DUE convergence
+        # 6. CHECK DUE convergence
         # -----------------------------
         run_due_convergence_checks(
             scen=scen, end_time=config.end_time, time_interval=config.time_interval
         )
 
         # -----------------------------
-        # 9. MLflow (Artifact storage, Experiment tracking)
+        # 7. MLflow (Artifact storage, Experiment tracking)
         # -----------------------------
         log_simulation_mlflow()
 
@@ -179,4 +187,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-    # main2()

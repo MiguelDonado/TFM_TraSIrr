@@ -96,6 +96,8 @@ def _extract_mlflow_hyperparams(config):
         "duaIterate_max_iterations": (config.duaIterate_max_iterations),
         # Network
         "network": Path(config.network).stem,
+        # Configuration YAML used
+        "config_name": config.config_name,
     }
 
 

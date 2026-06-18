@@ -5,6 +5,7 @@ of the network (nodes, links, turns)
 
 import numpy as np
 from lxml import etree
+
 from utils.network import get_edge_lengths
 
 # CONSTANTS

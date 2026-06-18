@@ -14,7 +14,6 @@ import numpy as np
 
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
-from paths import MAP
 from scripts.get_free_flow_speed import get_free_flow_speed
 from scripts.get_total_length_network import get_total_length_network
 
@@ -34,7 +33,7 @@ def _compute_initial_guess():
     """
     Initial guess (using heuristic length network)
     """
-    total_length_network = get_total_length_network(MAP)
+    total_length_network = get_total_length_network(config.network)
 
     # Heuristic is basically to consider 100 vehicles per kilometer and hour
     demand = int(config.heuristic_veh_km_hour_initial_guess * total_length_network)
@@ -48,7 +47,7 @@ def _calibration_loop(initial_demand, last_iteration_gui):
     ################################################
     ################################################
     # Compute once the free flow speed of the network
-    free_flow_speed = get_free_flow_speed(MAP)
+    free_flow_speed = get_free_flow_speed(config.network)
     demand = initial_demand
 
     # Counter number of iterations until convergence
@@ -61,7 +60,7 @@ def _calibration_loop(initial_demand, last_iteration_gui):
         print("###############")
 
         # Initialize necessary stuff to run the simulation
-        demand_calibration = DemandCalibration(MAP, demand, free_flow_speed)
+        demand_calibration = DemandCalibration(config.network, demand, free_flow_speed)
         speed_ratio = demand_calibration.compute_congestion_ratio()
 
         # Log

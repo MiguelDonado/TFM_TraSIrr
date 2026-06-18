@@ -1,0 +1,248 @@
+%-------------------------- model.tex -------------------------%
+%Exemple per a usar l'estil tfm.class per a la preparaci\'o
+%de monografies de treballs final de m\`aster.
+%
+%
+%----------------------------- FMETFM ----------------------------%
+\documentclass{fmetfm}
+
+%%%%%%%%%%packages
+\usepackage[catalan,spanish,english]{babel}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%permet l'ús d'un dels tres idiomes.
+%es poden seleccionar amb l'opci\'o
+%\selectlanguage que hi ha despr\'es
+%de \begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[latin1]{inputenc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%permet l'ús d'accents, ç,ñ, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}%permet usar simbols matematics especials
+\usepackage{amsfonts}%permet usar fonts matematiques especials
+\usepackage{latexsym}%permet usar simbols matematics especials
+\usepackage{epsfig}%permet incorporar grafics en .eps
+\usepackage{psfig}%permet incoporar grafics en .ps
+\usepackage{graphicx}%permet incorporar grafics
+%\usepackage{makeidx}%per elaborar un index de termes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Per als entorns matem\`atics feu servir:
+% \begin{lemma}       ...  \end{lemma}
+% \begin{proposition} ...  \end{proposition}
+% \begin{theorem}     ...  \end{theorem}
+% \begin{corollary}   ...  \end{corollary}
+% \begin{conjecture}  ...  \end{conjecture}
+% per a les demostracions:
+% \begin{proof}       ...  \qed \end{proof}
+% i per  a les notes o observacions:
+% \begin{note}    ... \end{note}
+% \begin{remark}  ... \end{remark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeindex
+
+%
+
+%--------------------------------------------------------------%
+%                  Espai pels autors.                   %
+%--------------------------------------------------------------%
+%%-----------------------------------------------------------------
+%% Pàgina inicial
+%%-----------------------------------------------------------------
+%\title{Exemple d'ús de la classe `fmetfm' per a l'elaboració
+%de memòries de treballs final de màster}
+%
+%\treball{Tipus de treball: Tesi de màster, Treball Fi de Carrera}
+%\advisor{Nom del director del treball}
+%\author{Nom de l'autor}
+%
+%\treball{Tipus de treball: Tesi de màster, Treball Fi de Carrera}
+%\advisor{Nom del director del treball}
+%
+%
+%
+%%-------------------------------------------------------------%
+\begin{document}
+
+% Seleccioneu l'idioma:
+\selectlanguage{catalan}
+%\selectlanguage{spanish}
+%\selectlanguage{english}
+%----------------------------------------------------------------
+% Inici del document
+%------------------------------------------------------------------
+
+%-----------------------------------------------------------------
+% Pàgina inicial
+%-----------------------------------------------------------------
+\title{Títol del treball}
+
+
+\def\autor{Nom de l'autor}
+
+\def\treball{Tipus de treball\\ (Tesi de màster, Projecte fi de carerra,...)}
+
+\def\advisor{Nom(s) del director(s)}
+
+\vfill
+
+\def\departament{Nom del Departament}
+
+
+
+%-------------------------------------------------------------%
+\maketitle
+
+
+
+%-------------------------------------------------------------%
+%%%Dedicatoria (opcional)
+%-------------------------------------------------------------%
+\dedicatoria{Com que la dedicatòria normalment és una frase breu que
+vol afectar tot el contingut de l'obra, és convenient que aparegui
+just després de la portada i en una pàgina a part. S'acostuma a
+col.locar al marge superior dret del full}
+%-------------------------------------------------------------%
+%-------------------------------------------------------------%
+%%%Prefaci (opcional)
+%-------------------------------------------------------------%
+
+\begin{preface}
+\thispagestyle{empty}
+ Tot i que no és obligatòria la seva presència,
+el pròleg i el prefaci són dos apartats que normalment apareixen a
+les obres. La funció de tots dos és transmetre opinions o reflexions
+sobre l'obra, explicar el procés d'elaboració o argumentar-ne
+l'oportunitat. El pròleg el redacta una persona diferent de l'autor,
+i el prefaci, l'autor mateix.
+\end{preface}
+
+
+\clearpage
+
+%---------------------------------------------------------------
+% Abstract: un resum del contingut del treball (sobre 500 paraules)
+% Ha de contenir una relació de paraules clau i dels codis MSC
+%(Math. Subject Classification 2000)
+% Ha d'estar també en anglès.
+%---------------------------------------------------------------
+\pagenumbering{roman}
+\setcounter{page}{5}
+\markboth{}{}
+
+\begin{abstract}
+
+\keywords{Paraules clau} \msc{Codis de la {\it Mathematic Subject
+Classification}}
+
+\vspace{1cm}
+%%%Aqui va el text
+
+Un resum del contingut del treball d'unes 500 paraules. El resum
+dóna una idea global del treball i en descriu les aportacions més
+significatives.
+
+\end{abstract}
+
+\newpage
+
+%%%Si el text no es en angles afegir una versió anglesa
+
+\begin{abstracteng}
+
+\keywordseng{Here the keywords}
+\msc2000{Mathematical Subject
+Classification}
+
+\vspace{1cm}
+%%%Here the text
+
+An abstract of the contents of the work. About 500 words. It gives a
+global description of the work and its main contributions.
+
+\end{abstracteng}
+
+\cleardoublepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Notation (optional)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{notation}
+\begin{tabular}{cl}
+${\mathbb N}$ & Nombres naturals\\[0.3em]
+${\mathbb Z}$ & Nombres enters\\[0.3em]
+${\mathbb Q}$ & Nombres racionals\\[0.3em]
+${\mathbb R}$ & Nombres reals\\[0.3em]
+${\mathbb C}$ & Nombres complexos
+\end{tabular}
+\end{notation}
+
+
+
+
+\cleardoublepage
+%--------------------------------------------------------------
+% Taula de continguts
+% S'elabora automàticament
+%-------------------------------------------------------------
+ \tableofcontents
+ \cleardoublepage
+%------------------------------------------------------------
+% Cos del treball
+%Es poden fer servir Parts, Capitols, Seccions i Subseccions
+%-------------------------------------------------------------
+\pagenumbering{arabic}
+
+\input{Introduction}
+\part{Descripció de l'estructura}
+\input{cap1}
+\input{cap2}
+\part{Elements especials}
+\input{cap3}
+\appendix{Fora del cos} Els apèndixs poden contenir demostracions
+especialment tècniques, prgrames d'ordinador, descripció
+d'algorismes, etc.
+
+
+\printindex
+
+\begin{thebibliography}{99}
+\bibitem{pdlatex} D.P. Carlsihe, S.P.Q. Ratz, The graphicx package, {\it Latex documentation} (1999).
+\bibitem{index} David M. Jones, A new implementation of LATEX's indexing
+commands {\it Latex documentation} (1995)
+\bibitem{latex} Leslie Lamport, LaTeX: A Document Preparation System (2nd Edition). Addison-Wesley Series on Tools and Techniques for Computer
+T
+\end{thebibliography}
+
+%\cleardoublepage \sloppy
+%\begin{raggedright}
+%\input{exemple_tfm.ind}
+%\end{raggedright}
+
+
+
+%--------------------------------------------------------------
+%Seccions addicionals: Apèndixs, Glosari, Bibliografia
+%
+%Els apèndixs son com capitols pero van precedits de \apendix,
+%es a dir: \apendix \chapter{Nom de l'apendix}
+%
+%\input{apendix1}
+
+%Per a la bibliografia es pot fer servir els fitxers .bib
+%(consulteu un manual de LaTex per al seu us)
+%o simplement amb \begin{thebibliography}{100} \end{thebibliography}
+%
+%\bibliographystyle{amsplain}
+%\bibliography{tfm}
+
+%El glosari de termes es crea automaticament. Consulteu un manual
+%de LaTex
+
+%--------------------------------------------------------------
+
+
+
+%
+\end{document}
+%--------------------------------------------------------------%
+%--------------------------------------------------------------%

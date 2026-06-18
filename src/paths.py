@@ -44,7 +44,6 @@ SUMO_CONF = SUMO_DIR / "config" / "basic.sumocfg"
 GUI_SETTINGS = SUMO_DIR / "config" / "gui_settings.xml"  # Template
 MEANDATA = SUMO_DIR / "config" / "meandata.xml"
 
-MAP = config.network
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"  # Is not SUMO file
 
 

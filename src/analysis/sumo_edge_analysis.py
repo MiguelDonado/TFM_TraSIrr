@@ -274,45 +274,42 @@ def get_max_value(
     We only care about last episodes, that is what we want to analyze
     """
 
-    def process_df(df, aggregated):
-        # Dimension table
-        times_interval = pd.read_parquet(TIMES_INTERVAL)
-        # Fact table
-        df = df.copy()
-        # Join
-        df = df.merge(times_interval, on="interval")
-        df[metric] = df[metric].astype(float)
-
-        if aggregated:
-            if metric == "entered":
-                df_grouped = df.groupby("edge", as_index=False)[metric].sum()
-            elif metric == "density":
-                df_grouped = df.groupby("edge", as_index=False)[metric].mean()
-
-        else:
-            df["period"] = df["start_time"] // period
-            if metric == "entered":
-                df_grouped = df.groupby(["edge", "period"], as_index=False)[
-                    metric
-                ].sum()
-            elif metric == "density":
-                df_grouped = df.groupby(["edge", "period"], as_index=False)[
-                    metric
-                ].mean()
-
-        return df_grouped[metric].max()
-
     # duaIterate
     df_due = pd.read_parquet(edgedata_duaIterate_file)
-    max_value_duaIterate = process_df(df_due, aggregated)
+    max_value_duaIterate = process_df(df_due, metric, aggregated, period)
 
     # BM last episode
     df_BM = pd.read_parquet(edgedata_BM_file)
     last_episode = df_BM["episode"].max()
     df_BM = df_BM[df_BM["episode"] == last_episode]
-    max_value_BM = process_df(df_BM, aggregated)
+    max_value_BM = process_df(df_BM, metric, aggregated, period)
 
     return max(max_value_duaIterate, max_value_BM)
+
+
+def process_df(df: pd.DataFrame, metric: str, aggregated: bool, period: int) -> float:
+    # Dimension table
+    times_interval = pd.read_parquet(TIMES_INTERVAL)
+    # Fact table
+    df = df.copy()
+    # Join
+    df = df.merge(times_interval, on="interval")
+    df[metric] = df[metric].astype(float)
+
+    if aggregated:
+        if metric == "entered":
+            df_grouped = df.groupby("edge", as_index=False)[metric].sum()
+        elif metric == "density":
+            df_grouped = df.groupby("edge", as_index=False)[metric].mean()
+
+    else:
+        df["period"] = df["start_time"] // period
+        if metric == "entered":
+            df_grouped = df.groupby(["edge", "period"], as_index=False)[metric].sum()
+        elif metric == "density":
+            df_grouped = df.groupby(["edge", "period"], as_index=False)[metric].mean()
+
+    return df_grouped[metric].max()
 
 
 def compute_color_scale(max_value):

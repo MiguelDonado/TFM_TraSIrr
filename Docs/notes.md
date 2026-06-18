@@ -119,34 +119,31 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - **Implementations**:
-  1. Implement all MLFlow logic, for tracking parameters (learning rate, memory decay...), metrics per episode(R-gap...), artifacts (Automatically save plots, parquet files...)
-  2. Analisis FIFO violations on avg travel time link table
-  3. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
-  4. SUMO docker
-  5. Check if Thompsom Sampling Bayesian Project can be useful, and implemented here somehow.
-  6. Compute Rgap for all iterations DUE?
+  1. Analisis FIFO violations on avg travel time link table
+  2. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
+  3. SUMO docker
+  4. Compute Rgap for all iterations DUE?
+  5. How to detect bottlenecks and speed up things (how to profile)
+  6. Add logging
+  7. Add 3 modes (debug, development, production)
+  8. Reinstall in the future claude code using nvm instead of npm to avoid auto-update error and let claude code to update itself automatically
+  9. Run ClaudeCode the audits, and ask about the structure of the project what can be improved
 
 - **To write**:
-  - Escribir shortest path and TDSP sections
-  - Mirar lo de Bandit. Define properly what kind of problem is the day-to-day learning (multi-arm bandit) (And which actions, rewards, states... can take agents)
-   
+
 - **Doubts**: 
-  1. For Sioux Falls should I use my own created OD matrix, or the standards OD matrices that I found. More details in "/home/miguel/6.Projects/Thesis/sumo/net/Popular/BenchmarkDemands".
-  2. Saber que time interval voy a usar (15 min or smaller). Y tener claro que cosas se consideran a la hora decantarme por uno o por otro.
-     - Para mis networks (son pequeñas), los viajes no duran mucho (1-3 minutos o incluso menos). Si el intervalo de tiempo es de 15 minutos, todos los viajes empiezan y acaban en el mismo intervalo de tiempo. Manuel comento que estaría bien que el intervalo de tiempo en lugar de ser un número fijo que se adaptara al tamaño de la network (con la intuición de que un intervalo de tiempo de 15 minutos no tiene sentido si los viajes duran 2 minutos). Ahora mismo tengo implementado las dos opciones, es decir se puede elegir hacer adaptive (proportional to median free flow travel time de todos los path) or fixed. Cojo free flow tt y no experienced travel time, porque asi de esta manera el free flow tt da el mismo time interval para todos los episodios.
-  3. Al final que se hace con lo del warm-up.
 
 - **To read**:
-  1. Important conversation about bandit: https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
-  2. Leer regret papers brasileiros (multi armed bandit)
-  3. Leer paper "Where does this road go"
+  1. Important conversation about applying modern RL instead of Bush-Mosteller: https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
 
 - **R**:
   1. Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead Cargar solo por episodio...
   2. Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
   3. When using R combine with sf package (represent networks greatly)
-  
-- **Meeting**:
-  Show them MLFlow UI, and if the metrics used are useful, and if Im missing some metric.
+
+- **MLFlow**
 
 
+ 
+
+Los plots para el latex document con letra grande.

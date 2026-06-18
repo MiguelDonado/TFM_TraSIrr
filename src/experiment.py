@@ -14,6 +14,14 @@ from lxml import etree
 
 from config.config import RunMode, config
 from parsing.parser import Parser
+from parsing.sumo_outputs import (
+    parse_aggregated_data,
+    parse_edgedata,
+    parse_fcd,
+    parse_section_to_raw_strings,
+    parse_trips_info,
+    parse_vehroute,
+)
 from paths import (
     ACTIONS,
     BM_RESULTS,
@@ -46,11 +54,11 @@ with open(YAML_CONF, "r") as file:
 
 
 def prepare_data(episode, actions, rewards, agents):
-    aggregated_result = _parse_aggregated_data(episode)
-    vehroute_result = _parse_vehroute(episode, VEHROUTE_XML)
-    trips_info_result = _parse_trips_info(episode, TRIPS_INFO_XML)
-    fcd_result = _parse_fcd(episode)
-    edgedata_result = _parse_edgedata(episode, EDGEDATA_XML)
+    aggregated_result = parse_aggregated_data(episode)
+    vehroute_result = parse_vehroute(episode, VEHROUTE_XML)
+    trips_info_result = parse_trips_info(episode, TRIPS_INFO_XML)
+    fcd_result = parse_fcd(episode)
+    edgedata_result = parse_edgedata(episode, EDGEDATA_XML)
     actions = _prepare_actions(episode, actions)
     rewards = _prepare_rewards(episode, rewards)
     bm_result = _prepare_bm_data(episode, agents)
@@ -131,107 +139,6 @@ def make_plots():
 # HELPER FUNCTIONS
 ########################################
 ########################################
-
-
-def _parse_aggregated_data(episode):
-    data = {}
-    parser = Parser(STATISTICS_XML)
-
-    for name, xpath in config["metrics"]["statistics"].items():
-        value = parser.extract_one(xpath, float)
-        data[name] = value
-    return {"episode": episode, **data}
-
-
-def _parse_vehroute(episode, vehroute_path):
-    data = []
-    parser = Parser(vehroute_path)
-
-    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["vehroute"])
-
-    for name, xpath in config["metrics"]["vehroute"].items():
-        values = parser.extract_many(xpath, str)
-        data_dict[name] = values
-
-    for vid, edges, times in zip(
-        data_dict["vehicles"], data_dict["routes"], data_dict["exit_times"]
-    ):
-        edge_list = edges.split()
-        time_list = list(map(float, times.split()))
-
-        for edge, t in zip(edge_list, time_list):
-            data.append(
-                {
-                    "episode": episode,
-                    "vehicle_id": vid,
-                    "edge": edge,
-                    "exit_times": t,
-                }
-            )
-    return data
-
-
-def _parse_trips_info(episode, trips_info_path):
-    data = []
-    parser = Parser(trips_info_path)
-
-    data_dict = parse_section_to_raw_strings(parser, config["metrics"]["tripsinfo"])
-
-    for vid, arrival, duration, length, time_loss in zip(
-        data_dict["vehicles"],
-        data_dict["arrivals"],
-        data_dict["durations"],
-        data_dict["route_lengths"],
-        data_dict["time_losses"],
-    ):
-        data.append(
-            {
-                "episode": episode,
-                "vehicle_id": vid,
-                "arrival": arrival,
-                "duration": duration,
-                "length": length,
-                "time_loss": time_loss,
-            }
-        )
-    return data
-
-
-def parse_section_to_raw_strings(parser, config_section):
-    return {
-        name: parser.extract_many(xpath, str) for name, xpath in config_section.items()
-    }
-
-
-def _parse_fcd(episode):
-    parser = Parser(FCD_XML)
-    data = parser.extract_fcd_flat(episode)
-
-    return data
-
-
-def _parse_edgedata(episode, edgedata_path):
-    data = []
-
-    document = edgedata_path
-    tree = etree.parse(document)
-
-    interval_elements = tree.xpath("//interval")
-
-    for i, interval_element in enumerate(interval_elements):
-        edges = interval_element.xpath(".//edge")
-
-        for edge in edges:
-            data.append(
-                {
-                    "episode": episode,
-                    "interval": i,
-                    "edge": edge.get("id"),
-                    "entered": edge.get("entered"),
-                    "density": edge.get("density"),
-                }
-            )
-    return data
 
 
 def _prepare_actions(episode, actions):

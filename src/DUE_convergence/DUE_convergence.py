@@ -45,32 +45,28 @@ from paths import (
     WEIGHTS_DIR_duaIterate,
 )
 
-from .utils import (
+from .aggregation import compute_flows_odtp_k, compute_travel_time_paths_odtp_k
+from .duaiterate import (
     call_duaIterate,
     compute_actions_table_duaIterate,
-    compute_cost_min_paths_odt_k,
-    compute_flows_odtp_k,
     compute_od_routes_table_duaIterate,
-    compute_rgap_and_refined_rgap,
-    compute_time_dependent_shortest_paths,
-    compute_travel_time_links_t_k,
-    compute_travel_time_paths_odtp_k,
     delete_duaIterate_folders,
-    delete_files_due_convergence,
     extract_routes_file_duaIterate,
-    generate_demand_odt,
     generate_edgedata_file,
     generate_meandata_file,
-    generate_time_intervals_table,
     generate_trips_file_duaIterate,
-    generate_trips_odt_file,
-    generate_weights_xmls,
     process_edgedata_duaIterate,
     process_trips_info_duaIterate,
     process_vehroute_duaIterate,
     run_simulation_duaIterate,
-    run_tdsp_pipeline,
 )
+from .rgap import (
+    compute_rgap_and_refined_rgap,
+    generate_demand_odt,
+    generate_time_intervals_table,
+    generate_trips_odt_file,
+)
+from .tdsp import run_tdsp_pipeline
 
 
 def run_due_convergence_checks(scen, end_time, time_interval):
@@ -91,7 +87,6 @@ def _generate_generic_files_due_convergence():
     ## Parquet
     generate_time_intervals_table(end_time, time_interval)
     generate_demand_odt()
-
     ## XML
     generate_trips_odt_file()
 
