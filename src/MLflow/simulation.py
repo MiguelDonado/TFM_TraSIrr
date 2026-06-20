@@ -10,10 +10,9 @@ import pandas as pd
 
 from config.config import config
 from paths import (
-    ARTIFACTS_STORAGE,
-    BACKEND_DB,
     DUE_DATA_DIR,
     INTERNAL_DATA_DIR,
+    MLFLOW,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     RGAP,
@@ -21,31 +20,7 @@ from paths import (
     RGAP_duaIterate,
 )
 
-
-def set_up_mlflow():
-    """
-    We should explicitly control the location for both:
-    1. backend database (mlflow.db) (metadata)
-    2. artifact storage (mlruns/) (files)
-
-    This function handles the setup for MLflow experiment tracking
-    1. Set location for storage stuff
-    2. Specify which experiment this run belongs to
-    """
-    experiment_name = config.experiment_name
-
-    # 1. Set location backend db
-    mlflow.set_tracking_uri(f"sqlite:///{BACKEND_DB}")
-
-    # 2. Check if experiment is already created.
-    # If its not, create it
-    if mlflow.get_experiment_by_name(experiment_name) is None:
-        mlflow.create_experiment(
-            experiment_name, artifact_location=f"file://{ARTIFACTS_STORAGE}"
-        )
-
-    # 3. Specify which experiment this run belongs to
-    mlflow.set_experiment(experiment_name)
+from .utils import set_up_mlflow
 
 
 def log_simulation_mlflow():
@@ -66,6 +41,22 @@ def log_simulation_mlflow():
 
     # Log artifacts
     _log_mlflow_artifacts()
+
+
+def save_simulation_run_id(run_id):
+    path = MLFLOW / "source_run_id.txt"
+    with open(path, "w") as f:
+        f.write(run_id)
+
+
+def set_simulation_tags(run_id):
+    mlflow.set_tag("source_run_id", run_id)
+    mlflow.set_tag("run_type", "simulation")
+    mlflow.set_tag("algorithm", "BM")
+
+
+def build_simulation_run_name():
+    return f"BM_simulation_{config.config_name}"
 
 
 ##########

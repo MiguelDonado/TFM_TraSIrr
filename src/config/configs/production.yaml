@@ -38,6 +38,8 @@ demand_calibration:
 
 interval_time:
   time_interval_heuristic: 0.5
+  fixed_time_interval: false
+  fixed_time_min: 15
 
 randomtrips:
   max_size_od_space: 10
@@ -53,4 +55,4 @@ mode_and_flags:
   last_episode_gui_duaIterate: false
 
 mlflow:
-  experiment_name: "BM_Thesis"
+  experiment_name: "Thesis"

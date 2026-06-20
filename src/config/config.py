@@ -1,5 +1,8 @@
 # This file stores constants, hyperparameters used throughout the project
+#
 
+
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -96,6 +99,8 @@ class Config:
     #####
     time_interval: int = field(init=False)
     time_interval_heuristic: float
+    fixed_time_interval: bool
+    fixed_time_min: int
 
     #####################
     # 4. Simulation time
@@ -168,5 +173,5 @@ class Config:
 
 
 # Initialize config
-path = "/home/miguel/6.Projects/Thesis/src/config/configs/production.yaml"
+path = sys.argv[1]
 config = load_config(path)

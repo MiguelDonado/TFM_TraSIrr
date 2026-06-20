@@ -464,11 +464,16 @@ class Scenario:
         df.to_parquet(OD_ROUTES, engine="pyarrow")
 
     def _set_time_interval(self):
+        # FIXED
+        if config.fixed_time_interval:
+            config.time_interval = config.fixed_time_min * 60
+
         # SET TIME INTERVAL USED THROUGHOUT THE PROGRAM (AUTOMATICALLY ADAPTED TO EACH NETWORK)
-        config.time_interval = int(
-            self._compute_median_free_flow_travel_time()
-            * config.time_interval_heuristic
-        )
+        else:
+            config.time_interval = int(
+                self._compute_median_free_flow_travel_time()
+                * config.time_interval_heuristic
+            )
 
     def _add_time_intervals_to_agents(self):
         # // represents integer division

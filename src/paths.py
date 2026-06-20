@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from config.config import config
-
 # ============================================================
 # Project root
 # ============================================================
@@ -31,6 +29,8 @@ DUE_DATA_duaIterate = DUE_DATA_DIR / "duaIterate"
 FIGURES_DIR = BASE_DIR / "output" / "figures"
 
 SUMO_DIR = BASE_DIR / "sumo"
+
+PROFILING_DIR = BASE_DIR / "profiling"
 
 
 # ============================================================
@@ -211,3 +211,9 @@ SUMO_CONF_AGGREGATED = EDGE_VISUALIZATION_DIR / "aggregated.sumocfg"
 GUI_SETTINGS_AGGREGATED = EDGE_VISUALIZATION_DIR / "gui_settings_aggregated.xml"
 
 MEANDATA_AGGREGATED = EDGE_VISUALIZATION_DIR / "meandata_aggregated.xml"
+
+
+# ============================================================
+# MLFLOW
+# ============================================================
+MLFLOW = DATA_DIR / "MLflow"

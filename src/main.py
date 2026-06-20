@@ -1,8 +1,12 @@
+import cProfile
 import os
+import pstats
+from pathlib import Path
 
 import mlflow
 import numpy as np
 import pandas as pd
+import tuna
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
@@ -16,8 +20,16 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
-from MLflow.mlflow_utils import log_simulation_mlflow, set_up_mlflow
-from paths import POLICY_CHANGE_BM
+from MLflow.simulation import (
+    log_simulation_mlflow,
+    save_simulation_run_id,
+    set_simulation_tags,
+)
+from MLflow.utils import (
+    build_simulation_run_name,
+    set_up_mlflow,
+)
+from paths import POLICY_CHANGE_BM, PROFILING_DIR
 from scenario import Scenario
 from stopping_rule.stopping_rule import (
     check_convergence,
@@ -116,7 +128,12 @@ def _run_training_loop(
 
 def main():
     set_up_mlflow()
-    with mlflow.start_run() as run:
+    with mlflow.start_run(run_name=build_simulation_run_name()) as run:
+        # Save simulation run id
+        save_simulation_run_id(run.info.run_id)
+
+        # Set tags simulation run
+        set_simulation_tags(run.info.run_id)
 
         # -----------------------------
         # 0. DEMAND CALIBRATION
@@ -187,3 +204,13 @@ def run():
 
 if __name__ == "__main__":
     run()
+
+    # with cProfile.Profile() as profile:
+    #     run()
+
+    # results = pstats.Stats(profile)
+    # results.sort_stats(pstats.SortKey.CUMULATIVE)
+    # results.print_stats("src/")
+    # # Save profile stats to a file
+    # filename = Path(config.network).stem
+    # results.dump_stats(PROFILING_DIR / f"{filename}.prof")
