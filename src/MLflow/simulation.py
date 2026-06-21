@@ -12,6 +12,7 @@ from config.config import config, path
 from paths import (
     DUE_DATA_DIR,
     INTERNAL_DATA_DIR,
+    MEAN_TT_DUAITERATE,
     MLFLOW,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
@@ -49,7 +50,8 @@ def set_simulation_tags(run_id):
 
 
 def build_simulation_run_name():
-    return f"BM_simulation"
+    config_path = Path(path).stem
+    return f"BM_simulation_{config_path}"
 
 
 ##########
@@ -119,6 +121,9 @@ def _log_mlflow_metrics():
     # 2. Log additional BM metrics
     _log_bm_metrics()
 
+    # 3. Log additionak duaIterate metrics
+    _log_duaIterate_metrics()
+
 
 def _log_rgap_metrics():
     # 1. Log Rgap metrics related to BM algorithm
@@ -138,6 +143,28 @@ def _log_bm_rgap_metric():
 
     _log_metric_over_time(
         df=df_rgap_bm, metric_name=metric_name, col_metric=col_metric, col_step=col_step
+    )
+
+
+def _log_duaIterate_metrics():
+
+    # 1. Mean travel time (time series)
+    _log_duaIterate_mean_travel_time()
+
+
+def _log_duaIterate_mean_travel_time():
+    # 1. Read parquet file that contains "Iteration | Mean_travel_time"
+    df_mean_tt_duaIterate = pd.read_parquet(MEAN_TT_DUAITERATE)
+
+    # 2. Log duaIterate mean travel time over time (series)
+    metric_name = "duaIterate_mean_travel_time"
+    col_metric = "Mean_travel_time"
+    col_step = "Iteration"
+    _log_metric_over_time(
+        df=df_mean_tt_duaIterate,
+        metric_name=metric_name,
+        col_metric=col_metric,
+        col_step=col_step,
     )
 
 

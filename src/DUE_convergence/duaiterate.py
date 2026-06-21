@@ -8,9 +8,31 @@ from lxml import etree
 
 from config.config import config
 from parsing.sumo_outputs import parse_edgedata, parse_trips_info, parse_vehroute
-from paths import BASE_DIR, TRIPS_duaIterate
+from paths import BASE_DIR, MEAN_TT_DUAITERATE, TRIPS_duaIterate
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file
+
+
+def compute_avg_tt_duaIterate(max_iterations):
+    folder_numbers = [str(number).zfill(3) for number in range(max_iterations)]
+
+    mean_tt_iterations = []
+    for folder_number in folder_numbers:
+        path = BASE_DIR / folder_number / f"tripinfo_{folder_number}.xml"
+        mean_tt = _compute_avg_travel_time_duaIterate(path)
+        mean_tt_iterations.append(
+            {"Iteration": int(folder_number), "Mean_travel_time": mean_tt}
+        )
+    df = pd.DataFrame(mean_tt_iterations)
+    df.to_parquet(MEAN_TT_DUAITERATE)
+
+
+def _compute_avg_travel_time_duaIterate(path):
+    tree = etree.parse(path)
+    durations = tree.xpath("//tripinfo/@duration")
+    durations = [float(duration) for duration in durations]
+    mean = sum(durations) / len(durations)
+    return mean
 
 
 def run_duarouter(network, trips_file, routes_file, weights_file, seed):
@@ -50,7 +72,7 @@ def generate_trips_file_duaIterate(agents):
         f.write("</routes>\n")
 
 
-def call_duaIterate(network, max_iterations):
+def call_duaIterate(network, max_iterations, step_length):
     cmd = [
         "duaIterate.py",
         "-n",
@@ -60,7 +82,7 @@ def call_duaIterate(network, max_iterations):
         "--last-step",
         str(max_iterations),
         "sumo--step-length",
-        "0.1",
+        str(step_length),
         "sumo--vehroute-output",
         "vehroute.xml",
         "sumo--vehroute-output.exit-times",

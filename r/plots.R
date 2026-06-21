@@ -5,6 +5,32 @@ print("######################")
 suppressPackageStartupMessages(library(arrow))
 suppressPackageStartupMessages(library(tidyverse))
 
+# Set custom theme to use in all my plots (to make sure things are big enough,
+# so in latex document they are properly visualized)
+theme_thesis <- function() {
+  theme_bw(base_size = 16) +
+    theme(
+      plot.title = element_text(size = 18, face = "bold"),
+      axis.title = element_text(size = 16),
+      axis.text = element_text(size = 14),
+      legend.title = element_text(size = 15),
+      legend.text = element_text(size = 13),
+      strip.text = element_text(size = 15)
+    )
+}
+
+ggplot(
+  data = tibble(x = seq(0,1,0.01), y = seq(0,1,0.01)**2),
+  mapping = aes(x = x, y = y)
+) +
+  geom_point() +
+  labs(title="Just a toy example") +
+  theme_thesis
+  
+
+
+
+
 dpi = 300
 width = 10
 height = 6

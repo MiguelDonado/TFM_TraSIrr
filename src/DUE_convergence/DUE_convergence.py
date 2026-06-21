@@ -49,6 +49,7 @@ from .aggregation import compute_flows_odtp_k, compute_travel_time_paths_odtp_k
 from .duaiterate import (
     call_duaIterate,
     compute_actions_table_duaIterate,
+    compute_avg_tt_duaIterate,
     compute_od_routes_table_duaIterate,
     delete_duaIterate_folders,
     extract_routes_file_duaIterate,
@@ -142,7 +143,9 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
     generate_trips_file_duaIterate(scen.agents)
 
     # 2. Execute duaIterate
-    call_duaIterate(config.network, config.duaIterate_max_iterations)
+    call_duaIterate(
+        config.network, config.duaIterate_max_iterations, config.duaIterate_step_length
+    )
 
     # 3. Run simulation
     if config.last_episode_gui_duaIterate:
@@ -232,6 +235,9 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
         rgap_by_od_path=RGAP_BY_OD_duaIterate,
         refined_rgap_by_od_path=REFINED_RGAP_BY_OD_duaIterate,
     )
+
+    # Compute and print mean tt duaIterate
+    compute_avg_tt_duaIterate(max_iterations=config.duaIterate_max_iterations)
 
     ################
     # 15. Delete duaIterate folders

@@ -145,6 +145,7 @@ class Config:
 
     # duaIterate
     duaIterate_max_iterations: int
+    duaIterate_step_length: float
 
     #####################
     # 10. Mode & flags

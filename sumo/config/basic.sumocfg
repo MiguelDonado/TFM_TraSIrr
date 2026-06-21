@@ -1,22 +1,22 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <configuration>
-	<input>
-		<net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"/>
-		<additional-files value="/home/miguel/6.Projects/Thesis/sumo/config/meandata.xml"/>
-	</input>
-	<report>
-		<tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
-		<statistic-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
-		<summary-output value="/home/miguel/6.Projects/Thesis/data/raw/summary.xml"/>
-		<vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
-		<vehroute-output.exit-times value="true"/>
-		<fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
-		<fcd-output.attributes value="x,y"/>
-	</report>
-	<random>
-		<seed value='42'/>
-	</random>
-	<device>
-		<device.fcd.probability value='0.2'/>
-	</device>
+  <input>
+    <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"/>
+    <additional-files value="/home/miguel/6.Projects/Thesis/sumo/config/meandata.xml"/>
+  </input>
+  <report>
+    <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
+    <statistic-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
+    <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
+    <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
+    <vehroute-output.exit-times value="true"/>
+    <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
+    <fcd-output.attributes value="x,y"/>
+  </report>
+  <random>
+    <seed value="42"/>
+  </random>
+  <device>
+    <device.fcd.probability value="0.2"/>
+  </device>
 </configuration>

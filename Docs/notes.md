@@ -119,22 +119,20 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 - **Implementations**:
-  1. Analisis FIFO violations on avg travel time link table
-  2. Comprobar duarouter tdsp is working and if there is huge problems becuase my table not being fifo
-  3. SUMO docker
-  4. Compute Rgap for all iterations DUE?
-  5. How to detect bottlenecks and speed up things (how to profile)
-  6. Add logging
-  7. Add 3 modes (debug, development, production)
-  8. Reinstall in the future claude code using nvm instead of npm to avoid auto-update error and let claude code to update itself automatically
-  9. Run ClaudeCode the audits, and ask about the structure of the project what can be improved
+  1. SUMO docker
+  2. Run Claude rest of audits
+  3. Repasar lo que dijo molano y mari paz
 
 - **To write**:
+  - Explian what I saw in the paper where does this road go, that we trust more the information that we got from experience, than from Google Maps, internal information
+  - Briefly acknowledge on the thesis that Im applying TDSP on a non-FIFO table. Example paragraph:
+    - The time-dependent shortest-path calculations were performed on discretized average link travel-time tables extracted from SUMO. Due to temporal aggregation, some link travel-time profiles do not strictly satisfy the FIFO property. Consequently, the TDSP computations should be interpreted as approximate shortest paths. However, the resulting Rgap values exhibited the expected convergence behavior, both during Bush-Mosteller learning and during DUA iterations, suggesting that the impact of these violations is limited for the studied scenarios.
 
 - **Doubts**: 
 
 - **To read**:
   1. Important conversation about applying modern RL instead of Bush-Mosteller: https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
+  2. Echar un vistazo al articulo que paso Manuel Molano  
 
 - **R**:
   1. Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead Cargar solo por episodio...
@@ -142,8 +140,3 @@ If when using a network that is very big, I have some scalability issue when wri
   3. When using R combine with sf package (represent networks greatly)
 
 - **MLFlow**
-
-
- 
-
-Los plots para el latex document con letra grande.

@@ -162,3 +162,16 @@ To facilitate reproducibility and enabling systematic experimentation
 **Reasoning**
 - Basically the time interval is proportional to the median duration of trips in the network. This median is computed over the whole free-flow travel times of available routes. The proportion term used depends, but there is a tradeoff. The smaller the more precise but more computationally expensive. For TDSP is better that is smaller in principle, because captures the idea that a trip should span several time intervals, and hence TDSP makes sense. 
   - In real life, usually time interval is never smaller than 15 minutes, because there is no more detailed info than that.  
+
+## 13. DUE convergence
+- Metric used: Rgap
+
+**Reasoning**
+- Rgap is computed for the BM-algorithm across all episodes. It is also computed for the final iteration of duaIterate (SUMO tool that tries to achieve a DUE state). **Rgap it is computed for final iteration of duaIterate because we wanna verify that a DUE is actually attainable for the given network and demand**. For example, imagine that our algorithm BM cannot achieve a DUE, maybe it is not is fault, and not even duaIterate can achive a DUE for that network and demand. 
+- I had the doubt, if we should compute the rgap for all the iterations of duaIterate, but I reached the conclusion that it is not worth it, and it would only be useful if we where analyzing the duaIterate tool itself, which is not the case, since it is a SUMO tool. **Hence we only compute rgap for the last iteration of duaIterate.**
+
+## 14. Logging
+- Not used, only printing
+
+**Reasoning**
+Im already printing the phase transitions, the convergence, the calibration iterations. And in my case Im always watching the terminal and if not the terminal holds the output, so logging just to get a persistent log file does not add much value here. And SUMO does not cause any errors, I guess because Im running it with a very controlled environment, handmade networks, arbitrary demand and routing... So to get information during a run, with the print statements that I have is enough, and spending hours implementing all the logging logic is not worth it.

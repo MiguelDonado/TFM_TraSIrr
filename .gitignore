@@ -11,3 +11,4 @@ renv/library/
 [0-9][0-9][0-9]/
 /mlruns
 mlflow.db
+/data

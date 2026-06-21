@@ -3,7 +3,6 @@ Class that creates the required files for SUMO simulator in order to run simulat
 """
 
 import os
-import random
 import subprocess
 import sys
 import tempfile
@@ -68,7 +67,7 @@ class Scenario:
 
     def _generate_agents(self, rng):
         # Generate the random edge OD-matrix (origin,destination for the agents)
-        self.od_pairs = self._generate_od_for_agents()
+        self.od_pairs = self._generate_od_for_agents(rng)
         self.departure_times = self._generate_departure_times(rng)
         for i in range(self.n_agents):
             origin, dest = self.od_pairs[i]
@@ -240,7 +239,7 @@ class Scenario:
     ### HELPER FUNCTIONS ###
     ########################
 
-    def _generate_od_for_agents(self):
+    def _generate_od_for_agents(self, rng):
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
             # Generate random ods for agents
@@ -253,7 +252,10 @@ class Scenario:
             )
             # Sample ods for all the agents from the restricted OD space
             od_pairs = self._sample_od_space(
-                restricted_od_space_counter, self.n_agents, config.max_size_od_space
+                restricted_od_space_counter,
+                self.n_agents,
+                config.max_size_od_space,
+                rng,
             )
         return od_pairs
 
@@ -302,7 +304,7 @@ class Scenario:
         most_common = counter.most_common(k)
         return most_common
 
-    def _sample_od_space(self, od_space_counter, n_agents, k):
+    def _sample_od_space(self, od_space_counter, n_agents, k, rng):
         """
         Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
         It will receive the reduced OD space counter object
@@ -317,11 +319,8 @@ class Scenario:
         probs = [c / total for c in counts]
 
         # Step 3: sample MANY agents from FEW ODs
-        ods = random.choices(
-            unique_ods,
-            weights=probs,
-            k=n_agents,
-        )
+        ods = rng.choice(len(unique_ods), size=n_agents, p=probs)
+        ods = [unique_ods[i] for i in ods]
         return ods
 
     def _generate_departure_times(self, rng):

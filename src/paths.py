@@ -170,6 +170,7 @@ REFINED_RGAP_BY_OD_duaIterate = RGAP_DIR_duaIterate / "refined_rgap_by_od.parque
 
 ROUTES_duaIterate = SUMO_DIR / "routes" / "routes_duaIterate.rou.xml"
 
+MEAN_TT_DUAITERATE = DUE_DATA_duaIterate / "mean_tt.parquet"
 # =============
 # Missingness duaIterate-specific
 # =============
