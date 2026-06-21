@@ -11,6 +11,7 @@ import pandas as pd
 from config.config import config, path
 from paths import (
     DUE_DATA_DIR,
+    EXPERIMENTS_TMP,
     INTERNAL_DATA_DIR,
     MEAN_TT_DUAITERATE,
     MLFLOW,
@@ -68,6 +69,9 @@ def _log_mlflow_params():
 
     # 3. Log YAML config file used
     mlflow.log_param("config_YAML", path)
+
+    # 4. Log seed
+    mlflow.log_param("seed", config.seed)
 
 
 def _extract_mlflow_hyperparams(config):
@@ -237,6 +241,7 @@ def _log_bm_policy_change():
 
 
 def _log_mlflow_artifacts():
+    mlflow.log_artifact(EXPERIMENTS_TMP)
     mlflow.log_artifact(INTERNAL_DATA_DIR)
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)

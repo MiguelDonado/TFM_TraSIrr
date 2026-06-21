@@ -1,0 +1,20 @@
+base_config: /home/miguel/6.Projects/Thesis/experiments/rq2/base.yaml
+
+grid:
+  learning:
+    memory_level:
+      - 1.0
+      - 0.95
+      - 0.90
+      - 0.85
+      - 0.80
+      - 0.60
+      - 0.40
+      - 0.20
+  randomness:
+    seed:
+      - 42
+      - 24
+      - 8
+      - 7
+      - 23

@@ -218,3 +218,8 @@ MEANDATA_AGGREGATED = EDGE_VISUALIZATION_DIR / "meandata_aggregated.xml"
 # MLFLOW
 # ============================================================
 MLFLOW = DATA_DIR / "MLflow"
+
+# ============================================================
+# EXPERIMENTS
+# ============================================================
+EXPERIMENTS_TMP = BASE_DIR / "experiments" / "tmp"

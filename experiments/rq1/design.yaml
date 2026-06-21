@@ -1,0 +1,10 @@
+base_config: /home/miguel/6.Projects/Thesis/experiments/rq2/base.yaml
+
+grid:
+  randomness:
+    seed:
+      - 42
+      - 24
+      - 8
+      - 7
+      - 23
