@@ -2,8 +2,7 @@ import subprocess
 
 import mlflow
 
-from config.config import config
-from MLflow.simulation import set_up_mlflow
+from MLflow.utils import set_up_mlflow
 from paths import MLFLOW
 
 
@@ -26,7 +25,7 @@ def log_analysis_run_MLflow(research_question, research_question_path):
 
 
 def build_analysis_run_name(source_run_id):
-    return f"BM_analysis_{config.config_name}_{source_run_id[:8]}"
+    return f"BM_analysis_{source_run_id[:8]}"
 
 
 def set_analysis_tags(source_run_id, research_question):

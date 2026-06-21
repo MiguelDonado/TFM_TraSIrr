@@ -8,7 +8,7 @@ from tempfile import NamedTemporaryFile
 import mlflow
 import pandas as pd
 
-from config.config import config
+from config.config import config, path
 from paths import (
     DUE_DATA_DIR,
     INTERNAL_DATA_DIR,
@@ -20,18 +20,11 @@ from paths import (
     RGAP_duaIterate,
 )
 
-from .utils import set_up_mlflow
-
 
 def log_simulation_mlflow():
 
-    # 1. Log RELEVANT hyperparameters
-    mlflow.log_params(_extract_mlflow_hyperparams(config))
-
-    # 1.2. Log hyperparameter related to git commit
-    # Useful, because maybe in six months from now I wanna look which code produced a surprising good result
-    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-    mlflow.log_param("git_commit", commit_hash)
+    # 1. Log relevant parameters
+    _log_mlflow_params()
 
     # 2. Log ALL hyperparameters as artifact
     _log_config_artifact()
@@ -56,12 +49,25 @@ def set_simulation_tags(run_id):
 
 
 def build_simulation_run_name():
-    return f"BM_simulation_{config.config_name}"
+    return f"BM_simulation"
 
 
 ##########
 # HELPERS
 ##########
+def _log_mlflow_params():
+    # 1. Log RELEVANT hyperparameters
+    mlflow.log_params(_extract_mlflow_hyperparams(config))
+
+    # 2. Log hyperparameter related to git commit
+    # Useful, because maybe in six months from now I wanna look which code produced a surprising good result
+    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+    mlflow.log_param("git_commit", commit_hash)
+
+    # 3. Log YAML config file used
+    mlflow.log_param("config_YAML", path)
+
+
 def _extract_mlflow_hyperparams(config):
     """
     Log only hyperparameters that may vary across runs

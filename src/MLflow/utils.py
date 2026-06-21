@@ -1,8 +1,5 @@
-from pathlib import Path
-
 import mlflow
 
-from config.config import config
 from paths import ARTIFACTS_STORAGE, BACKEND_DB
 
 
@@ -16,7 +13,7 @@ def set_up_mlflow():
     1. Set location for storage stuff
     2. Specify which experiment this run belongs to
     """
-    experiment_name = config.experiment_name
+    experiment_name = "Thesis"
 
     # 1. Set location backend db
     mlflow.set_tracking_uri(f"sqlite:///{BACKEND_DB}")

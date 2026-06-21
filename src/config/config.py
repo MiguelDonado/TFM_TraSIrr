@@ -41,11 +41,6 @@ class RunMode(Enum):
 @dataclass
 class Config:
     #####################
-    # 0. MLflow
-    #####################
-    experiment_name: str
-
-    #####################
     # 0. Randomness
     #####################
     seed: int  # Seed used for the random number generator object numpy

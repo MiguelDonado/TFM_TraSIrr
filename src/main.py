@@ -21,14 +21,12 @@ from experiment import (
     save_processed_data,
 )
 from MLflow.simulation import (
+    build_simulation_run_name,
     log_simulation_mlflow,
     save_simulation_run_id,
     set_simulation_tags,
 )
-from MLflow.utils import (
-    build_simulation_run_name,
-    set_up_mlflow,
-)
+from MLflow.utils import set_up_mlflow
 from paths import POLICY_CHANGE_BM, PROFILING_DIR
 from scenario import Scenario
 from stopping_rule.stopping_rule import (

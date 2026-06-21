@@ -11,7 +11,6 @@ from paths import BASE_DIR
 
 
 def run_analysis_script(research_question):
-    print("cwd =", os.getcwd())
 
     qmd = BASE_DIR / f"r/{research_question}/{research_question}.qmd"
 
@@ -30,3 +29,6 @@ if __name__ == "__main__":
 
     # 2. Log to MLflow
     log_analysis_run_MLflow(research_question, research_question_path)
+
+    # Play sound to signal end of script
+    os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
