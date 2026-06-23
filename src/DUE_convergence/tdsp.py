@@ -6,7 +6,7 @@ import pandas as pd
 from lxml import etree
 
 from config.config import config
-from paths import FREE_FLOW_TRAVEL_TIMES, TIMES_INTERVAL, TRIPS_TDSP
+from config.paths import FREE_FLOW_TRAVEL_TIMES, TIMES_INTERVAL, TRIPS_TDSP
 
 from .aggregation import _load_network_edges
 from .duaiterate import run_duarouter

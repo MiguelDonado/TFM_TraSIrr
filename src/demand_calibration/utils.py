@@ -14,8 +14,8 @@ import numpy as np
 
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
-from scripts.get_free_flow_speed import get_free_flow_speed
-from scripts.get_total_length_network import get_total_length_network
+from utils.get_free_flow_speed import get_free_flow_speed
+from utils.get_total_length_network import get_total_length_network
 
 
 def demand_calibration(last_iteration_gui=True):

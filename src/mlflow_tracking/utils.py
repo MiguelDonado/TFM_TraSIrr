@@ -1,6 +1,13 @@
 import mlflow
 
-from paths import ARTIFACTS_STORAGE, BACKEND_DB
+from config.paths import ARTIFACTS_STORAGE, BACKEND_DB
+
+
+def set_tracking_uri():
+    """
+    Set location backend db
+    """
+    mlflow.set_tracking_uri(f"sqlite:///{BACKEND_DB}")
 
 
 def set_up_mlflow():
@@ -16,7 +23,7 @@ def set_up_mlflow():
     experiment_name = "Thesis"
 
     # 1. Set location backend db
-    mlflow.set_tracking_uri(f"sqlite:///{BACKEND_DB}")
+    set_tracking_uri()
 
     # 2. Check if experiment is already created.
     # If its not, create it

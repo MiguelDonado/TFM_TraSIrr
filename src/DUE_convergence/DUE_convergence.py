@@ -1,48 +1,17 @@
 from shutil import copy2
 
 from config.config import config
-from paths import (
+from config.paths import (
     ACTIONS,
     AGENTS_OD,
-    COST_LINKS,
-    COST_MIN_PATHS,
-    COST_PATHS,
+    BM_PATHS,
+    DUA_EXTRA,
+    DUA_PATHS,
     EDGEDATA_PARQUET,
-    FLOWS_PATHS,
-    MISSINGNESS_EDGE,
-    MISSINGNESS_EPISODE,
-    MISSINGNESS_INT,
-    MISSINGNESS_REPORT,
-    REFINED_RGAP,
-    REFINED_RGAP_BY_OD,
-    RGAP,
-    RGAP_BY_OD,
-    SHORTEST_PATHS_DIR,
     TRIPS_INFO_PARQUET,
     VEHROUTE_PARQUET,
-    WEIGHTS_DIR,
-    ACTIONS_duaIterate,
-    COST_LINKS_duaIterate,
-    COST_MIN_PATHS_duaIterate,
-    COST_PATHS_duaIterate,
-    EDGEDATA_duaIterate_PROCESSED,
-    FLOWS_PATH_duaIterate,
-    MISSINGNESS_duaIterate_EDGE,
-    MISSINGNESS_duaIterate_EPISODE,
-    MISSINGNESS_duaIterate_INT,
-    MISSINGNESS_duaIterate_REPORT,
-    OD_ROUTES_duaIterate,
     Path,
-    REFINED_RGAP_BY_OD_duaIterate,
-    REFINED_RGAP_duaIterate,
-    RGAP_BY_OD_duaIterate,
-    RGAP_duaIterate,
-    ROUTES_duaIterate,
-    SHORTEST_PATHS_DIR_duaIterate,
-    TRIPS_INFO_PROCESSED_duaIterate,
     UNDESIRED_duaIterate_FILES,
-    VEHROUTE_duaIterate_PROCESSED,
-    WEIGHTS_DIR_duaIterate,
 )
 
 from .aggregation import compute_flows_odtp_k, compute_travel_time_paths_odtp_k
@@ -96,13 +65,13 @@ def _check_due_convergence_BM(end_time, time_interval):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
-    compute_flows_odtp_k(actions_path=ACTIONS, output_file=FLOWS_PATHS)
+    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths)
 
     # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
         actions_path=ACTIONS,
         trips_info_processed_path=TRIPS_INFO_PARQUET,
-        output_file=COST_PATHS,
+        output_file=BM_PATHS.cost_paths,
     )
 
     # 4. TIME DEPENDENCE SHORTEST PATH
@@ -111,25 +80,25 @@ def _check_due_convergence_BM(end_time, time_interval):
         vehroute_file=VEHROUTE_PARQUET,
         edgedata_file=EDGEDATA_PARQUET,
         agents_od_file=AGENTS_OD,
-        missingness_edge_file=MISSINGNESS_EDGE,
-        missingness_episode_file=MISSINGNESS_EPISODE,
-        missingness_interval_file=MISSINGNESS_INT,
-        missingness_report_file=MISSINGNESS_REPORT,
-        cost_links=COST_LINKS,
-        weights_dir=WEIGHTS_DIR,
-        shortest_path_dir=SHORTEST_PATHS_DIR,
-        cost_min_paths=COST_MIN_PATHS,
+        missingness_edge_file=BM_PATHS.missingness_edge,
+        missingness_episode_file=BM_PATHS.missingness_episode,
+        missingness_interval_file=BM_PATHS.missingness_int,
+        missingness_report_file=BM_PATHS.missingness_report,
+        cost_links=BM_PATHS.cost_links,
+        weights_dir=BM_PATHS.weights_dir,
+        shortest_path_dir=BM_PATHS.shortest_paths_dir,
+        cost_min_paths=BM_PATHS.cost_min_paths,
     )
 
     # Computation Rgap
     compute_rgap_and_refined_rgap(
-        flow_paths=FLOWS_PATHS,
-        cost_paths=COST_PATHS,
-        cost_min_paths=COST_MIN_PATHS,
-        rgap_path=RGAP,
-        refined_rgap_path=REFINED_RGAP,
-        rgap_by_od_path=RGAP_BY_OD,
-        refined_rgap_by_od_path=REFINED_RGAP_BY_OD,
+        flow_paths=BM_PATHS.flows_paths,
+        cost_paths=BM_PATHS.cost_paths,
+        cost_min_paths=BM_PATHS.cost_min_paths,
+        rgap_path=BM_PATHS.rgap,
+        refined_rgap_path=BM_PATHS.refined_rgap,
+        rgap_by_od_path=BM_PATHS.rgap_by_od,
+        refined_rgap_by_od_path=BM_PATHS.refined_rgap_by_od,
     )
 
 
@@ -139,7 +108,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
     ########################
     print("--- duaIterate ---")
 
-    # 1. Generate trips file used by duaIterate (only ODs, no routes)
+    # 1. Generate trips file used by dueIterate (only ODs, no routes)
     generate_trips_file_duaIterate(scen.agents)
 
     # 2. Execute duaIterate
@@ -153,10 +122,10 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
 
     # 4. Extract routes file last iteration duaIterate
     routes_file = extract_routes_file_duaIterate(config.duaIterate_max_iterations)
-    copy2(routes_file, ROUTES_duaIterate)
+    copy2(routes_file, DUA_EXTRA.routes)
     # 5. Compute od routes table
     dict_agent_routes, od_routes = compute_od_routes_table_duaIterate(
-        routes_file=routes_file, output_file=OD_ROUTES_duaIterate
+        routes_file=routes_file, output_file=DUA_EXTRA.od_routes
     )
 
     # 6. Compute actions table
@@ -164,31 +133,31 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
         agents=scen.agents,
         dict_agent_routes=dict_agent_routes,
         od_routes=od_routes,
-        output_file=ACTIONS_duaIterate,
+        output_file=DUA_EXTRA.actions,
     )
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
     compute_flows_odtp_k(
-        actions_path=ACTIONS_duaIterate, output_file=FLOWS_PATH_duaIterate
+        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths
     )
 
     # 8. Process trips_info file
     process_trips_info_duaIterate(
         max_iterations=config.duaIterate_max_iterations,
-        output_file=TRIPS_INFO_PROCESSED_duaIterate,
+        output_file=DUA_EXTRA.trips_info_processed,
     )
 
     # 9. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
-        actions_path=ACTIONS_duaIterate,
-        trips_info_processed_path=TRIPS_INFO_PROCESSED_duaIterate,
-        output_file=COST_PATHS_duaIterate,
+        actions_path=DUA_EXTRA.actions,
+        trips_info_processed_path=DUA_EXTRA.trips_info_processed,
+        output_file=DUA_PATHS.cost_paths,
     )
 
     # 10. Process vehroute duaIterate
     process_vehroute_duaIterate(
         max_iterations=config.duaIterate_max_iterations,
-        output_file=VEHROUTE_duaIterate_PROCESSED,
+        output_file=DUA_EXTRA.vehroute_processed,
     )
 
     # 11. Generate meandata_file
@@ -205,35 +174,35 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
     # 13. Process edgedata file
     process_edgedata_duaIterate(
         max_iterations=config.duaIterate_max_iterations,
-        output_file=EDGEDATA_duaIterate_PROCESSED,
+        output_file=DUA_EXTRA.edgedata_processed,
     )
 
     ######
     # 14. TIME DEPENDENCE SHORTEST PATH
     run_tdsp_pipeline(
         time_interval=time_interval,
-        vehroute_file=VEHROUTE_duaIterate_PROCESSED,
-        edgedata_file=EDGEDATA_duaIterate_PROCESSED,
+        vehroute_file=DUA_EXTRA.vehroute_processed,
+        edgedata_file=DUA_EXTRA.edgedata_processed,
         agents_od_file=AGENTS_OD,
-        missingness_edge_file=MISSINGNESS_duaIterate_EDGE,
-        missingness_episode_file=MISSINGNESS_duaIterate_EPISODE,
-        missingness_interval_file=MISSINGNESS_duaIterate_INT,
-        missingness_report_file=MISSINGNESS_duaIterate_REPORT,
-        cost_links=COST_LINKS_duaIterate,
-        weights_dir=WEIGHTS_DIR_duaIterate,
-        shortest_path_dir=SHORTEST_PATHS_DIR_duaIterate,
-        cost_min_paths=COST_MIN_PATHS_duaIterate,
+        missingness_edge_file=DUA_PATHS.missingness_edge,
+        missingness_episode_file=DUA_PATHS.missingness_episode,
+        missingness_interval_file=DUA_PATHS.missingness_int,
+        missingness_report_file=DUA_PATHS.missingness_report,
+        cost_links=DUA_PATHS.cost_links,
+        weights_dir=DUA_PATHS.weights_dir,
+        shortest_path_dir=DUA_PATHS.shortest_paths_dir,
+        cost_min_paths=DUA_PATHS.cost_min_paths,
     )
 
     # Computation Rgap
     compute_rgap_and_refined_rgap(
-        flow_paths=FLOWS_PATH_duaIterate,
-        cost_paths=COST_PATHS_duaIterate,
-        cost_min_paths=COST_MIN_PATHS_duaIterate,
-        rgap_path=RGAP_duaIterate,
-        refined_rgap_path=REFINED_RGAP_duaIterate,
-        rgap_by_od_path=RGAP_BY_OD_duaIterate,
-        refined_rgap_by_od_path=REFINED_RGAP_BY_OD_duaIterate,
+        flow_paths=DUA_PATHS.flows_paths,
+        cost_paths=DUA_PATHS.cost_paths,
+        cost_min_paths=DUA_PATHS.cost_min_paths,
+        rgap_path=DUA_PATHS.rgap,
+        refined_rgap_path=DUA_PATHS.refined_rgap,
+        rgap_by_od_path=DUA_PATHS.rgap_by_od,
+        refined_rgap_by_od_path=DUA_PATHS.refined_rgap_by_od,
     )
 
     # Compute and print mean tt duaIterate

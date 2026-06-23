@@ -10,9 +10,9 @@ import tuna
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
+from config.paths import POLICY_CHANGE_BM, PROFILING_DIR
 from demand_calibration.utils import demand_calibration
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
-from environment import Environment
 from experiment import (
     accumulate_results,
     log_run_mode,
@@ -20,15 +20,15 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
-from MLflow.simulation import (
+from mlflow_tracking.simulation import (
     build_simulation_run_name,
     log_simulation_mlflow,
     save_simulation_run_id,
     set_simulation_tags,
 )
-from MLflow.utils import set_up_mlflow
-from paths import POLICY_CHANGE_BM, PROFILING_DIR
-from scenario import Scenario
+from mlflow_tracking.utils import set_up_mlflow
+from simulation.environment import Environment
+from simulation.scenario import Scenario
 from stopping_rule.stopping_rule import (
     check_convergence,
     create_policies_dict,
@@ -126,12 +126,9 @@ def _run_training_loop(
 
 def main():
     set_up_mlflow()
-    with mlflow.start_run(run_name=build_simulation_run_name()) as run:
+    with mlflow.start_run() as run:
         # Save simulation run id
         save_simulation_run_id(run.info.run_id)
-
-        # Set tags simulation run
-        set_simulation_tags(run.info.run_id)
 
         # -----------------------------
         # 0. DEMAND CALIBRATION
@@ -185,7 +182,7 @@ def main():
         # -----------------------------
         # 7. MLflow (Artifact storage, Experiment tracking)
         # -----------------------------
-        log_simulation_mlflow()
+        log_simulation_mlflow(run_id=run.info.run_id)
 
         # Play sound to signal end of script
         os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")

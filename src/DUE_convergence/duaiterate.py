@@ -7,8 +7,8 @@ import pandas as pd
 from lxml import etree
 
 from config.config import config
+from config.paths import BASE_DIR, DUA_EXTRA, DUA_PATHS, TRIPS_TDSP
 from parsing.sumo_outputs import parse_edgedata, parse_trips_info, parse_vehroute
-from paths import BASE_DIR, MEAN_TT_DUAITERATE, TRIPS_duaIterate
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file
 
@@ -24,7 +24,7 @@ def compute_avg_tt_duaIterate(max_iterations):
             {"Iteration": int(folder_number), "Mean_travel_time": mean_tt}
         )
     df = pd.DataFrame(mean_tt_iterations)
-    df.to_parquet(MEAN_TT_DUAITERATE)
+    df.to_parquet(DUA_EXTRA.mean_tt)
 
 
 def _compute_avg_travel_time_duaIterate(path):
@@ -63,7 +63,7 @@ def run_duarouter(network, trips_file, routes_file, weights_file, seed):
 
 
 def generate_trips_file_duaIterate(agents):
-    with open(TRIPS_duaIterate, "w") as f:
+    with open(DUA_EXTRA.trips, "w") as f:
         f.write(f"<routes>\n")
         for i, agent in enumerate(agents):
             f.write(
@@ -78,7 +78,7 @@ def call_duaIterate(network, max_iterations, step_length):
         "-n",
         network,
         "-t",
-        TRIPS_duaIterate,
+        DUA_EXTRA.trips,
         "--last-step",
         str(max_iterations),
         "sumo--step-length",
@@ -114,10 +114,10 @@ def extract_routes_file_duaIterate(max_iterations):
     folder_path = BASE_DIR / folder_number
 
     # Path of gzip file that contains routes generated from duaIterate
-    gzip_path = folder_path / f"trips_duaIterate_{folder_number}.rou.xml.gz"
+    gzip_path = folder_path / f"trips_{folder_number}.rou.xml.gz"
 
     # Path of xml file that contains routes generated from duaIterate
-    xml_path = folder_path / f"trips_duaIterate_{folder_number}.rou.xml"
+    xml_path = folder_path / f"trips_{folder_number}.rou.xml"
 
     # Decompress gzip file to get xml file with routes generated from duaIterate
     _decompress_gzip(gzip_path, xml_path)

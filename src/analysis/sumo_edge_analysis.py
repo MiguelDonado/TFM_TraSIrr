@@ -31,7 +31,7 @@ import pandas as pd
 from lxml import etree
 
 from config.config import config
-from paths import TIMES_INTERVAL
+from config.paths import TIMES_INTERVAL
 
 # routes = [ROUTES, ROUTES_duaIterate]
 # for route in routes:

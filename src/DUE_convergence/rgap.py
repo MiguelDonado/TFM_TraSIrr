@@ -1,6 +1,6 @@
 import pandas as pd
 
-from paths import AGENTS_OD, DEMAND_ODT, TIMES_INTERVAL, TRIPS_TDSP
+from config.paths import AGENTS_OD, DEMAND_ODT, TIMES_INTERVAL, TRIPS_TDSP
 
 """
 Rgap computation + demand helpers

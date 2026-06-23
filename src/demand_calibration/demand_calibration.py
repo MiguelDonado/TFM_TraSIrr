@@ -1,14 +1,13 @@
 import subprocess
 
 from config.config import config
-from paths import (
-    NET,
+from config.paths import (
     ROUTES_DEMAND_CALIBRATION,
     SUMMARY_XML,
     SUMO_CONF_DEMAND_CALIBRATION,
     TRIPS_DEMAND_CALIBRATION,
 )
-from scripts.get_avg_speed import get_avg_speed
+from utils.get_avg_speed import get_avg_speed
 from utils.sumo_xml import write_sumo_conf
 
 

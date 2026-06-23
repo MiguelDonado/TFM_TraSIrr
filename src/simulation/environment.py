@@ -6,7 +6,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 
 from config.config import config
-from paths import ROUTES, TRIPS_INFO_XML
+from config.paths import ROUTES, TRIPS_INFO_XML
 
 
 class Environment:

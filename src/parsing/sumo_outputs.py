@@ -1,7 +1,7 @@
 import yaml
 from lxml import etree
 
-from paths import FCD_XML, STATISTICS_XML, YAML_CONF
+from config.paths import FCD_XML, STATISTICS_XML, YAML_CONF
 
 from .parser import Parser
 

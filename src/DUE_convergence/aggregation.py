@@ -1,7 +1,7 @@
 import pandas as pd
 from lxml import etree
 
-from paths import AGENTS_OD
+from config.paths import AGENTS_OD
 
 """
 Flow and path travel time aggregation

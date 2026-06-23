@@ -14,7 +14,7 @@ import pandas as pd
 from lxml import etree
 
 from config.config import RunMode, config
-from paths import (
+from config.paths import (
     AGENTS_OD,
     EDGEDATA_XML,
     FCD_XML,
@@ -196,7 +196,7 @@ class Scenario:
             report_outputs={
                 "tripinfo-output": TRIPS_INFO_XML,
                 "statistic-output": STATISTICS_XML,
-                "summary-output": STATISTICS_XML,
+                "summary-output": SUMMARY_XML,
                 "vehroute-output": VEHROUTE_XML,
                 "vehroute-output.exit-times": "true",
                 "fcd-output": FCD_XML,
@@ -254,7 +254,6 @@ class Scenario:
             od_pairs = self._sample_od_space(
                 restricted_od_space_counter,
                 self.n_agents,
-                config.max_size_od_space,
                 rng,
             )
         return od_pairs
@@ -304,7 +303,7 @@ class Scenario:
         most_common = counter.most_common(k)
         return most_common
 
-    def _sample_od_space(self, od_space_counter, n_agents, k, rng):
+    def _sample_od_space(self, od_space_counter, n_agents, rng):
         """
         Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
         It will receive the reduced OD space counter object

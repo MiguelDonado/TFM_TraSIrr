@@ -1,16 +1,24 @@
+"""
+This file executes simulation code + (optionally) analysis code
+"""
+
 import os
 import subprocess
 import sys
 import tempfile
 import time
 from itertools import product
+from pathlib import Path
 
 import yaml
 
-from paths import BASE_DIR, EXPERIMENTS_TMP
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+from config.paths import BASE_DIR, EXPERIMENTS_TMP
 
 # Config file path of the experiment that will be run
 path = sys.argv[1]
+# Research question that will be analyzed
 research_question = sys.argv[2] if len(sys.argv) > 2 else None
 
 # 1. Load YAML containing the grid of parameters
@@ -47,12 +55,12 @@ for combination in product(*[values for _, _, values in param_specs]):
         tmp_path = tmp.name
 
     # 8. Run simulation code with YAML config tmp file
-    subprocess.run(["python", "src/main.py", tmp_path])
+    subprocess.run(["python", "main.py", tmp_path], cwd=BASE_DIR / "src")
 
     # 9. (Optionally) Run analysis code
     if research_question:
         subprocess.run(
-            ["python", "run_analysis.py", research_question], cwd=BASE_DIR / "src"
+            ["python", str(BASE_DIR / "scripts" / "run_analysis.py"), research_question]
         )
 
     os.unlink(tmp_path)

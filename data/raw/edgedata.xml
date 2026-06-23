@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-06-21T17:58:35.773027+01:00 by Eclipse SUMO sumo 1.26.0
+<!-- generated on 2026-06-24T00:03:05.884865+01:00 by Eclipse SUMO sumo 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -12,7 +12,7 @@
     <output>
         <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
         <fcd-output.attributes value="x,y"/>
-        <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
+        <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/summary.xml"/>
         <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
         <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
         <vehroute-output.exit-times value="true"/>
@@ -32,238 +32,148 @@
 
 <meandata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/meandata_file.xsd">
     <interval begin="0.00" end="19.00" id="density_19s">
-        <edge id="E1_2_EB" density="10.21" entered="0"/>
-        <edge id="E3_4_WB" density="12.74" entered="0"/>
-        <edge id="E3_6_NWB" density="3.37" entered="1"/>
+        <edge id="E1_2_EB" density="27.42" entered="0"/>
+        <edge id="E2_3_EB" density="0.92" entered="1"/>
+        <edge id="E2_5_NB" density="1.49" entered="2"/>
     </interval>
     <interval begin="19.00" end="38.00" id="density_19s">
-        <edge id="E1_2_EB" density="23.49" entered="0"/>
-        <edge id="E2_3_EB" density="10.27" entered="3"/>
-        <edge id="E2_5_NB" density="3.69" entered="1"/>
-        <edge id="E3_4_WB" density="10.01" entered="0"/>
-        <edge id="E3_6_NWB" density="11.30" entered="3"/>
-        <edge id="E6_7_EB" density="3.05" entered="1"/>
+        <edge id="E1_2_EB" density="35.51" entered="0"/>
+        <edge id="E2_3_EB" density="15.43" entered="5"/>
+        <edge id="E2_5_NB" density="10.36" entered="1"/>
+        <edge id="E3_4_EB" density="3.67" entered="1"/>
+        <edge id="E5_6_NEB" density="5.31" entered="2"/>
     </interval>
     <interval begin="38.00" end="57.00" id="density_19s">
-        <edge id="E1_2_EB" density="22.27" entered="0"/>
-        <edge id="E2_3_EB" density="8.05" entered="2"/>
-        <edge id="E2_5_NB" density="8.22" entered="2"/>
-        <edge id="E3_4_EB" density="4.51" entered="1"/>
-        <edge id="E3_4_WB" density="13.44" entered="0"/>
-        <edge id="E3_6_NWB" density="12.35" entered="3"/>
-        <edge id="E5_6_NEB" density="4.60" entered="1"/>
-        <edge id="E6_7_EB" density="12.07" entered="4"/>
+        <edge id="E1_2_EB" density="36.44" entered="0"/>
+        <edge id="E2_3_EB" density="20.82" entered="5"/>
+        <edge id="E2_5_NB" density="5.40" entered="1"/>
+        <edge id="E3_4_EB" density="11.30" entered="3"/>
+        <edge id="E3_6_NWB" density="3.05" entered="2"/>
+        <edge id="E5_6_NEB" density="8.34" entered="1"/>
+        <edge id="E6_7_EB" density="9.02" entered="3"/>
     </interval>
     <interval begin="57.00" end="76.00" id="density_19s">
-        <edge id="E1_2_EB" density="21.70" entered="0"/>
-        <edge id="E2_3_EB" density="8.67" entered="2"/>
-        <edge id="E2_5_NB" density="6.14" entered="1"/>
-        <edge id="E3_4_EB" density="7.76" entered="2"/>
-        <edge id="E3_4_WB" density="15.18" entered="0"/>
-        <edge id="E3_6_NWB" density="15.85" entered="3"/>
-        <edge id="E5_6_NEB" density="10.14" entered="3"/>
-        <edge id="E6_7_EB" density="19.90" entered="5"/>
+        <edge id="E1_2_EB" density="36.63" entered="0"/>
+        <edge id="E2_3_EB" density="18.81" entered="3"/>
+        <edge id="E2_5_NB" density="8.73" entered="3"/>
+        <edge id="E3_4_EB" density="14.77" entered="4"/>
+        <edge id="E3_6_NWB" density="8.29" entered="2"/>
+        <edge id="E5_6_NEB" density="5.61" entered="2"/>
+        <edge id="E6_7_EB" density="7.55" entered="2"/>
     </interval>
     <interval begin="76.00" end="95.00" id="density_19s">
-        <edge id="E1_2_EB" density="23.88" entered="0"/>
-        <edge id="E2_3_EB" density="11.65" entered="3"/>
-        <edge id="E2_5_NB" density="6.08" entered="3"/>
-        <edge id="E3_4_EB" density="7.26" entered="3"/>
-        <edge id="E3_4_WB" density="3.86" entered="0"/>
-        <edge id="E3_6_NWB" density="17.41" entered="3"/>
-        <edge id="E5_6_NEB" density="8.25" entered="1"/>
-        <edge id="E6_7_EB" density="24.17" entered="5"/>
+        <edge id="E1_2_EB" density="37.62" entered="0"/>
+        <edge id="E2_3_EB" density="16.59" entered="4"/>
+        <edge id="E2_5_NB" density="10.26" entered="2"/>
+        <edge id="E3_4_EB" density="7.95" entered="2"/>
+        <edge id="E3_6_NWB" density="7.59" entered="1"/>
+        <edge id="E5_6_NEB" density="11.86" entered="2"/>
+        <edge id="E6_7_EB" density="16.67" entered="3"/>
     </interval>
     <interval begin="95.00" end="114.00" id="density_19s">
-        <edge id="E1_2_EB" density="24.71" entered="0"/>
-        <edge id="E2_3_EB" density="9.83" entered="3"/>
-        <edge id="E2_5_NB" density="8.10" entered="1"/>
-        <edge id="E3_4_EB" density="9.88" entered="2"/>
-        <edge id="E3_4_WB" density="14.36" entered="0"/>
-        <edge id="E3_6_NWB" density="6.54" entered="1"/>
-        <edge id="E5_6_NEB" density="16.54" entered="2"/>
-        <edge id="E6_7_EB" density="19.10" entered="6"/>
+        <edge id="E1_2_EB" density="35.28" entered="0"/>
+        <edge id="E2_3_EB" density="14.95" entered="6"/>
+        <edge id="E2_5_NB" density="12.54" entered="2"/>
+        <edge id="E3_4_EB" density="15.43" entered="4"/>
+        <edge id="E3_6_NWB" density="1.63" entered="0"/>
+        <edge id="E5_6_NEB" density="10.28" entered="3"/>
+        <edge id="E6_7_EB" density="20.10" entered="5"/>
     </interval>
     <interval begin="114.00" end="133.00" id="density_19s">
-        <edge id="E1_2_EB" density="24.70" entered="0"/>
-        <edge id="E2_3_EB" density="8.82" entered="3"/>
-        <edge id="E2_5_NB" density="7.86" entered="1"/>
-        <edge id="E3_4_EB" density="11.05" entered="2"/>
-        <edge id="E3_4_WB" density="20.68" entered="0"/>
-        <edge id="E3_6_NWB" density="10.88" entered="4"/>
-        <edge id="E5_6_NEB" density="6.59" entered="2"/>
-        <edge id="E6_7_EB" density="18.58" entered="3"/>
+        <edge id="E1_2_EB" density="35.16" entered="0"/>
+        <edge id="E2_3_EB" density="20.83" entered="3"/>
+        <edge id="E2_5_NB" density="5.89" entered="3"/>
+        <edge id="E3_4_EB" density="18.84" entered="6"/>
+        <edge id="E5_6_NEB" density="11.61" entered="1"/>
+        <edge id="E6_7_EB" density="11.74" entered="3"/>
     </interval>
     <interval begin="133.00" end="152.00" id="density_19s">
-        <edge id="E1_2_EB" density="33.00" entered="0"/>
-        <edge id="E2_3_EB" density="22.20" entered="5"/>
-        <edge id="E2_5_NB" density="1.70" entered="1"/>
-        <edge id="E3_4_EB" density="3.97" entered="1"/>
-        <edge id="E3_4_WB" density="19.73" entered="0"/>
-        <edge id="E3_6_NWB" density="15.33" entered="4"/>
-        <edge id="E5_6_NEB" density="8.20" entered="0"/>
-        <edge id="E6_7_EB" density="16.64" entered="5"/>
+        <edge id="E1_2_EB" density="35.99" entered="0"/>
+        <edge id="E2_3_EB" density="11.20" entered="3"/>
+        <edge id="E2_5_NB" density="15.54" entered="3"/>
+        <edge id="E3_4_EB" density="15.89" entered="2"/>
+        <edge id="E5_6_NEB" density="10.15" entered="3"/>
+        <edge id="E6_7_EB" density="6.15" entered="1"/>
     </interval>
     <interval begin="152.00" end="171.00" id="density_19s">
-        <edge id="E1_2_EB" density="23.86" entered="0"/>
-        <edge id="E2_3_EB" density="26.12" entered="4"/>
-        <edge id="E2_5_NB" density="3.65" entered="1"/>
-        <edge id="E3_4_EB" density="17.61" entered="4"/>
-        <edge id="E3_4_WB" density="5.30" entered="0"/>
-        <edge id="E3_6_NWB" density="17.36" entered="4"/>
-        <edge id="E5_6_NEB" density="3.31" entered="1"/>
-        <edge id="E6_7_EB" density="20.07" entered="4"/>
+        <edge id="E1_2_EB" density="36.69" entered="0"/>
+        <edge id="E2_3_EB" density="17.41" entered="2"/>
+        <edge id="E2_5_NB" density="10.50" entered="4"/>
+        <edge id="E3_4_EB" density="14.99" entered="4"/>
+        <edge id="E5_6_NEB" density="15.19" entered="3"/>
+        <edge id="E6_7_EB" density="12.62" entered="4"/>
     </interval>
     <interval begin="171.00" end="190.00" id="density_19s">
-        <edge id="E1_2_EB" density="13.19" entered="0"/>
-        <edge id="E2_3_EB" density="10.49" entered="1"/>
-        <edge id="E2_5_NB" density="5.15" entered="1"/>
-        <edge id="E3_4_EB" density="7.58" entered="2"/>
-        <edge id="E3_6_NWB" density="13.52" entered="3"/>
-        <edge id="E5_6_NEB" density="3.02" entered="1"/>
-        <edge id="E6_7_EB" density="24.36" entered="5"/>
+        <edge id="E1_2_EB" density="34.24" entered="0"/>
+        <edge id="E2_3_EB" density="16.03" entered="6"/>
+        <edge id="E2_5_NB" density="11.88" entered="1"/>
+        <edge id="E3_4_EB" density="15.64" entered="3"/>
+        <edge id="E5_6_NEB" density="14.68" entered="4"/>
+        <edge id="E6_7_EB" density="10.77" entered="2"/>
     </interval>
     <interval begin="190.00" end="209.00" id="density_19s">
-        <edge id="E1_2_EB" density="30.42" entered="0"/>
-        <edge id="E2_3_EB" density="9.27" entered="3"/>
-        <edge id="E2_5_NB" density="5.88" entered="2"/>
-        <edge id="E3_4_WB" density="5.30" entered="0"/>
-        <edge id="E3_6_NWB" density="9.76" entered="1"/>
-        <edge id="E5_6_NEB" density="6.49" entered="1"/>
-        <edge id="E6_7_EB" density="15.96" entered="4"/>
+        <edge id="E1_2_EB" density="35.50" entered="0"/>
+        <edge id="E2_3_EB" density="13.84" entered="4"/>
+        <edge id="E2_5_NB" density="11.20" entered="2"/>
+        <edge id="E3_4_EB" density="17.34" entered="4"/>
+        <edge id="E5_6_NEB" density="7.18" entered="1"/>
+        <edge id="E6_7_EB" density="14.22" entered="3"/>
     </interval>
     <interval begin="209.00" end="228.00" id="density_19s">
-        <edge id="E1_2_EB" density="31.43" entered="0"/>
-        <edge id="E2_3_EB" density="15.50" entered="4"/>
-        <edge id="E2_5_NB" density="6.29" entered="1"/>
-        <edge id="E3_4_EB" density="15.30" entered="4"/>
-        <edge id="E3_4_WB" density="5.55" entered="0"/>
-        <edge id="E3_6_NWB" density="4.86" entered="1"/>
-        <edge id="E5_6_NEB" density="8.43" entered="2"/>
-        <edge id="E6_7_EB" density="16.32" entered="4"/>
+        <edge id="E1_2_EB" density="35.24" entered="0"/>
+        <edge id="E2_3_EB" density="23.39" entered="6"/>
+        <edge id="E2_5_NB" density="3.27" entered="1"/>
+        <edge id="E3_4_EB" density="20.17" entered="6"/>
+        <edge id="E5_6_NEB" density="11.77" entered="2"/>
+        <edge id="E6_7_EB" density="7.32" entered="2"/>
     </interval>
     <interval begin="228.00" end="247.00" id="density_19s">
-        <edge id="E1_2_EB" density="32.00" entered="0"/>
-        <edge id="E2_3_EB" density="6.76" entered="3"/>
-        <edge id="E2_5_NB" density="15.13" entered="3"/>
-        <edge id="E3_4_EB" density="12.51" entered="3"/>
-        <edge id="E3_4_WB" density="11.10" entered="0"/>
-        <edge id="E3_6_NWB" density="5.29" entered="3"/>
-        <edge id="E5_6_NEB" density="5.41" entered="2"/>
-        <edge id="E6_7_EB" density="12.66" entered="2"/>
+        <edge id="E1_2_EB" density="36.46" entered="0"/>
+        <edge id="E2_3_EB" density="16.16" entered="2"/>
+        <edge id="E2_5_NB" density="7.56" entered="3"/>
+        <edge id="E3_4_EB" density="21.01" entered="5"/>
+        <edge id="E5_6_NEB" density="4.29" entered="1"/>
+        <edge id="E6_7_EB" density="7.15" entered="1"/>
     </interval>
     <interval begin="247.00" end="266.00" id="density_19s">
-        <edge id="E1_2_EB" density="12.02" entered="0"/>
-        <edge id="E2_3_EB" density="14.00" entered="1"/>
-        <edge id="E2_5_NB" density="6.30" entered="2"/>
-        <edge id="E3_4_EB" density="7.31" entered="2"/>
-        <edge id="E3_4_WB" density="2.25" entered="0"/>
-        <edge id="E3_6_NWB" density="8.00" entered="0"/>
-        <edge id="E5_6_NEB" density="16.57" entered="2"/>
-        <edge id="E6_7_EB" density="13.16" entered="5"/>
+        <edge id="E1_2_EB" density="37.44" entered="0"/>
+        <edge id="E2_3_EB" density="14.62" entered="5"/>
+        <edge id="E2_5_NB" density="12.58" entered="2"/>
+        <edge id="E3_4_EB" density="10.53" entered="2"/>
+        <edge id="E5_6_NEB" density="9.88" entered="3"/>
+        <edge id="E6_7_EB" density="4.69" entered="2"/>
     </interval>
     <interval begin="266.00" end="285.00" id="density_19s">
-        <edge id="E1_2_EB" density="16.62" entered="0"/>
-        <edge id="E2_3_EB" density="4.21" entered="1"/>
-        <edge id="E2_5_NB" density="5.16" entered="1"/>
-        <edge id="E3_4_EB" density="12.42" entered="3"/>
-        <edge id="E3_4_WB" density="3.43" entered="0"/>
-        <edge id="E3_6_NWB" density="3.51" entered="1"/>
-        <edge id="E5_6_NEB" density="7.32" entered="2"/>
-        <edge id="E6_7_EB" density="19.75" entered="3"/>
+        <edge id="E1_2_EB" density="34.59" entered="0"/>
+        <edge id="E2_3_EB" density="23.81" entered="6"/>
+        <edge id="E2_5_NB" density="6.48" entered="1"/>
+        <edge id="E3_4_EB" density="23.26" entered="6"/>
+        <edge id="E5_6_NEB" density="11.56" entered="2"/>
+        <edge id="E6_7_EB" density="10.50" entered="3"/>
     </interval>
     <interval begin="285.00" end="304.00" id="density_19s">
-        <edge id="E1_2_EB" density="18.98" entered="0"/>
-        <edge id="E2_3_EB" density="5.46" entered="2"/>
-        <edge id="E2_5_NB" density="11.03" entered="3"/>
-        <edge id="E3_4_EB" density="2.56" entered="0"/>
-        <edge id="E3_6_NWB" density="1.92" entered="0"/>
-        <edge id="E5_6_NEB" density="5.70" entered="2"/>
-        <edge id="E6_7_EB" density="9.12" entered="3"/>
+        <edge id="E1_2_EB" density="33.66" entered="0"/>
+        <edge id="E2_3_EB" density="19.38" entered="3"/>
+        <edge id="E2_5_NB" density="6.52" entered="2"/>
+        <edge id="E3_4_EB" density="21.06" entered="4"/>
+        <edge id="E5_6_NEB" density="7.08" entered="2"/>
+        <edge id="E6_7_EB" density="10.29" entered="2"/>
     </interval>
     <interval begin="304.00" end="323.00" id="density_19s">
-        <edge id="E1_2_EB" density="10.41" entered="0"/>
-        <edge id="E2_3_EB" density="5.25" entered="1"/>
-        <edge id="E2_5_NB" density="2.96" entered="0"/>
-        <edge id="E3_4_EB" density="8.23" entered="2"/>
-        <edge id="E3_4_WB" density="21.29" entered="0"/>
-        <edge id="E3_6_NWB" density="2.79" entered="2"/>
-        <edge id="E5_6_NEB" density="12.29" entered="2"/>
-        <edge id="E6_7_EB" density="9.02" entered="2"/>
+        <edge id="E1_2_EB" density="3.69" entered="0"/>
+        <edge id="E2_3_EB" density="7.66" entered="1"/>
+        <edge id="E2_5_NB" density="10.83" entered="2"/>
+        <edge id="E3_4_EB" density="17.79" entered="3"/>
+        <edge id="E5_6_NEB" density="8.80" entered="3"/>
+        <edge id="E6_7_EB" density="7.22" entered="1"/>
     </interval>
     <interval begin="323.00" end="342.00" id="density_19s">
-        <edge id="E1_2_EB" density="12.21" entered="0"/>
-        <edge id="E2_3_EB" density="8.02" entered="3"/>
-        <edge id="E3_4_EB" density="6.20" entered="2"/>
-        <edge id="E3_4_WB" density="9.30" entered="0"/>
-        <edge id="E3_6_NWB" density="16.13" entered="3"/>
-        <edge id="E6_7_EB" density="8.87" entered="2"/>
+        <edge id="E2_3_EB" density="1.99" entered="0"/>
+        <edge id="E3_4_EB" density="5.51" entered="1"/>
+        <edge id="E5_6_NEB" density="7.51" entered="0"/>
+        <edge id="E6_7_EB" density="11.24" entered="3"/>
     </interval>
-    <interval begin="342.00" end="361.00" id="density_19s">
-        <edge id="E1_2_EB" density="22.07" entered="0"/>
-        <edge id="E2_3_EB" density="8.93" entered="1"/>
-        <edge id="E2_5_NB" density="0.39" entered="1"/>
-        <edge id="E3_4_EB" density="4.87" entered="1"/>
-        <edge id="E3_4_WB" density="3.95" entered="0"/>
-        <edge id="E3_6_NWB" density="12.20" entered="2"/>
-        <edge id="E6_7_EB" density="15.36" entered="3"/>
-    </interval>
-    <interval begin="361.00" end="380.00" id="density_19s">
-        <edge id="E1_2_EB" density="14.23" entered="0"/>
-        <edge id="E2_3_EB" density="12.20" entered="3"/>
-        <edge id="E2_5_NB" density="6.68" entered="1"/>
-        <edge id="E3_4_EB" density="6.84" entered="2"/>
-        <edge id="E3_4_WB" density="11.42" entered="0"/>
-        <edge id="E3_6_NWB" density="5.29" entered="1"/>
-        <edge id="E5_6_NEB" density="2.50" entered="1"/>
-        <edge id="E6_7_EB" density="14.92" entered="4"/>
-    </interval>
-    <interval begin="380.00" end="399.00" id="density_19s">
-        <edge id="E1_2_EB" density="34.97" entered="0"/>
-        <edge id="E2_3_EB" density="5.88" entered="2"/>
-        <edge id="E2_5_NB" density="5.43" entered="3"/>
-        <edge id="E3_4_EB" density="11.06" entered="2"/>
-        <edge id="E3_4_WB" density="4.99" entered="0"/>
-        <edge id="E3_6_NWB" density="7.97" entered="2"/>
-        <edge id="E5_6_NEB" density="5.61" entered="1"/>
-        <edge id="E6_7_EB" density="9.64" entered="2"/>
-    </interval>
-    <interval begin="399.00" end="418.00" id="density_19s">
-        <edge id="E1_2_EB" density="36.83" entered="0"/>
-        <edge id="E2_3_EB" density="11.60" entered="4"/>
-        <edge id="E2_5_NB" density="16.49" entered="2"/>
-        <edge id="E3_4_EB" density="2.71" entered="1"/>
-        <edge id="E3_4_WB" density="6.29" entered="0"/>
-        <edge id="E3_6_NWB" density="8.48" entered="2"/>
-        <edge id="E5_6_NEB" density="9.04" entered="3"/>
-        <edge id="E6_7_EB" density="11.48" entered="3"/>
-    </interval>
-    <interval begin="418.00" end="437.00" id="density_19s">
-        <edge id="E1_2_EB" density="28.29" entered="0"/>
-        <edge id="E2_3_EB" density="18.79" entered="4"/>
-        <edge id="E2_5_NB" density="7.66" entered="2"/>
-        <edge id="E3_4_EB" density="13.83" entered="4"/>
-        <edge id="E3_4_WB" density="10.59" entered="0"/>
-        <edge id="E3_6_NWB" density="6.33" entered="2"/>
-        <edge id="E5_6_NEB" density="38.11" entered="3"/>
-        <edge id="E6_7_EB" density="8.34" entered="2"/>
-    </interval>
-    <interval begin="437.00" end="456.00" id="density_19s">
-        <edge id="E2_3_EB" density="9.07" entered="0"/>
-        <edge id="E2_5_NB" density="7.34" entered="1"/>
-        <edge id="E3_4_EB" density="16.57" entered="3"/>
-        <edge id="E3_6_NWB" density="6.49" entered="1"/>
-        <edge id="E5_6_NEB" density="23.60" entered="1"/>
-        <edge id="E6_7_EB" density="25.42" entered="7"/>
-    </interval>
-    <interval begin="456.00" end="475.00" id="density_19s">
-        <edge id="E3_4_EB" density="1.55" entered="0"/>
-        <edge id="E3_6_NWB" density="2.74" entered="0"/>
-        <edge id="E5_6_NEB" density="22.36" entered="1"/>
-        <edge id="E6_7_EB" density="10.30" entered="1"/>
-    </interval>
-    <interval begin="475.00" end="493.00" id="density_19s">
-        <edge id="E5_6_NEB" density="1.82" entered="0"/>
-        <edge id="E6_7_EB" density="17.28" entered="3"/>
+    <interval begin="342.00" end="344.00" id="density_19s">
+        <edge id="E6_7_EB" density="6.16" entered="0"/>
     </interval>
 </meandata>

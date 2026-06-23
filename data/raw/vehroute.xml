@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-06-21T17:58:35.771434+01:00 by Eclipse SUMO sumo 1.26.0
+<!-- generated on 2026-06-24T00:03:05.884035+01:00 by Eclipse SUMO sumo 1.26.0
 <sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -12,7 +12,7 @@
     <output>
         <fcd-output value="/home/miguel/6.Projects/Thesis/data/raw/fcd-export.xml"/>
         <fcd-output.attributes value="x,y"/>
-        <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/statistics.xml"/>
+        <summary-output value="/home/miguel/6.Projects/Thesis/data/raw/summary.xml"/>
         <tripinfo-output value="/home/miguel/6.Projects/Thesis/data/raw/tripsinfo.xml"/>
         <vehroute-output value="/home/miguel/6.Projects/Thesis/data/raw/vehroute.xml"/>
         <vehroute-output.exit-times value="true"/>
@@ -31,540 +31,404 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <vehicle id="agent_1" type="DEFAULT_VEHTYPE" depart="2.00" arrival="41.00">
-        <route edges="E3_6_NWB E6_7_EB" exitTimes="28.00 41.00"/>
+    <vehicle id="agent_2" type="DEFAULT_VEHTYPE" depart="3.00" arrival="36.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="14.00 28.00 36.00"/>
     </vehicle>
 
-    <vehicle id="agent_4" type="DEFAULT_VEHTYPE" depart="9.00" arrival="46.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="20.00 37.00 46.00"/>
+    <vehicle id="agent_6" type="DEFAULT_VEHTYPE" depart="15.00" arrival="48.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="25.00 40.00 48.00"/>
     </vehicle>
 
-    <vehicle id="agent_2" type="DEFAULT_VEHTYPE" depart="4.00" arrival="48.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="14.00 37.00 48.00"/>
+    <vehicle id="agent_7" type="DEFAULT_VEHTYPE" depart="18.00" arrival="50.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="28.00 42.00 50.00"/>
     </vehicle>
 
-    <vehicle id="agent_3" type="DEFAULT_VEHTYPE" depart="7.00" arrival="50.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="18.00 39.00 50.00"/>
+    <vehicle id="agent_8" type="DEFAULT_VEHTYPE" depart="21.00" arrival="52.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="30.00 44.00 52.00"/>
     </vehicle>
 
-    <vehicle id="agent_7" type="DEFAULT_VEHTYPE" depart="15.00" arrival="61.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="26.00 49.00 61.00"/>
+    <vehicle id="agent_1" type="DEFAULT_VEHTYPE" depart="0.00" arrival="53.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="11.00 29.00 41.00 53.00"/>
     </vehicle>
 
-    <vehicle id="agent_11" type="DEFAULT_VEHTYPE" depart="30.00" arrival="64.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="41.00 56.00 64.00"/>
+    <vehicle id="agent_3" type="DEFAULT_VEHTYPE" depart="6.00" arrival="55.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="16.00 31.00 43.00 55.00"/>
     </vehicle>
 
     <vehicle id="agent_5" type="DEFAULT_VEHTYPE" depart="12.00" arrival="65.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="23.00 41.00 53.00 65.00"/>
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="23.00 40.00 53.00 65.00"/>
     </vehicle>
 
-    <vehicle id="agent_9" type="DEFAULT_VEHTYPE" depart="18.00" arrival="70.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="29.00 57.00 70.00"/>
+    <vehicle id="agent_12" type="DEFAULT_VEHTYPE" depart="33.00" arrival="67.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="43.00 59.00 67.00"/>
     </vehicle>
 
-    <vehicle id="agent_6" type="DEFAULT_VEHTYPE" depart="15.00" arrival="75.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="25.00 40.00 64.00 75.00"/>
+    <vehicle id="agent_13" type="DEFAULT_VEHTYPE" depart="36.00" arrival="76.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="47.00 66.00 76.00"/>
     </vehicle>
 
-    <vehicle id="agent_8" type="DEFAULT_VEHTYPE" depart="18.00" arrival="77.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="28.00 43.00 66.00 77.00"/>
+    <vehicle id="agent_14" type="DEFAULT_VEHTYPE" depart="39.00" arrival="78.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="49.00 68.00 78.00"/>
     </vehicle>
 
-    <vehicle id="agent_13" type="DEFAULT_VEHTYPE" depart="38.00" arrival="78.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="49.00 67.00 78.00"/>
+    <vehicle id="agent_15" type="DEFAULT_VEHTYPE" depart="42.00" arrival="79.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="52.00 69.00 79.00"/>
     </vehicle>
 
-    <vehicle id="agent_14" type="DEFAULT_VEHTYPE" depart="39.00" arrival="80.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="49.00 70.00 80.00"/>
+    <vehicle id="agent_4" type="DEFAULT_VEHTYPE" depart="9.00" arrival="80.00">
+        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="20.00 37.00 67.00 80.00"/>
     </vehicle>
 
-    <vehicle id="agent_10" type="DEFAULT_VEHTYPE" depart="27.00" arrival="85.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="38.00 57.00 71.00 85.00"/>
+    <vehicle id="agent_10" type="DEFAULT_VEHTYPE" depart="27.00" arrival="84.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="39.00 58.00 71.00 84.00"/>
     </vehicle>
 
-    <vehicle id="agent_12" type="DEFAULT_VEHTYPE" depart="34.00" arrival="87.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="45.00 62.00 74.00 87.00"/>
+    <vehicle id="agent_19" type="DEFAULT_VEHTYPE" depart="54.00" arrival="88.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="65.00 80.00 88.00"/>
     </vehicle>
 
-    <vehicle id="agent_21" type="DEFAULT_VEHTYPE" depart="59.00" arrival="89.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="68.00 82.00 89.00"/>
+    <vehicle id="agent_9" type="DEFAULT_VEHTYPE" depart="24.00" arrival="94.00">
+        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="35.00 52.00 81.00 94.00"/>
     </vehicle>
 
-    <vehicle id="agent_18" type="DEFAULT_VEHTYPE" depart="51.00" arrival="92.00">
-        <route edges="E3_6_NWB E6_7_EB" exitTimes="79.00 92.00"/>
+    <vehicle id="agent_11" type="DEFAULT_VEHTYPE" depart="30.00" arrival="96.00">
+        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="41.00 57.00 83.00 96.00"/>
     </vehicle>
 
-    <vehicle id="agent_16" type="DEFAULT_VEHTYPE" depart="45.00" arrival="94.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="55.00 81.00 94.00"/>
+    <vehicle id="agent_16" type="DEFAULT_VEHTYPE" depart="45.00" arrival="98.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="56.00 72.00 84.00 98.00"/>
     </vehicle>
 
-    <vehicle id="agent_19" type="DEFAULT_VEHTYPE" depart="51.00" arrival="98.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="61.00 86.00 98.00"/>
-    </vehicle>
-
-    <vehicle id="agent_23" type="DEFAULT_VEHTYPE" depart="65.00" arrival="98.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="76.00 90.00 98.00"/>
-    </vehicle>
-
-    <vehicle id="agent_20" type="DEFAULT_VEHTYPE" depart="58.00" arrival="99.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="68.00 88.00 99.00"/>
-    </vehicle>
-
-    <vehicle id="agent_24" type="DEFAULT_VEHTYPE" depart="68.00" arrival="100.00">
+    <vehicle id="agent_23" type="DEFAULT_VEHTYPE" depart="66.00" arrival="100.00">
         <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="78.00 92.00 100.00"/>
     </vehicle>
 
-    <vehicle id="agent_28" type="DEFAULT_VEHTYPE" depart="75.00" arrival="111.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="85.00 102.00 111.00"/>
+    <vehicle id="agent_24" type="DEFAULT_VEHTYPE" depart="69.00" arrival="102.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="80.00 94.00 102.00"/>
     </vehicle>
 
-    <vehicle id="agent_27" type="DEFAULT_VEHTYPE" depart="73.00" arrival="112.00">
-        <route edges="E3_6_NWB E6_7_EB" exitTimes="100.00 112.00"/>
+    <vehicle id="agent_17" type="DEFAULT_VEHTYPE" depart="48.00" arrival="106.00">
+        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="58.00 72.00 95.00 106.00"/>
     </vehicle>
 
-    <vehicle id="agent_17" type="DEFAULT_VEHTYPE" depart="48.00" arrival="114.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="58.00 72.00 102.00 114.00"/>
+    <vehicle id="agent_25" type="DEFAULT_VEHTYPE" depart="72.00" arrival="106.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="82.00 98.00 106.00"/>
     </vehicle>
 
-    <vehicle id="agent_25" type="DEFAULT_VEHTYPE" depart="67.00" arrival="116.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="78.00 104.00 116.00"/>
+    <vehicle id="agent_26" type="DEFAULT_VEHTYPE" depart="75.00" arrival="108.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="85.00 99.00 108.00"/>
     </vehicle>
 
-    <vehicle id="agent_26" type="DEFAULT_VEHTYPE" depart="70.00" arrival="118.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="80.00 106.00 118.00"/>
+    <vehicle id="agent_18" type="DEFAULT_VEHTYPE" depart="51.00" arrival="110.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="62.00 82.00 96.00 110.00"/>
     </vehicle>
 
-    <vehicle id="agent_31" type="DEFAULT_VEHTYPE" depart="85.00" arrival="120.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="96.00 111.00 120.00"/>
+    <vehicle id="agent_21" type="DEFAULT_VEHTYPE" depart="60.00" arrival="112.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="70.00 86.00 99.00 112.00"/>
     </vehicle>
 
-    <vehicle id="agent_15" type="DEFAULT_VEHTYPE" depart="45.00" arrival="121.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="55.00 73.00 107.00 121.00"/>
+    <vehicle id="agent_20" type="DEFAULT_VEHTYPE" depart="57.00" arrival="114.00">
+        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="67.00 82.00 103.00 114.00"/>
     </vehicle>
 
-    <vehicle id="agent_22" type="DEFAULT_VEHTYPE" depart="62.00" arrival="124.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="73.00 92.00 110.00 124.00"/>
+    <vehicle id="agent_30" type="DEFAULT_VEHTYPE" depart="87.00" arrival="120.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="98.00 112.00 120.00"/>
     </vehicle>
 
-    <vehicle id="agent_32" type="DEFAULT_VEHTYPE" depart="93.00" arrival="124.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="103.00 117.00 124.00"/>
+    <vehicle id="agent_22" type="DEFAULT_VEHTYPE" depart="63.00" arrival="121.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="75.00 93.00 107.00 121.00"/>
     </vehicle>
 
-    <vehicle id="agent_29" type="DEFAULT_VEHTYPE" depart="78.00" arrival="129.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="88.00 105.00 117.00 129.00"/>
+    <vehicle id="agent_31" type="DEFAULT_VEHTYPE" depart="90.00" arrival="125.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="100.00 116.00 125.00"/>
     </vehicle>
 
-    <vehicle id="agent_30" type="DEFAULT_VEHTYPE" depart="82.00" arrival="131.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="92.00 108.00 120.00 131.00"/>
+    <vehicle id="agent_32" type="DEFAULT_VEHTYPE" depart="93.00" arrival="126.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="103.00 118.00 126.00"/>
     </vehicle>
 
-    <vehicle id="agent_34" type="DEFAULT_VEHTYPE" depart="99.00" arrival="133.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="110.00 125.00 133.00"/>
+    <vehicle id="agent_27" type="DEFAULT_VEHTYPE" depart="78.00" arrival="131.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="89.00 107.00 119.00 131.00"/>
     </vehicle>
 
-    <vehicle id="agent_35" type="DEFAULT_VEHTYPE" depart="99.00" arrival="140.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="109.00 130.00 140.00"/>
+    <vehicle id="agent_33" type="DEFAULT_VEHTYPE" depart="96.00" arrival="135.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="107.00 125.00 135.00"/>
     </vehicle>
 
-    <vehicle id="agent_39" type="DEFAULT_VEHTYPE" depart="110.00" arrival="141.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="119.00 133.00 141.00"/>
+    <vehicle id="agent_28" type="DEFAULT_VEHTYPE" depart="81.00" arrival="137.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="93.00 111.00 124.00 137.00"/>
     </vehicle>
 
-    <vehicle id="agent_37" type="DEFAULT_VEHTYPE" depart="102.00" arrival="146.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="112.00 135.00 146.00"/>
+    <vehicle id="agent_34" type="DEFAULT_VEHTYPE" depart="99.00" arrival="137.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="109.00 127.00 137.00"/>
     </vehicle>
 
-    <vehicle id="agent_38" type="DEFAULT_VEHTYPE" depart="107.00" arrival="151.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="117.00 140.00 151.00"/>
+    <vehicle id="agent_35" type="DEFAULT_VEHTYPE" depart="102.00" arrival="138.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="112.00 129.00 138.00"/>
     </vehicle>
 
-    <vehicle id="agent_33" type="DEFAULT_VEHTYPE" depart="96.00" arrival="156.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="107.00 127.00 141.00 156.00"/>
+    <vehicle id="agent_29" type="DEFAULT_VEHTYPE" depart="84.00" arrival="139.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="95.00 112.00 126.00 139.00"/>
     </vehicle>
 
-    <vehicle id="agent_36" type="DEFAULT_VEHTYPE" depart="102.00" arrival="157.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="113.00 129.00 144.00 157.00"/>
+    <vehicle id="agent_36" type="DEFAULT_VEHTYPE" depart="105.00" arrival="140.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="114.00 130.00 140.00"/>
     </vehicle>
 
-    <vehicle id="agent_40" type="DEFAULT_VEHTYPE" depart="112.00" arrival="163.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="123.00 149.00 163.00"/>
+    <vehicle id="agent_38" type="DEFAULT_VEHTYPE" depart="111.00" arrival="143.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="121.00 135.00 143.00"/>
     </vehicle>
 
-    <vehicle id="agent_43" type="DEFAULT_VEHTYPE" depart="120.00" arrival="164.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="131.00 153.00 164.00"/>
+    <vehicle id="agent_37" type="DEFAULT_VEHTYPE" depart="108.00" arrival="156.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="118.00 134.00 145.00 156.00"/>
     </vehicle>
 
-    <vehicle id="agent_45" type="DEFAULT_VEHTYPE" depart="123.00" arrival="166.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="134.00 156.00 166.00"/>
+    <vehicle id="agent_41" type="DEFAULT_VEHTYPE" depart="120.00" arrival="158.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="131.00 148.00 158.00"/>
     </vehicle>
 
-    <vehicle id="agent_46" type="DEFAULT_VEHTYPE" depart="126.00" arrival="167.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="137.00 158.00 167.00"/>
+    <vehicle id="agent_39" type="DEFAULT_VEHTYPE" depart="114.00" arrival="164.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="124.00 140.00 152.00 164.00"/>
     </vehicle>
 
-    <vehicle id="agent_41" type="DEFAULT_VEHTYPE" depart="115.00" arrival="169.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="126.00 154.00 169.00"/>
+    <vehicle id="agent_44" type="DEFAULT_VEHTYPE" depart="129.00" arrival="168.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="140.00 158.00 168.00"/>
     </vehicle>
 
-    <vehicle id="agent_47" type="DEFAULT_VEHTYPE" depart="130.00" arrival="170.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="141.00 160.00 170.00"/>
+    <vehicle id="agent_45" type="DEFAULT_VEHTYPE" depart="132.00" arrival="170.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="142.00 160.00 170.00"/>
     </vehicle>
 
-    <vehicle id="agent_44" type="DEFAULT_VEHTYPE" depart="119.00" arrival="175.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="131.00 160.00 175.00"/>
+    <vehicle id="agent_40" type="DEFAULT_VEHTYPE" depart="117.00" arrival="172.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="128.00 146.00 159.00 172.00"/>
     </vehicle>
 
-    <vehicle id="agent_48" type="DEFAULT_VEHTYPE" depart="130.00" arrival="176.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="140.00 164.00 176.00"/>
+    <vehicle id="agent_42" type="DEFAULT_VEHTYPE" depart="123.00" arrival="175.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="134.00 151.00 163.00 175.00"/>
     </vehicle>
 
-    <vehicle id="agent_50" type="DEFAULT_VEHTYPE" depart="133.00" arrival="178.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="143.00 166.00 178.00"/>
+    <vehicle id="agent_47" type="DEFAULT_VEHTYPE" depart="138.00" arrival="176.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="149.00 166.00 176.00"/>
     </vehicle>
 
-    <vehicle id="agent_54" type="DEFAULT_VEHTYPE" depart="142.00" arrival="180.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="152.00 171.00 180.00"/>
+    <vehicle id="agent_48" type="DEFAULT_VEHTYPE" depart="141.00" arrival="178.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="151.00 168.00 178.00"/>
     </vehicle>
 
-    <vehicle id="agent_55" type="DEFAULT_VEHTYPE" depart="145.00" arrival="181.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="155.00 173.00 181.00"/>
+    <vehicle id="agent_43" type="DEFAULT_VEHTYPE" depart="126.00" arrival="179.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="137.00 155.00 167.00 179.00"/>
     </vehicle>
 
-    <vehicle id="agent_51" type="DEFAULT_VEHTYPE" depart="136.00" arrival="182.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="146.00 170.00 182.00"/>
+    <vehicle id="agent_49" type="DEFAULT_VEHTYPE" depart="144.00" arrival="180.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="154.00 170.00 180.00"/>
     </vehicle>
 
-    <vehicle id="agent_56" type="DEFAULT_VEHTYPE" depart="140.00" arrival="184.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="150.00 173.00 184.00"/>
+    <vehicle id="agent_46" type="DEFAULT_VEHTYPE" depart="135.00" arrival="186.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="145.00 162.00 174.00 186.00"/>
     </vehicle>
 
-    <vehicle id="agent_49" type="DEFAULT_VEHTYPE" depart="133.00" arrival="187.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="144.00 161.00 174.00 187.00"/>
+    <vehicle id="agent_54" type="DEFAULT_VEHTYPE" depart="159.00" arrival="192.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="170.00 184.00 192.00"/>
     </vehicle>
 
-    <vehicle id="agent_42" type="DEFAULT_VEHTYPE" depart="117.00" arrival="191.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="128.00 144.00 179.00 191.00"/>
+    <vehicle id="agent_55" type="DEFAULT_VEHTYPE" depart="162.00" arrival="194.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="172.00 186.00 194.00"/>
     </vehicle>
 
-    <vehicle id="agent_59" type="DEFAULT_VEHTYPE" depart="155.00" arrival="195.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="165.00 185.00 195.00"/>
+    <vehicle id="agent_56" type="DEFAULT_VEHTYPE" depart="165.00" arrival="196.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="175.00 189.00 196.00"/>
     </vehicle>
 
-    <vehicle id="agent_52" type="DEFAULT_VEHTYPE" depart="136.00" arrival="201.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="146.00 163.00 190.00 201.00"/>
+    <vehicle id="agent_50" type="DEFAULT_VEHTYPE" depart="147.00" arrival="197.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="158.00 175.00 186.00 197.00"/>
     </vehicle>
 
-    <vehicle id="agent_53" type="DEFAULT_VEHTYPE" depart="139.00" arrival="210.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="149.00 168.00 197.00 210.00"/>
+    <vehicle id="agent_57" type="DEFAULT_VEHTYPE" depart="168.00" arrival="198.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="178.00 191.00 198.00"/>
     </vehicle>
 
-    <vehicle id="agent_57" type="DEFAULT_VEHTYPE" depart="152.00" arrival="211.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="162.00 175.00 199.00 211.00"/>
+    <vehicle id="agent_51" type="DEFAULT_VEHTYPE" depart="150.00" arrival="200.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="161.00 178.00 189.00 200.00"/>
     </vehicle>
 
-    <vehicle id="agent_58" type="DEFAULT_VEHTYPE" depart="155.00" arrival="215.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="166.00 184.00 200.00 215.00"/>
+    <vehicle id="agent_59" type="DEFAULT_VEHTYPE" depart="174.00" arrival="203.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="184.00 196.00 203.00"/>
     </vehicle>
 
-    <vehicle id="agent_63" type="DEFAULT_VEHTYPE" depart="182.00" arrival="220.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="193.00 210.00 220.00"/>
+    <vehicle id="agent_52" type="DEFAULT_VEHTYPE" depart="153.00" arrival="204.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="164.00 180.00 192.00 204.00"/>
     </vehicle>
 
-    <vehicle id="agent_64" type="DEFAULT_VEHTYPE" depart="185.00" arrival="221.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="195.00 212.00 221.00"/>
+    <vehicle id="agent_53" type="DEFAULT_VEHTYPE" depart="156.00" arrival="211.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="167.00 185.00 198.00 211.00"/>
     </vehicle>
 
-    <vehicle id="agent_60" type="DEFAULT_VEHTYPE" depart="158.00" arrival="223.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="168.00 184.00 211.00 223.00"/>
+    <vehicle id="agent_60" type="DEFAULT_VEHTYPE" depart="177.00" arrival="211.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="187.00 202.00 211.00"/>
     </vehicle>
 
-    <vehicle id="agent_66" type="DEFAULT_VEHTYPE" depart="191.00" arrival="223.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="202.00 215.00 223.00"/>
+    <vehicle id="agent_63" type="DEFAULT_VEHTYPE" depart="186.00" arrival="223.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="197.00 214.00 223.00"/>
     </vehicle>
 
-    <vehicle id="agent_61" type="DEFAULT_VEHTYPE" depart="161.00" arrival="227.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="171.00 187.00 215.00 227.00"/>
+    <vehicle id="agent_64" type="DEFAULT_VEHTYPE" depart="189.00" arrival="225.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="199.00 216.00 225.00"/>
     </vehicle>
 
-    <vehicle id="agent_69" type="DEFAULT_VEHTYPE" depart="198.00" arrival="229.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="208.00 222.00 229.00"/>
+    <vehicle id="agent_58" type="DEFAULT_VEHTYPE" depart="171.00" arrival="227.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="182.00 200.00 214.00 227.00"/>
     </vehicle>
 
-    <vehicle id="agent_62" type="DEFAULT_VEHTYPE" depart="172.00" arrival="230.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="183.00 202.00 216.00 230.00"/>
+    <vehicle id="agent_65" type="DEFAULT_VEHTYPE" depart="192.00" arrival="227.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="202.00 217.00 227.00"/>
     </vehicle>
 
-    <vehicle id="agent_70" type="DEFAULT_VEHTYPE" depart="204.00" arrival="236.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="213.00 228.00 236.00"/>
+    <vehicle id="agent_66" type="DEFAULT_VEHTYPE" depart="195.00" arrival="228.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="205.00 219.00 228.00"/>
     </vehicle>
 
-    <vehicle id="agent_65" type="DEFAULT_VEHTYPE" depart="188.00" arrival="237.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="199.00 215.00 226.00 237.00"/>
+    <vehicle id="agent_67" type="DEFAULT_VEHTYPE" depart="198.00" arrival="232.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="208.00 223.00 232.00"/>
     </vehicle>
 
-    <vehicle id="agent_71" type="DEFAULT_VEHTYPE" depart="207.00" arrival="238.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="217.00 230.00 238.00"/>
+    <vehicle id="agent_61" type="DEFAULT_VEHTYPE" depart="180.00" arrival="234.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="191.00 208.00 221.00 234.00"/>
     </vehicle>
 
-    <vehicle id="agent_68" type="DEFAULT_VEHTYPE" depart="197.00" arrival="242.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="207.00 231.00 242.00"/>
+    <vehicle id="agent_68" type="DEFAULT_VEHTYPE" depart="201.00" arrival="234.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="211.00 225.00 234.00"/>
     </vehicle>
 
-    <vehicle id="agent_72" type="DEFAULT_VEHTYPE" depart="210.00" arrival="243.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="220.00 235.00 243.00"/>
+    <vehicle id="agent_69" type="DEFAULT_VEHTYPE" depart="204.00" arrival="236.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="214.00 228.00 236.00"/>
     </vehicle>
 
-    <vehicle id="agent_67" type="DEFAULT_VEHTYPE" depart="194.00" arrival="247.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="205.00 223.00 235.00 247.00"/>
+    <vehicle id="agent_62" type="DEFAULT_VEHTYPE" depart="183.00" arrival="239.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="194.00 213.00 226.00 239.00"/>
     </vehicle>
 
-    <vehicle id="agent_79" type="DEFAULT_VEHTYPE" depart="227.00" arrival="260.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="237.00 252.00 260.00"/>
+    <vehicle id="agent_71" type="DEFAULT_VEHTYPE" depart="210.00" arrival="243.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="221.00 235.00 243.00"/>
     </vehicle>
 
-    <vehicle id="agent_75" type="DEFAULT_VEHTYPE" depart="217.00" arrival="265.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="227.00 253.00 265.00"/>
+    <vehicle id="agent_72" type="DEFAULT_VEHTYPE" depart="213.00" arrival="246.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="223.00 238.00 246.00"/>
     </vehicle>
 
-    <vehicle id="agent_73" type="DEFAULT_VEHTYPE" depart="213.00" arrival="267.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="225.00 241.00 254.00 267.00"/>
+    <vehicle id="agent_73" type="DEFAULT_VEHTYPE" depart="216.00" arrival="249.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="226.00 241.00 249.00"/>
     </vehicle>
 
-    <vehicle id="agent_80" type="DEFAULT_VEHTYPE" depart="230.00" arrival="268.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="240.00 258.00 268.00"/>
+    <vehicle id="agent_74" type="DEFAULT_VEHTYPE" depart="219.00" arrival="253.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="229.00 245.00 253.00"/>
     </vehicle>
 
-    <vehicle id="agent_74" type="DEFAULT_VEHTYPE" depart="216.00" arrival="270.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="227.00 244.00 257.00 270.00"/>
+    <vehicle id="agent_70" type="DEFAULT_VEHTYPE" depart="207.00" arrival="257.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="218.00 234.00 246.00 257.00"/>
     </vehicle>
 
-    <vehicle id="agent_76" type="DEFAULT_VEHTYPE" depart="220.00" arrival="272.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="231.00 247.00 260.00 272.00"/>
+    <vehicle id="agent_76" type="DEFAULT_VEHTYPE" depart="225.00" arrival="259.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="235.00 250.00 259.00"/>
     </vehicle>
 
-    <vehicle id="agent_77" type="DEFAULT_VEHTYPE" depart="223.00" arrival="274.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="234.00 250.00 262.00 274.00"/>
+    <vehicle id="agent_79" type="DEFAULT_VEHTYPE" depart="234.00" arrival="270.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="246.00 262.00 270.00"/>
     </vehicle>
 
-    <vehicle id="agent_81" type="DEFAULT_VEHTYPE" depart="233.00" arrival="275.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="245.00 264.00 275.00"/>
+    <vehicle id="agent_75" type="DEFAULT_VEHTYPE" depart="222.00" arrival="274.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="233.00 250.00 262.00 274.00"/>
     </vehicle>
 
-    <vehicle id="agent_84" type="DEFAULT_VEHTYPE" depart="240.00" arrival="277.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="251.00 267.00 277.00"/>
+    <vehicle id="agent_77" type="DEFAULT_VEHTYPE" depart="228.00" arrival="276.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="238.00 252.00 265.00 276.00"/>
     </vehicle>
 
-    <vehicle id="agent_78" type="DEFAULT_VEHTYPE" depart="227.00" arrival="283.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="238.00 269.00 283.00"/>
+    <vehicle id="agent_81" type="DEFAULT_VEHTYPE" depart="240.00" arrival="282.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="251.00 271.00 282.00"/>
     </vehicle>
 
-    <vehicle id="agent_82" type="DEFAULT_VEHTYPE" depart="232.00" arrival="285.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="242.00 271.00 285.00"/>
+    <vehicle id="agent_82" type="DEFAULT_VEHTYPE" depart="243.00" arrival="284.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="253.00 273.00 284.00"/>
     </vehicle>
 
-    <vehicle id="agent_86" type="DEFAULT_VEHTYPE" depart="258.00" arrival="289.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="268.00 281.00 289.00"/>
+    <vehicle id="agent_83" type="DEFAULT_VEHTYPE" depart="246.00" arrival="286.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="257.00 275.00 286.00"/>
     </vehicle>
 
-    <vehicle id="agent_83" type="DEFAULT_VEHTYPE" depart="236.00" arrival="291.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="247.00 265.00 278.00 291.00"/>
+    <vehicle id="agent_85" type="DEFAULT_VEHTYPE" depart="252.00" arrival="287.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="263.00 277.00 287.00"/>
     </vehicle>
 
-    <vehicle id="agent_85" type="DEFAULT_VEHTYPE" depart="251.00" arrival="299.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="261.00 277.00 288.00 299.00"/>
+    <vehicle id="agent_86" type="DEFAULT_VEHTYPE" depart="255.00" arrival="289.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="265.00 279.00 289.00"/>
     </vehicle>
 
-    <vehicle id="agent_87" type="DEFAULT_VEHTYPE" depart="261.00" arrival="307.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="272.00 295.00 307.00"/>
+    <vehicle id="agent_78" type="DEFAULT_VEHTYPE" depart="231.00" arrival="290.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="243.00 262.00 276.00 290.00"/>
     </vehicle>
 
-    <vehicle id="agent_88" type="DEFAULT_VEHTYPE" depart="266.00" arrival="313.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="277.00 291.00 302.00 313.00"/>
+    <vehicle id="agent_87" type="DEFAULT_VEHTYPE" depart="258.00" arrival="291.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="268.00 283.00 291.00"/>
     </vehicle>
 
-    <vehicle id="agent_90" type="DEFAULT_VEHTYPE" depart="278.00" arrival="315.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="289.00 306.00 315.00"/>
+    <vehicle id="agent_88" type="DEFAULT_VEHTYPE" depart="261.00" arrival="293.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="271.00 284.00 293.00"/>
     </vehicle>
 
-    <vehicle id="agent_93" type="DEFAULT_VEHTYPE" depart="287.00" arrival="319.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="297.00 311.00 319.00"/>
+    <vehicle id="agent_80" type="DEFAULT_VEHTYPE" depart="237.00" arrival="294.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="248.00 268.00 281.00 294.00"/>
     </vehicle>
 
-    <vehicle id="agent_89" type="DEFAULT_VEHTYPE" depart="276.00" arrival="325.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="286.00 301.00 313.00 325.00"/>
+    <vehicle id="agent_84" type="DEFAULT_VEHTYPE" depart="249.00" arrival="304.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="260.00 278.00 291.00 304.00"/>
     </vehicle>
 
-    <vehicle id="agent_91" type="DEFAULT_VEHTYPE" depart="281.00" arrival="329.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="292.00 307.00 318.00 329.00"/>
+    <vehicle id="agent_90" type="DEFAULT_VEHTYPE" depart="267.00" arrival="305.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="278.00 295.00 305.00"/>
     </vehicle>
 
-    <vehicle id="agent_92" type="DEFAULT_VEHTYPE" depart="284.00" arrival="334.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="295.00 310.00 322.00 334.00"/>
+    <vehicle id="agent_91" type="DEFAULT_VEHTYPE" depart="270.00" arrival="306.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="280.00 297.00 306.00"/>
     </vehicle>
 
-    <vehicle id="agent_94" type="DEFAULT_VEHTYPE" depart="302.00" arrival="337.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="313.00 328.00 337.00"/>
+    <vehicle id="agent_92" type="DEFAULT_VEHTYPE" depart="273.00" arrival="308.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="283.00 298.00 308.00"/>
     </vehicle>
 
-    <vehicle id="agent_98" type="DEFAULT_VEHTYPE" depart="313.00" arrival="344.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="323.00 336.00 344.00"/>
+    <vehicle id="agent_89" type="DEFAULT_VEHTYPE" depart="264.00" arrival="313.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="274.00 290.00 302.00 313.00"/>
     </vehicle>
 
-    <vehicle id="agent_99" type="DEFAULT_VEHTYPE" depart="313.00" arrival="348.00">
-        <route edges="E3_6_NWB E6_7_EB" exitTimes="337.00 348.00"/>
+    <vehicle id="agent_94" type="DEFAULT_VEHTYPE" depart="279.00" arrival="313.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="289.00 304.00 313.00"/>
     </vehicle>
 
-    <vehicle id="agent_95" type="DEFAULT_VEHTYPE" depart="305.00" arrival="354.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="316.00 341.00 354.00"/>
+    <vehicle id="agent_95" type="DEFAULT_VEHTYPE" depart="282.00" arrival="317.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="292.00 308.00 317.00"/>
     </vehicle>
 
-    <vehicle id="agent_96" type="DEFAULT_VEHTYPE" depart="308.00" arrival="360.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="319.00 347.00 360.00"/>
+    <vehicle id="agent_96" type="DEFAULT_VEHTYPE" depart="285.00" arrival="322.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="296.00 313.00 322.00"/>
     </vehicle>
 
-    <vehicle id="agent_97" type="DEFAULT_VEHTYPE" depart="311.00" arrival="362.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="321.00 349.00 362.00"/>
+    <vehicle id="agent_93" type="DEFAULT_VEHTYPE" depart="276.00" arrival="324.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="287.00 302.00 313.00 324.00"/>
     </vehicle>
 
-    <vehicle id="agent_103" type="DEFAULT_VEHTYPE" depart="327.00" arrival="362.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="337.00 353.00 362.00"/>
+    <vehicle id="agent_97" type="DEFAULT_VEHTYPE" depart="288.00" arrival="336.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="298.00 314.00 325.00 336.00"/>
     </vehicle>
 
-    <vehicle id="agent_104" type="DEFAULT_VEHTYPE" depart="339.00" arrival="374.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="349.00 365.00 374.00"/>
+    <vehicle id="agent_98" type="DEFAULT_VEHTYPE" depart="291.00" arrival="340.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="302.00 318.00 329.00 340.00"/>
     </vehicle>
 
-    <vehicle id="agent_100" type="DEFAULT_VEHTYPE" depart="314.00" arrival="376.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="327.00 360.00 376.00"/>
+    <vehicle id="agent_100" type="DEFAULT_VEHTYPE" depart="297.00" arrival="341.00">
+        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="309.00 329.00 341.00"/>
     </vehicle>
 
-    <vehicle id="agent_101" type="DEFAULT_VEHTYPE" depart="322.00" arrival="378.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="333.00 362.00 378.00"/>
-    </vehicle>
-
-    <vehicle id="agent_105" type="DEFAULT_VEHTYPE" depart="339.00" arrival="382.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="349.00 371.00 382.00"/>
-    </vehicle>
-
-    <vehicle id="agent_107" type="DEFAULT_VEHTYPE" depart="350.00" arrival="384.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="360.00 375.00 384.00"/>
-    </vehicle>
-
-    <vehicle id="agent_102" type="DEFAULT_VEHTYPE" depart="324.00" arrival="389.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="334.00 350.00 377.00 389.00"/>
-    </vehicle>
-
-    <vehicle id="agent_108" type="DEFAULT_VEHTYPE" depart="353.00" arrival="389.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="363.00 380.00 389.00"/>
-    </vehicle>
-
-    <vehicle id="agent_106" type="DEFAULT_VEHTYPE" depart="347.00" arrival="394.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="357.00 372.00 383.00 394.00"/>
-    </vehicle>
-
-    <vehicle id="agent_110" type="DEFAULT_VEHTYPE" depart="359.00" arrival="394.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="370.00 385.00 394.00"/>
-    </vehicle>
-
-    <vehicle id="agent_109" type="DEFAULT_VEHTYPE" depart="356.00" arrival="406.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="366.00 383.00 394.00 406.00"/>
-    </vehicle>
-
-    <vehicle id="agent_111" type="DEFAULT_VEHTYPE" depart="367.00" arrival="413.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="377.00 401.00 413.00"/>
-    </vehicle>
-
-    <vehicle id="agent_112" type="DEFAULT_VEHTYPE" depart="372.00" arrival="418.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="382.00 406.00 418.00"/>
-    </vehicle>
-
-    <vehicle id="agent_118" type="DEFAULT_VEHTYPE" depart="386.00" arrival="420.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="397.00 411.00 420.00"/>
-    </vehicle>
-
-    <vehicle id="agent_120" type="DEFAULT_VEHTYPE" depart="392.00" arrival="425.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="403.00 417.00 425.00"/>
-    </vehicle>
-
-    <vehicle id="agent_113" type="DEFAULT_VEHTYPE" depart="375.00" arrival="427.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="386.00 414.00 427.00"/>
-    </vehicle>
-
-    <vehicle id="agent_114" type="DEFAULT_VEHTYPE" depart="374.00" arrival="433.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="384.00 398.00 422.00 433.00"/>
-    </vehicle>
-
-    <vehicle id="agent_122" type="DEFAULT_VEHTYPE" depart="398.00" arrival="434.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="409.00 425.00 434.00"/>
-    </vehicle>
-
-    <vehicle id="agent_123" type="DEFAULT_VEHTYPE" depart="401.00" arrival="436.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="411.00 427.00 436.00"/>
-    </vehicle>
-
-    <vehicle id="agent_124" type="DEFAULT_VEHTYPE" depart="404.00" arrival="445.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="415.00 434.00 445.00"/>
-    </vehicle>
-
-    <vehicle id="agent_127" type="DEFAULT_VEHTYPE" depart="400.00" arrival="446.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="411.00 435.00 446.00"/>
-    </vehicle>
-
-    <vehicle id="agent_126" type="DEFAULT_VEHTYPE" depart="410.00" arrival="447.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="420.00 436.00 447.00"/>
-    </vehicle>
-
-    <vehicle id="agent_115" type="DEFAULT_VEHTYPE" depart="377.00" arrival="452.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="388.00 406.00 437.00 452.00"/>
-    </vehicle>
-
-    <vehicle id="agent_116" type="DEFAULT_VEHTYPE" depart="380.00" arrival="454.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="391.00 409.00 440.00 454.00"/>
-    </vehicle>
-
-    <vehicle id="agent_129" type="DEFAULT_VEHTYPE" depart="416.00" arrival="454.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="428.00 445.00 454.00"/>
-    </vehicle>
-
-    <vehicle id="agent_117" type="DEFAULT_VEHTYPE" depart="383.00" arrival="456.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="394.00 411.00 443.00 456.00"/>
-    </vehicle>
-
-    <vehicle id="agent_119" type="DEFAULT_VEHTYPE" depart="389.00" arrival="458.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="400.00 419.00 445.00 458.00"/>
-    </vehicle>
-
-    <vehicle id="agent_131" type="DEFAULT_VEHTYPE" depart="422.00" arrival="458.00">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB" exitTimes="432.00 449.00 458.00"/>
-    </vehicle>
-
-    <vehicle id="agent_121" type="DEFAULT_VEHTYPE" depart="395.00" arrival="460.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="406.00 421.00 447.00 460.00"/>
-    </vehicle>
-
-    <vehicle id="agent_132" type="DEFAULT_VEHTYPE" depart="416.00" arrival="462.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="427.00 450.00 462.00"/>
-    </vehicle>
-
-    <vehicle id="agent_134" type="DEFAULT_VEHTYPE" depart="419.00" arrival="465.00">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB" exitTimes="429.00 453.00 465.00"/>
-    </vehicle>
-
-    <vehicle id="agent_130" type="DEFAULT_VEHTYPE" depart="419.00" arrival="482.00">
-        <route edges="E1_2_EB E2_3_EB E3_6_NWB E6_7_EB" exitTimes="430.00 447.00 471.00 482.00"/>
-    </vehicle>
-
-    <vehicle id="agent_125" type="DEFAULT_VEHTYPE" depart="407.00" arrival="485.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="417.00 432.00 472.00 485.00"/>
-    </vehicle>
-
-    <vehicle id="agent_128" type="DEFAULT_VEHTYPE" depart="413.00" arrival="490.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="425.00 445.00 475.00 490.00"/>
-    </vehicle>
-
-    <vehicle id="agent_133" type="DEFAULT_VEHTYPE" depart="425.00" arrival="492.00">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="436.00 455.00 478.00 492.00"/>
+    <vehicle id="agent_99" type="DEFAULT_VEHTYPE" depart="294.00" arrival="343.00">
+        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB" exitTimes="305.00 321.00 332.00 343.00"/>
     </vehicle>
 
 </routes>

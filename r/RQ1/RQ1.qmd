@@ -38,8 +38,10 @@ library(arrow)
 ```{r}
 #| label: load_custom_functions
 
+library(here)
+
 # Load custom theme
-source(file = "../theme.R")
+source(file = here("r","shared","theme.R"))
 
 # Make it global theme (every plot automatically uses it)
 theme_set(theme_thesis())
@@ -111,7 +113,8 @@ ggplot(
     x = "Episode",
     y = "R-gap"
   )
-ggsave("figures/plot1_rgap_evolution.png")
+
+ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"))
 ```
 
 ```{r}
@@ -166,8 +169,7 @@ ggplot(
     x = "Departure Time Interval",
     y = "Refined R-gap"
   )
-
-ggsave("figures/plot2a_refined_rgap.png")
+ggsave(here("r","RQ1","figures","plot2a_refined_rgap.png"))
 ```
 
 ```{r}
@@ -204,7 +206,7 @@ ggplot(
   x = NULL,
   y = "OD-Specific R-gap"
 )
-ggsave("figures/plot3c_rgap_od.png")
+ggsave(here("r","RQ1","figures","plot3c_rgap_od.png"))
 ```
 
 ```{r}
@@ -232,7 +234,7 @@ ggplot(
     x = "Episode",
     y = "Max. od-specific rgap" 
   )
-ggsave("figures/plot4_rgap_od_max.png")
+ggsave(here("r","RQ1","figures","plot4_rgap_od_max.png"))
 ```
 
 <!-- The file refined_rgap_by_od is not needed to be analyzed. A plot using this file would not add anything new. -->

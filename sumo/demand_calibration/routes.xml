@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-06-21 17:58:31.253822 by Eclipse SUMO randomTrips.py v1_26_0+0000-fa7df22d7f1
+<!-- generated on 2026-06-24 00:03:03.758259 by Eclipse SUMO randomTrips.py v1_26_0+0000-fa7df22d7f1
 <configuration>
     <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"/>
     <output-trip-file value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/trips.xml"/>
     <route-file value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/routes.xml"/>
     <fringe-factor value="50"/>
     <min-distance value="100.0"/>
-    <end value="420.0"/>
-    <period value="3.1343283582089554"/>
+    <end value="42.0"/>
+    <period value="0.42"/>
 </configuration>
 -->
 
-<!-- generated on 2026-06-21T17:58:31.243783+01:00 by Eclipse SUMO duarouter 1.26.0
+<!-- generated on 2026-06-24T00:03:03.752213+01:00 by Eclipse SUMO duarouter 1.26.0
 <duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
@@ -27,7 +27,7 @@
 
     <time>
         <begin value="0.0"/>
-        <end value="420.0"/>
+        <end value="42.0"/>
     </time>
 
     <report>
@@ -43,403 +43,301 @@
     <vehicle id="0" depart="0.00">
         <route edges="E3_4_WB E2_3_WB E2_5_NB"/>
     </vehicle>
-    <vehicle id="1" depart="3.13">
+    <vehicle id="1" depart="0.42">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="2" depart="6.27">
+    <vehicle id="2" depart="0.84">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="3" depart="9.40">
+    <vehicle id="3" depart="1.26">
         <route edges="E1_2_EB E2_3_EB E3_5_NWB E2_5_SB"/>
     </vehicle>
-    <vehicle id="4" depart="12.54">
+    <vehicle id="4" depart="1.68">
         <route edges="E1_2_EB E2_5_NB E3_5_SEB"/>
     </vehicle>
-    <vehicle id="5" depart="15.67">
+    <vehicle id="5" depart="2.10">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="6" depart="18.81">
+    <vehicle id="6" depart="2.52">
         <route edges="E3_4_WB E3_6_NWB E5_6_SWB"/>
     </vehicle>
-    <vehicle id="7" depart="21.94">
+    <vehicle id="7" depart="2.94">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="8" depart="25.07">
+    <vehicle id="8" depart="3.36">
         <route edges="E3_4_WB E3_5_NWB E2_5_SB E2_3_EB"/>
     </vehicle>
-    <vehicle id="9" depart="28.21">
+    <vehicle id="9" depart="3.78">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="10" depart="31.34">
+    <vehicle id="10" depart="4.20">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="11" depart="34.48">
+    <vehicle id="11" depart="4.62">
         <route edges="E3_5_SEB E3_4_EB"/>
     </vehicle>
-    <vehicle id="12" depart="37.61">
+    <vehicle id="12" depart="5.04">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="13" depart="40.75">
+    <vehicle id="13" depart="5.46">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="14" depart="43.88">
+    <vehicle id="14" depart="5.88">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="15" depart="47.01">
+    <vehicle id="15" depart="6.30">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="16" depart="50.15">
+    <vehicle id="16" depart="6.72">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="17" depart="53.28">
+    <vehicle id="17" depart="7.14">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="18" depart="56.42">
+    <vehicle id="18" depart="7.56">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="19" depart="59.55">
+    <vehicle id="19" depart="7.98">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="20" depart="62.69">
+    <vehicle id="20" depart="8.40">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="21" depart="65.82">
+    <vehicle id="21" depart="8.82">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="22" depart="68.96">
+    <vehicle id="22" depart="9.24">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="23" depart="72.09">
+    <vehicle id="23" depart="9.66">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="24" depart="75.22">
+    <vehicle id="24" depart="10.08">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="25" depart="78.36">
+    <vehicle id="25" depart="10.50">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="26" depart="81.49">
+    <vehicle id="26" depart="10.92">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="27" depart="84.63">
+    <vehicle id="27" depart="11.34">
         <route edges="E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="28" depart="87.76">
+    <vehicle id="28" depart="11.76">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="29" depart="90.90">
+    <vehicle id="29" depart="12.18">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="30" depart="94.03">
+    <vehicle id="30" depart="12.60">
         <route edges="E1_2_EB E2_3_EB E3_5_NWB E2_5_SB"/>
     </vehicle>
-    <vehicle id="31" depart="97.16">
+    <vehicle id="31" depart="13.02">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="32" depart="100.30">
+    <vehicle id="32" depart="13.44">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="33" depart="103.43">
+    <vehicle id="33" depart="13.86">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="34" depart="106.57">
+    <vehicle id="34" depart="14.28">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="35" depart="109.70">
+    <vehicle id="35" depart="14.70">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="36" depart="112.84">
+    <vehicle id="36" depart="15.12">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="37" depart="115.97">
+    <vehicle id="37" depart="15.54">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="38" depart="119.10">
+    <vehicle id="38" depart="15.96">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="39" depart="122.24">
+    <vehicle id="39" depart="16.38">
         <route edges="E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="40" depart="125.37">
+    <vehicle id="40" depart="16.80">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="41" depart="128.51">
+    <vehicle id="41" depart="17.22">
         <route edges="E3_4_WB E3_6_NWB E5_6_SWB"/>
     </vehicle>
-    <vehicle id="42" depart="131.64">
+    <vehicle id="42" depart="17.64">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="43" depart="134.78">
+    <vehicle id="43" depart="18.06">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="44" depart="137.91">
+    <vehicle id="44" depart="18.48">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="45" depart="141.04">
+    <vehicle id="45" depart="18.90">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="46" depart="144.18">
+    <vehicle id="46" depart="19.32">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="47" depart="147.31">
+    <vehicle id="47" depart="19.74">
         <route edges="E3_4_WB E3_6_NWB E5_6_SWB"/>
     </vehicle>
-    <vehicle id="48" depart="150.45">
+    <vehicle id="48" depart="20.16">
         <route edges="E3_4_WB E3_5_NWB E5_6_NEB"/>
     </vehicle>
-    <vehicle id="49" depart="153.58">
+    <vehicle id="49" depart="20.58">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="50" depart="156.72">
+    <vehicle id="50" depart="21.00">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="51" depart="159.85">
+    <vehicle id="51" depart="21.42">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="52" depart="162.99">
+    <vehicle id="52" depart="21.84">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="53" depart="166.12">
+    <vehicle id="53" depart="22.26">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="54" depart="169.25">
+    <vehicle id="54" depart="22.68">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="55" depart="172.39">
+    <vehicle id="55" depart="23.10">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="56" depart="175.52">
+    <vehicle id="56" depart="23.52">
         <route edges="E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="57" depart="178.66">
+    <vehicle id="57" depart="23.94">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="58" depart="181.79">
+    <vehicle id="58" depart="24.36">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="59" depart="184.93">
+    <vehicle id="59" depart="24.78">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="60" depart="188.06">
+    <vehicle id="60" depart="25.20">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="61" depart="191.19">
+    <vehicle id="61" depart="25.62">
         <route edges="E5_6_SWB E3_5_SEB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="62" depart="194.33">
+    <vehicle id="62" depart="26.04">
         <route edges="E1_2_EB E2_3_EB E3_6_NWB"/>
     </vehicle>
-    <vehicle id="63" depart="197.46">
+    <vehicle id="63" depart="26.46">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="64" depart="200.60">
+    <vehicle id="64" depart="26.88">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="65" depart="203.73">
+    <vehicle id="65" depart="27.30">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="66" depart="206.87">
+    <vehicle id="66" depart="27.72">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="67" depart="210.00">
+    <vehicle id="67" depart="28.14">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="68" depart="213.13">
+    <vehicle id="68" depart="28.56">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="69" depart="216.27">
+    <vehicle id="69" depart="28.98">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="70" depart="219.40">
+    <vehicle id="70" depart="29.40">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="71" depart="222.54">
+    <vehicle id="71" depart="29.82">
         <route edges="E2_3_WB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="72" depart="225.67">
+    <vehicle id="72" depart="30.24">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="73" depart="228.81">
+    <vehicle id="73" depart="30.66">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="74" depart="231.94">
+    <vehicle id="74" depart="31.08">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="75" depart="235.07">
+    <vehicle id="75" depart="31.50">
         <route edges="E5_6_NEB E3_6_SEB E3_4_EB"/>
     </vehicle>
-    <vehicle id="76" depart="238.21">
+    <vehicle id="76" depart="31.92">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="77" depart="241.34">
+    <vehicle id="77" depart="32.34">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="78" depart="244.48">
+    <vehicle id="78" depart="32.76">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="79" depart="247.61">
+    <vehicle id="79" depart="33.18">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="80" depart="250.75">
+    <vehicle id="80" depart="33.60">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="81" depart="253.88">
+    <vehicle id="81" depart="34.02">
         <route edges="E5_6_SWB E3_5_SEB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="82" depart="257.01">
+    <vehicle id="82" depart="34.44">
         <route edges="E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="83" depart="260.15">
+    <vehicle id="83" depart="34.86">
         <route edges="E2_5_SB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="84" depart="263.28">
+    <vehicle id="84" depart="35.28">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="85" depart="266.42">
+    <vehicle id="85" depart="35.70">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="86" depart="269.55">
+    <vehicle id="86" depart="36.12">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="87" depart="272.69">
+    <vehicle id="87" depart="36.54">
         <route edges="E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="88" depart="275.82">
+    <vehicle id="88" depart="36.96">
         <route edges="E3_5_SEB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="89" depart="278.96">
+    <vehicle id="89" depart="37.38">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="90" depart="282.09">
+    <vehicle id="90" depart="37.80">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="91" depart="285.22">
+    <vehicle id="91" depart="38.22">
         <route edges="E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="92" depart="288.36">
+    <vehicle id="92" depart="38.64">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="93" depart="291.49">
+    <vehicle id="93" depart="39.06">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="94" depart="294.63">
+    <vehicle id="94" depart="39.48">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="95" depart="297.76">
+    <vehicle id="95" depart="39.90">
         <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
     </vehicle>
-    <vehicle id="96" depart="300.90">
+    <vehicle id="96" depart="40.32">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="97" depart="304.03">
+    <vehicle id="97" depart="40.74">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
-    <vehicle id="98" depart="307.16">
+    <vehicle id="98" depart="41.16">
         <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
     </vehicle>
-    <vehicle id="99" depart="310.30">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="100" depart="313.43">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="101" depart="316.57">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="102" depart="319.70">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="103" depart="322.84">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="104" depart="325.97">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="105" depart="329.10">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="106" depart="332.24">
-        <route edges="E5_6_SWB E3_5_SEB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="107" depart="335.37">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="108" depart="338.51">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="109" depart="341.64">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="110" depart="344.78">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="111" depart="347.91">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="112" depart="351.04">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="113" depart="354.18">
-        <route edges="E3_4_WB E3_5_NWB E2_5_SB E2_3_EB"/>
-    </vehicle>
-    <vehicle id="114" depart="357.31">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="115" depart="360.45">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="116" depart="363.58">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="117" depart="366.72">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="118" depart="369.85">
-        <route edges="E2_5_SB E2_3_EB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="119" depart="372.99">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="120" depart="376.12">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="121" depart="379.25">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="122" depart="382.39">
-        <route edges="E1_2_EB E2_5_NB E3_5_SEB E2_3_WB"/>
-    </vehicle>
-    <vehicle id="123" depart="385.52">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="124" depart="388.66">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="125" depart="391.79">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="126" depart="394.93">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="127" depart="398.06">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="128" depart="401.19">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="129" depart="404.33">
-        <route edges="E1_2_EB E2_3_EB E3_4_EB"/>
-    </vehicle>
-    <vehicle id="130" depart="407.46">
-        <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="131" depart="410.60">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="132" depart="413.73">
-        <route edges="E1_2_EB E2_5_NB E5_6_NEB E6_7_EB"/>
-    </vehicle>
-    <vehicle id="133" depart="416.87">
+    <vehicle id="99" depart="41.58">
         <route edges="E3_4_WB E3_6_NWB E6_7_EB"/>
     </vehicle>
 </routes>

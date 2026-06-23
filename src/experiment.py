@@ -13,16 +13,7 @@ import yaml
 from lxml import etree
 
 from config.config import RunMode, config
-from parsing.parser import Parser
-from parsing.sumo_outputs import (
-    parse_aggregated_data,
-    parse_edgedata,
-    parse_fcd,
-    parse_section_to_raw_strings,
-    parse_trips_info,
-    parse_vehroute,
-)
-from paths import (
+from config.paths import (
     ACTIONS,
     BM_RESULTS,
     EDGEDATA_PARQUET,
@@ -40,6 +31,15 @@ from paths import (
     VEHROUTE_PARQUET,
     VEHROUTE_XML,
     YAML_CONF,
+)
+from parsing.parser import Parser
+from parsing.sumo_outputs import (
+    parse_aggregated_data,
+    parse_edgedata,
+    parse_fcd,
+    parse_section_to_raw_strings,
+    parse_trips_info,
+    parse_vehroute,
 )
 
 ########################################
