@@ -1,3 +1,23 @@
+"""
+Parsers for each SUMO XML output file generated every training episode.
+
+Each function reads one output file and returns a list of dicts
+ready to be passed to pd.DataFrame() and saved as parquet.
+
+Function              Source file          Key columns returned
+--------------------  -------------------  ----------------------------
+parse_aggregated_data statistics.xml       episode-level scalar metrics
+parse_vehroute        vehroute.xml         vehicle_id, edge, exit_times
+parse_trips_info      tripsinfo.xml        vehicle_id, duration, time_loss
+parse_fcd             fcd-export.xml       vehicle_id, timestep, x, y
+parse_edgedata        edgedata.xml         edge, interval, density, entered
+
+XPath expressions for aggregated, vehroute, and tripsinfo are loaded
+from config/config.yaml, keeping queries separate from parsing logic.
+parse_edgedata is the exception — its structure is too irregular for
+the generic Parser class and uses lxml directly.
+"""
+
 import yaml
 from lxml import etree
 

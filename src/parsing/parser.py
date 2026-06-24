@@ -1,5 +1,15 @@
 """
-Purpose of this file: parse xml, parquet files
+Generic XPath-based parser for SUMO XML output files.
+
+Wraps lxml to provide three extraction modes used by sumo_outputs.py:
+  extract_one      — single scalar value via XPath string() function
+  extract_many     — list of attribute values across multiple elements
+  extract_fcd_flat — specialised reader for fcd-export.xml, which has
+                     a nested timestep > vehicle structure that requires
+                     its own flattening logic
+
+XPath expressions are defined in config/config.yaml and passed in by
+the caller, keeping query definitions separate from parsing mechanics.
 """
 
 from lxml import etree

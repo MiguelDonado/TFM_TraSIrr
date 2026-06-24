@@ -1,3 +1,24 @@
+"""
+MLflow logging for the simulation phase of the experiment.
+
+The experiment has two run types in MLflow:
+  simulation (when running the BM training loop)  — logged here
+  analysis (when running R analysis scripts on the simulation outputs)  — logged by mlflow_tracking/analysis.py
+
+Each simulation run is tagged with its own run_id so it can be linked
+to its corresponding analysis run in the MLflow UI without relying on
+run names or timestamps.
+
+Logs
+----
+Parameters  — learning_rate, memory_level, target_congestion_ratio,
+              network name, git commit hash
+Metrics     — bm_rgap (time series), BM mean_tt (time series),
+              BM mean_pol_change (time series), BM ep_to_conv (scalar),
+              duaIterate_final_rgap (scalar)
+Artifacts   — full config JSON, agent_state/, processed/, DUE/ directories
+"""
+
 import json
 import os
 import subprocess

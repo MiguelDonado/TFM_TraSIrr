@@ -1,3 +1,18 @@
+"""
+MLflow logging for the analysis phase of the experiment.
+
+The experiment has two run types in MLflow:
+  simulation (when running the BM training loop)  — logged by mlflow_tracking/simulation.py
+  analysis (when running R analysis scripts on the simulation outputs)  — logged here
+
+Each analysis run is tagged with the source_run_id of the simulation run
+it analyses, so the two can be linked in the MLflow UI without relying
+on run names or timestamps.
+
+Logs: git commit hash, research question tag, and the figures artifact
+directory produced by the R script.
+"""
+
 import subprocess
 
 import mlflow

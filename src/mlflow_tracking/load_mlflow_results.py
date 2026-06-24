@@ -1,3 +1,22 @@
+"""
+Utilities for programmatically recovering artifact data from multiple MLflow runs.
+
+Typical workflow
+----------------
+1. Run batch experiments via scripts/launcher.py (many simulation runs,
+   each with different hyperparameters).
+2. Use load_artifact_across_runs() to pull one artifact file from every
+   matching run into a single concatenated DataFrame.
+3. Feed that DataFrame into the R analysis scripts to answer a research question
+   across the full parameter space.
+
+MLflow API layers used
+----------------------
+mlflow (high-level)    — search_runs() returns a DataFrame of run metadata
+MlflowClient (low-level) — download_artifacts() retrieves the actual files
+                           from the artifact store
+"""
+
 import tempfile
 
 import mlflow
@@ -90,13 +109,3 @@ def load_artifact_across_runs(
                 df[param] = run[col] if col in run.index else None
             frames.append(df)
         return pd.concat(frames, ignore_index=True)
-
-
-if __name__ == "__main__":
-    df = load_artifact_across_runs(
-        artifact_path="DUE/BM/R-gap/rgap.parquet",
-        filter_string="tags.research_question = 'RQ1'",
-        experiment_names=["Thesis"],
-        params_to_attach=["memory", "seed"],
-    )
-    print(df)
