@@ -16,7 +16,7 @@ from config.paths import (
     DUA_PATHS,
     DUE_DATA_DIR,
     EXPERIMENTS_TMP,
-    MLFLOW,
+    MLFLOW_SOURCE_RUN_ID,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     STATISTICS_PARQUET,
@@ -47,8 +47,7 @@ def save_simulation_run_id(run_id):
     following analysis run can identify the simulation run id, and
     use it to identify the simulation run is analysing
     """
-    path = MLFLOW / "source_run_id.txt"
-    with open(path, "w") as f:
+    with open(MLFLOW_SOURCE_RUN_ID, "w") as f:
         f.write(run_id)
 
 

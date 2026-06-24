@@ -20,7 +20,6 @@ from config.paths import (
     FCD_XML,
     FREE_FLOW_TRAVEL_TIMES,
     MEANDATA,
-    NET,
     OD_MATRIX_INTERVALS,
     OD_MATRIX_TOTAL,
     OD_ROUTES,

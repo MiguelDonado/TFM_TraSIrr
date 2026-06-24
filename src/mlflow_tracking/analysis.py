@@ -2,8 +2,8 @@ import subprocess
 
 import mlflow
 
+from config.paths import MLFLOW_SOURCE_RUN_ID
 from mlflow_tracking.utils import set_up_mlflow
-from config.paths import MLFLOW
 
 
 def log_analysis_run_MLflow(research_question, artifact_path):
@@ -12,7 +12,7 @@ def log_analysis_run_MLflow(research_question, artifact_path):
     set_up_mlflow()
 
     # 2. Recover MLflow simulation run id
-    source_run_id = (MLFLOW / "source_run_id.txt").read_text().strip()
+    source_run_id = MLFLOW_SOURCE_RUN_ID.read_text().strip()
 
     # 3. Start run and set name
     with mlflow.start_run(
