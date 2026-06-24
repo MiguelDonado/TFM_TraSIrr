@@ -1,5 +1,26 @@
 """
-Class that creates the required files for SUMO simulator in order to run simulation in this experiment.
+Builds and owns the static environment shared across all training episodes.
+
+Scenario is constructed once before the training loop and exposes two
+data structures consumed every episode:
+  self.agents    — list of dicts {id, origin, destination, departure_time}
+  self.od_routes — {(origin, dest): [[edge, …], …]} with k route alternatives
+
+Construction runs four steps automatically in __init__:
+1. Agents       — sample OD pairs from the k most frequent ODs generated
+                  by randomTrips.py; departure times are sampled uniformly
+                  from the time horizon and sorted ascending (SUMO requires
+                  vehicles to be declared in departure order).
+2. Routes       — compute k alternative routes per OD by calling duarouter
+                  repeatedly with a random edge-weight perturbation; or load
+                  from a precomputed parquet if have_precomputed_routes=True.
+3. Environment  — save agents, OD routes, free-flow link costs, OD matrix,
+                  and time interval table to parquet files under data/.
+4. Config       — write the SUMO .sumocfg and meandata XML files used by
+                  Environment.run_episode() every episode.
+                  The meandata XML instructs SUMO to collect per-edge
+                  density and flow, aggregated over fixed time intervals,
+                  into the edgedata output file.
 """
 
 import os
@@ -30,7 +51,7 @@ from config.paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
-from utils.network import get_edges_lengths_program
+from utils.network import get_median_edge_lengths
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
@@ -258,7 +279,7 @@ class Scenario:
         return od_pairs
 
     def _generate_random_trips_agents(self, output_file):
-        min_distance = int(2 * get_edges_lengths_program(config.network))
+        min_distance = int(2 * get_median_edge_lengths(config.network))
         config.min_distance = min_distance
 
         cmd = [
@@ -335,16 +356,13 @@ class Scenario:
 
     def _write_od_matrix(self, od_list, departure_times_list, interval_size):
 
-        # Build df
         df = pd.DataFrame(
             [(o, d, t) for (o, d), t in zip(od_list, departure_times_list)],
             columns=["origin", "destination", "departure_time"],
         )
 
-        # Assign interval index
         df["interval"] = (df["departure_time"] // interval_size).astype(int)
 
-        # Group and count
         """
         interval	origin	destination	    count
         0	          A	          B	          5

@@ -1,14 +1,39 @@
+"""
+One-off tool to convert an OSM file into a SUMO network (.net.xml) via netconvert.
+
+Flags applied during conversion
+--------------------------------
+Geometry   --geometry.remove, --geometry.min-dist, --geometry.avoid-overlap
+               Simplify redundant shape points and fix overlapping geometry.
+Junctions  --junctions.join, --junctions.join-dist 10
+               Merge closely-spaced junctions (within 10 m) into one,
+               which reduces unrealistic micro-junctions from OSM data.
+Roads      --ramps.guess, --roundabouts.guess, --osm.turn-lanes
+               Infer highway ramps, roundabout structure, and turn lanes
+               from OSM tags where they are not explicitly defined.
+Traffic lights  --tls.discard-simple, --tls.discard-loaded
+               Remove all traffic lights — the experiment uses uncontrolled
+               intersections (yield/priority rules only).
+
+Post-conversion
+---------------
+Manual edits in netedit are still required after running this tool.
+OSM data is noisy; automated conversion cannot resolve all artefacts
+(disconnected edges, misclassified road types).
+"""
+
 import subprocess
 
+# ARGUMENT PASSED TO THE FUNCTION
 NETCONVERT_NET_FOLDER = (
     "/home/miguel/6.Projects/Thesis/sumo/net/Manual/netconvert_network/"
 )
 
 
-def convert_map():
+def convert_map(dir_path):
     MAP = input("Enter the absolute path of the OSM file: ")
     NET = input("Enter the filename you wanna give to the NETEDIT network: ")
-    NET = NETCONVERT_NET_FOLDER + NET + ".net.xml"
+    NET = dir_path + NET + ".net.xml"
 
     """
     Converts OSM to SUMO

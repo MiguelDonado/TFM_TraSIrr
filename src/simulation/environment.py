@@ -1,5 +1,25 @@
 """
-Encapsulate the use of SUMO simulator
+SUMO simulator wrapper for episodic training.
+
+Responsibilities
+----------------
+1. generate_routes_file — writes a .rou.xml from agent actions before
+                          each episode, so vehicles can be inserted
+                          without TraCI.
+2. run_episode          — invokes the sumo (or sumo-gui) CLI with the
+                          generated routes file.
+3. get_rewards          — parses tripinfo.xml after each episode and
+                          returns travel times associated with each
+                          agent id.
+
+No-TraCI design
+---------------
+Routes are written to a file and passed to SUMO via CLI instead of
+using TraCI step-by-step control. This is significantly faster for
+large fleets because it avoids the per-timestep Python↔SUMO socket
+overhead. The trade-off is that routes cannot be changed mid-episode
+(but in the implemented day-to-day learning we do not change routes
+in mid-episode, so it does not matter)
 """
 
 import subprocess

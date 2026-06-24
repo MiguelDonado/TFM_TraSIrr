@@ -1,24 +1,23 @@
 """
-Purpose of this script is to get the avg speed of the vehicles in the network.
-It does so, by:
-1. Get all  avg speed at timestep t of all the vehicles
-2. Filter by the timesteps we are interested on (post-warmup)
-3. Take avg of those
+Compute post-warm-up average vehicle speed from a SUMO summary output file.
 
-avg_speed = avg of avg_speed_t (only for t after warmup)
+Used by demand calibration as a congestion proxy:
+    congestion_ratio = avg_speed / free_flow_speed
+
+The warm-up period is excluded because on that window there are few vehicles
+on the network, and the avg speed for those timesteps is higher, hence our final average speed
+would be overestimated, leading to think the network is less congested than what really is.
+
+SUMO's summary.xml reports a network-wide meanSpeed per timestep.
+Steps with meanSpeed <= 0 are filtered out — SUMO emits -1 at the
+final timestep as a sentinel value.
 """
 
 import numpy as np
 from lxml import etree
 
-# CONSTANTS
-WARMUP_SECONDS = 600
-SUMMARY_FILE_PATH = (
-    "/home/miguel/6.Projects/Thesis/src/scripts/2026-03-26-19-42-13summary.xml"
-)
 
-
-def get_avg_speed(warmup_seconds, summary_filepath=SUMMARY_FILE_PATH):
+def get_avg_speed(warmup_seconds, summary_filepath):
     ###########
     # SCRIPT
     ###########
@@ -34,7 +33,3 @@ def get_avg_speed(warmup_seconds, summary_filepath=SUMMARY_FILE_PATH):
 
     avg_speed_post_warmup = round(np.average(a=avg_speeds_post_warmup), 2)
     return avg_speed_post_warmup
-
-
-if __name__ == "__main__":
-    get_avg_speed(WARMUP_SECONDS)

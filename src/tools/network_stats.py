@@ -1,12 +1,23 @@
 """
-Purpose of this script: parse xml network file to get the characteristics
-of the network (nodes, links, turns)
+One-off tool to print structural statistics of a SUMO network.
+
+Metrics extracted
+-----------------
+Nodes       — junctions of type 'priority' or 'dead_end' only
+              (internal junction connectors are excluded)
+Edges       — real road links (edges with a @priority attribute)
+Lanes       — total lane count across all non-internal edges
+Connections — possible turning movements between edges
+              (filtered to edges whose id starts with 'E' or '-E',
+               which is the Sioux Falls naming convention)
+
+Used in the thesis document to present the experimental network topology.
 """
 
 from lxml import etree
 
-# CONSTANTS
-NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st_koh_v2.net.xml"
+# ARGUMENT PASSED TO THE FUNCTION
+NETWORK_PATH = None
 
 
 def get_network_characteristics(net=NETWORK_PATH):

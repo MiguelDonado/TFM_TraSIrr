@@ -69,13 +69,11 @@ class Config:
     # Initial guess
     #####
     # Used for initial guess
-    """
-        Scenario	Vehicles / km / hour
-        Light traffic	5–15
-        Moderate traffic	15–40
-        Heavy traffic	40–80
-        Near congestion/saturation	80–150+
-    """
+    # Scenario	Vehicles / km / hour
+    # Light traffic	5–15
+    # Moderate traffic	15–40
+    # Heavy traffic	40–80
+    # Near congestion/saturation	80–150+
 
     heuristic_veh_km_hour_initial_guess: int
 

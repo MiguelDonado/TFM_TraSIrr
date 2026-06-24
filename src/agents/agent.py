@@ -53,12 +53,9 @@ class BMAgent:
 
     def _compute_expected_travel_time(self):
         """
-        Does not take into account travel time on day t
-
-        Example:
-        for i in range(1):
-            print(i)
-        # 0   (it just prints 0, not 1)
+        Does not take into account travel time on day t,
+        because it represents the travel time we expected our trip to take
+        during day t
         """
         # Old to new
         times = [tt for _, tt in self.history[:-1]]
@@ -100,10 +97,6 @@ class BMAgent:
         expected_tt = self.expected_travel_time
         perceived_tt = self.perceived_travel_times
 
-        # Heuristic
-        # Set value of PT of unused routes to A (expected travel time)
-        # This way they dont influence in stimulus computation
-        perceived_tt[np.isnan(perceived_tt)] = expected_tt
         chosen_perceived_tt = perceived_tt[chosen]
 
         diff = expected_tt - chosen_perceived_tt

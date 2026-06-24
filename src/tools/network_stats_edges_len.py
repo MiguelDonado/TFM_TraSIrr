@@ -1,6 +1,8 @@
 """
-Purpose of this script: parse xml network file to get the characteristics
-of the network (nodes, links, turns)
+One-off tool to export edge lengths from a SUMO network to CSV.
+
+Output is used to generate the edge-length histogram included in the
+thesis document when describing the experimental networks.
 """
 
 import numpy as np
@@ -8,17 +10,18 @@ from lxml import etree
 
 from utils.network import get_edge_lengths
 
-# CONSTANTS
-NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st_koh_v2.net.xml"
+# ARGUMENTS PASSED TO THE FUNCTION
+NETWORK_PATH = None
+OUTPUT_PATH = None
 
 
-def get_edges_lengths_script(net=NETWORK_PATH):
+def get_edges_lengths_script(net, output_path):
     ###########
     # SCRIPT
     ###########
     data = get_edge_lengths(net)
     np.savetxt(
-        "/home/miguel/6.Projects/Thesis/src/scripts/output/1st_koh_v2.net.csv",
+        output_path,
         data,
         delimiter=",",
         fmt="%.2f",

@@ -1,7 +1,26 @@
 """
-Purpose of this file: Orchestration + Pipeline
-1. Saving results
-2. Handling the data structure in which results are stored
+Per-episode data collection and end-of-run persistence for the BM simulation.
+
+Implements a two-phase pattern used inside the training loop:
+
+  1. Per-episode  — parse SUMO XML outputs and agent state, accumulate
+                    into eight in-memory lists (one per data stream).
+  2. End-of-run   — flush all lists to parquet files under data/.
+
+Data streams managed
+--------------------
+aggregated   — episode-level statistics (mean speed, travel time…)
+vehroute     — per-vehicle, per-edge exit times
+trips_info   — per-vehicle trip summary (duration, length, time_loss)
+fcd          — sampled vehicle XY positions across timesteps
+edgedata     — per-edge density and flow per time interval
+actions      — route index chosen by each agent per episode
+rewards      — travel time received by each agent per episode
+BM_results   — agent internal state (ET, PT, stimulus) per episode
+
+Also contains two mode-utility functions used by main.py:
+  log_run_mode        — prints a startup summary of the selected run mode
+  run_final_simulation — replays the last episode in sumo-gui
 """
 
 import subprocess
@@ -82,22 +101,6 @@ def accumulate_results(results, result):
         "BM_results": ("BM_result", "extend"),
     }
 
-    """
-    getattr: Returns the method dynamically
-    
-    Example:
-    getattr([], "append") translates to list.append()
-
-    Example:
-    key = "Padre"
-    my_fun = "append"
-    data_dict = {"Padre": ["Miguel", "Donado"], "Madre": ["Mercedes", "Fernandez"]}
-    getattr(data_dict[key], my_fun)("Campos")
-
-    ### Output ### 
-    # {'Padre': ['Miguel', 'Donado', 'Campos'], 'Madre': ['Mercedes', 'Fernandez']}
-    """
-
     for key, (res_key, method) in mapping.items():
         getattr(results[key], method)(result[res_key])
 
@@ -124,10 +127,6 @@ def save_processed_data(results):
             df.to_parquet(path, compression="zstd", compression_level=9)
         else:
             df.to_parquet(path, engine="pyarrow")
-
-
-def make_plots():
-    subprocess.run(["Rscript", "r/plots.R"])
 
 
 ########################################

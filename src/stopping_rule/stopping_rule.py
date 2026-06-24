@@ -1,3 +1,36 @@
+"""
+Stopping rule for the BM multi-agent training loop.
+
+The loop terminates when either condition is met:
+  1. max_episodes is reached.
+  2. The mean L1 policy change across all agents falls below
+     tolerance_stopping_rule for k_no_change consecutive episodes.
+
+Policy change metric
+--------------------
+At each episode, the L1 norm of (current_policy - previous_policy) is
+computed per agent, then averaged across all agents:
+
+    mean_policy_change = mean( ||p_t - p_{t-1}||_1 )
+
+L1 norm was chosen because it measures the total probability mass
+redistributed across routes — a natural unit for a probability vector.
+KL-divergence was considered but requires smoothing to handle zero
+probabilities on unvisited routes.
+
+Why mean, not max
+-----------------
+In a multi-agent setting taking the max across agents was too restrictive
+and convergence was never declared. The mean tolerates a small number
+of still-adapting agents while the majority have stabilised.
+
+Warm-up
+-------
+Policy change is not evaluated during the minimum warm-up period of agents. All agents
+start with a uniform policy and do not learn yet, so the L1 change is
+uninformative until after warm-up + 1 episodes.
+"""
+
 import numpy as np
 
 from config.config import config

@@ -1,3 +1,6 @@
+# This script was used to generate auxiliary plots for the thesis, 
+# regarding the main network characteristics 
+
 library(tidyverse)
 
 path <- "/home/miguel/6.Projects/Thesis/src/scripts/output/Sioux_Falls.net.csv"

@@ -1,3 +1,20 @@
+"""
+Writers for the two SUMO XML configuration files used in this project.
+
+write_sumo_conf(...)
+    Generates a .sumocfg file. All sections except net_file and seed are
+    optional, so callers only include what they need:
+      - demand calibration passes only summary-output
+      - main simulation passes all outputs (tripinfo, vehroute, fcd, etc.)
+    This avoids maintaining multiple functions to write config files for different contexts.
+
+write_meandata_file(...)
+    Generates the additional XML file that instructs SUMO to collect
+    per-edge traffic data (entered vehicle count and density) aggregated
+    over fixed time intervals. Required for the edgedata output used in
+    the TDSP link cost table.
+"""
+
 from lxml import etree
 
 

@@ -1,3 +1,32 @@
+"""
+Entry point for the simulation.
+
+'Simulation' here means the full multi-episode training run, not a single
+SUMO episode. One call to run() executes demand calibration, BM agent
+training over up to config.max_episodes days, DUE convergence checks
+(BM and duaIterate benchmark), and MLflow logging.
+
+Execution order
+---------------
+0. Demand calibration   — find n_agents that hits target congestion ratio
+1. Scenario             — generate OD pairs, k routes, SUMO config files
+2. Environment          — SUMO subprocess wrapper (file-based, no TraCI)
+3. Agents               — initialise BMAgent probability vectors
+4. Training loop        — episodes until policy convergence or max_episodes
+5. Save outputs         — parquet files for all agent and SUMO data
+6. DUE convergence      — R-gap for BM and duaIterate benchmark
+7. MLflow               — log parameters, metrics, and artifacts
+
+Entry points
+------------
+run()               called by __main__ or by scripts/launcher.py
+                    (launcher runs grid-search experiments in batch)
+config.mode         controls behaviour:
+                        TRAIN       — full run (default)
+                        COMPUTE_ROUTES — generate routes then exit
+                        EVAL_GUI    — replay last episode in sumo-gui
+"""
+
 import cProfile
 import os
 import pstats
@@ -39,13 +68,74 @@ rng = np.random.default_rng(config.seed)
 seeds = rng.integers(0, 100000, size=config.max_attempts)
 
 
+def main():
+    set_up_mlflow()
+    with mlflow.start_run() as run:
+        # Save simulation run id
+        save_simulation_run_id(run.info.run_id)
+
+        # -----------------------------
+        # 0. DEMAND CALIBRATION
+        # -----------------------------
+        demand = demand_calibration(last_iteration_gui=False)
+        demand_warmup = int(demand * config.warm_up_time / config.end_time)
+        demand_post_warmup = demand - demand_warmup
+
+        # -----------------------------
+        # 1. CREATE SCENARIO (files)
+        # -----------------------------
+        scen = Scenario(
+            map=config.network,
+            n_agents_warmup=demand_warmup,
+            n_agents_post_warmup=demand_post_warmup,
+            seeds=seeds,
+            rng=rng,
+        )
+
+        # -----------------------------
+        # 2. CREATE ENVIRONMENT
+        # -----------------------------
+        env = Environment(scenario=scen)
+
+        # -----------------------------
+        # 3. CREATE AGENTS
+        # -----------------------------
+        agents = initialize_agents(scen=scen, seed=config.seed)
+
+        if config.last_episode_gui_BM:
+            run_final_simulation()
+
+        # -----------------------------
+        # 4. TRAINING LOOP
+        # -----------------------------
+        results, policy_change_history = _run_training_loop(env=env, agents=agents)
+
+        # -----------------------------
+        # 5. SAVE OUTPUT
+        # -----------------------------
+        save_processed_data(results)
+        df_policy_change = pd.DataFrame(policy_change_history)
+        df_policy_change.to_parquet(POLICY_CHANGE_BM)
+        # -----------------------------
+        # 6. CHECK DUE convergence
+        # -----------------------------
+        run_due_convergence_checks(
+            scen=scen, end_time=config.end_time, time_interval=config.time_interval
+        )
+
+        # -----------------------------
+        # 7. MLflow (Artifact storage, Experiment tracking)
+        # -----------------------------
+        log_simulation_mlflow(run_id=run.info.run_id)
+
+        # Play sound to signal end of script
+        os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
+
+
 def _run_training_loop(
     env,
     agents,
 ):
-    # -----------------------------
-    # 4. TRAINING LOOP
-    # -----------------------------
     # > Policy stability
     no_change_count = 0  # Counter consecutive times without policy changes
     policies_history = []  # Stores policies of all agents for all episodes
@@ -124,70 +214,6 @@ def _run_training_loop(
     return results, policy_change_history
 
 
-def main():
-    set_up_mlflow()
-    with mlflow.start_run() as run:
-        # Save simulation run id
-        save_simulation_run_id(run.info.run_id)
-
-        # -----------------------------
-        # 0. DEMAND CALIBRATION
-        # -----------------------------
-        demand = demand_calibration(last_iteration_gui=False)
-        demand_warmup = int(demand * config.warm_up_time / config.end_time)
-        demand_post_warmup = demand - demand_warmup
-
-        # -----------------------------
-        # 1. CREATE SCENARIO (files)
-        # -----------------------------
-        scen = Scenario(
-            map=config.network,
-            n_agents_warmup=demand_warmup,
-            n_agents_post_warmup=demand_post_warmup,
-            seeds=seeds,
-            rng=rng,
-        )
-
-        # -----------------------------
-        # 2. CREATE ENVIRONMENT
-        # -----------------------------
-        env = Environment(scenario=scen)
-
-        # -----------------------------
-        # 3. CREATE AGENTS
-        # -----------------------------
-        agents = initialize_agents(scen=scen, seed=config.seed)
-
-        if config.last_episode_gui_BM:
-            run_final_simulation()
-
-        # -----------------------------
-        # 4. TRAINING LOOP
-        # -----------------------------
-        results, policy_change_history = _run_training_loop(env=env, agents=agents)
-
-        # -----------------------------
-        # 5. SAVE OUTPUT
-        # -----------------------------
-        save_processed_data(results)
-        df_policy_change = pd.DataFrame(policy_change_history)
-        df_policy_change.to_parquet(POLICY_CHANGE_BM)
-        # -----------------------------
-        # 6. CHECK DUE convergence
-        # -----------------------------
-        run_due_convergence_checks(
-            scen=scen, end_time=config.end_time, time_interval=config.time_interval
-        )
-
-        # -----------------------------
-        # 7. MLflow (Artifact storage, Experiment tracking)
-        # -----------------------------
-        log_simulation_mlflow(run_id=run.info.run_id)
-
-        # Play sound to signal end of script
-        os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
-
-
 def run():
     log_run_mode(config.mode, config.have_precomputed_routes, config.episodes_gui)
 
@@ -199,13 +225,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
-    # with cProfile.Profile() as profile:
-    #     run()
-
-    # results = pstats.Stats(profile)
-    # results.sort_stats(pstats.SortKey.CUMULATIVE)
-    # results.print_stats("src/")
-    # # Save profile stats to a file
-    # filename = Path(config.network).stem
-    # results.dump_stats(PROFILING_DIR / f"{filename}.prof")

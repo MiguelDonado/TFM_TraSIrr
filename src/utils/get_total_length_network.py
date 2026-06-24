@@ -1,11 +1,14 @@
 """
-Purpose of this script: get total length of the network
+Compute the total road length of the network in kilometres.
+
+Used in demand calibration to seed the initial demand guess:
+    demand = heuristic_veh_km_hour × total_length_km × hours
+
+Internal SUMO junction connector edges are excluded — they are
+not real road links and would inflate the length.
 """
 
 from lxml import etree
-
-# CONSTANTS
-NETWORK_PATH = "/home/miguel/6.Projects/Thesis/sumo/net/Koh/FirstNetwork_Koh.net.xml"
 
 
 def get_total_length_network(net):
@@ -27,7 +30,3 @@ def get_total_length_network(net):
     total_length_network_km = total_length_network_m / 1000
 
     return total_length_network_km
-
-
-if __name__ == "__main__":
-    get_total_length_network(NETWORK_PATH)
