@@ -1,6 +1,13 @@
-# This file is regarding the process of creating multiple agents.
-# The function initialize_agents does not go in main.py because it is not relative to app control flow,
-# and it does not go in agent.py because it is not relative to agent logic
+"""
+Batch operations over the full agent fleet, called from main.py.
+
+Three functions map the per-agent BMAgent methods onto all agents at once:
+
+  initialize_agents  — instantiate one BMAgent per entry in scen.agents,
+  select_actions     — called before each episode; returns {agent_id: route_idx}
+  update_agents      — called after each episode; updates each agent's policy
+                       from its observed reward
+"""
 
 from .agent import BMAgent
 

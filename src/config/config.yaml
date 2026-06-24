@@ -1,4 +1,17 @@
-# This file stores the xpaths used to parse the xml output files generating after each episode
+# XPath expressions for parsing SUMO XML output files generated each episode.
+#
+# Keeping queries here rather than hardcoded in parsing/sumo_outputs.py
+# leads to better organization and makes it more scalable
+#
+# Consumed by: parsing/sumo_outputs.py (loaded once at module import)
+#
+# Sections
+# --------
+# statistics  — episode-level aggregates from statistics.xml
+# vehroute    — per-vehicle, per-edge exit times from vehroute.xml
+# tripsinfo   — per-vehicle trip summary from tripsinfo.xml
+# fcd         — XY trajectory data from fcd-export.xml 
+# edgedata    — per-edge density from edgedata.xml 
 
 metrics:
   statistics:

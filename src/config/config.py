@@ -1,6 +1,36 @@
-# This file stores constants, hyperparameters used throughout the project
-#
+"""
+Central configuration for the experiment.
 
+Defines two objects used throughout the codebase:
+
+  config   — singleton Config dataclass instance, populated at import
+             time from a YAML file passed as sys.argv[1]
+  RunMode  — enum controlling the execution mode (TRAIN, COMPUTE_ROUTES,
+             EVAL_GUI)
+
+Config hyperparameter groups
+-----------------------------
+  Randomness          — global seed
+  BM learning         — learning_rate (β), memory_level (γ), warm_up
+  Demand calibration  — target_congestion_ratio, tolerances, update gain
+  Simulation time     — warm_up_time, simulation_time, end_time (derived)
+  Network & scenario  — network path, OD space size, fringe factor
+  Duarouter           — routing algorithm, random_factor, n_routes_per_OD
+  Stopping rule       — max_episodes, tolerance, k_no_change
+  DUE convergence     — threshold_density, duaIterate settings
+  Mode & flags        — have_precomputed_routes, episodes_gui, gui flags
+
+Derived fields (computed in __post_init__)
+------------------------------------------
+  end_time  = warm_up_time + simulation_time
+  warm_up   = n_routes_per_OD × 3 (min episodes before agent can start learning)
+
+YAML locations
+--------------
+  Development  — experiments/developer_modes/
+  Production   — experiments/tmp/  (populated by scripts/launcher.py
+                 during batch runs)
+"""
 
 import sys
 from dataclasses import dataclass, field

@@ -1,13 +1,35 @@
 """
-This file stores a function that is used to calibrate the demand of the experiment
+Calibrates the number of agents needed to achieve a target congestion
+level on the network before starting the training with those agents in
+the Multi Agent Reinforcement Learning setting.
 
-I will use avg_speed / free_flow_speed as the ratio used to measure congestion
+Congestion metric
+-----------------
+    congestion_ratio = avg_speed_post_warmup / free_flow_speed
 
-~ 1          -> No congestion
-~ 0.7 - 0.9  -> Light
-~ 0.4 - 0.7  -> Medium
-< 0.4        -> Heavy
+    ~ 1.0        — free flow
+    ~ 0.7–0.9   — light
+    ~ 0.4–0.7   — moderate
+    < 0.4        — heavy
 
+Two-phase procedure
+-------------------
+1. Initial guess
+       n_agents = heuristic_veh_km_hour × total_length_km × hours
+   Provides a starting point without running any simulation.
+
+2. Calibration loop
+   Runs SUMO iteratively, using as demand the current number of agents
+   and adjusting n_agents after each simulation:
+
+       error         = observed_congestion_ratio - target_congestion_ratio
+       update_factor = clip(1 + k_demand_calib × error, 0.6, 1.4)
+       n_agents      = int(n_agents × update_factor)
+
+   Large errors produce aggressive corrections; smaller errors produce smoother
+   corrections, helping convergence.
+   The clip to [0.6, 1.4] prevents overshooting on the first iterations.
+   Stops when |error| < tolerance_demand_calibration.
 """
 
 import numpy as np

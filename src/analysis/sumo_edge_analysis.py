@@ -1,26 +1,41 @@
 """
-This file is used to handle the color edge visualization in SUMO.
-We will compare results of last episode BM with results of last iteration duaIterate
+Edge colour visualisation in SUMO-GUI for comparing BM and duaIterate.
 
-Several metrics could be used:
-1. entered: Measures edge usage
-2. density: Measures congestion
-3. travel time: Great for DUE analysis (compare costs)
+Runs the final episode of each algorithm in sumo-gui with edges coloured
+by a chosen traffic metric, enabling spatial comparison of the two
+converged solutions.
 
-It is important to make sure that we are using the same scale for both visualizations (BM and duaIterate) and for all intervals,
-the function max_value implements that logic.
+Visualization modes
+-------------------
+aggregated    — one colour per edge for the entire episode
+per-interval  — colours update each period; sumo-gui breakpoints are
+                inserted 2 s before each interval boundary (SUMO resets
+                the visualisation at the boundary itself, so the lead is
+                required to keep colours visible)
 
-Some gotchas regarding the metrics:
-1. entered: When aggregating it we have to sum over intervals, and we would get right entered value for the aggregated case
-2. density: When aggregating we have to do the mean over intervals to get the right value.
-    Intuition why density has to be aggregated that manner:
-        - Density is computed the following way: Take the nº vehicles on the edge for each timestep, and takes average
-        (sum all nº vehicles divided by nºtimesteps).
-    So the density represents the avg nº of cars over the time interval.
-    So if we want the density over a bigger time interval, we have to take the average of the averages over small intervals.
+Available metrics
+-----------------
+entered      — total vehicles that entered the edge (usage)
+density      — average vehicles on the edge per timestep (congestion)
+travel time  — average travel time on the edge (cost, best for DUE analysis)
 
-Already checked in sumo-gui that density metric makes sense (not monotonic increasing, because is an avg)
+Shared colour scale
+-------------------
+The colour scale is computed from the maximum value across both algorithms
+and all intervals, so BM and duaIterate are always visually comparable on
+the same range.
 
+Aggregation rules (critical — wrong aggregation gives misleading results)
+--------------------------------------------------------------------------
+entered  →  sum across intervals
+            (each interval count is additive: total = Σ interval counts)
+
+density  →  mean across intervals
+            Density = avg vehicles on edge per timestep within an interval.
+            To aggregate over a longer window, take the average of the
+            per-interval averages — NOT the sum.
+            Verified in sumo-gui: density is not monotonically increasing,
+            confirming it behaves as an average, not a cumulative count.
 """
 
 import subprocess

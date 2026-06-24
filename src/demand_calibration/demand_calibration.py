@@ -1,3 +1,25 @@
+"""
+Runs a single SUMO episode to measure the congestion level
+produced by a given number of vehicles on the network.
+
+The goal is to find the n_agents value that achieves a target
+congestion level, defined as:
+
+    congestion_ratio = avg_speed_post_warmup / free_flow_speed
+
+    ~ 1.0        — free flow (no congestion)
+    ~ 0.7–0.9   — light
+    ~ 0.4–0.7   — moderate
+    < 0.4        — heavy
+
+This class is instantiated and called repeatedly by the calibration
+loop in src/demand_calibration/utils.py, which adjusts n_agents until
+congestion_ratio reaches the target value.
+
+Random trips are used since the actual agent OD pairs are not yet
+defined at calibration time.
+"""
+
 import subprocess
 
 from config.config import config

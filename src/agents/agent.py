@@ -1,3 +1,58 @@
+"""
+Bush-Mosteller reinforcement learning agent for day-to-day route choice.
+
+Reference
+---------
+Wei, F., Ma, S., & Jia, N. (2014).
+A Day-to-Day Route Choice Model Based on Reinforcement Learning.
+Mathematical Problems in Engineering, 2014, 646548.
+https://doi.org/10.1155/2014/646548
+
+Notation
+--------
+β  (beta)   — learning rate: controls how fast the agent updates
+               its route probabilities after each experience
+γ  (gamma)  — memory level: exponential decay applied to past travel
+               times (recent experiences matter more than older ones)
+ET          — Expected Travel Time: what the agent expects the trip to
+               take, computed as a γ-weighted average over all past
+               travel times across all routes
+PT_r        — Perceived Travel Time for route r: γ-weighted average
+               of past travel times on route r specifically
+stimulus    — normalised signal in [-1, 1] measuring how much better
+               or worse the chosen route was relative to ET
+
+Formulas
+--------
+ET  =  Σ_{j=1}^{T-1} γ^(T-1-j) · tt_j  /  Σ γ^(T-1-j)
+
+         (excludes episode T — ET represents the expectation formed
+          before departing, based only on past experience)
+
+PT_r =  Σ_{j: route_j=r} γ^(T-j) · tt_j  /  Σ_{j: route_j=r} γ^(T-j)
+
+         (includes episode T — PT is updated with today's observation
+          before computing the stimulus)
+
+stimulus = (ET - PT_chosen) / normalisation
+           > 0  →  chosen route was cheaper than expected  →  reinforce
+           < 0  →  chosen route was more expensive         →  penalise
+
+Warm-up conditions (both must be satisfied before learning begins)
+------------------------------------------------------------------
+1. episode > warm_up  (minimum number of episodes elapsed)
+2. all routes visited at least once
+   (prevents division by zero in the stimulus normalisation when
+    some PT values are undefined)
+
+Agent lifecycle
+---------------
+  __init__       uniform probability vector p, empty history
+  select_action  sample route index from p
+  update         append (route, tt) to history, then (if past warm-up)
+                 recompute ET → PT → stimulus → update p
+"""
+
 import numpy as np
 
 from config.config import config
@@ -84,14 +139,7 @@ class BMAgent:
             denominator[r] += weight
 
         # Compute PT all routes
-        # Unused routes have PT = None
-        for k in range(self.n_routes):
-            if denominator[k] == 0:
-                perceived_travel_times[k] = np.nan
-            else:
-                perceived_travel_times[k] = numerator[k] / denominator[k]
-
-        self.perceived_travel_times = perceived_travel_times
+        self.perceived_travel_times = numerator / denominator
 
     def _compute_stimulus(self, chosen):
         expected_tt = self.expected_travel_time

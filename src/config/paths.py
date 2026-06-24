@@ -1,3 +1,25 @@
+"""
+Single source of truth for all file paths used throughout the project.
+
+All paths are derived from BASE_DIR.
+
+Sections
+--------
+  SUMO files          — network config, routes, meandata XML
+  Demand calibration  — trips, routes, config for the calibration loop
+  Raw outputs         — SUMO XML files written each episode
+  Processed outputs   — parquet versions of raw outputs (tidy format)
+  Agent state         — actions, rewards, BM internal state across episodes
+  Environment         — agents OD, free-flow costs, time intervals, OD routes
+  DUE convergence     — R-gap, TDSP, missingness files for BM and duaIterate
+  MLflow              — database, artifact store, run id file
+  Experiments         — temporary YAML configs for batch runs
+
+DUE paths are generated via the DuePaths dataclass and _due_paths()
+factory, so BM and duaIterate share the same directory structure under
+their respective roots without duplicating path definitions.
+"""
+
 from dataclasses import dataclass
 from pathlib import Path
 
