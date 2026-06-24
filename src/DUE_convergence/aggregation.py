@@ -1,11 +1,21 @@
+"""
+Aggregation of path flows and path travel times for the R-gap computation.
+
+Produces two parquet files, both indexed by (origin-destination (od),
+time_interval (t), path (p), episode (k)) — referred to as odtp_k throughout the
+DUE convergence module:
+
+  flows_paths_odtp_k     — number of agents that chose each path (flow) for each unique combination of the index
+  costs_paths_odtp_k     — average travel time on each path (cost) for each unique combination of the index
+
+These two tables, combined with the time-dependent shortest path costs
+from tdsp.py, are the three inputs to the R-gap formula in rgap.py.
+"""
+
 import pandas as pd
 from lxml import etree
 
 from config.paths import AGENTS_OD
-
-"""
-Flow and path travel time aggregation
-"""
 
 
 def _load_actions_and_agents(actions_path):
@@ -14,13 +24,6 @@ def _load_actions_and_agents(actions_path):
     df_agents_od = pd.read_parquet(AGENTS_OD)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
     return df_actions, df_agents_od
-
-
-def _load_network_edges(network) -> set:
-    # 1. Get edges network
-    tree = etree.parse(network)
-    all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
-    return set(all_edges)
 
 
 def compute_flows_odtp_k(actions_path, output_file):

@@ -1,10 +1,39 @@
+"""
+R-gap computation and its variants for DUE convergence assessment.
+
+R-gap formula
+-------------
+          Σ_{o,d,t,p} f_{odtp} · (c_{odtp} − c*_{odt})
+R-gap =  ────────────────────────────────────────────────
+          Σ_{o,d,t} d_{odt} · c*_{odt}
+
+where:
+  f_{odtp}  — flow on path p for OD (o,d) departing at interval t
+  c_{odtp}  — average travel time on path p
+  c*_{odt}  — minimum travel time (time-dependent shortest path)
+  d_{odt}   — demand for OD (o,d) at interval t
+
+R-gap = 0 if and only if the assignment is at Dynamic User Equilibrium.
+
+R-gap variants (differ only in the grouping keys)
+--------------------------------------------------
+  rgap                — per episode (aggregate convergence signal)
+  refined_rgap        — per episode × time interval (temporal heterogeneity)
+  rgap_by_od          — per episode × OD pair (spatial heterogeneity)
+  refined_rgap_by_od  — per episode × OD pair × time interval
+
+References
+----------
+Linares Herreros, María Paz, and Jaime Barceló Bugeda.
+    ‘A Mesoscopic Traffic Simulation Based Dynamic Traffic Assignment’.
+    Universitat Politècnica de Catalunya, 2014.
+    https://doi.org/10.5821/dissertation-2117-95313.
+    Pag. 131-132.
+"""
+
 import pandas as pd
 
 from config.paths import AGENTS_OD, DEMAND_ODT, TIMES_INTERVAL, TRIPS_TDSP
-
-"""
-Rgap computation + demand helpers
-"""
 
 
 def compute_rgap_and_refined_rgap(

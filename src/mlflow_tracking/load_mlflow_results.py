@@ -7,7 +7,7 @@ Typical workflow
    each with different hyperparameters).
 2. Use load_artifact_across_runs() to pull one artifact file from every
    matching run into a single concatenated DataFrame.
-3. Feed that DataFrame into the R analysis scripts to answer a research question
+3. That DataFrame would be used by R analysis scripts to answer a research question
    across the full parameter space.
 
 MLflow API layers used

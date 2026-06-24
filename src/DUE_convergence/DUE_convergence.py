@@ -1,3 +1,33 @@
+"""
+Orchestrates DUE convergence checks for BM and duaIterate.
+
+Entry point: run_due_convergence_checks(), called once at the end of
+the training loop in main.py.
+
+Shared prerequisites (generated first)
+---------------------------------------
+- Time intervals table
+- Demand ODT table (agents per OD per time interval)
+- TDSP trips file (all OD × time interval combinations)
+
+R-gap pipeline (applied to both algorithms)
+--------------------------------------------
+The R-gap requires exactly three tables:
+
+  1. flows_odtp_k          — agents choosing each path (p), per OD (od), interval (t), episode (k)
+  2. costs_paths_odtp_k    — average travel time on each path (p), per OD (od), interval (t), episode (k)
+  3. cost_min_paths_odt_k  — time-dependent shortest path cost per OD (od), interval (t), episode (k) (from TDSP pipeline)
+
+BM produces these tables with information of all training episodes, so R-gap is
+tracked as a time series showing convergence behaviour.
+
+duaIterate produces them with information of the last iteration only, since it serves
+as a sanity check: if duaIterate also fails to reach a low R-gap, the
+cause is the network/demand configuration, not the learning algorithm.
+
+
+"""
+
 from shutil import copy2
 
 from config.config import config
@@ -205,7 +235,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval):
         refined_rgap_by_od_path=DUA_PATHS.refined_rgap_by_od,
     )
 
-    # Compute and print mean tt duaIterate
+    # Compute mean tt duaIterate
     compute_avg_tt_duaIterate(max_iterations=config.duaIterate_max_iterations)
 
     ################

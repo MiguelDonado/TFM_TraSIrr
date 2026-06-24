@@ -1,15 +1,62 @@
 """
-Link travel time + TDSP generation
+Time-Dependent Shortest Path (TDSP) pipeline for the R-gap computation.
+
+TDSP is required by the R-gap formula to measure how much travel time
+drivers lose by not taking the cheapest available route. Shortest paths
+must be time-dependent because link costs vary across the time horizon —
+the same edge can be congested at one interval and free-flowing at another.
+
+Pipeline (orchestrated by run_tdsp_pipeline)
+--------------------------------------------
+1. Edge travel times   — derive travel times on the edges each driver traversed,
+                         from vehroute exit timestamps and departure times.
+
+2. Full grid           — compute mean travel time per (episode, edge, time_interval),
+                         then reindex to cover all combinations including edges/intervals
+                         with no traffic (missing values become NaN).
+
+3. Missingness report  — quantify NaN proportion by edge, interval, and
+                         episode. High missingness reduces table quality
+                         because more values must be imputed.
+
+4. Imputation          — fill NaN cells using one of two strategies:
+                           density > threshold  →  forward-fill from the
+                                                   previous interval
+                           density ≤ threshold  →  free-flow travel time
+                        Forward fill means carry value from the previous
+                        interval for that edge forward.
+
+5. Weights XMLs        — convert the filled link cost table to per-episode
+                         XML files readable by duarouter.
+
+6. TDSP computation    — call duarouter once per episode (it implements a time-dependent
+                         shortest path algorithm) to find the time dependent shortest
+                         path for every OD × departure interval combination.
+
+7. Cost extraction     — parse duarouter output into the cost_min_paths_odt_k
+                         table consumed by rgap.py.
+
+8. Cleanup             — delete intermediate weight and shortest-path XML files.
+
+
+References
+----------
+SUMO duaIterate documentation:
+    https://sumo.dlr.de/docs/Demand/Dynamic_User_Assignment.html
+
+Linares Herreros, María Paz, and Jaime Barceló Bugeda.
+    ‘A Mesoscopic Traffic Simulation Based Dynamic Traffic Assignment’.
+    Universitat Politècnica de Catalunya, 2014.
+    https://doi.org/10.5821/dissertation-2117-95313.
 """
+
+import subprocess
 
 import pandas as pd
 from lxml import etree
 
 from config.config import config
 from config.paths import FREE_FLOW_TRAVEL_TIMES, TIMES_INTERVAL, TRIPS_TDSP
-
-from .aggregation import _load_network_edges
-from .duaiterate import run_duarouter
 
 
 def _compute_edge_travel_times(
@@ -206,6 +253,33 @@ def compute_time_dependent_shortest_paths(
         run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
 
 
+def run_duarouter(network, trips_file, routes_file, weights_file, seed):
+    cmd = [
+        "duarouter",
+        "-n",
+        network,
+        "--route-files",
+        trips_file,
+        "--weight-files",
+        weights_file,
+        "--write-costs",
+        "true",
+        "-o",
+        routes_file,
+        "--seed",
+        str(seed),
+    ]
+
+    subprocess.run(cmd, check=True)
+
+    # Delete alternative route files (undesirable)
+    alt_route_file_to_delete = routes_file.with_name(
+        f"{routes_file.stem}.alt{routes_file.suffix}"
+    )
+    if alt_route_file_to_delete.exists():
+        alt_route_file_to_delete.unlink()
+
+
 def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_paths):
     """
     Computes the table that contains the cost for all time dependent shortest paths
@@ -336,7 +410,7 @@ def compute_travel_time_links_t_k(
         a) Fill forward: We do not have any vehicle entering on link at t (NaN) and density_t > 0  (congestion)
         b) Free-flow: Otherwise
     """
-    all_edges = _load_network_edges(network)
+    all_edges = load_network_edges(network)
     df_edges = _compute_edge_travel_times(
         vehroute_file=vehroute_file,
         agents_od_file=agents_od_file,
@@ -448,3 +522,10 @@ def delete_files_due_convergence(weights_dir, shortest_paths_dir):
             for item in folder.iterdir():
                 if item.is_file():
                     item.unlink()
+
+
+def load_network_edges(network) -> set:
+    # 1. Get edges network
+    tree = etree.parse(network)
+    all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
+    return set(all_edges)
