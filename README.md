@@ -1,131 +1,150 @@
-# Thesis Project: Reinforcement Learning for Urban Traffic Optimization
+# Day-to-Day Route Choice with Multi-Agent Reinforcement Learning
 
-## Overview
+**Research thesis** — Universidad Politécnica de Catalunya (UPC) · 2026
 
-This project explores the application of Reinforcement Learning (RL) to urban traffic optimization using simulation tools. The main objective is to investigate how learning-based approaches can improve route decisions and contribute to more efficient and sustainable transportation systems.
+Most traffic models assume drivers act rationally — choosing routes that minimise
+travel cost given full knowledge of network conditions. Decades of cognitive science
+research show otherwise: human decisions are systematically biased, heuristic, and
+frequently suboptimal.
 
----
+This project bridges traffic simulation and cognitive modeling in two phases. The
+first phase trains rational route-choice agents using Reinforcement Learning inside
+SUMO (Simulation of Urban MObility), an open-source microscopic traffic simulator,
+and validates their collective behavior against Dynamic User Equilibrium (DUE) — the
+theoretical outcome of perfectly rational route choice. The second phase introduces
+cognitively inspired agents whose decisions emerge from a mixture of subsystems: one
+reflecting the rational agent, others implementing known human heuristics grounded in
+cognitive science.
 
-## Project Evolution
+This offers a novel framework for modeling urban mobility grounded in realistic human
+behavior, with applications in traffic forecasting, infrastructure planning, and
+behavioral intervention design.
 
-### ✅ Replication Phase (Completed)
-
-The initial stage of the project focused on replicating the experiment presented in:
-
-> *"Realtime Vehicle Route Optimisation via DQN for Sustainable and Resilient Urban Transportation Network"*  
-> *Song Sang Koh*
-
-This phase has been successfully completed. Through this process, I achieved:
-
-- Familiarity with **SUMO (Simulation of Urban MObility)**
-- Understanding of **Deep Q-Networks (DQN)** in traffic routing
-- Experience with **TraCI** for real-time simulation interaction
-
-🚧 Remaining tasks for this phase:
-
-- Verify that the agent is effectively learning
-- Generate and analyze output plots
-- Document results for inclusion in the thesis
+**Current status:** Phase 1 is under active development — the rational agent
+(Bush-Mosteller RL) and DUE convergence pipeline are implemented and being evaluated.
 
 ---
 
-## Current Stage: Day-to-Day Learning Approach
+## Research Scope
 
-The project has now transitioned to a **day-to-day learning framework**, shifting from local, real-time decisions to global route-level optimization.
+The thesis investigates multiple research directions around day-to-day route choice
+learning. The questions are grouped into the following themes:
 
-### Key Concept
-
-Instead of making decisions at each junction, the agent:
-
-- Selects a **complete route (origin → destination)**
-- Learns from **aggregate outcomes across simulation episodes (days)**
-
-This approach better reflects realistic traveler behavior and enables a more strategic learning process.
-
----
-
-## Current Implementation Status
-
-### ✅ Core Components Implemented
-
-- `Scenario` class  
-  Defines the traffic network, generate agents and routes (internally in Python), and simulation setup
-
-- `Environment` class  
-  Handles interaction with SUMO simulations to insert agents and manage episode execution
-
-- `main.py`  
-  Orchestrates the simulation and learning workflow
-
-### 🔄 Interaction with SUMO
-
-- **TraCI is no longer required**
-- The system now relies on:
-  - Running full simulations in SUMO
-  - Extracting results from **tripinfo output files**
-  - Updating the agent **after each episode**
-
-This simplifies the architecture and aligns with the day-to-day learning paradigm.
+| Theme | Description |
+|---|---|
+| DUE convergence | Can RL agents collectively reach a DUE? How do hyperparameters affect convergence speed and stability? |
+| Behavioral extensions | Nonlinear update rules, travel-time variability as perceived cost |
+| Heterogeneous agents | Mixed populations with different memory decay rates |
+| Congestion regimes | Learning dynamics under light, moderate, and heavy congestion |
+| Path & congestion comparison | Do BM and duaIterate produce similar routes and congestion patterns? |
+| Traffic scenarios | Recovery from temporary link-capacity degradation |
 
 ---
 
-## Reinforcement Learning Design
+## Technical Highlights
 
-### Action Space
-
-- Selection of **complete routes** between origin and destination
-
-### Reward Function
-
-- Currently based on **travel time**
-- May be extended in the future to include irrationalities...
-
-### State Space
-
-- **Not yet defined**
-- Will likely include:
-  - Aggregated traffic conditions
-  - Historical performance metrics
+- **Multi-agent RL system:** N Bush-Mosteller agents independently learn
+  route-choice probabilities from daily travel time observations, with no
+  centralised coordination.
+- **Demand calibration:** Iterative procedure that finds the agent count
+  producing a target congestion ratio before training begins, using a
+  proportional update rule with clipping to prevent overshooting.
+- **No-TraCI architecture:** Routes are written as XML files each episode
+  rather than injected via socket — significantly faster for episodic
+  day-to-day learning where routes cannot change mid-episode.
+- **R-gap convergence verification:** Relative gap computed via time-dependent
+  shortest paths (TDSP), measured at both aggregate and OD-pair level.
+- **Experiment tracking:** MLflow logs all hyperparameters, training metrics,
+  and analysis artifacts. Simulation and analysis runs are linked via
+  `source_run_id` for full reproducibility.
+- **Grid-search launcher:** YAML-driven parameter sweep runner that generates
+  all combinations, writes temp configs, runs the simulation, and optionally
+  triggers the R analysis after each run.
 
 ---
 
-## Agent Development (In Progress)
+## Tech Stack
 
-The **Agent class** is the next major component to be implemented.
+| Layer | Tools |
+|---|---|
+| Traffic simulation | SUMO (Simulation of Urban MObility) |
+| Reinforcement learning | Python · NumPy |
+| Experiment tracking | MLflow (SQLite backend) |
+| Data storage | Apache Parquet (PyArrow / R arrow) |
+| Analysis & visualisation | R · tidyverse · Quarto |
+| Configuration | YAML |
 
-### Theoretical Foundation
+---
 
-The design is inspired by:
+## Networks
 
-> *A Day-to-Day Route Choice Model Based on Reinforcement Learning*  
-> Fangfang Wei, Shoufeng Ma, Ning Jia  
-> DOI: 10.1155/2014/646548
+| Network | Description |
+|---|---|
+| **Sioux Falls** | Standard transportation research benchmark — 24 nodes, 76 directed edges, no traffic lights, uniform free-flow speed. Used for all main experiments. |
+| **Toy network** | Small synthetic network used for initial development and validation of the pipeline. |
 
-Key characteristics:
+---
 
-- Based on the **Bush–Mosteller (BM) reinforcement learning model**
+## Architecture
+
+```
+src/
+├── main.py                      # Training loop orchestrator (steps 0–7)
+├── agents/
+│   ├── agent.py                 # BMAgent — ET, PT, stimulus, probability update
+│   └── factory.py               # Batch init / select / update over agent fleet
+├── simulation/
+│   ├── scenario.py              # OD pairs, k routes via duarouter, SUMO config files
+│   └── environment.py           # SUMO subprocess wrapper (file-based, no TraCI)
+├── demand_calibration/          # Iterative calibration to target congestion ratio
+├── stopping_rule/               # L1 norm policy-change convergence check
+├── DUE_convergence/             # R-gap, TDSP, duaIterate benchmark pipeline
+├── parsing/                     # XPath-driven SUMO XML parsers → Parquet
+├── mlflow_tracking/             # MLflow logging for simulation and analysis runs
+└── config/
+    ├── config.py                # Config dataclass (10 hyperparameter groups) + RunMode
+    ├── config.yaml              # XPath selectors for SUMO XML parsing
+    └── paths.py                 # All paths derived from BASE_DIR
+scripts/
+├── launcher.py                  # Grid-search launcher (YAML design → combinations)
+├── run_analysis.py              # Quarto render + MLflow analysis run logging
+└── start_mlflow.py              # MLflow UI pointed at project SQLite backend
+r/
+├── RQ1/RQ1.qmd                  # Quarto report: R-gap convergence analysis
+└── shared/theme.R               # Shared ggplot2 theme for thesis figures
+```
 
 ---
 
 ## Future Work
 
-- Define and implement the **state representation**
-- Complete the **Agent class**
-- Handle more complex cases throughout the project (more than one OD pair, validation k routes computed for OD-pairs...)
-- Evaluate learning performance and convergence behavior
-- Extend reward structure
+**Phase 2 — Cognitive modeling:**
+Introduce agents whose route choices emerge from a mixture of decision-making
+subsystems. The rational subsystem will be the RL agent developed in Phase 1;
+additional subsystems will implement human heuristics from cognitive science.
+
+**Planned RL algorithms (Phase 1 extensions):**
+- Thompson Sampling — Bayesian exploration as an alternative to BM's stimulus-based
+  update; also a natural fit as a probabilistic cognitive subsystem in Phase 2
+- Q-learning / modern RL — comparison against classical BM in the same environment
+
+**Planned research themes:** behavioral extensions to BM, sensitivity analysis
+(learning rate, memory level), heterogeneous agent populations, congestion regime
+analysis, traffic scenario resilience.
+
+**Deployment (planned):** Dockerize the full environment — SUMO, Python, R, and
+MLflow — so experiments are reproducible without manual dependency setup across
+machines.
 
 ---
 
-## Status
+## Reference
 
-🚧 Work in progress:
+Wei, F., Ma, S., & Jia, N. (2014). A Day-to-Day Route Choice Model Based on
+Reinforcement Learning. *Mathematical Problems in Engineering*, 2014, 646548.
+https://doi.org/10.1155/2014/646548
 
-- Replication phase completed (validation pending)
-- Day-to-day learning framework implemented
-- Agent development in progress
-
-**PENDING**
-1. FINISH KOH
-2. FINISH DAY-TO-DAY LEARNING
-3. FINISH WRITING BOTH
+María Paz Linares Herreros and Jaime Barceló Bugeda, 
+‘A Mesoscopic Traffic Simulation Based Dynamic Traffic Assignment’ 
+(Universitat Politècnica de Catalunya, 2014), 
+https://doi.org/10.5821/dissertation-2117-95313.

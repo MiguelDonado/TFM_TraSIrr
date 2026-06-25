@@ -674,22 +674,3 @@ Write the full route file (`.rou.xml`) before each episode and invoke
 **Overall Project Documentation Debt Score: 61 / 100**
 
 The score is pulled down primarily by the gap in algorithmic documentation (`agents/agent.py`, `rgap.py`) and the stale README. The infrastructure and path management are genuinely well documented. Fixing the top 7 items in the remediation list would bring the score to approximately 35/100.
-
-
-
-
-
-## Implemented changes| 2 | `utils/get_free_flow_speed.py` | 10 | Hardcoded `NETWORK_PATH` points to a Koh network that is not the current network. The comment says "CONSTANTS" but the path is stale. |
-| 2 | `utils/get_avg_speed.py` | 17–18 | Same issue — `SUMMARY_FILE_PATH` is a dated file path from 2026-03-26 with a timestamp in the name. |
-### 1. CODE COMMENTS
-| 7 | `agents/agent.py` | 63–70 | `_compute_expected_travel_time`: The docstring example (`for i in range(1): print(i)`) explains Python range semantics, not why the history slice is `history[:-1]` (i.e., why today's travel time is excluded from the ET). The business reason is missing. |
-| 6 | `agents/agent.py` | 103–106 | "Heuristic" comment for the NaN-fill of unused routes is unexplained. Why is ET the right substitute? Filling an unused route's PT with ET is a deliberate BM algorithmic choice; it should say so. | (code relative to this part was deleted, since it was relative to 
-an old implementation)
-| 5 | `experiment.py` | 85–99 | Docstring comment inside `accumulate_results` body explains how `getattr` works — this is Python literacy, not domain knowledge. The comment should be deleted. |
-| 4 | `scenario.py` | 349–357 | Inline comment block inside `_write_od_matrix` shows a sample dataframe — useful once, but the surrounding code is self-explanatory. Low value. |
-| 4 | `config/config.py` | 71–78 | Multi-line string used as a comment (`"""Scenario: Vehicles / km…"""`) inside the class body. This becomes an anonymous string literal at runtime (a no-op docstring). Use `#` comments or move to a real docstring. |
-| 3 | `r/shared/plots.R` | 1–30 | `plots.R` has `quit()` on line 76 causing the rest of the file to be silently skipped. There is no comment explaining this is intentional. | (moved and change filename to signal its old code)
-| 2 | `utils/get_free_flow_speed.py` | 10 | Hardcoded `NETWORK_PATH` points to a Koh network that is not the current network. The comment says "CONSTANTS" but the path is stale. |
-| 2 | `utils/get_avg_speed.py` | 17–18 | Same issue — `SUMMARY_FILE_PATH` is a dated file path from 2026-03-26 with a timestamp in the name. |
-
-## Rejected changes

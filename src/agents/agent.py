@@ -142,6 +142,16 @@ class BMAgent:
         self.perceived_travel_times = numerator / denominator
 
     def _compute_stimulus(self, chosen):
+        """
+        stimulus = (ET 3- PT_chosen) / normalisation, where normalisation is:
+        diff >= 0:  max(ET - PT_r) over all routes  (biggest possible benefit)
+        diff <  0:  |min(ET - PT_r)| over all routes (biggest possible loss)
+
+        Normalising by the best/worst achievable deviation — not by ET itself —
+        keeps stimulus in [-1, 1] and scales the signal relative to the full
+        spread of route qualities on that episode.
+        """
+
         expected_tt = self.expected_travel_time
         perceived_tt = self.perceived_travel_times
 
@@ -172,6 +182,13 @@ class BMAgent:
         self.p = p / np.sum(p)
 
     def _reinforce_chosen(self, p, chosen, stimulus):
+        """
+        p_chosen ← p_chosen + (1 - p_chosen) · β · stimulus
+        p_k      ← p_k     - p_k             · β · stimulus   for k ≠ chosen
+
+        (1 - p_chosen) keeps p_chosen bounded below 1; the p_k factor keeps
+        unchosen routes bounded above 0. Called only when stimulus >= 0.
+        """
         # Update chosen route
         p[chosen] += (1 - p[chosen]) * self.beta * stimulus
         # Adjust other routes
@@ -181,6 +198,13 @@ class BMAgent:
         return p
 
     def _penalise_chosen(self, p, chosen, stimulus):
+        """
+        p_chosen ← p_chosen + p_chosen · β · stimulus                         (stimulus < 0)
+        p_k      ← (p_k - p_k · p_chosen · β · stimulus) / (1 - p_chosen)    for k ≠ chosen
+
+        p_chosen factor keeps p_chosen bounded above 0. Division by (1 - p_chosen)
+        renormalises the remaining mass to preserve sum(p) = 1. Called only when stimulus < 0.
+        """
         # Update chosen route
         p[chosen] += p[chosen] * self.beta * stimulus
         # Adjust other routes

@@ -38,7 +38,7 @@ def log_analysis_run_MLflow(research_question, artifact_path):
         _set_analysis_tags(source_run_id, research_question)
 
         # 5. Log parameters
-        _log_params
+        _log_params()
 
         # 6. Log artifacts
         _log_artifacts(artifact_path)
