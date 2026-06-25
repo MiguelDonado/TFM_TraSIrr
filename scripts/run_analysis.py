@@ -1,5 +1,11 @@
 """
-Execution of this script "python run_analysis.py RQ1"
+Renders the Quarto report for a research question and logs results to MLflow.
+
+Usage: python run_analysis.py <research_question>   (e.g. RQ1)
+
+Runs quarto render on r/<RQ>/<RQ>.qmd, then logs the rendered report and
+figures as an MLflow analysis run linked to the originating simulation run
+via source_run_id.
 """
 
 import os

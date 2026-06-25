@@ -1,5 +1,5 @@
-# This script was used to generate auxiliary plots for the thesis, 
-# regarding the main network characteristics 
+# One-off script. Histogram of Sumo network edge lengths, saved to the thesis document.
+# Input: CSV output of src/tools/network_stats_edges_len.py
 
 library(tidyverse)
 

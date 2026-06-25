@@ -1,5 +1,16 @@
 """
-This file executes simulation code + (optionally) analysis code
+Grid-search launcher. Runs src/main.py for every parameter combination defined
+in a design YAML, then optionally renders the Quarto analysis for a given RQ.
+
+Usage: python launcher.py <design.yaml> [<research_question>]
+
+The design YAML must have two keys:
+  base_config: path to the base config.yaml
+  grid:        {section: {param: [values]}}
+
+Each combination is written to a temp file in EXPERIMENTS_TMP, passed to
+main.py, then deleted. Pass a research question (e.g. RQ1) to also invoke
+run_analysis.py after each simulation run.
 """
 
 import os

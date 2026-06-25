@@ -12,11 +12,14 @@ editor_options:
   chunk_output_type: console
 ---
 
-This R script answers the next research question:
-"Question (RQ1): Analyze whether a Multi-Agent reinforcement
-learning approach, like Bush-Mosteller, is capable of converging
-towards a Dynamic User Equilibrium (DUE) state within a
-microscopic traffic simulation environmnet"
+**RQ1:** Does Bush-Mosteller multi-agent RL converge to a Dynamic User Equilibrium
+(DUE) in a microscopic SUMO traffic simulation?
+
+Convergence is measured via three R-gap variants computed by the `DUE_convergence`
+package: aggregated R-gap (overall convergence level), refined R-gap by departure
+interval (temporal heterogeneity), and OD-specific R-gap (spatial heterogeneity).
+BM is compared against `duaIterate` — SUMO's built-in DUE solver — as a sanity-check
+baseline.
 
 **The plots to answer this question will be:**
 

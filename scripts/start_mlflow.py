@@ -1,6 +1,8 @@
 """
-This script ensures MLflow starts properly.
-That is that the MLflow UI reads the correct Backend DB path
+Launches the MLflow UI pointed at the project's SQLite backend store.
+
+Without this, mlflow ui defaults to ./mlruns/ and misses all logged runs.
+BACKEND_DB is defined in src/config/paths.py.
 """
 
 import subprocess

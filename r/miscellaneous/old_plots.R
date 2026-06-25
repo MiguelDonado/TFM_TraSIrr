@@ -1,3 +1,7 @@
+# Archive of exploratory plots from early development — not used in the thesis.
+# Kept for reference. Covers: aggregated statistics, trips_info, vehroute,
+# FCD vehicle trajectories, and internal agent parquet files.
+
 print("######################")
 print("Start of R script")
 print("######################")

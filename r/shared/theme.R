@@ -1,5 +1,5 @@
-# Set custom theme to use in all my plots (to make sure things are big enough,
-# so in latex document they are properly visualized)
+# ggplot2 theme shared across all thesis plots.
+# Scales font sizes so figures remain legible when embedded in a LaTeX document
 
 theme_thesis <- function() {
   theme_bw(base_size = 16) +
