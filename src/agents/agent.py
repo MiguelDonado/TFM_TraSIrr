@@ -129,7 +129,6 @@ class BMAgent:
         # Arrays
         numerator = np.zeros(self.n_routes)
         denominator = np.zeros(self.n_routes)
-        perceived_travel_times = np.zeros(self.n_routes, dtype=float)
 
         # Compute numerator and denominators formula PT
         for j, (r, tt) in enumerate(self.history, 1):

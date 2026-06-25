@@ -91,49 +91,17 @@ def build_simulation_run_name():
 # HELPERS
 ##########
 def _log_mlflow_params():
-    # 1. Log RELEVANT hyperparameters
-    mlflow.log_params(_extract_mlflow_hyperparams(config))
+    config_dict = asdict(config)
+    config_dict["mode"] = config.mode.value
+    config_dict["network"] = Path(config.network).stem
+    config_dict["episodes_gui"] = list(config.episodes_gui)
 
     # 2. Log hyperparameter related to git commit
     # Useful, because maybe in six months from now I wanna look which code produced a surprising good result
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
-    mlflow.log_param("git_commit", commit_hash)
+    config_dict["git_commit"] = commit_hash
 
-    # 3. Log YAML config file used
-    # mlflow.log_param("config_YAML", path)
-
-    # 4. Log seed
-    mlflow.log_param("seed", config.seed)
-
-
-def _extract_mlflow_hyperparams(config):
-    """
-    Log only hyperparameters that may vary across runs
-    """
-
-    return {
-        # BM
-        "learning_rate": config.learning_rate,
-        "memory_level": config.memory_level,
-        # "warm_up": config.warm_up,
-        # Demand calibration
-        "target_congestion_ratio": (config.target_congestion_ratio),
-        # # Simulation
-        # "warm_up_time": config.warm_up_time,
-        # # OD space
-        # "max_size_od_space": config.max_size_od_space,
-        # # Routing
-        # "n_routes_per_OD": config.n_routes_per_OD,
-        # # Stopping rule
-        # "max_episodes": config.max_episodes,
-        # "tolerance_stopping_rule": (config.tolerance_stopping_rule),
-        # # duaIterate
-        # "duaIterate_max_iterations": (config.duaIterate_max_iterations),
-        # Network
-        "network": Path(config.network).stem,
-        # # Configuration YAML used
-        # "config_name": config.config_name,
-    }
+    mlflow.log_params(config_dict)
 
 
 def _log_config_artifact():

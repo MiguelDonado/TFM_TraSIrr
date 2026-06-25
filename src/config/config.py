@@ -4,7 +4,8 @@ Central configuration for the experiment.
 Defines two objects used throughout the codebase:
 
   config   — singleton Config dataclass instance, populated at import
-             time from a YAML file passed as sys.argv[1]
+             time from a YAML file passed as the first CLI argument,
+             with an optional --mode flag (default: train)
   RunMode  — enum controlling the execution mode (TRAIN, COMPUTE_ROUTES,
              EVAL_GUI)
 
@@ -32,14 +33,24 @@ YAML locations
                  during batch runs)
 """
 
-import sys
+import argparse
 from dataclasses import dataclass, field
 from enum import Enum
 
 import yaml
 
 
-def load_config(path):
+##############################
+# Run modes
+##############################
+# Enum: Clean way to represent a variable that can only take a few predefined values
+class RunMode(Enum):
+    COMPUTE_ROUTES = "compute_routes"
+    TRAIN = "train"
+    EVAL_GUI = "eval_gui"
+
+
+def load_config(path, mode):
     with open(path) as f:
         data = yaml.safe_load(f)
 
@@ -48,19 +59,7 @@ def load_config(path):
     for section in data.values():
         flat.update(section)
 
-    return Config(**flat)
-
-
-# Enum: Clean way to represent a variable that can only take a few predefined values
-
-
-##############################
-# Run modes
-##############################
-class RunMode(Enum):
-    COMPUTE_ROUTES = "compute_routes"
-    TRAIN = "train"
-    EVAL_GUI = "eval_gui"
+    return Config(mode=mode, **flat)
 
 
 ##############################
@@ -197,5 +196,11 @@ class Config:
 
 
 # Initialize config
-path = sys.argv[1]
-config = load_config(path)
+_parser = argparse.ArgumentParser()
+_parser.add_argument("config")
+_parser.add_argument(
+    "--mode", choices=[m.value for m in RunMode], default=RunMode.TRAIN.value
+)
+_args = _parser.parse_args()
+
+config = load_config(_args.config, RunMode(_args.mode))
