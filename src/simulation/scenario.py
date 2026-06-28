@@ -6,17 +6,17 @@ data structures consumed every episode:
   self.agents    — list of dicts {id, origin, destination, departure_time}
   self.od_routes — {(origin, dest): [[edge, …], …]} with k route alternatives
 
-Construction runs four steps automatically in __init__:
-1. Agents       — sample OD pairs from the k most frequent ODs generated
-                  by randomTrips.py; departure times are sampled uniformly
-                  from the time horizon and sorted ascending (SUMO requires
-                  vehicles to be declared in departure order).
-2. Routes       — compute k alternative routes per OD by calling duarouter
+Agents and unique_ods are generated externally by the demand calibration
+loop (via utils.generate_agents) and passed in, so the OD matrix
+used here is identical to the one calibration converged on.
+
+Construction runs three steps automatically in __init__:
+1. Routes       — compute k alternative routes per OD by calling duarouter
                   repeatedly with a random edge-weight perturbation; or load
                   from a precomputed parquet if have_precomputed_routes=True.
-3. Environment  — save agents, OD routes, free-flow link costs, OD matrix,
+2. Environment  — save agents, OD routes, free-flow link costs, OD matrix,
                   and time interval table to parquet files under data/.
-4. Config       — write the SUMO .sumocfg and meandata XML files used by
+3. Config       — write the SUMO .sumocfg and meandata XML files used by
                   Environment.run_episode() every episode.
                   The meandata XML instructs SUMO to collect per-edge
                   density and flow, aggregated over fixed time intervals,

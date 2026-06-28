@@ -1,3 +1,14 @@
+"""
+One-off tool: sweeps a range of demand levels, measures the congestion
+metric for each, and plots the result.
+
+Useful for understanding how the network responds to different demands
+before choosing a calibration target, and to gain insights about adequacy
+of the congestion metric
+
+Run with: python src/tools/plot_congestion_metric.py <config.yaml>
+"""
+
 import sys
 from pathlib import Path
 
@@ -15,7 +26,7 @@ from utils.get_free_flow_speed import get_free_flow_speed
 
 # CONSTANTS
 SEED = 42
-DEMANDS = range(100, 3000, 100)
+DEMANDS = range(100, 2200, 100)
 
 
 def main():

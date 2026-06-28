@@ -1,9 +1,10 @@
 """
 Generates the agent list (OD pairs + departure times) from a network.
 
-Shared by Scenario (called once at startup) and the demand calibration
-loop (called each iteration with a different n_agents), so both use the
-same OD distribution.
+Called by the demand calibration loop on each iteration with the current
+n_agents estimate. The final agents produced at convergence are passed
+directly to Scenario, so both calibration and training use the same OD
+matrix.
 """
 
 import os

@@ -70,5 +70,8 @@ Example with analysis:
 python scripts/launcher.py experiments/rq1/design.yaml RQ1
 ```
 
-
-
+## 4. Congestion metric plot
+```sh
+cd /home/miguel/6.Projects/Thesis
+python src/tools/plot_congestion_metric.py <design.yaml>
+```

@@ -30,6 +30,15 @@ Two-phase procedure
    corrections, helping convergence.
    The clip to [0.6, 1.4] prevents overshooting on the first iterations.
    Stops when |error| < tolerance_demand_calibration.
+
+Returns
+-------
+demand_calibration(rng) → (agents, unique_ods)
+   agents      — final agent list from the converged iteration, passed
+                 directly to Scenario so training uses the same OD matrix
+   unique_ods  — unique (origin, dest) pairs in the OD pool, needed by
+                 Scenario to compute k alternative routes
+   config.n_agents is set as a side effect.
 """
 
 import numpy as np
