@@ -71,7 +71,8 @@ def main():
         # -----------------------------
         # 0. DEMAND CALIBRATION
         # -----------------------------
-        agents, unique_ods = demand_calibration(rng, last_iteration_gui=False)
+        calib_rng = np.random.default_rng(config.seed)
+        agents, unique_ods = demand_calibration(calib_rng, last_iteration_gui=False)
 
         # -----------------------------
         # 1. CREATE SCENARIO (files)

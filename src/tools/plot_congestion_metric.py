@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Workaround paths when import
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -9,11 +10,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config.config import config
 from config.paths import OUTPUT_PLOT_CONGESTION_METRIC
 from demand_calibration.demand_calibration import DemandCalibration
+from utils.generate_agents import generate_agents
 from utils.get_free_flow_speed import get_free_flow_speed
 
 # CONSTANTS
 SEED = 42
-MAX_ATTEMPS = 20
 DEMANDS = range(100, 3000, 100)
 
 
@@ -27,10 +28,14 @@ def main():
     # -----------------------------
     result = []
     for demand in DEMANDS:
-        demand_calibration = DemandCalibration(
-            config.network, demand, free_flow_speed, SEED
-        )
-        speed_ratio = demand_calibration.compute_congestion_ratio()
+        # Every iteration gets a fresh rng starting from the same point
+        rng = np.random.default_rng(SEED)
+        demand_warmup = int(demand * config.warm_up_time / config.end_time)
+        demand_post_warmup = demand - demand_warmup
+        agents, _ = generate_agents(demand_warmup, demand_post_warmup, rng)
+
+        dc = DemandCalibration(config.network, agents, free_flow_speed)
+        speed_ratio = dc.compute_congestion_ratio()
         result.append(
             {"demand": demand, "speed_ratio": speed_ratio},
         )
