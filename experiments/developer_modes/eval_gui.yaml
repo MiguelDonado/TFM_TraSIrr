@@ -1,5 +1,5 @@
 configuration_name:
-  config_name: production
+  config_name: eval_gui
 
 randomness:
   seed: 42
@@ -12,21 +12,21 @@ learning:
   memory_level: 1
 
 simulation:
-  warm_up_time: 600
-  simulation_time: 3600
+  warm_up_time: 6
+  simulation_time: 36
 
 network_path:
-  network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  network: ""
 
 duarouter:
   routing_algorithm: "CH"
   random_factor: 100
-  max_attempts: 25
+  max_attempts: 5
   n_threads: 7
-  n_routes_per_OD: 3
+  n_routes_per_OD: 2
 
 stopping_rule:
-  max_episodes: 100
+  max_episodes: 15
   tolerance_stopping_rule: 0.01
   k_no_change: 3
 
@@ -42,12 +42,12 @@ interval_time:
   fixed_time_min: 15
 
 randomtrips:
-  max_size_od_space: 10
+  max_size_od_space: 2
   fringe_factor: 50
 
 due_convergence: 
   threshold_density: 10
-  duaIterate_max_iterations: 10
+  duaIterate_max_iterations: 2
   duaIterate_step_length: 0.1
 
 mode_and_flags:

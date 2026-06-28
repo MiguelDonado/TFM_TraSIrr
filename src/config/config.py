@@ -115,6 +115,8 @@ class Config:
     tolerance_demand_calibration: float
     # Proportional term that is used on the update rule in demand calibration
     k_demand_calib: float
+    # Result
+    n_agents: int = field(init=False)
 
     #####
     # Interval time
@@ -195,12 +197,33 @@ class Config:
         self.warm_up = self.n_routes_per_OD * 3
 
 
-# Initialize config
-_parser = argparse.ArgumentParser()
-_parser.add_argument("config")
-_parser.add_argument(
+#####
+### INITIALIZE CONFIG
+#####
+# 1. Parse CLI arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("config", nargs="?")  # Optional positional argument
+parser.add_argument(
     "--mode", choices=[m.value for m in RunMode], default=RunMode.TRAIN.value
 )
-_args = _parser.parse_args()
+args = parser.parse_args()
 
-config = load_config(_args.config, RunMode(_args.mode))
+mode = RunMode(args.mode)
+
+# 2. Check validity arguments
+# If not eval_gui mode YAML config file is required
+if mode != RunMode.EVAL_GUI and args.config is None:
+    parser.error("the following argument is required: config")
+
+# If eval_gui, YAML config file cannot be provided
+if mode == RunMode.EVAL_GUI and args.config is not None:
+    parser.error("'config' cannot be provided when using '--mode eval_gui'.")
+
+# 3. Initialize config object
+if mode == RunMode.EVAL_GUI:
+    template_config = (
+        "/home/miguel/6.Projects/Thesis/experiments/developer_modes/eval_gui.yaml"
+    )
+    config = load_config(template_config, mode)
+else:
+    config = load_config(args.config, mode)

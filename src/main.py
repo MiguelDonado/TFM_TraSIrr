@@ -27,19 +27,15 @@ config.mode         controls behaviour:
                         EVAL_GUI    — replay last episode in sumo-gui
 """
 
-import cProfile
 import os
-import pstats
-from pathlib import Path
 
 import mlflow
 import numpy as np
 import pandas as pd
-import tuna
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
-from config.paths import POLICY_CHANGE_BM, PROFILING_DIR
+from config.paths import POLICY_CHANGE_BM
 from demand_calibration.utils import demand_calibration
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import (
@@ -50,10 +46,8 @@ from experiment import (
     save_processed_data,
 )
 from mlflow_tracking.simulation import (
-    build_simulation_run_name,
     log_simulation_mlflow,
     save_simulation_run_id,
-    set_simulation_tags,
 )
 from mlflow_tracking.utils import set_up_mlflow
 from simulation.environment import Environment
@@ -63,12 +57,12 @@ from stopping_rule.stopping_rule import (
     create_policies_dict,
 )
 
-# Reproducibility
-rng = np.random.default_rng(config.seed)
-seeds = rng.integers(0, 100000, size=config.max_attempts)
-
 
 def main():
+    # Reproducibility
+    rng = np.random.default_rng(config.seed)
+    seeds = rng.integers(0, 100000, size=config.max_attempts)
+
     set_up_mlflow()
     with mlflow.start_run() as run:
         # Save simulation run id
@@ -219,8 +213,8 @@ def run():
 
     if config.mode == RunMode.EVAL_GUI:
         run_final_simulation()
-
-    main()
+    else:
+        main()
 
 
 if __name__ == "__main__":

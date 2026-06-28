@@ -9,6 +9,8 @@ Three functions map the per-agent BMAgent methods onto all agents at once:
                        from its observed reward
 """
 
+from config.config import config
+
 from .agent import BMAgent
 
 
@@ -20,7 +22,14 @@ def initialize_agents(scen, seed):
 
         routes = scen.od_routes[od]
 
-        agents[agent_id] = BMAgent(agent_id=agent_id, routes=routes, seed=seed + i)
+        agents[agent_id] = BMAgent(
+            agent_id=agent_id,
+            routes=routes,
+            seed=seed + i,
+            beta=config.learning_rate,
+            gamma=config.memory_level,
+            epsilon=config.epsilon,
+        )
     return agents
 
 

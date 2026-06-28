@@ -10,7 +10,7 @@
       "program": "${workspaceFolder}/src/main.py",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/debug.yaml"]
+      "args": ["--mode", "eval_gui"]
     },
     {
       "name": "Debug network_stats.py",

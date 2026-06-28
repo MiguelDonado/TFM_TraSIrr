@@ -29,7 +29,7 @@ from tempfile import NamedTemporaryFile
 import mlflow
 import pandas as pd
 
-from config.config import config, path
+from config.config import config
 from config.paths import (
     AGENT_STATE_DIR,
     BM_PATHS,
@@ -83,7 +83,6 @@ def set_simulation_tags(run_id):
 
 
 def build_simulation_run_name():
-    config_path = Path(path).stem
     return f"BM_simulation_mem{config.memory_level}_l{config.learning_rate}"
 
 

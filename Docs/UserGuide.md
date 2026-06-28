@@ -7,18 +7,13 @@ and a **batch run** (grid search over parameter combinations).
 
 ---
 
-## 1. Prerequisites
-
-Start the MLflow UI before any run so results are tracked:
-
+## 0. Start MLflow
 ```sh
 cd /home/miguel/6.Projects/Thesis
 python scripts/start_mlflow.py
 ```
 
----
-
-## 2. Single run
+## 1. Single run
 
 ```sh
 cd /home/miguel/6.Projects/Thesis
@@ -39,6 +34,15 @@ python src/main.py <config.yaml>
 python src/main.py <config.yaml> --mode compute_routes   # generate routes then exit
 python src/main.py <config.yaml> --mode eval_gui         # replay last episode in SUMO GUI
 python src/main.py <config.yaml> --mode train            # full training run (default)
+```
+
+---
+
+## 2. Run analysis manually
+
+```sh
+cd /home/miguel/6.Projects/Thesis
+python scripts/run_analysis.py RQ1
 ```
 
 ---
@@ -66,11 +70,5 @@ Example with analysis:
 python scripts/launcher.py experiments/rq1/design.yaml RQ1
 ```
 
----
 
-## 4. Run analysis manually
 
-```sh
-cd /home/miguel/6.Projects/Thesis
-python scripts/run_analysis.py RQ1
-```

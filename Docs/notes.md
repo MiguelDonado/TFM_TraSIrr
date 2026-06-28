@@ -118,12 +118,26 @@ If when using a network that is very big, I have some scalability issue when wri
 
 
 ## Pending
+Use multiple seeds for all research questions.
+En la research question 1, calcularlo para distintas densidades de trafico (congested, partially congested...)
+Para la research question 2, correr los plots de la research question 1 para un par de valores (0.85, 0.9...)
+Parece ser que la demanda era muy poca, porque el rgap de 0.002 es muy pequeño.
+R-gap en porcentaje o en valores numericos
+Check if median travel times being so small could be a problem for the experiment and our conclusions
+
+
+
+
+
+
+
 - **Implementations**:
   1. SUMO docker
   2. Run Claude rest of audits
   3. Repasar lo que dijo molano y mari paz
 
 - **To write**:
+  - Let clear, what it means a simulation, an episode, a time interval, experiment run (some explanatory figure may ease understanding)
   - Explian what I saw in the paper where does this road go, that we trust more the information that we got from experience, than from Google Maps, internal information
   - Briefly acknowledge on the thesis that Im applying TDSP on a non-FIFO table. Example paragraph:
     - The time-dependent shortest-path calculations were performed on discretized average link travel-time tables extracted from SUMO. Due to temporal aggregation, some link travel-time profiles do not strictly satisfy the FIFO property. Consequently, the TDSP computations should be interpreted as approximate shortest paths. However, the resulting Rgap values exhibited the expected convergence behavior, both during Bush-Mosteller learning and during DUA iterations, suggesting that the impact of these violations is limited for the studied scenarios.

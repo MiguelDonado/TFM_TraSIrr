@@ -1,6 +1,13 @@
 """
 R-gap computation and its variants for DUE convergence assessment.
 
+The R-gap requires exactly three tables:
+
+  1. flows_odtp_k          — agents choosing each path (p), per OD (od), interval (t), episode (k)
+  2. costs_paths_odtp_k    — agents' average travel time on each path (p), per OD (od), interval (t), episode (k)
+  3. cost_min_paths_odt_k  — time-dependent shortest path cost per OD (od), interval (t), episode (k) (from TDSP pipeline)
+
+
 R-gap formula
 -------------
           Σ_{o,d,t,p} f_{odtp} · (c_{odtp} − c*_{odt})
@@ -9,8 +16,8 @@ R-gap =  ───────────────────────�
 
 where:
   f_{odtp}  — flow on path p for OD (o,d) departing at interval t
-  c_{odtp}  — average travel time on path p
-  c*_{odt}  — minimum travel time (time-dependent shortest path)
+  c_{odtp}  — average travel time on path p departing at interval t
+  c*_{odt}  — minimum travel time (time-dependent shortest path) for OD (o,d) departing at interval t
   d_{odt}   — demand for OD (o,d) at interval t
 
 R-gap = 0 if and only if the assignment is at Dynamic User Equilibrium.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2026-06-24 00:03:03.685549 by Eclipse SUMO randomTrips.py v1_26_0+0000-fa7df22d7f1
+<!-- generated on 2026-06-28 15:51:08.050599 by Eclipse SUMO randomTrips.py v1_26_0+0000-fa7df22d7f1
 <configuration>
     <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"/>
     <output-trip-file value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/trips.xml"/>

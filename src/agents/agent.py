@@ -55,27 +55,19 @@ Agent lifecycle
 
 import numpy as np
 
-from config.config import config
-
 
 class BMAgent:
     """
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(
-        self,
-        agent_id,
-        routes,
-        seed,
-        beta=config.learning_rate,
-        gamma=config.memory_level,
-    ):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
         self.beta = beta  # Learning rate
         self.gamma = gamma  # Memory decay
+        self.epsilon = epsilon
         self.rng = np.random.default_rng(seed)
 
         # initial probabilities (uniform over routes, no preference in the beginning)
@@ -159,11 +151,11 @@ class BMAgent:
         diff = expected_tt - chosen_perceived_tt
 
         if diff >= 0:
-            biggest_benefit = max(expected_tt - perceived_tt) + config.epsilon
+            biggest_benefit = max(expected_tt - perceived_tt) + self.epsilon
             stimulus = diff / biggest_benefit
             return stimulus
         else:
-            biggest_loss = abs(min(expected_tt - perceived_tt)) + config.epsilon
+            biggest_loss = abs(min(expected_tt - perceived_tt)) + self.epsilon
             stimulus = diff / biggest_loss
             return stimulus
 

@@ -481,7 +481,7 @@ class Scenario:
     def _set_time_interval(self):
         # FIXED
         if config.fixed_time_interval:
-            config.time_interval = config.fixed_time_min * 60
+            config.time_interval = int(config.fixed_time_min * 60)
 
         # SET TIME INTERVAL USED THROUGHOUT THE PROGRAM (AUTOMATICALLY ADAPTED TO EACH NETWORK)
         else:

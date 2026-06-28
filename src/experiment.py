@@ -206,3 +206,4 @@ def run_final_simulation():
         ROUTES,
     ]
     subprocess.run(cmd)
+    sys.exit()

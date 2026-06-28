@@ -48,6 +48,7 @@ def demand_calibration(last_iteration_gui=True):
     ################################################
     initial_demand = _compute_initial_guess()
     demand = _calibration_loop(initial_demand, last_iteration_gui)
+    config.n_agents = demand
     return demand
 
 
