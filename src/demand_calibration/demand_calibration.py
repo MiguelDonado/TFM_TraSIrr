@@ -34,10 +34,11 @@ from utils.sumo_xml import write_sumo_conf
 
 
 class DemandCalibration:
-    def __init__(self, map, n_agents, free_flow_speed):
+    def __init__(self, map, n_agents, free_flow_speed, seed):
         self.network = map
         self.free_flow_speed = free_flow_speed
         self.n_agents = n_agents
+        self.seed = seed
 
     def _generate_trips(self):
         cmd = [
@@ -55,7 +56,7 @@ class DemandCalibration:
             "--min-distance",
             "100",
             "--seed",
-            str(config.seed),
+            str(self.seed),
             "--validate",
             "-o",
             TRIPS_DEMAND_CALIBRATION,

@@ -16,7 +16,8 @@ simulation:
   simulation_time: 3600
 
 network_path:
-  network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  # network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
 duarouter:
   routing_algorithm: "CH"
@@ -32,7 +33,7 @@ stopping_rule:
 
 demand_calibration:
   heuristic_veh_km_hour_initial_guess: 100
-  target_congestion_ratio: 0.6
+  target_congestion_ratio: 0.55
   tolerance_demand_calibration: 0.1
   k_demand_calib: 1
 
