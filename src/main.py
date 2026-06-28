@@ -71,19 +71,16 @@ def main():
         # -----------------------------
         # 0. DEMAND CALIBRATION
         # -----------------------------
-        demand = demand_calibration(last_iteration_gui=False)
-        demand_warmup = int(demand * config.warm_up_time / config.end_time)
-        demand_post_warmup = demand - demand_warmup
+        agents, unique_ods = demand_calibration(rng, last_iteration_gui=False)
 
         # -----------------------------
         # 1. CREATE SCENARIO (files)
         # -----------------------------
         scen = Scenario(
             map=config.network,
-            n_agents_warmup=demand_warmup,
-            n_agents_post_warmup=demand_post_warmup,
+            agents=agents,
+            unique_ods=unique_ods,
             seeds=seeds,
-            rng=rng,
         )
 
         # -----------------------------

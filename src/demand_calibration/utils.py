@@ -36,20 +36,21 @@ import numpy as np
 
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
+from utils.generate_agents import generate_agents
 from utils.get_free_flow_speed import get_free_flow_speed
 from utils.get_total_length_network import get_total_length_network
 
 
-def demand_calibration(last_iteration_gui=True):
+def demand_calibration(rng, last_iteration_gui=True):
     ################################################
     ################################################
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
     initial_demand = _compute_initial_guess()
-    demand = _calibration_loop(initial_demand, last_iteration_gui)
-    config.n_agents = demand
-    return demand
+    agents, unique_ods = _calibration_loop(initial_demand, last_iteration_gui, rng)
+    config.n_agents = len(agents)
+    return agents, unique_ods
 
 
 def _compute_initial_guess():
@@ -69,7 +70,7 @@ def _compute_initial_guess():
     return result
 
 
-def _calibration_loop(initial_demand, last_iteration_gui):
+def _calibration_loop(initial_demand, last_iteration_gui, rng):
     ################################################
     ################################################
     # Calibration loop
@@ -87,20 +88,25 @@ def _calibration_loop(initial_demand, last_iteration_gui):
         print("\n\n###############")
         print(f"Iteration {i}")
         print("###############")
+        print(f"Demand (nº agents): {demand}")
+
+        # Generate agents using the same OD distribution as training
+        demand_warmup = int(demand * config.warm_up_time / config.end_time)
+        demand_post_warmup = demand - demand_warmup
+        agents, unique_ods = generate_agents(demand_warmup, demand_post_warmup, rng)
 
         # Initialize necessary stuff to run the simulation
-        demand_calibration = DemandCalibration(config.network, demand, free_flow_speed)
+        demand_calibration = DemandCalibration(config.network, agents, free_flow_speed)
         speed_ratio = demand_calibration.compute_congestion_ratio()
 
         # Log
         print(f"Avg speed: {demand_calibration.avg_speed}")
-        print(f"Demand (nº agents): {demand}")
 
         error = speed_ratio - config.target_congestion_ratio
 
         # Check convergence
         if abs(error) < config.tolerance_demand_calibration:
-            break
+            return agents, unique_ods
 
         update_factor = 1 + (config.k_demand_calib * error)
         update_factor = round(float(np.clip(update_factor, 0.6, 1.4)), 3)
@@ -109,5 +115,3 @@ def _calibration_loop(initial_demand, last_iteration_gui):
 
         # Increment cunter
         i += 1
-
-    return int(demand)

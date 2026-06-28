@@ -51,55 +51,28 @@ from config.paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
-from utils.network import get_median_edge_lengths
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
 class Scenario:
-    def __init__(self, map, n_agents_warmup, n_agents_post_warmup, seeds, rng):
+    def __init__(self, map, agents, unique_ods, seeds):
         """
         Parameters:
         map: network file or .osm file
-        n_agents: number of agents
+        agents: list of {id, origin, destination, departure_time} from demand calibration
+        unique_ods: list of unique (origin, dest) pairs in the OD pool
         """
-        self.n_agents_warmup = n_agents_warmup
-        self.n_agents_post_warmup = n_agents_post_warmup
-        self.n_agents = n_agents_warmup + n_agents_post_warmup
         self.network = map
+        self.agents = agents
+        self.unique_ods = unique_ods
 
-        # List that store agents (each agent a dictionary with keys id, origin, destination)
-        self.agents = []
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
 
-        """
-        Automatically
-        1. Creates agents  
-        2. Generate routes sets per OD
-        3. Creates a config file
-        """
-        self.network = map
-        self._generate_agents(rng)
         self._load_or_compute_routes(seeds)
         self._save_scenario_data()
         self.conf = self._generate_conf()
-
-    def _generate_agents(self, rng):
-        # Generate the random edge OD-matrix (origin,destination for the agents)
-        self.od_pairs = self._generate_od_for_agents(rng)
-        self.departure_times = self._generate_departure_times(rng)
-        for i in range(self.n_agents):
-            origin, dest = self.od_pairs[i]
-            departure_time = self.departure_times[i]
-            self.agents.append(
-                {
-                    "id": f"agent_{i+1}",
-                    "origin": origin,
-                    "destination": dest,
-                    "departure_time": departure_time,
-                }
-            )
 
     def _load_or_compute_routes(self, seeds):
         if config.have_precomputed_routes:
@@ -240,9 +213,9 @@ class Scenario:
 
         self._save_agents()
 
-        self._write_od_matrix(
-            self.od_pairs, self.departure_times, interval_size=config.time_interval
-        )
+        od_pairs = [(a["origin"], a["destination"]) for a in self.agents]
+        departure_times = [a["departure_time"] for a in self.agents]
+        self._write_od_matrix(od_pairs, departure_times, interval_size=config.time_interval)
 
         self._handle_compute_routes_mode()
 
@@ -258,101 +231,6 @@ class Scenario:
     ########################
     ### HELPER FUNCTIONS ###
     ########################
-
-    def _generate_od_for_agents(self, rng):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            trips_file = os.path.join(tmpdir, "trips.xml")
-            # Generate random ods for agents
-            self._generate_random_trips_agents(trips_file)
-            # OD space
-            od_space = self._parse_od_agents(trips_file)
-            # Restricted/bounded OD space
-            restricted_od_space_counter = self._restrict_od_space(
-                od_space, config.max_size_od_space
-            )
-            # Sample ods for all the agents from the restricted OD space
-            od_pairs = self._sample_od_space(
-                restricted_od_space_counter,
-                self.n_agents,
-                rng,
-            )
-        return od_pairs
-
-    def _generate_random_trips_agents(self, output_file):
-        min_distance = int(2 * get_median_edge_lengths(config.network))
-        config.min_distance = min_distance
-
-        cmd = [
-            "randomTrips.py",
-            "-n",
-            config.network,
-            "-b",
-            str(0),
-            "-e",
-            str(config.end_time),
-            "-p",
-            str(((config.end_time - 0) / (self.n_agents_post_warmup))),
-            "--fringe-factor",
-            str(config.fringe_factor),
-            "--min-distance",
-            str(config.min_distance),
-            "--seed",
-            str(config.seed),
-            "--validate",
-            "-o",
-            output_file,
-        ]
-
-        subprocess.run(cmd, check=True)
-
-    def _parse_od_agents(self, trips_file):
-        tree = etree.parse(trips_file)
-        origins = tree.xpath("//trip/@from")
-        destinations = tree.xpath("//trip/@to")
-        od_pairs = list(zip(origins, destinations))
-        return od_pairs
-
-    def _restrict_od_space(self, od_list, k):
-        """
-        Make sure to restrict/bound the OD pool to <= k unique ODs
-        """
-        counter = Counter(od_list)
-
-        # Limit pool to k ODs (e.g., most frequent)
-        # .most_common() returns [(('A','B'), 3), (('C','D'), 2)]
-        most_common = counter.most_common(k)
-        return most_common
-
-    def _sample_od_space(self, od_space_counter, n_agents, rng):
-        """
-        Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
-        It will receive the reduced OD space counter object
-        """
-
-        unique_ods = [od for od, _ in od_space_counter]
-        self.unique_ods = unique_ods
-        counts = [count for _, count in od_space_counter]
-
-        # Step 2: Probabilities within reduced pool
-        total = sum(counts)
-        probs = [c / total for c in counts]
-
-        # Step 3: sample MANY agents from FEW ODs
-        ods = rng.choice(len(unique_ods), size=n_agents, p=probs)
-        ods = [unique_ods[i] for i in ods]
-        return ods
-
-    def _generate_departure_times(self, rng):
-        departure_times = rng.integers(
-            0,
-            config.end_time,
-            size=self.n_agents,
-        )
-
-        departure_times = [int(departure_time) for departure_time in departure_times]
-        # Sort departure times, to avoid problems in SUMO simulation and for clarity. The agent_1 should be the first to departure, the agent_2 the second...
-        departure_times.sort()
-        return departure_times
 
     def _write_od_matrix(self, od_list, departure_times_list, interval_size):
 

@@ -33,7 +33,7 @@ stopping_rule:
 
 demand_calibration:
   heuristic_veh_km_hour_initial_guess: 100
-  target_congestion_ratio: 0.55
+  target_congestion_ratio: 0.4
   tolerance_demand_calibration: 0.1
   k_demand_calib: 1
 

@@ -16,8 +16,8 @@ This class is instantiated and called repeatedly by the calibration
 loop in src/demand_calibration/utils.py, which adjusts n_agents until
 congestion_ratio reaches the target value.
 
-Random trips are used since the actual agent OD pairs are not yet
-defined at calibration time.
+Agents are generated externally (via utils.generate_agents) and passed
+in, so calibration uses the same OD distribution as training.
 """
 
 import subprocess
@@ -34,36 +34,36 @@ from utils.sumo_xml import write_sumo_conf
 
 
 class DemandCalibration:
-    def __init__(self, map, n_agents, free_flow_speed, seed):
+    def __init__(self, map, agents, free_flow_speed):
         self.network = map
+        self.agents = agents
         self.free_flow_speed = free_flow_speed
-        self.n_agents = n_agents
-        self.seed = seed
 
-    def _generate_trips(self):
+    def _generate_routes(self):
+        with open(TRIPS_DEMAND_CALIBRATION, "w") as f:
+            f.write("<routes>\n")
+            for agent in self.agents:
+                f.write(
+                    f'\t<trip id="{agent["id"]}" from="{agent["origin"]}"'
+                    f' to="{agent["destination"]}" depart="{agent["departure_time"]}"/>\n'
+                )
+            f.write("</routes>\n")
+
         cmd = [
-            "randomTrips.py",
+            "duarouter",
             "-n",
             self.network,
-            "-b",
-            str(0),
-            "-e",
-            str(config.end_time),
-            "-p",
-            str(((config.end_time - 0) / self.n_agents)),
-            "--fringe-factor",
-            str(config.fringe_factor),
-            "--min-distance",
-            "100",
-            "--seed",
-            str(self.seed),
-            "--validate",
+            "--route-files",
+            str(TRIPS_DEMAND_CALIBRATION),
             "-o",
-            TRIPS_DEMAND_CALIBRATION,
-            "--route-file",
-            ROUTES_DEMAND_CALIBRATION,
+            str(ROUTES_DEMAND_CALIBRATION),
+            "--routing-threads",
+            str(config.n_threads),
+            "--routing-algorithm",
+            config.routing_algorithm,
+            "--seed",
+            str(config.seed),
         ]
-
         subprocess.run(cmd, check=True)
 
     def _generate_conf(self):
@@ -90,7 +90,7 @@ class DemandCalibration:
         subprocess.run(cmd)
 
     def compute_congestion_ratio(self):
-        self._generate_trips()
+        self._generate_routes()
         self._generate_conf()
         self.run_episode()
         self.avg_speed = get_avg_speed(
