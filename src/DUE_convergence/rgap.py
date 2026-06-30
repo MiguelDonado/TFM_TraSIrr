@@ -29,6 +29,12 @@ R-gap variants (differ only in the grouping keys)
   rgap_by_od          — per episode × OD pair (spatial heterogeneity)
   refined_rgap_by_od  — per episode × OD pair × time interval
 
+Numerator: total extra cost incurred by not routing all drivers on shortest paths.
+Denominator: total cost if all drivers pick shortest paths — normalises the gap so
+it is dimensionless and comparable across networks and demand levels.
+R-gap = 0.20 means drivers experienced, on average, travel costs 20 % above the
+time-dependent shortest-path cost.
+
 References
 ----------
 Linares Herreros, María Paz, and Jaime Barceló Bugeda.
@@ -121,7 +127,7 @@ def _compute_rgap_generic(df, group_keys, output_col, output_path):
         .sum()
     )
 
-    result = (numerator / denominator).reset_index(name=output_col)
+    result = ((numerator / denominator) * 100).reset_index(name=output_col)
     result.to_parquet(output_path)
 
 

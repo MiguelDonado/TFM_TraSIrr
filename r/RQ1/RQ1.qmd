@@ -114,7 +114,7 @@ ggplot(
   labs(
     title = "R-gap evolution across episodes",
     x = "Episode",
-    y = "R-gap"
+    y = "R-gap (%)"
   )
 
 ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"))
@@ -153,7 +153,7 @@ ggplot(
     title = "Refined R-gap by Departure Interval (smoothed)",
     subtitle = "Comparison between algorithms in the final episode",
     x = "Departure Time Interval",
-    y = "Refined R-gap (smoothed)"
+    y = "Refined R-gap (%) (smoothed)"
   )
 
 ### OPTION B
@@ -170,7 +170,7 @@ ggplot(
     title = "Refined R-gap by Departure Interval",
     subtitle = "Comparison between algorithms in the final episode",
     x = "Departure Time Interval",
-    y = "Refined R-gap"
+    y = "Refined R-gap (%)"
   )
 ggsave(here("r","RQ1","figures","plot2a_refined_rgap.png"))
 ```
@@ -207,7 +207,7 @@ ggplot(
   title = "Distribution of OD-Specific R-gaps",
   subtitle = "Comparison between algorithms in the final episode",
   x = NULL,
-  y = "OD-Specific R-gap"
+  y = "OD-Specific R-gap (%)"
 )
 ggsave(here("r","RQ1","figures","plot3c_rgap_od.png"))
 ```
@@ -235,7 +235,7 @@ ggplot(
     title = "Evolution of maximum OD-Specific R-gap",
     subtitle = "Comparison between algorithms in the final episode",
     x = "Episode",
-    y = "Max. od-specific rgap" 
+    y = "Max. od-specific rgap (%)" 
   )
 ggsave(here("r","RQ1","figures","plot4_rgap_od_max.png"))
 ```

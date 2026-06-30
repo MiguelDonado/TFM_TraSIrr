@@ -142,7 +142,7 @@ def _log_bm_rgap_metric():
     # 1. Read parquet file that contains "episode | rgap" for BM algorithm
     df_rgap_bm = pd.read_parquet(BM_PATHS.rgap)
     # 2. Log time series of the Rgap metric
-    metric_name = "bm_rgap"
+    metric_name = "bm_rgap_pct"
     col_metric = "rgap"
     col_step = "episode"
 
@@ -227,7 +227,7 @@ def _log_duaIterate_rgap_metric():
     # 2. Log time series of the Rgap metric
     # (it only contains one value correspondent to the last episode) so its a scalar
     duaIterate_final_rgap = float(df_rgap_duaIterate["rgap"].iloc[-1])
-    rgap_metric = {"duaIterate_final_rgap": round(duaIterate_final_rgap, 5)}
+    rgap_metric = {"duaIterate_final_rgap_pct": round(duaIterate_final_rgap, 5)}
     mlflow.log_metrics(rgap_metric)
 
 

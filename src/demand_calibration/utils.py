@@ -33,7 +33,7 @@ Two-phase procedure
 
 Returns
 -------
-demand_calibration(rng) → (agents, unique_ods)
+demand_calibration() → (agents, unique_ods)
    agents      — final agent list from the converged iteration, passed
                  directly to Scenario so training uses the same OD matrix
    unique_ods  — unique (origin, dest) pairs in the OD pool, needed by
@@ -50,12 +50,13 @@ from utils.get_free_flow_speed import get_free_flow_speed
 from utils.get_total_length_network import get_total_length_network
 
 
-def demand_calibration(rng, last_iteration_gui=True):
+def demand_calibration(last_iteration_gui=True):
     ################################################
     ################################################
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
+    rng = np.random.default_rng(config.seed)
     initial_demand = _compute_initial_guess()
     agents, unique_ods = _calibration_loop(initial_demand, last_iteration_gui, rng)
     config.n_agents = len(agents)
