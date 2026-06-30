@@ -11,7 +11,7 @@ run names or timestamps.
 
 Logs
 ----
-Parameters  — learning_rate, memory_level, target_congestion_ratio,
+Parameters  — learning_rate, memory_level, target_congestion_metric,
               network name, git commit hash
 Metrics     — bm_rgap (time series), BM mean_tt (time series),
               BM mean_pol_change (time series), BM ep_to_conv (scalar),

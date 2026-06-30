@@ -51,7 +51,11 @@ from config.paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
-from utils.od_routes import od_routes_to_rows
+from utils.generate_free_flow_tt import (
+    generate_free_flow_tt_links,
+    generate_free_flow_tt_paths,
+)
+from utils.od_routes import od_routes_to_rows, parse_route
 from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
@@ -205,8 +209,6 @@ class Scenario:
     def _save_scenario_data(self):
         self._save_od_routes()
 
-        self._generate_free_flow_tt_links()
-
         self._set_time_interval()
 
         self._add_time_intervals_to_agents()
@@ -215,7 +217,9 @@ class Scenario:
 
         od_pairs = [(a["origin"], a["destination"]) for a in self.agents]
         departure_times = [a["departure_time"] for a in self.agents]
-        self._write_od_matrix(od_pairs, departure_times, interval_size=config.time_interval)
+        self._write_od_matrix(
+            od_pairs, departure_times, interval_size=config.time_interval
+        )
 
         self._handle_compute_routes_mode()
 
@@ -288,7 +292,7 @@ class Scenario:
 
         subprocess.run(cmd, check=True)
 
-        return self._parse_route(routes_file)
+        return parse_route(routes_file)
 
     def _write_trip(self, file_path):
         with open(file_path, "w") as f:
@@ -299,57 +303,11 @@ class Scenario:
                 )
             f.write("</routes>\n")
 
-    def _parse_route(self, routes_file):
-        try:
-            document = routes_file
-            tree = etree.parse(document)
-
-            # Routes
-            routes = tree.xpath("//route/@edges")
-            edges = [route.split(" ") for route in routes]
-            return edges
-
-        except Exception:
-            return None
-
     def _compute_median_free_flow_travel_time(self):
-        edge_costs = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
-        edge_costs = edge_costs.set_index("edge")["free_flow_travel_time"].to_dict()
-
-        path_costs = []
-        for od, od_paths in self.od_routes.items():
-
-            for path in od_paths:
-                total_cost = sum(edge_costs[e] for e in path)
-                path_costs.append(total_cost)
+        path_costs = generate_free_flow_tt_paths(self.od_routes)
 
         median_free_flow_tt = float(np.median(path_costs))
         return median_free_flow_tt
-
-    def _generate_free_flow_tt_links(self):
-        """
-        Called once per program execution
-        Used for imputing missing values link costs table
-        """
-        data = []
-
-        tree = etree.parse(config.network)
-        edges = tree.xpath("//edge[not(@function='internal')]")
-        for edge in edges:
-            edge_id = edge.get("id")
-
-            lane = edge.find("lane")
-
-            free_flow_speed = float(lane.get("speed"))
-            length = float(lane.get("length"))
-
-            free_flow_travel_time = length / free_flow_speed
-            data.append(
-                {"edge": edge_id, "free_flow_travel_time": free_flow_travel_time}
-            )
-
-        df = pd.DataFrame(data)
-        df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
 
     def _save_od_routes(self):
         processed_od_routes = self._process_od_routes()

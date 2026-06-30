@@ -20,6 +20,22 @@ A      | B    | 1        | 0    | e1
 ...
 """
 
+from lxml import etree
+
+
+def parse_route(routes_file):
+    try:
+        document = routes_file
+        tree = etree.parse(document)
+
+        # Routes
+        routes = tree.xpath("//route/@edges")
+        edges = [route.split(" ") for route in routes]
+        return edges
+
+    except Exception:
+        return None
+
 
 def od_routes_to_rows(od_routes: dict) -> list[dict]:
     rows = []

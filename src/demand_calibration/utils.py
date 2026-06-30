@@ -5,24 +5,19 @@ the Multi Agent Reinforcement Learning setting.
 
 Congestion metric
 -----------------
-    congestion_ratio = avg_speed_post_warmup / free_flow_speed
 
-    ~ 1.0        — free flow
-    ~ 0.7–0.9   — light
-    ~ 0.4–0.7   — moderate
-    < 0.4        — heavy
 
 Two-phase procedure
 -------------------
 1. Initial guess
-       n_agents = heuristic_veh_km_hour × total_length_km × hours
+       n_agents = heuristic_veh_km_hour × total_lengthtarget_congestion_metric_km × hours
    Provides a starting point without running any simulation.
 
 2. Calibration loop
    Runs SUMO iteratively, using as demand the current number of agents
    and adjusting n_agents after each simulation:
 
-       error         = observed_congestion_ratio - target_congestion_ratio
+       error         = target_congestion_metric - observed_congestion_ratio
        update_factor = clip(1 + k_demand_calib × error, 0.6, 1.4)
        n_agents      = int(n_agents × update_factor)
 
@@ -46,7 +41,7 @@ import numpy as np
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
 from utils.generate_agents import generate_agents
-from utils.get_free_flow_speed import get_free_flow_speed
+from utils.generate_free_flow_tt import generate_free_flow_tt_links
 from utils.get_total_length_network import get_total_length_network
 
 
@@ -56,6 +51,9 @@ def demand_calibration(last_iteration_gui=True):
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
+    # Create table with free flow tt links (used to compute free flow shortest paths)
+    generate_free_flow_tt_links()
+
     rng = np.random.default_rng(config.seed)
     initial_demand = _compute_initial_guess()
     agents, unique_ods = _calibration_loop(initial_demand, last_iteration_gui, rng)
@@ -86,8 +84,6 @@ def _calibration_loop(initial_demand, last_iteration_gui, rng):
     # Calibration loop
     ################################################
     ################################################
-    # Compute once the free flow speed of the network
-    free_flow_speed = get_free_flow_speed(config.network)
     demand = initial_demand
 
     # Counter number of iterations until convergence
@@ -106,13 +102,10 @@ def _calibration_loop(initial_demand, last_iteration_gui, rng):
         agents, unique_ods = generate_agents(demand_warmup, demand_post_warmup, rng)
 
         # Initialize necessary stuff to run the simulation
-        demand_calibration = DemandCalibration(config.network, agents, free_flow_speed)
-        speed_ratio = demand_calibration.compute_congestion_ratio()
+        demand_calibration = DemandCalibration(config.network, agents)
+        congestion_metric = demand_calibration.compute_congestion_metric()
 
-        # Log
-        print(f"Avg speed: {demand_calibration.avg_speed}")
-
-        error = speed_ratio - config.target_congestion_ratio
+        error = config.target_congestion_metric - congestion_metric
 
         # Check convergence
         if abs(error) < config.tolerance_demand_calibration:

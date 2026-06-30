@@ -28,7 +28,7 @@ metadata:
 - `od_pairs` and `departure_times` were NOT added as extra returns from `generate_agents` — they're reconstructed from `self.agents` in `_save_scenario_data` when needed
 
 ### Observed behavior change (expected, not a bug)
-- Old calibration converged at ~2244 agents for target_congestion_ratio=0.6
+- Old calibration converged at ~2244 agents for target_congestion_metric=0.6
 - New calibration converges at ~1200 agents
 - Two reasons: (1) `min_distance` changed from hardcoded 100m to `2 * median_edge_length`; (2) OD space is now concentrated (max_size_od_space unique ODs sampled many times) vs. fully random unique trips → more congestion per agent
 - Calibration shows SUMO teleports: expected, because all agents on same OD share the single shortest path (no k alternatives during calibration). Not a bug.

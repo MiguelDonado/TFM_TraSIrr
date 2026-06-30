@@ -13,7 +13,7 @@ Config hyperparameter groups
 -----------------------------
   Randomness          — global seed
   BM learning         — learning_rate (β), memory_level (γ), warm_up
-  Demand calibration  — target_congestion_ratio, tolerances, update gain
+  Demand calibration  — target_congestion_metric, tolerances, update gain
   Simulation time     — warm_up_time, simulation_time, end_time (derived)
   Network & scenario  — network path, OD space size, fringe factor
   Duarouter           — routing algorithm, random_factor, n_routes_per_OD
@@ -110,7 +110,7 @@ class Config:
     # Calibration loop
     #####
     # We do calibration loop until the actual congestion ratio reaches the target congestion
-    target_congestion_ratio: float
+    target_congestion_metric: float
     # If the actual congestion ratio is closer than this tolerance to the target congestion we considered the calibration done
     tolerance_demand_calibration: float
     # Proportional term that is used on the update rule in demand calibration
