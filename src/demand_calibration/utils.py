@@ -5,12 +5,16 @@ the Multi Agent Reinforcement Learning setting.
 
 Congestion metric
 -----------------
+    congestion_ratio = (1/N) * Σ( T_i / T_i_free ),  i = 1..N agents
 
+    where T_i is the actual trip duration and T_i_free the free-flow trip
+    duration (shortest path under empty network conditions). Equals 1.0
+    under free flow and increases monotonically with congestion.
 
 Two-phase procedure
 -------------------
 1. Initial guess
-       n_agents = heuristic_veh_km_hour × total_lengthtarget_congestion_metric_km × hours
+       n_agents = heuristic_veh_km_hour × total_length_km × hours
    Provides a starting point without running any simulation.
 
 2. Calibration loop
@@ -41,7 +45,6 @@ import numpy as np
 from config.config import config
 from demand_calibration.demand_calibration import DemandCalibration
 from utils.generate_agents import generate_agents
-from utils.generate_free_flow_tt import generate_free_flow_tt_links
 from utils.get_total_length_network import get_total_length_network
 
 
@@ -51,8 +54,6 @@ def demand_calibration(last_iteration_gui=True):
     # Initial guess (using heuristic length network)
     ################################################
     ################################################
-    # Create table with free flow tt links (used to compute free flow shortest paths)
-    generate_free_flow_tt_links()
 
     rng = np.random.default_rng(config.seed)
     initial_demand = _compute_initial_guess()
@@ -112,7 +113,7 @@ def _calibration_loop(initial_demand, last_iteration_gui, rng):
             return agents, unique_ods
 
         update_factor = 1 + (config.k_demand_calib * error)
-        update_factor = round(float(np.clip(update_factor, 0.6, 1.4)), 3)
+        update_factor = round(float(np.clip(update_factor, 0.7, 1.3)), 3)
 
         demand = int(demand * update_factor)
 

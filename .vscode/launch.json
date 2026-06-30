@@ -12,6 +12,15 @@
       "justMyCode": true,
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
     },
+      {
+      "name": "Debug plot_min_distance.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tools/plot_min_distance.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
+    },
     {
       "name": "Debug network_stats.py",
       "type": "debugpy",

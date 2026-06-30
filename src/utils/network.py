@@ -13,6 +13,7 @@ Internal SUMO junction connector edges are excluded from all calculations.
 """
 
 import numpy as np
+import sumolib
 from lxml import etree
 
 
@@ -24,3 +25,15 @@ def get_edge_lengths(net) -> np.ndarray:
 
 def get_median_edge_lengths(net):
     return round(float(np.median(get_edge_lengths(net))), 2)
+
+
+def compute_diagonal_network(network):
+    net = sumolib.net.readNet(network)
+
+    xmin, ymin, xmax, ymax = net.getBoundary()
+
+    width = xmax - xmin
+    height = ymax - ymin
+    diagonal = (width**2 + height**2) ** 0.5
+    print(f"\nDiagonal of the network: {diagonal:.2f}")
+    return diagonal

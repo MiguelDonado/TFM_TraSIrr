@@ -43,7 +43,10 @@ from config.paths import (
     TRIPS_DEMAND_CALIBRATION,
     TRIPS_INFO_XML,
 )
-from utils.generate_free_flow_tt import generate_free_flow_tt_shortest_paths
+from utils.generate_free_flow_tt import (
+    generate_free_flow_tt_links,
+    generate_free_flow_tt_shortest_paths,
+)
 from utils.od_routes import parse_route
 from utils.sumo_xml import write_sumo_conf
 
@@ -54,6 +57,9 @@ class DemandCalibration:
         self.agents = agents
 
         self.od_routes = {}
+
+        # Create table with free flow tt links (used to compute free flow shortest paths)
+        generate_free_flow_tt_links()
 
         # 1. Compute shortest paths
         self._generate_routes()
@@ -135,7 +141,7 @@ class DemandCalibration:
             for agent, duration in zip(self.agents, durations)
         ]
 
-        congestion_metric_value = np.mean(per_agent_metric)
+        congestion_metric_value = round(np.mean(per_agent_metric), 5)
 
         # Log
         print(f"Congestion metric: {congestion_metric_value}")

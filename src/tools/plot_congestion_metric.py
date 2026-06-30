@@ -22,18 +22,14 @@ from config.config import config
 from config.paths import OUTPUT_PLOT_CONGESTION_METRIC
 from demand_calibration.demand_calibration import DemandCalibration
 from utils.generate_agents import generate_agents
-from utils.get_free_flow_speed import get_free_flow_speed
+from utils.generate_free_flow_tt import generate_free_flow_tt_links
 
 # CONSTANTS
 SEED = 42
-DEMANDS = range(100, 2200, 100)
+DEMANDS = range(100, 2500, 100)
 
 
 def main():
-
-    # Compute once the free flow speed of the network
-    free_flow_speed = get_free_flow_speed(config.network)
-
     # -----------------------------
     # 0. DEMAND CALIBRATION
     # -----------------------------
@@ -45,29 +41,32 @@ def main():
         demand_post_warmup = demand - demand_warmup
         agents, _ = generate_agents(demand_warmup, demand_post_warmup, rng)
 
-        dc = DemandCalibration(config.network, agents, free_flow_speed)
-        speed_ratio = dc.compute_congestion_ratio()
+        demand_calibration = DemandCalibration(config.network, agents)
+        congestion_metric_value = demand_calibration.compute_congestion_metric()
         result.append(
-            {"demand": demand, "speed_ratio": speed_ratio},
+            {"demand": demand, "congestion_metric": congestion_metric_value},
         )
 
     # -----------------------------
     # 1. PLOT
     # -----------------------------
+    network_name = Path(config.network).stem
+    path = OUTPUT_PLOT_CONGESTION_METRIC / f"congestion_metric_{network_name}.png"
+
     demands = [r["demand"] for r in result]
-    speed_ratios = [r["speed_ratio"] for r in result]
+    congestion_metric_values = [r["congestion_metric"] for r in result]
 
     fig, ax = plt.subplots(figsize=(8, 5))
 
-    ax.plot(demands, speed_ratios, marker="o", linewidth=2, markersize=4)
+    ax.plot(demands, congestion_metric_values, marker="o", linewidth=2, markersize=4)
 
     ax.set_xlabel("Demand (vehicles)")
-    ax.set_ylabel("Speed ratio (avg speed / free flow speed)")
-    ax.set_title("Congestion metric vs demand")
+    ax.set_ylabel("Congestion metric")
+    ax.set_title(f"Congestion metric vs demand  -  ({network_name})")
     ax.legend()
 
     fig.tight_layout()
-    fig.savefig(OUTPUT_PLOT_CONGESTION_METRIC, dpi=150, bbox_inches="tight")
+    fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.show()
 
 

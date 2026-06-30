@@ -89,10 +89,6 @@ class Config:
     #####################
     # 3. Demand & Calibration
     #####################
-    # ~ 1          -> No congestion
-    # ~ 0.7 - 0.9  -> Light
-    # ~ 0.4 - 0.7  -> Medium
-    # < 0.4        -> Heavy
 
     #####
     # Initial guess
@@ -117,6 +113,11 @@ class Config:
     k_demand_calib: float
     # Result
     n_agents: int = field(init=False)
+    # min-distance = min-distance-factor x network diagonal
+    # 0.10 → many short trips.
+    # 0.20 → balanced.
+    # 0.30 → mostly long trips.
+    min_distance_factor: float
 
     #####
     # Interval time

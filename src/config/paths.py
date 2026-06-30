@@ -279,7 +279,8 @@ ROUTES_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "routes.xml"
 # SUMO Config file needed for simulation (demand calibration)
 SUMO_CONF_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "basic.cfg"
 
-OUTPUT_PLOT_CONGESTION_METRIC = BASE_DIR / "src/tools/output" / "congestion_metric.png"
+OUTPUT_PLOT_CONGESTION_METRIC = BASE_DIR / "src/tools/output"
+OUTPUT_PLOT_MIN_DISTANCE = BASE_DIR / "src/tools/output"
 
 # ============================================================
 # SUMO raw outputs

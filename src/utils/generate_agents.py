@@ -15,14 +15,21 @@ from collections import Counter
 from lxml import etree
 
 from config.config import config
-from utils.network import get_median_edge_lengths
+from utils.network import compute_diagonal_network
 
 
-def generate_agents(n_agents_warmup, n_agents_post_warmup, rng):
+def generate_agents(
+    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None
+):
+    if min_distance_factor is None:
+        min_distance_factor = config.min_distance_factor
+
     n_agents = n_agents_warmup + n_agents_post_warmup
 
     agents = []
-    od_pairs, unique_ods = generate_od_for_agents(n_agents, n_agents_post_warmup, rng)
+    od_pairs, unique_ods = generate_od_for_agents(
+        n_agents, n_agents_post_warmup, rng, min_distance_factor
+    )
     departure_times = generate_departure_times(n_agents, rng)
     for i in range(n_agents):
         origin, dest = od_pairs[i]
@@ -38,11 +45,14 @@ def generate_agents(n_agents_warmup, n_agents_post_warmup, rng):
     return agents, unique_ods
 
 
-def generate_od_for_agents(n_agents, n_agents_post_warmup, rng):
+def generate_od_for_agents(n_agents, n_agents_post_warmup, rng, min_distance_factor):
+
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
         # Generate random ods for agents
-        generate_random_trips_agents(n_agents_post_warmup, trips_file)
+        generate_random_trips_agents(
+            n_agents_post_warmup, trips_file, min_distance_factor
+        )
         # OD space
         od_space = parse_od_agents(trips_file)
         # Restricted/bounded OD space
@@ -58,9 +68,17 @@ def generate_od_for_agents(n_agents, n_agents_post_warmup, rng):
     return (od_pairs, unique_ods)
 
 
-def generate_random_trips_agents(n_agents_post_warmup, output_file):
-    min_distance = int(2 * get_median_edge_lengths(config.network))
+def generate_random_trips_agents(
+    n_agents_post_warmup, output_file, min_distance_factor
+):
+    assert (
+        min_distance_factor <= 0.9
+    ), f"lower min_distance_factor, otherwise no valid OD pairs will be found"
+
+    min_distance = int(min_distance_factor * compute_diagonal_network(config.network))
+
     config.min_distance = min_distance
+    print(f"min_distance: {min_distance}\n")
 
     cmd = [
         "randomTrips.py",
@@ -75,7 +93,7 @@ def generate_random_trips_agents(n_agents_post_warmup, output_file):
         "--fringe-factor",
         str(config.fringe_factor),
         "--min-distance",
-        str(config.min_distance),
+        str(min_distance),
         "--seed",
         str(config.seed),
         "--validate",
