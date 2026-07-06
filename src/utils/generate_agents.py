@@ -57,7 +57,7 @@ def generate_od_for_agents(n_agents, n_agents_post_warmup, rng, min_distance_fac
         od_space = parse_od_agents(trips_file)
         # Restricted/bounded OD space
         restricted_od_space_counter = restrict_od_space(
-            od_space, config.max_size_od_space
+            od_space, config.max_size_od_space, n_agents_post_warmup
         )
         # Sample ods for all the agents from the restricted OD space
         od_pairs, unique_ods = sample_od_space(
@@ -71,6 +71,31 @@ def generate_od_for_agents(n_agents, n_agents_post_warmup, rng, min_distance_fac
 def generate_random_trips_agents(
     n_agents_post_warmup, output_file, min_distance_factor
 ):
+    """
+    Generate random trips for the requested number of agents.
+
+    Notes
+    -----
+    randomTrips.py attempts to find a valid origin–destination pair that
+    satisfies the specified constraints (e.g., minimum distance). For each
+    requested trip, it performs at most `--maxtries` random attempts.
+
+    If no valid trip is found within `--maxtries` attempts, that trip is
+    discarded. Consequently, the total number of generated trips may be
+    smaller than the requested number of agents.
+
+    During testing, the limiting factor was not the availability of distinct
+    origin–destination pairs, but rather that some valid trips were not found
+    within the default limit of 100 random attempts due to the rejection
+    sampling process (especially when using a fringe factor). Therefore,
+    `--maxtries` was increased to 1000 to reduce the number of discarded trips.
+
+    Rejection sampling process:
+    1. Randomly propose a candidate
+    2. Check whether it satisfies the required constraints
+    3. Accepting it if it does: otherwise rejecting it and trying again
+    """
+
     assert (
         min_distance_factor <= 0.9
     ), f"lower min_distance_factor, otherwise no valid OD pairs will be found"
@@ -96,9 +121,10 @@ def generate_random_trips_agents(
         str(min_distance),
         "--seed",
         str(config.seed),
-        "--validate",
         "-o",
         output_file,
+        "--maxtries",
+        "1000",
     ]
 
     subprocess.run(cmd, check=True)
@@ -112,11 +138,25 @@ def parse_od_agents(trips_file):
     return od_pairs
 
 
-def restrict_od_space(od_list, k):
+def restrict_od_space(od_list, k, n_agents_post_warmup):
     """
     Make sure to restrict/bound the OD pool to <= k unique ODs
     """
     counter = Counter(od_list)
+
+    generated_trips = sum(counter.values())
+    distinct_ods = len(counter)
+
+    print(f"{generated_trips} trips have been generated")
+    print(f"{distinct_ods} different ods have been found")
+
+    assert (
+        generated_trips == n_agents_post_warmup
+    ), f"Expected {n_agents_post_warmup} generated trips, but only {distinct_ods} "
+    "were created. Some trips were discarded because randomTrips.py failed to "
+    "find a valid origin–destination pair within --maxtries attempts, not "
+    "necessarily because no feasible OD pair exists. Consider increasing "
+    "--maxtries or relaxing the trip generation constraints."
 
     # Limit pool to k ODs (e.g., most frequent)
     # .most_common() returns [(('A','B'), 3), (('C','D'), 2)]

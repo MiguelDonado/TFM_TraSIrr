@@ -31,6 +31,15 @@
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
     },
     {
+      "name": "Debug plot_n_routes_per_od.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tools/plot_n_routes_per_OD.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
+    },
+    {
       "name": "Debug network_stats.py",
       "type": "debugpy",
       "request": "launch",

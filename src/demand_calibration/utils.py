@@ -79,7 +79,11 @@ def _compute_initial_guess():
     return result
 
 
-def _calibration_loop(initial_demand, last_iteration_gui, rng):
+def _calibration_loop(
+    initial_demand,
+    last_iteration_gui,
+    rng,
+):
     ################################################
     ################################################
     # Calibration loop
@@ -100,6 +104,7 @@ def _calibration_loop(initial_demand, last_iteration_gui, rng):
         # Generate agents using the same OD distribution as training
         demand_warmup = int(demand * config.warm_up_time / config.end_time)
         demand_post_warmup = demand - demand_warmup
+        print(f"Demand (nº post-warm up agents): {demand_post_warmup}")
         agents, unique_ods = generate_agents(demand_warmup, demand_post_warmup, rng)
 
         # Initialize necessary stuff to run the simulation

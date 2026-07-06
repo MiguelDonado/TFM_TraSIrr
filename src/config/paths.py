@@ -282,6 +282,7 @@ SUMO_CONF_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "basic.cfg"
 OUTPUT_PLOT_CONGESTION_METRIC = BASE_DIR / "src/tools/output"
 OUTPUT_PLOT_MIN_DISTANCE = BASE_DIR / "src/tools/output"
 OUTPUT_PLOT_WARM_UP = BASE_DIR / "src/tools/output"
+OUTPUT_PLOT_N_ROUTES_PER_OD = BASE_DIR / "src/tools/output"
 
 # ============================================================
 # SUMO raw outputs

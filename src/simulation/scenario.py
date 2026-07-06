@@ -59,7 +59,7 @@ from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
 class Scenario:
-    def __init__(self, map, agents, unique_ods, seeds):
+    def __init__(self, map, agents, unique_ods, seeds, k=None):
         """
         Parameters:
         map: network file or .osm file
@@ -73,15 +73,15 @@ class Scenario:
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
 
-        self._load_or_compute_routes(seeds)
+        self._load_or_compute_routes(seeds, k)
         self._save_scenario_data()
         self.conf = self._generate_conf()
 
-    def _load_or_compute_routes(self, seeds):
+    def _load_or_compute_routes(self, seeds, k):
         if config.have_precomputed_routes:
             self.reconstruct_od_routes()
         else:
-            self.od_routes = self.compute_k_routes(seeds)
+            self.od_routes = self.compute_k_routes(seeds, k=k)
 
     def reconstruct_od_routes(self):
         df = pd.read_parquet(OD_ROUTES)

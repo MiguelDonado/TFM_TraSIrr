@@ -69,12 +69,13 @@ from .rgap import (
 from .tdsp import run_tdsp_pipeline
 
 
-def run_due_convergence_checks(scen, end_time, time_interval):
+def run_due_convergence_checks(scen, end_time, time_interval, duaIterate=True):
     _generate_generic_files_due_convergence()
 
-    _check_due_convergence_duaIterate(
-        scen, end_time=end_time, time_interval=time_interval
-    )
+    if duaIterate:
+        _check_due_convergence_duaIterate(
+            scen, end_time=end_time, time_interval=time_interval
+        )
 
     _check_due_convergence_BM(end_time=end_time, time_interval=time_interval)
 
