@@ -39,7 +39,6 @@ from config.paths import (
     AGENTS_OD,
     EDGEDATA_XML,
     FCD_XML,
-    FREE_FLOW_TRAVEL_TIMES,
     MEANDATA,
     OD_MATRIX_INTERVALS,
     OD_MATRIX_TOTAL,

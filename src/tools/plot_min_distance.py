@@ -34,6 +34,7 @@ def main():
 
     all_fftts = []
     labels = []
+    counts = []
 
     for min_distance_factor in MIN_DISTANCE_FACTORS:
 
@@ -51,6 +52,10 @@ def main():
         )
 
         all_fftts.append(free_flow_travel_times_short_paths)
+
+        n = len(free_flow_travel_times_short_paths)
+        counts.append(n)
+
         labels.append(f"{min_distance_factor:.1f}")
 
     # 4. Boxplot
@@ -58,20 +63,24 @@ def main():
 
     plt.figure(figsize=(10, 6))
     plt.boxplot(all_fftts, tick_labels=labels)
+
+    y = max(max(x) for x in all_fftts)
+
+    for i, n in enumerate(counts, start=1):
+        plt.text(i, y, f"n={n}", ha="center", fontsize=9)
+
     plt.xlabel("α (minimum distance = α × network diagonal)")
     plt.ylabel("Free-flow shortest-path travel time (s)")
-    plt.title(
-        f"Distribution of free-flow shortest-path travel times  -  ({network_name})"
-    )
+    plt.title(f"Distribution of free-flow shortest-path travel times ({network_name})")
     plt.grid(axis="y", alpha=0.3)
     plt.tight_layout()
 
     # Save
     path = OUTPUT_PLOT_MIN_DISTANCE / f"min_distance_{network_name}.png"
     plt.savefig(path, dpi=300, bbox_inches="tight")
-
-    plt.show()  # Optional
-    plt.close()  # Good practice if generating many figures
+    plt.show()
+    # Optional
+    plt.close()
 
 
 if __name__ == "__main__":

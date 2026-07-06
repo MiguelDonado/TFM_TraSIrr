@@ -58,7 +58,22 @@ def main():
 
     fig, ax = plt.subplots(figsize=(8, 5))
 
+    y_cap = min(np.percentile(congestion_metric_values, 90), 4)
+    clipped = [d for d, v in zip(demands, congestion_metric_values) if v > y_cap]
+
     ax.plot(demands, congestion_metric_values, marker="o", linewidth=2, markersize=4)
+    ax.set_ylim(top=y_cap, bottom=1)
+
+    if clipped:
+        ax.annotate(
+            f"{len(clipped)} point(s) above axis limit",
+            xy=(0.98, 0.97),
+            xycoords="axes fraction",
+            ha="right",
+            va="top",
+            fontsize=8,
+            color="gray",
+        )
 
     ax.set_xlabel("Demand (vehicles)")
     ax.set_ylabel("Congestion metric")
