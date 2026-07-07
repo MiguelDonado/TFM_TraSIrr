@@ -114,7 +114,9 @@ def generate_random_trips_agents(
         "-e",
         str(config.end_time),
         "-p",
-        str(((config.end_time - 0) / (n_agents_post_warmup))),
+        # randomTrips.py generates a trip at both the start and end times (inclusive),
+        # so use (n_agents_post_warmup - 1) to obtain exactly n_agents_post_warmup trips.
+        str(((config.end_time - 0) / (n_agents_post_warmup - 1))),
         "--fringe-factor",
         str(config.fringe_factor),
         "--min-distance",
@@ -150,13 +152,13 @@ def restrict_od_space(od_list, k, n_agents_post_warmup):
     print(f"{generated_trips} trips have been generated")
     print(f"{distinct_ods} different ods have been found")
 
-    assert (
-        generated_trips == n_agents_post_warmup
-    ), f"Expected {n_agents_post_warmup} generated trips, but only {distinct_ods} "
-    "were created. Some trips were discarded because randomTrips.py failed to "
-    "find a valid origin–destination pair within --maxtries attempts, not "
-    "necessarily because no feasible OD pair exists. Consider increasing "
-    "--maxtries or relaxing the trip generation constraints."
+    assert generated_trips == n_agents_post_warmup, (
+        f"Expected {n_agents_post_warmup} generated trips, but only {generated_trips} "
+        "were created. Some trips were discarded because randomTrips.py failed to "
+        "find a valid origin–destination pair within --maxtries attempts, not "
+        "necessarily because no feasible OD pair exists. Consider increasing "
+        "--maxtries or relaxing the trip generation constraints."
+    )
 
     # Limit pool to k ODs (e.g., most frequent)
     # .most_common() returns [(('A','B'), 3), (('C','D'), 2)]
