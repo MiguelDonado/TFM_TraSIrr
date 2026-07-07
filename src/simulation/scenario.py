@@ -59,7 +59,7 @@ from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
 class Scenario:
-    def __init__(self, map, agents, unique_ods, seeds, k=None):
+    def __init__(self, map, agents, unique_ods, seeds, k=None, random_factor=None):
         """
         Parameters:
         map: network file or .osm file
@@ -73,15 +73,17 @@ class Scenario:
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
 
-        self._load_or_compute_routes(seeds, k)
+        self._load_or_compute_routes(seeds, k, random_factor)
         self._save_scenario_data()
         self.conf = self._generate_conf()
 
-    def _load_or_compute_routes(self, seeds, k):
+    def _load_or_compute_routes(self, seeds, k, random_factor):
         if config.have_precomputed_routes:
             self.reconstruct_od_routes()
         else:
-            self.od_routes = self.compute_k_routes(seeds, k=k)
+            self.od_routes = self.compute_k_routes(
+                seeds, k=k, random_factor=random_factor
+            )
 
     def reconstruct_od_routes(self):
         df = pd.read_parquet(OD_ROUTES)
@@ -140,18 +142,18 @@ class Scenario:
 
             # 3. Generate alternative routes
             self._fill_alternative_routes(
-                routes_per_od, trips_file, routes_file, seeds, k
+                routes_per_od, trips_file, routes_file, seeds, k, random_factor
             )
 
             # 4. Delete undesired file
-            UNDESIRED_ROUTE_FILE.unlink()
+            UNDESIRED_ROUTE_FILE.unlink(missing_ok=True)
 
             od_routes = dict(zip(self.unique_ods, routes_per_od))
             # 5. Return k routes
             return od_routes
 
     def _fill_alternative_routes(
-        self, routes_per_od, trips_file, routes_file, seeds, k
+        self, routes_per_od, trips_file, routes_file, seeds, k, random_factor
     ):
         """
         Does not need to return anything because it is already modifying the
@@ -165,7 +167,7 @@ class Scenario:
             new_routes = self._run_duarouter(
                 trips_file,
                 routes_file,
-                random_factor=config.random_factor,
+                random_factor=random_factor,
                 seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
             )
 

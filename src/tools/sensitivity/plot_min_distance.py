@@ -10,6 +10,8 @@ The plot makes the trade-off visible so α can be fixed before running experimen
 Final decision: α = 0.8
 
 Run with: python src/tools/sensitivity/plot_min_distance.py <config.yaml>
+
+Parameter dependencies: Independent hyperparameter
 """
 
 import sys

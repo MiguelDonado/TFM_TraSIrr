@@ -22,6 +22,15 @@
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
     },
     {
+      "name": "Debug plot_random_factor.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tools/sensitivity/plot_random_factor.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
+    },
+    {
       "name": "Debug plot_warm_up.py",
       "type": "debugpy",
       "request": "launch",

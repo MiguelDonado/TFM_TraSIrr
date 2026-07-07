@@ -2,10 +2,15 @@
 One-off tool: determines the minimum warm-up time needed for the transient phase
 due to initial empty network to dissapear.
 
-Runs one SUMO episode with calibrated demand (random routing), then plots
+On this context transient phase means non-representative, temporal.
+
+Runs first SUMO episode with some given calibrated demand, they would be following
+a random routing policy among their alternative routes, then plots
 the number of vehicles in the network over time. The curve rises from zero
 (empty network at t=0). Choose the smallest candidate cutoff (vertical
 dashed line) after which the curve shows no upward trend.
+
+Chosen value is 5 min.
 
 Run with: python src/tools/plot_warm_up.py <config.yaml>
 """
