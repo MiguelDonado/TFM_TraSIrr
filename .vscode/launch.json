@@ -34,7 +34,7 @@
       "name": "Debug plot_warm_up.py",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/src/tools/plot_warm_up.py",
+      "program": "${workspaceFolder}/src/tools/sensitivity/plot_warm_up.py",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
@@ -43,7 +43,7 @@
       "name": "Debug plot_n_routes_per_od.py",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/src/tools/plot_n_routes_per_OD.py",
+      "program": "${workspaceFolder}/src/tools/sensitivity/plot_n_routes_per_OD.py",
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]

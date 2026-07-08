@@ -31,6 +31,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import PercentFormatter
 
 # Workaround paths when import
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -151,6 +152,9 @@ def main():
     plt.xlabel("Random factor")
     plt.ylabel(f"Average OD travel time ratio")
     plt.title("Effect of random factor on route set quality")
+    ax = plt.gca()
+    ax.yaxis.set_major_formatter(PercentFormatter())
+
     plt.xticks(x, random_factors)
     plt.grid(axis="y", alpha=0.3)
 

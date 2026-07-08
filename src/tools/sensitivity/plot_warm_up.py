@@ -10,6 +10,22 @@ the number of vehicles in the network over time. The curve rises from zero
 (empty network at t=0). Choose the smallest candidate cutoff (vertical
 dashed line) after which the curve shows no upward trend.
 
+Explanation why is not evaluated in other ways:
+1. If I were to consider learning agents over many episodes when evaluating the
+metrics to help decide the warm-up value, is important to consider that the traffic
+state at the end of warm-up is not stationary across episodes (it evolves because the policy evolves)
+You expect that after many episodes, not only do the evaluated agents behave better, but the network
+they enter is also better because previous agents have learned.
+
+Motivation to use a warm-up time:
+If network is empty, first vehicles never queue, never experience congestion. Those vehicles
+are not representattive of the steady operating conditions that you want to study.
+The aim is to ensure evaluated agents enter a network that it is already in a representative traffic state,
+instead of an unrealistically one.
+
+Then the best way to choose the hyperparameter value is to analyze only the first episode.
+
+
 Chosen value is 5 min.
 
 Run with: python src/tools/plot_warm_up.py <config.yaml>

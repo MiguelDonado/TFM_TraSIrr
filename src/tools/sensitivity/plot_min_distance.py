@@ -32,7 +32,8 @@ from utils.generate_agents import generate_agents
 def main():
 
     # 0. Initial setup
-    MIN_DISTANCE_FACTORS = np.arange(0.1, 0.9, 0.1)
+    MIN_DISTANCE_FACTORS = np.arange(0.7, 0.9, 0.02)
+    MIN_DISTANCE_FACTORS = [round(float(num), 2) for num in MIN_DISTANCE_FACTORS]
     DEMAND = 1000
     demand_warmup = int(DEMAND * config.warm_up_time / config.end_time)
     demand_post_warmup = DEMAND - demand_warmup
@@ -71,7 +72,7 @@ def main():
         n = len(free_flow_travel_times_short_paths)
         counts.append(n)
 
-        labels.append(f"{min_distance_factor:.1f}")
+        labels.append(f"{min_distance_factor:.2f}")
 
     ##########
     # Plot
@@ -91,7 +92,7 @@ def main():
     # 4. Find largest travel time across all boxplots
     # This value will be used as the vertical position for the annotations
     y = max(max(x) for x in all_fftts)
-    y = y + 2
+    y = y + 1
 
     # 5. Annotate number of distinct OD found (config sets as max 10 ods)
     for i, n in enumerate(counts, start=1):

@@ -118,6 +118,9 @@ class Config:
     # 0.20 → balanced.
     # 0.30 → mostly long trips.
     min_distance_factor: float
+    # Used in randomtrips.py. Used in reject random sampling
+    # when searching a trip that meets the constraints
+    maxtries: int
 
     #####
     # Interval time
