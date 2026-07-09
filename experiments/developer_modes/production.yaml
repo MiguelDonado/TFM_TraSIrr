@@ -13,7 +13,7 @@ learning:
 
 simulation:
   simulation_time: 3600
-  warm_up_time: 600
+  warm_up_time: 300
   min_distance_factor: 0.8
   maxtries: 1000
 
@@ -42,7 +42,7 @@ demand_calibration:
 interval_time:
   time_interval_heuristic: 0.5
   fixed_time_interval: false
-  fixed_time_min: 15
+  fixed_time_min: 15  # minutes
 
 randomtrips:
   max_size_od_space: 10

@@ -1,0 +1,181 @@
+"""
+One-off tool: sweeps a range of fixed_time_min values and plots, for each
+demand scenario, the full R-gap convergence curve and the aggregate
+missingness of the average link travel time table, to determine whether
+this aggregation hyperparameter meaningfully affects the R-gap and, if
+so, which value to choose.
+
+fixed_time_min is an hyperparameter that affects the computation of
+the r-gap. It does not alter the MARL algorithm, only the r-gap evaluation.
+It governs the width of the time intervals used to
+aggregate edge travel times and to assign departure-interval labels to agents.
+It enters the R-gap computation through two competing effects:
+
+  Smaller interval  →  higher temporal resolution and more accurate
+                        average travel-time estimates, but fewer
+                        observations per cell, leading to more missing
+                        values and therefore more imputation.
+  Larger interval   →  denser observations per cell (fewer missing values
+                        and less imputation), but greater temporal
+                        aggregation resulting in less accurate travel-time estimates.
+
+Metrics plotted (one figure per demand scenario):
+
+  R-gap convergence  — full R-gap curve across episodes, one line per
+                       fixed_time_min candidate.
+
+  Missingness (%)    — proportion of missing cells in the average link
+                       travel time table (episode × edge × time_interval),
+                       one point per candidate.
+
+Decision rule: choose the value whose R-gap curve remains as close to zero
+as possible while minimizing the occurrence of negative R-gap values.
+
+Run with: python src/tools/sensitivity/plot_fixed_time_min.py <config.yaml>
+
+Parameter dependencies: fixed_time_min interacts with network size (more
+edges → more potential missing cells) and traffic demand (higher demand →
+denser observations, and potentially less missing values because we have more
+vehicles in the network).
+"""
+
+import os
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from matplotlib.ticker import PercentFormatter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+from config.config import config
+from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
+from demand_calibration.utils import demand_from_count
+from DUE_convergence.DUE_convergence import run_due_convergence_checks
+from utils.run_training_BM import run_full_training_BM
+
+# Grid of values
+# 0.25 min = 15 sec
+# 0.5 min = 30 sec
+
+FIXED_TIME_MIN_CANDIDATES = [
+    5 / 60,  # 5 s
+    10 / 60,  # 10 s
+    15 / 60,  # 15 s
+    30 / 60,  # 30 s
+]
+DEMANDS = [1000, 1500, 1750, 2000]
+
+
+def main():
+
+    # 0. For each demand check r-gap and missingess for different time intervals
+    for demand in DEMANDS:
+
+        print("\n##########")
+        print(f"# Demand {demand}")
+        print("##########")
+
+        # 1. Calibrate demand (nº agents)
+        calibrated_agents, unique_ods = demand_from_count(demand)
+
+        # 2. Run full BM training once (route choices are independent of fixed_time_min)
+        run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, due=False)
+
+        # 3. Containers
+        rgap_curves = {}
+        missingness_props = {}
+
+        # 4. Check r-gap and missingness for a given time interval
+        for fixed_time_min in FIXED_TIME_MIN_CANDIDATES:
+            print("\n##########")
+            print(f"# fixed_time_min: {fixed_time_min} min")
+            print("##########")
+
+            # 5. Update the time interval globally so all downstream functions use it
+            # We also convert it to seconds
+            config.time_interval = int(fixed_time_min * 60)
+
+            # 6. Compute R-gap and missingness for this time interval
+            run_due_convergence_checks(
+                end_time=config.end_time,
+                time_interval=config.time_interval,
+                duaIterate=False,
+            )
+
+            # 7. Record full R-gap convergence curve
+            rgap_curves[fixed_time_min] = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+
+            # 8. Record aggregate missingness proportion
+            missingness_props[fixed_time_min] = _parse_missingness_proportion(
+                BM_PATHS.missingness_report
+            )
+
+        # 9. Make plot for some demand value
+        _make_plot(rgap_curves, missingness_props, demand)
+
+    os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
+
+
+def _parse_missingness_proportion(report_file):
+    with open(report_file) as f:
+        for line in f:
+            if line.startswith("Proportion missing:"):
+                return float(line.split(":")[1].strip())
+
+
+def _make_plot(rgap_curves, missingness_props, demand):
+
+    # 1. Manage path
+    network_name = Path(config.network).stem
+    plot_prefix = "fixed_time_min_"
+    path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
+
+    # 2. Create figure with two side-by-side subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # 3. Left subplot: R-gap convergence curves (one per candidate)
+    # R-gap is stored as a percentage (e.g. 20.0 means 20 %)
+    for fixed_time_min, rgap_series in rgap_curves.items():
+        ax1.plot(
+            rgap_series.index,
+            rgap_series.values,
+            linewidth=1.5,
+            label=f"{fixed_time_min} min",
+        )
+
+    # 4. Improve visualization
+    ax1.set_xlabel("Episode")
+    ax1.set_ylabel("R-gap")
+    ax1.set_title(f"R-gap convergence by time interval (demand = {demand})")
+    ax1.yaxis.set_major_formatter(PercentFormatter())
+    ax1.legend(title="Time interval")
+    ax1.grid(axis="y", alpha=0.3)
+
+    # 5. Right subplot: aggregate missingness per candidate
+    # Missingness is stored as a fraction in [0, 1]
+    candidates = list(missingness_props.keys())
+    props = list(missingness_props.values())
+    x = range(len(candidates))
+    ax2.plot(x, props, marker="o", linewidth=2, color="C1")
+
+    # 6. Improve visualization
+    ax2.set_xlabel("Time interval (minutes)")
+    ax2.set_ylabel("Missing cells")
+    ax2.set_title(f"Missingness of avg link travel time table (demand = {demand})")
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(candidates)
+    ax2.yaxis.set_major_formatter(PercentFormatter(xmax=1))
+    ax2.grid(axis="y", alpha=0.3)
+
+    # 7. Automatically adjust spacing
+    plt.tight_layout()
+
+    # 8. Save
+    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
+if __name__ == "__main__":
+    main()

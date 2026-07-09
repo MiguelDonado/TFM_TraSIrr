@@ -58,7 +58,7 @@ from config.config import config
 from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
 from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
-from utils.run_full_training_BM import run_full_training_BM
+from utils.run_training_BM import run_full_training_BM
 
 THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 50]
 # THRESHOLD_DENSITIES = [0, 2]

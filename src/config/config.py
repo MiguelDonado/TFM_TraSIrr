@@ -125,7 +125,7 @@ class Config:
     #####
     # Interval time
     #####
-    time_interval: int = field(init=False)
+    time_interval: int = field(init=False)  # Seconds
     time_interval_heuristic: float
     fixed_time_interval: bool
     fixed_time_min: int
