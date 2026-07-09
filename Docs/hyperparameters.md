@@ -41,7 +41,6 @@ In methodology or wherever is needed to illustrate concepts I will use toy netwo
 
 
 **PENDING SENSITIVITY ANALYSIS**
-THRESHOLD DENSITY
 WARM_UP_TIME
 TIME_INTERVAL_HEURISTIC
 FIXED_TIME_MIN

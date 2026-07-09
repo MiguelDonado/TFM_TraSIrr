@@ -337,13 +337,15 @@ def run_tdsp_pipeline(
     weights_dir,
     shortest_path_dir,
     cost_min_paths,
+    threshold_density,
 ):
+
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
     compute_travel_time_links_t_k(
         time_interval=time_interval,
         network=config.network,
-        threshold_density=config.threshold_density,
+        threshold_density=threshold_density,
         output_file=cost_links,
         agents_od_file=agents_od_file,
         vehroute_file=vehroute_file,
@@ -425,7 +427,10 @@ def compute_travel_time_links_t_k(
         missingness_episode_file,
     )
     df_filled = _fill_missing_travel_times(
-        avg_tt, edgedata_file, all_edges, threshold_density
+        avg_tt=avg_tt,
+        edgedata_file=edgedata_file,
+        all_edges=all_edges,
+        threshold_density=threshold_density,
     )
     df_filled.to_parquet(output_file)
 

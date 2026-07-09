@@ -147,7 +147,6 @@ def restrict_od_space(od_list, k, n_agents_post_warmup):
     generated_trips = sum(counter.values())
     distinct_ods = len(counter)
 
-    print(f"{generated_trips} trips have been generated")
     print(f"{distinct_ods} different ods have been found")
 
     assert n_agents_post_warmup - 1 <= generated_trips <= n_agents_post_warmup + 1, (
@@ -156,6 +155,9 @@ def restrict_od_space(od_list, k, n_agents_post_warmup):
         "find a valid origin–destination pair within --maxtries attempts, not "
         "necessarily because no feasible OD pair exists. Consider increasing "
         "--maxtries or relaxing the trip generation constraints."
+    )
+    print(
+        f"{generated_trips} trips have been generated. They coincide with the specified n_agents_post_warmup"
     )
 
     # Limit pool to k ODs (e.g., most frequent)

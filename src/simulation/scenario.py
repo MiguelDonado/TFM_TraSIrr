@@ -59,7 +59,16 @@ from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
 
 class Scenario:
-    def __init__(self, map, agents, unique_ods, seeds, k=None, random_factor=None):
+    def __init__(
+        self,
+        map,
+        agents,
+        unique_ods,
+        seeds,
+        k=None,
+        random_factor=None,
+        max_attempts=None,
+    ):
         """
         Parameters:
         map: network file or .osm file
@@ -73,11 +82,22 @@ class Scenario:
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
 
-        self._load_or_compute_routes(seeds, k, random_factor)
+        # Manage default arguments
+        k = k if k is not None else config.n_routes_per_OD
+        # Weights of edges by default are free-flow travel times
+        # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
+        random_factor = (
+            random_factor if random_factor is not None else config.random_factor
+        )
+        max_attempts = max_attempts if max_attempts is not None else config.max_attempts
+
+        self._load_or_compute_routes(
+            seeds=seeds, k=k, random_factor=random_factor, max_attempts=max_attempts
+        )
         self._save_scenario_data()
         self.conf = self._generate_conf()
 
-    def _load_or_compute_routes(self, seeds, k, random_factor):
+    def _load_or_compute_routes(self, seeds, k, random_factor, max_attempts):
         if config.have_precomputed_routes:
             self.reconstruct_od_routes()
         else:
@@ -107,20 +127,9 @@ class Scenario:
     def compute_k_routes(
         self,
         seeds,
-        k=None,
-        max_attempts=None,
-        random_factor=None,
+        k,
+        random_factor,
     ):
-        # Weights of edges by default are free-flow travel times
-        # --weights.random-factor: Edge weights for routing are dynamically disturbed by a random factor drawn uniformly from
-
-        k = k if k is not None else config.n_routes_per_OD
-        max_attempts = max_attempts if max_attempts is not None else config.max_attempts
-        random_factor = (
-            random_factor if random_factor is not None else config.random_factor
-        )
-
-        routes_per_od = None
 
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")

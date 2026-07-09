@@ -42,85 +42,44 @@ from matplotlib.ticker import PercentFormatter
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from agents.factory import initialize_agents
 from config.config import config
-from config.paths import BM_PATHS, POLICY_CHANGE_BM, SENSITIVITY_PLOTS_DIR
+from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
 from demand_calibration.utils import demand_from_count
-from DUE_convergence.DUE_convergence import run_due_convergence_checks
-from experiment import save_processed_data
-from main import _run_training_loop
-from simulation.environment import Environment
-from simulation.scenario import Scenario
+from utils.run_full_training_BM import run_full_training_BM
 
 
 def main():
     # 0. Set-up
     DEMANDS = [1000, 1500]
-    N_ROUTES_PER_OD = range(2, 10, 1)
-
-    # 1. Reproducibility
-    rng = np.random.default_rng(config.seed)
-    seeds = rng.integers(0, 100000, size=config.max_attempts)
+    N_ROUTES_PER_OD = [2, 3]
 
     for demand in DEMANDS:
-        # 2. Containers (metric values)
+        print("##########")
+        print(f"# Demand: {demand}")
+        print("##########")
+
+        # 1. Containers (metric values)
         last_rgaps = []
         episodes_to_converge = []
 
-        # 3. Calibrate demand (nº agents)
+        # 2. Calibrate demand (nº agents)
         calibrated_agents, unique_ods = demand_from_count(demand)
 
-        # 4. Analyze different hyperparameter values
+        # 3. Analyze different hyperparameter values
         for n in N_ROUTES_PER_OD:
 
             print("##########")
             print(f"# N routes per OD: {n}")
             print("##########")
 
-            # 1. Create Scenario (files)
-            scen = Scenario(
-                map=config.network,
-                agents=calibrated_agents,
-                unique_ods=unique_ods,
-                seeds=seeds,
-                k=n,
-            )
+            run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, k=n)
 
-            # 2. Create environment
-            env = Environment(scenario=scen)
-
-            # 3. Initialize agents
-            rl_agents = initialize_agents(scen=scen, seed=config.seed)
-
-            # -----------------------------
-            # 4. TRAINING LOOP
-            # -----------------------------
-            results, policy_change_history = _run_training_loop(
-                env=env, agents=rl_agents
-            )
-
-            # -----------------------------
-            # 5. SAVE OUTPUT
-            # -----------------------------
-            save_processed_data(results)
-            df_policy_change = pd.DataFrame(policy_change_history)
-            df_policy_change.to_parquet(POLICY_CHANGE_BM)
-            # -----------------------------
-            # 6. CHECK DUE convergence
-            # -----------------------------
-            run_due_convergence_checks(
-                scen=scen,
-                end_time=config.end_time,
-                time_interval=config.time_interval,
-                duaIterate=False,
-            )
-
-            # 7. Get values of metrics (last episode and its r-gap)
+            # 4. Get values of metrics (last episode and its r-gap)
             last_row = pd.read_parquet(BM_PATHS.rgap).iloc[-1]
             last_episode = last_row["episode"]
             last_rgap = last_row["rgap"]
 
-            # 8. Store metrics values relative to current hyperparameter value
+            # 5. Store metrics values relative to current hyperparameter value
             last_rgaps.append(last_rgap)
             episodes_to_converge.append(last_episode)
 

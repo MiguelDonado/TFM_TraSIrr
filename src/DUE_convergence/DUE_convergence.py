@@ -69,15 +69,28 @@ from .rgap import (
 from .tdsp import run_tdsp_pipeline
 
 
-def run_due_convergence_checks(scen, end_time, time_interval, duaIterate=True):
+def run_due_convergence_checks(
+    end_time, time_interval, duaIterate=True, scen=None, threshold_density=None
+):
+    threshold_density = (
+        threshold_density if threshold_density is not None else config.threshold_density
+    )
+
     _generate_generic_files_due_convergence()
 
     if duaIterate:
         _check_due_convergence_duaIterate(
-            scen, end_time=end_time, time_interval=time_interval
+            scen=scen,
+            end_time=end_time,
+            time_interval=time_interval,
+            threshold_density=threshold_density,
         )
 
-    _check_due_convergence_BM(end_time=end_time, time_interval=time_interval)
+    _check_due_convergence_BM(
+        end_time=end_time,
+        time_interval=time_interval,
+        threshold_density=threshold_density,
+    )
 
 
 def _generate_generic_files_due_convergence():
@@ -92,7 +105,7 @@ def _generate_generic_files_due_convergence():
     generate_trips_odt_file()
 
 
-def _check_due_convergence_BM(end_time, time_interval):
+def _check_due_convergence_BM(end_time, time_interval, threshold_density):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
@@ -119,6 +132,7 @@ def _check_due_convergence_BM(end_time, time_interval):
         weights_dir=BM_PATHS.weights_dir,
         shortest_path_dir=BM_PATHS.shortest_paths_dir,
         cost_min_paths=BM_PATHS.cost_min_paths,
+        threshold_density=threshold_density,
     )
 
     # Computation Rgap
@@ -133,7 +147,7 @@ def _check_due_convergence_BM(end_time, time_interval):
     )
 
 
-def _check_due_convergence_duaIterate(scen, end_time, time_interval):
+def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_density):
     ########################
     # Check duaIterate Rgap
     ########################
