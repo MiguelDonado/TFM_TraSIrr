@@ -1,34 +1,58 @@
 """
-One-off tool: determines the minimum warm-up time needed for the transient phase
-due to initial empty network to dissapear.
+One-off tool to determine the minimum warm-up time required for the
+initial transient caused by starting the simulation from an empty network
+to disappear.
 
-On this context transient phase means non-representative, temporal.
+Context
+-------
+The simulation always starts with an empty network. Consequently, the
+first vehicles experience unrealistically good traffic conditions (no
+queues and little or no congestion), making them unrepresentative of the
+steady operating conditions of interest.
 
-Runs first SUMO episode with some given calibrated demand, they would be following
-a random routing policy among their alternative routes, then plots
-the number of vehicles in the network over time. The curve rises from zero
-(empty network at t=0). Choose the smallest candidate cutoff (vertical
-dashed line) after which the curve shows no upward trend.
+A warm-up period is therefore introduced so that only vehicles entering
+after the network has reached a representative traffic state are
+evaluated.
 
-Explanation why is not evaluated in other ways:
-1. If I were to consider learning agents over many episodes when evaluating the
-metrics to help decide the warm-up value, is important to consider that the traffic
-state at the end of warm-up is not stationary across episodes (it evolves because the policy evolves)
-You expect that after many episodes, not only do the evaluated agents behave better, but the network
-they enter is also better because previous agents have learned.
+Methodology
+-----------
+For each representative demand level:
 
-Motivation to use a warm-up time:
-If network is empty, first vehicles never queue, never experience congestion. Those vehicles
-are not representattive of the steady operating conditions that you want to study.
-The aim is to ensure evaluated agents enter a network that it is already in a representative traffic state,
-instead of an unrealistically one.
+1. Calibrate the demand.
+2. Run only the first SUMO episode using a random routing policy.
+3. Compute the number of vehicles in the network every second and plot the resulting curve
+4. Select the smallest warm-up candidate after which the initial
+   increasing trend associated with the network filling process has
+   disappeared.
 
-Then the best way to choose the hyperparameter value is to analyze only the first episode.
+Only the first episode is analyzed because it isolates the transient
+caused by starting from an empty network. In later episodes, changes in
+the occupancy curve may also reflect improvements in the learned routing
+policy, making the initialization transient more difficult to interpret.
 
+Metric
+------
+The number of vehicles in the network is used because it directly
+captures the phenomenon that motivates the warm-up. Since the network
+starts empty, the occupancy curve provides the most direct indication of
+when the initial filling transient has ended.
 
-Chosen value is 5 min.
+Final decision
+--------------
+A warm-up time of 5 minutes was selected because it is the smallest
+candidate after which all considered demand scenarios exhibit a
+stable occupancy level rather than the initial increasing trend.
 
-Run with: python src/tools/plot_warm_up.py <config.yaml>
+Dependencies
+------------
+The required warm-up time depends on:
+- traffic demand,
+- network topology.
+- vehicle departure schedule (uniform in all experiments).
+
+Run
+---
+python src/tools/sensitivity/plot_warm_up.py <config.yaml>
 """
 
 import sys
@@ -36,19 +60,15 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
 from lxml import etree
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from agents.factory import initialize_agents, select_actions
 from config.config import config
-from config.paths import OUTPUT_PLOT_WARM_UP, TRIPS_INFO_XML
-from demand_calibration.utils import demand_calibration
-from simulation.environment import Environment
-from simulation.scenario import Scenario
-
-WARM_UP_CANDIDATES_MIN = [0, 5, 10, 15]
-CANDIDATE_COLORS = ["gray", "orange", "green", "red"]
+from config.paths import SENSITIVITY_PLOTS_DIR, TRIPS_INFO_XML
+from demand_calibration.utils import demand_from_count
+from utils.run_training_BM import run_single_episode_BM
 
 
 def _parse_depart_arrival():
@@ -62,68 +82,97 @@ def _parse_depart_arrival():
 
 
 def main():
-    # 0. Reproducibility
-    rng = np.random.default_rng(config.seed)
-    seeds = rng.integers(0, 100000, size=config.max_attempts)
 
-    # 1. Calibrate demand (nº agents)
-    agents, unique_ods = demand_calibration(last_iteration_gui=False)
+    # 0. Set-up
+    WARM_UP_CANDIDATES_MIN = [0, 5, 10, 15]  # minutes
+    DEMANDS = [1000, 1500, 1750]
 
-    # 2. Create Scenario (files)
-    scen = Scenario(
-        map=config.network,
-        agents=agents,
-        unique_ods=unique_ods,
-        seeds=seeds,
-    )
+    # 1. Container
+    demand_curves = {}
 
-    # 3. Create environment
-    env = Environment(scenario=scen)
+    for demand in DEMANDS:
 
-    # 4. Create agents
-    agents = initialize_agents(scen=scen, seed=config.seed)
+        print("\n##########")
+        print(f"# Demand {demand}")
+        print("##########")
 
-    # 5. Choose routes
-    actions = select_actions(agents)
+        # 2. Calibrate demand (nº agents)
+        calibrated_agents, unique_ods = demand_from_count(demand)
 
-    # 6. Run episode
-    episode = 1
-    env.run_episode(actions, episode)
+        # 3. Run first episode (random routing policy) and generate
+        # new tripinfo output
+        run_single_episode_BM(agents=calibrated_agents, unique_ods=unique_ods)
 
-    # 7. Parse depart / arrival times
-    trips = _parse_depart_arrival()
+        # 4. Parse depart / arrival times
+        trips = _parse_depart_arrival()
 
-    # 8. Build time series: vehicles in network per second up to max warm-up time candidate
-    max_warm_up_sec = max(WARM_UP_CANDIDATES_MIN) * 60
-    times = np.arange(0, max_warm_up_sec + 1)
-    vehicle_counts = np.array(
-        [sum(1 for depart, arrival in trips if depart <= t < arrival) for t in times]
-    )
-
-    # 9. Plot
-    network_name = Path(config.network).stem
-    path = OUTPUT_PLOT_WARM_UP / f"warm_up_{network_name}.png"
-
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(times / 60, vehicle_counts, linewidth=1.5, color="steelblue")
-
-    for warm_up_min, color in zip(WARM_UP_CANDIDATES_MIN, CANDIDATE_COLORS):
-        ax.axvline(
-            warm_up_min,
-            linestyle="--",
-            linewidth=1,
-            color=color,
-            label=f"{warm_up_min} min",
+        # 5. Build time series: vehicles in network per second up to max warm-up time candidate
+        max_warm_up_sec = max(WARM_UP_CANDIDATES_MIN) * 60
+        times = np.arange(0, max_warm_up_sec + 1)
+        vehicle_counts = np.array(
+            [
+                sum(1 for depart, arrival in trips if depart <= t < arrival)
+                for t in times
+            ]
         )
 
+        demand_curves[demand] = vehicle_counts
+
+    _make_plot(times, demand_curves, WARM_UP_CANDIDATES_MIN)
+
+
+def _make_plot(times, demand_curves, warm_up_candidates):
+
+    # 1. Manage path
+    network_name = Path(config.network).stem
+    plot_prefix = "warm_up_"
+    path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{network_name}.png"
+
+    # 2. Create figure
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    # 3. One curve per demand
+    for demand, vehicle_counts in demand_curves.items():
+        ax.plot(
+            times / 60,
+            vehicle_counts,
+            linewidth=1.5,
+            label=f"Demand = {demand}",
+        )
+
+    # 4. Draw vertical candidate lines + labels
+    y_top = ax.get_ylim()[1]
+
+    for warm_up_min in warm_up_candidates:
+        ax.axvline(
+            x=warm_up_min,
+            color="0.7",  # 0=black, 1=white
+            linestyle="--",
+            linewidth=1,
+            zorder=0,  # Draw behind the curves
+        )
+
+        ax.text(
+            warm_up_min,
+            y_top * 0.98,
+            f"{warm_up_min} min",
+            ha="center",
+            va="top",
+            fontsize=9,
+            color="0.5",
+        )
+
+    # 5. Improve visualization
     ax.set_xlabel("Time (minutes)")
     ax.set_ylabel("Vehicles in network")
-    ax.set_title(f"Vehicles in network over time  -  ({network_name})")
+    ax.set_title(f"Vehicles in network over time ({network_name})")
     ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(path, dpi=150, bbox_inches="tight")
-    plt.show()
+    # 6. Automatically adjust spacing
+    plt.tight_layout()
+
+    # 7. Save
+    plt.savefig(path, dpi=300, bbox_inches="tight")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from agents.factory import initialize_agents
+from agents.factory import initialize_agents, select_actions
 from config.config import config
 from config.paths import POLICY_CHANGE_BM
-from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import save_processed_data
 from main import _run_training_loop
@@ -53,3 +52,28 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True):
             time_interval=config.time_interval,
             duaIterate=False,
         )
+
+
+def run_single_episode_BM(agents, unique_ods):
+
+    # 1. Reproducibility
+    rng = np.random.default_rng(config.seed)
+    seeds = rng.integers(0, 100000, size=config.max_attempts)
+
+    # 2. Create Scenario (files)
+    scen = Scenario(
+        map=config.network, agents=agents, unique_ods=unique_ods, seeds=seeds
+    )
+
+    # 2. Create environment
+    env = Environment(scenario=scen)
+
+    # 3. Initialize agents
+    rl_agents = initialize_agents(scen=scen, seed=config.seed)
+
+    # 4. Choose routes
+    actions = select_actions(rl_agents)
+
+    # 5. Run episode
+    episode = 1
+    env.run_episode(actions, episode)

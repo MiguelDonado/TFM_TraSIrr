@@ -7,6 +7,7 @@ This YAML contains all the chosen values of the hyperparameters
    - random_factor
    - n_routes_per_od
    - threshold_density
+   - warm_up_time
   
 2. Fix implementation/computational hyperparameters using reasonable choices (without the need to 
    perform sensitivity analysis), unless evidence that they materially affect the results:
@@ -41,7 +42,7 @@ In methodology or wherever is needed to illustrate concepts I will use toy netwo
 
 
 **PENDING SENSITIVITY ANALYSIS**
-WARM_UP_TIME
+
 TIME_INTERVAL_HEURISTIC
 FIXED_TIME_MIN
 FIXED_TIME_INTERVAL
