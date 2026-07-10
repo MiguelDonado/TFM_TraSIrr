@@ -18,8 +18,12 @@ congestion level, defined as:
     ~ [2,3)   — moderate
     > [3,+inf)     — heavy
 
-Free-flow trip duration is computed per route from the SUMO network
-(length / speed per edge).
+Free-flow trip duration is obtained by running a dedicated SUMO episode
+with one vehicle per unique route on an empty network, so that the measured
+duration reflects actual vehicle dynamics (acceleration, deceleration at
+junctions) rather than the theoretical length/max_speed estimate, which
+systematically underestimates the true free-flow time and resulting in
+an overestimation of the congestion metric
 
 This class is instantiated and called repeatedly by the calibration
 loop in src/demand_calibration/utils.py, which adjusts n_agents until
@@ -37,15 +41,14 @@ from lxml import etree
 from config.config import config
 from config.paths import (
     ROUTES_DEMAND_CALIBRATION,
-    SUMMARY_XML,
+    ROUTES_FREE_FLOW,
     SUMO_CONF_DEMAND_CALIBRATION,
+    SUMO_CONF_FREE_FLOW,
     TRIPS_DEMAND_CALIBRATION,
+    TRIPS_INFO_FREE_FLOW,
     TRIPS_INFO_XML,
 )
-from utils.generate_free_flow_tt import (
-    generate_free_flow_tt_links,
-    generate_free_flow_tt_shortest_paths,
-)
+from utils.generate_free_flow_tt import generate_free_flow_tt_links
 from utils.od_routes import parse_route
 from utils.sumo_xml import write_sumo_conf
 
@@ -69,8 +72,8 @@ class DemandCalibration:
         # 3. Generate od_routes data structure
         self.od_routes = self._generate_od_routes(unique_routes)
 
-        # 4. Compute ff tt shortest paths
-        self.od_min_paths_ff_tt = generate_free_flow_tt_shortest_paths(self.od_routes)
+        # 4. Compute ff tt via simulation (accurate: accounts for acceleration/deceleration)
+        self.od_min_paths_ff_tt = self._simulate_free_flow_tt(self.od_routes)
 
         # 5. Generate config file
         self._generate_conf()
@@ -108,6 +111,48 @@ class DemandCalibration:
 
     def _generate_od_routes(self, unique_routes):
         return {(r[0], r[-1]): [list(r)] for r in unique_routes}
+
+    def _simulate_free_flow_tt(self, od_routes):
+        """
+        Runs a single SUMO episode with one vehicle per OD pair on an empty network
+        to obtain accurate route-level free-flow travel times.
+
+        Vehicles are spaced 200 s apart so they never interact with each other.
+        Returns {(origin, destination): free_flow_travel_time}.
+        """
+        ods = list(od_routes.keys())
+
+        # 1. Write routes file: one vehicle per OD, using its precomputed shortest-path route
+        with open(ROUTES_FREE_FLOW, "w") as f:
+            f.write("<routes>\n")
+            for i, od in enumerate(ods):
+                edges = " ".join(od_routes[od][0])
+                f.write(f'\t<route id="ff_route_{i}" edges="{edges}"/>\n')
+                f.write(
+                    f'\t<vehicle id="ff_{i}" route="ff_route_{i}" depart="{i * 200}"/>\n'
+                )
+            f.write("</routes>\n")
+
+        # 2. Create SUMO config
+        write_sumo_conf(
+            output_path=SUMO_CONF_FREE_FLOW,
+            net_file=self.network,
+            route_files=ROUTES_FREE_FLOW,
+            report_outputs={"tripinfo-output": TRIPS_INFO_FREE_FLOW},
+            seed=config.seed,
+        )
+
+        # 3. Run simulation
+        subprocess.run(["sumo", "-c", str(SUMO_CONF_FREE_FLOW)], check=True)
+
+        # 4. Parse tripinfo and map back to OD pairs
+        tree = etree.parse(TRIPS_INFO_FREE_FLOW)
+        durations = {
+            trip.get("id"): float(trip.get("duration"))
+            for trip in tree.xpath("//tripinfo")
+        }
+
+        return {od: durations[f"ff_{i}"] for i, od in enumerate(ods)}
 
     def _generate_conf(self):
         """

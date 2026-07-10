@@ -14,6 +14,19 @@ duration under an empty network. A value of 1.4 means trips take on average 40%
 longer than free-flow. The metric is dimensionless and monotonically increasing
 with congestion level.
 
+Free-flow travel times
+----------------------
+The theoretical estimate length / max_speed underestimates the true free-flow travel
+time because real vehicles must accelerate from rest and decelerate at junctions —
+effects that length / max_speed ignores. Since T_i_free appears in the denominator of
+the congestion metric, underestimating it inflates the ratio, causing the metric to
+read ~1.4–1.5 even on an empty network instead of the expected ~1.0.
+
+To correct this, the free-flow travel time for each unique route is measured directly
+via a dedicated SUMO episode with one vehicle per route on an empty network (see
+DemandCalibration._simulate_free_flow_tt). With this correction the metric converges
+to ~1.0 at very low demands, as expected.
+
 Congestion regimes and decision rule
 -------------------------------------
 Three congestion regimes are defined (light, moderate, heavy) via threshold lower
@@ -62,16 +75,17 @@ from utils.generate_agents import generate_agents
 
 # CONSTANTS
 SEEDS = [42, 123, 1999, 2026]
+# SEEDS = [42]
 # Adjust per network: lower bound should cover free-flow, upper bound should
 # reach heavy congestion. Step size trades resolution against runtime.
+# DEMANDS = range(1000, 2500, 100)
 DEMANDS = range(1000, 2500, 100)
 
 # Congestion regime thresholds (lower bound, label, band color, accent color for markers)
 CONGESTION_REGIMES = [
     (1.0, "Free-flow", "#d9f0a3", None),
-    (1.5, "Light", "#ffffb2", "#a08000"),
-    (2.0, "Moderate", "#fecc5c", "#c05800"),
-    (4.0, "Heavy", "#fd8d3c", "#a82000"),
+    (1.2, "Low congestion", "#fecc5c", "#c05800"),
+    (3.0, "High congestion", "#fd8d3c", "#a82000"),
 ]
 
 
@@ -204,8 +218,8 @@ def _make_plot(result, seed):
     ax.set_ylabel("Congestion metric")
     ax.set_title(f"Congestion metric vs demand — seed {seed} ({network_name})")
 
-    # Add 1.5 to y-ticks (other thresholds 2.0 and 3.0 already land on default ticks)
-    ticks = sorted(set(list(ax.get_yticks()) + [1.5]))
+    # Add 1.2 to y-ticks (2.0 already lands on a default tick)
+    ticks = sorted(set(list(ax.get_yticks()) + [1.2]))
     ax.set_yticks([t for t in ticks if 1 <= t <= y_cap])
 
     # Outlier count note

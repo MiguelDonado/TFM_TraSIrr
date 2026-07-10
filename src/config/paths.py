@@ -279,6 +279,12 @@ ROUTES_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "routes.xml"
 # SUMO Config file needed for simulation (demand calibration)
 SUMO_CONF_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "basic.cfg"
 
+# Free-flow simulation: one vehicle per unique route on an empty network,
+# used to obtain accurate route-level free-flow travel times
+ROUTES_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_routes.xml"
+SUMO_CONF_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff.cfg"
+TRIPS_INFO_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_tripsinfo.xml"
+
 # ============================================================
 # Sensitivity
 # ============================================================
