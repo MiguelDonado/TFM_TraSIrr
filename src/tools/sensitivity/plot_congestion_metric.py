@@ -1,12 +1,47 @@
 """
-One-off tool: sweeps a range of demand levels, measures the congestion
-metric for each, and plots the result.
+One-off tool: sweeps a range of demand levels, measures the congestion metric
+for each, and automatically selects a representative demand value for each
+congestion regime.
 
-Useful for understanding how the network responds to different demands
-before choosing a calibration target, and to gain insights about adequacy
-of the congestion metric
+Congestion metric
+-----------------
+The congestion metric is the average ratio of actual to free-flow trip duration:
 
-Run with: python src/tools/plot_congestion_metric.py <config.yaml>
+    congestion_metric = (1/N) * sum( T_i / T_i_free )  for i = 1..N agents
+
+where T_i is the actual trip duration and T_i_free is the free-flow shortest-path
+duration under an empty network. A value of 1.4 means trips take on average 40%
+longer than free-flow. The metric is dimensionless and monotonically increasing
+with congestion level.
+
+Congestion regimes and decision rule
+-------------------------------------
+Three congestion regimes are defined (light, moderate, heavy) via threshold lower
+bounds stored in CONGESTION_REGIMES. These thresholds are qualitative and somewhat
+arbitrary — what matters is that they produce meaningfully distinct traffic states
+for the experiments. For each regime, the representative demand is selected as the
+first demand value where the metric exceeds the regime threshold and the immediately
+following demand value also stays above it. This two-point rule avoids picking a
+noisy spike that immediately drops back below the threshold.
+
+The representative demands selected here are used throughout the thesis experiments
+to evaluate the MARL algorithm's performance under different congestion levels.
+
+Demand grid
+-----------
+The demand sweep range (DEMANDS) must be set manually per network before running.
+The lower bound should start at or just below the onset of congestion, not at the
+free-flow baseline — sweeping demands that produce identical free-flow results wastes
+simulation runs without adding information. The upper bound should be high enough
+to clearly reach heavy congestion, but not much beyond that: once the representative
+demand for the highest regime has been identified, additional points yield no useful
+information and only increase runtime. The step size trades resolution against runtime.
+
+The script otherwise runs automatically: it sweeps demands, plots the congestion
+curve with regime bands and threshold lines, and marks the selected representative
+demands directly on the plot.
+
+Run with: python src/tools/sensitivity/plot_congestion_metric.py <config.yaml>
 """
 
 import sys
@@ -18,73 +53,178 @@ plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import numpy as np
 
 # Workaround paths when import
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import OUTPUT_PLOT_CONGESTION_METRIC
+from config.paths import SENSITIVITY_PLOTS_DIR
 from demand_calibration.demand_calibration import DemandCalibration
 from utils.generate_agents import generate_agents
-from utils.generate_free_flow_tt import generate_free_flow_tt_links
 
 # CONSTANTS
-SEED = 42
-DEMANDS = range(100, 2500, 100)
+SEEDS = [42, 123, 1999, 2026]
+# Adjust per network: lower bound should cover free-flow, upper bound should
+# reach heavy congestion. Step size trades resolution against runtime.
+DEMANDS = range(1000, 2500, 100)
+
+# Congestion regime thresholds (lower bound, label, band color, accent color for markers)
+CONGESTION_REGIMES = [
+    (1.0, "Free-flow", "#d9f0a3", None),
+    (1.5, "Light", "#ffffb2", "#a08000"),
+    (2.0, "Moderate", "#fecc5c", "#c05800"),
+    (4.0, "Heavy", "#fd8d3c", "#a82000"),
+]
 
 
 def main():
-    # -----------------------------
-    # 0. DEMAND CALIBRATION
-    # -----------------------------
-    result = []
-    for demand in DEMANDS:
-        # Every iteration gets a fresh rng starting from the same point
-        rng = np.random.default_rng(SEED)
-        demand_warmup = int(demand * config.warm_up_time / config.end_time)
-        demand_post_warmup = demand - demand_warmup
-        agents, _ = generate_agents(demand_warmup, demand_post_warmup, rng)
 
-        demand_calibration = DemandCalibration(config.network, agents)
-        congestion_metric_value = demand_calibration.compute_congestion_metric()
-        result.append(
-            {"demand": demand, "congestion_metric": congestion_metric_value},
-        )
+    for seed in SEEDS:
+        # 0. Container
+        result = []
+        for demand in DEMANDS:
 
-    # -----------------------------
-    # 1. PLOT
-    # -----------------------------
+            # 1. Log
+            print("\n##########")
+            print(f"# {demand}")
+            print("##########")
+
+            # 2. Every iteration gets a fresh rng starting from the same point
+            rng = np.random.default_rng(seed)
+
+            # 3. Create agents data structure
+            demand_warmup = int(demand * config.warm_up_time / config.end_time)
+            demand_post_warmup = demand - demand_warmup
+            agents, _ = generate_agents(demand_warmup, demand_post_warmup, rng)
+
+            # 4. Get metric value
+            demand_calibration = DemandCalibration(config.network, agents)
+            congestion_metric_value = demand_calibration.compute_congestion_metric()
+
+            # 5. Store
+            result.append(
+                {"demand": demand, "congestion_metric": congestion_metric_value},
+            )
+
+        # 6. Plot
+        _make_plot(result, seed)
+
+
+def _find_representative_demand(demands, values, threshold):
+    """First demand where the metric exceeds threshold and the next point also stays above."""
+    for i in range(len(values) - 1):
+        if values[i] > threshold and values[i + 1] > threshold:
+            return demands[i]
+    return None
+
+
+def _make_plot(result, seed):
+
+    # 1. Manage path
     network_name = Path(config.network).stem
-    path = OUTPUT_PLOT_CONGESTION_METRIC / f"congestion_metric_{network_name}.png"
+    plot_prefix = "congestion_metric_"
+    path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{network_name}_{seed}.png"
 
+    # 2. Extract values
     demands = [r["demand"] for r in result]
     congestion_metric_values = [r["congestion_metric"] for r in result]
 
+    # 3. Create figure
     fig, ax = plt.subplots()
 
-    y_cap = min(np.percentile(congestion_metric_values, 90), 4)
-    clipped = [d for d, v in zip(demands, congestion_metric_values) if v > y_cap]
+    # 4. Set upper limit y-axis
+    q1 = np.percentile(congestion_metric_values, 25)
+    q3 = np.percentile(congestion_metric_values, 75)
+    iqr = q3 - q1
+    y_cap = q3 + 1.5 * iqr
+    ax.set_ylim(1, y_cap)
 
-    ax.plot(demands, congestion_metric_values, marker="o", linewidth=2, markersize=4)
-    ax.set_ylim(top=y_cap, bottom=1)
-
-    if clipped:
-        ax.annotate(
-            f"{len(clipped)} point(s) above axis limit",
-            xy=(0.98, 0.97),
-            xycoords="axes fraction",
-            ha="right",
-            va="top",
+    # 5. Draw regime bands and threshold lines
+    thresholds = [y for y, *_ in CONGESTION_REGIMES]
+    for i, (y_lo, label, color, _) in enumerate(CONGESTION_REGIMES):
+        if y_lo >= y_cap:
+            break
+        y_hi = thresholds[i + 1] if i + 1 < len(thresholds) else y_cap
+        y_hi = min(y_hi, y_cap)
+        ax.axhspan(y_lo, y_hi, color=color, alpha=0.25, zorder=0)
+        ax.text(
+            0.01,
+            (y_lo + y_hi) / 2,
+            label,
+            transform=ax.get_yaxis_transform(),
+            va="center",
+            ha="left",
             fontsize=8,
-            color="gray",
+            color="0.4",
+        )
+        if y_lo > 1:
+            ax.axhline(y_lo, color="0.6", linestyle="--", linewidth=0.6, zorder=1)
+
+    # 6. Mark representative demands with vertical lines
+    for y_lo, label, _, accent in CONGESTION_REGIMES[1:]:  # skip free-flow
+        demand = _find_representative_demand(demands, congestion_metric_values, y_lo)
+        if demand is not None:
+            ax.axvline(demand, color=accent, linestyle="--", linewidth=1.2, zorder=2)
+            ax.text(
+                demand,
+                y_lo,
+                f"{label}\n{demand} veh",
+                va="bottom",
+                ha="center",
+                fontsize=6,
+                color="0.15",
+                bbox=dict(
+                    boxstyle="round,pad=0.15",
+                    facecolor="white",
+                    edgecolor=accent,
+                    linewidth=0.8,
+                    alpha=0.8,
+                ),
+                zorder=4,
+            )
+
+    # 7. Draw curve
+    ax.plot(
+        demands,
+        congestion_metric_values,
+        marker="o",
+        linewidth=2,
+        markersize=4,
+        zorder=2,
+    )
+
+    # 8. Outliers annotations
+    clipped = [(d, v) for d, v in zip(demands, congestion_metric_values) if v > y_cap]
+
+    for demand, _ in clipped:
+        ax.plot(
+            demand, y_cap, marker="^", color="C0", markersize=6, clip_on=False, zorder=3
         )
 
+    # 9. Improve visualization
     ax.set_xlabel("Demand (vehicles)")
     ax.set_ylabel("Congestion metric")
-    ax.set_title(f"Congestion metric vs demand  -  ({network_name})")
-    ax.legend()
+    ax.set_title(f"Congestion metric vs demand — seed {seed} ({network_name})")
 
+    # Add 1.5 to y-ticks (other thresholds 2.0 and 3.0 already land on default ticks)
+    ticks = sorted(set(list(ax.get_yticks()) + [1.5]))
+    ax.set_yticks([t for t in ticks if 1 <= t <= y_cap])
+
+    # Outlier count note
+    if clipped:
+        ax.text(
+            0.01,
+            0.99,
+            f"▲ {len(clipped)} value(s) exceed the y-axis limit",
+            transform=ax.transAxes,
+            va="top",
+            ha="left",
+            fontsize=7,
+            color="0.45",
+            style="italic",
+        )
+
+    # 8. Save
     fig.tight_layout()
     fig.savefig(path)
-    plt.show()
 
 
 if __name__ == "__main__":

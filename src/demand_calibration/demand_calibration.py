@@ -13,14 +13,13 @@ congestion level, defined as:
     The metric is dimensionless, network-size independent, and monotonically
     increasing with congestion.
 
-    ~ 1.0   — free flow (no congestion)
-    ~ 1.5   — light
-    ~ 2–3   — moderate
-    > 3     — heavy
+    ~ [1.0,1.5)   — free flow (no congestion)
+    ~ [1.5,2)   — light
+    ~ [2,3)   — moderate
+    > [3,+inf)     — heavy
 
 Free-flow trip duration is computed per route from the SUMO network
-(length / speed per edge), so the ratio is route-aware rather than
-network-wide.
+(length / speed per edge).
 
 This class is instantiated and called repeatedly by the calibration
 loop in src/demand_calibration/utils.py, which adjusts n_agents until

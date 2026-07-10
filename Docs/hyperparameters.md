@@ -9,6 +9,7 @@ This YAML contains all the chosen values of the hyperparameters
    - threshold_density
    - warm_up_time
    - fixed_time_min
+   - fixed_time_interval (yes)
   
 2. Fix implementation/computational hyperparameters using reasonable choices (without the need to 
    perform sensitivity analysis), unless evidence that they materially affect the results:
@@ -45,4 +46,3 @@ In methodology or wherever is needed to illustrate concepts I will use toy netwo
 **PENDING SENSITIVITY ANALYSIS**
 
 TIME_INTERVAL_HEURISTIC
-FIXED_TIME_INTERVAL
