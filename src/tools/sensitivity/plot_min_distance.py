@@ -18,6 +18,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import numpy as np
 
 # Workaround paths when import
@@ -84,7 +86,7 @@ def main():
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{network_name}.png"
 
     # 2. Create figure (width of 10 inches and height of 6 inches)
-    plt.figure(figsize=(10, 6))
+    plt.figure()
 
     # 3. Draw a boxplot
     plt.boxplot(all_fftts, tick_labels=labels)
@@ -108,7 +110,7 @@ def main():
     plt.tight_layout()
 
     # 7. Save
-    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.savefig(path)
 
 
 if __name__ == "__main__":

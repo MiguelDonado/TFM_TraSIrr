@@ -13,6 +13,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import numpy as np
 
 # Workaround paths when import
@@ -56,7 +58,7 @@ def main():
     demands = [r["demand"] for r in result]
     congestion_metric_values = [r["congestion_metric"] for r in result]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots()
 
     y_cap = min(np.percentile(congestion_metric_values, 90), 4)
     clipped = [d for d, v in zip(demands, congestion_metric_values) if v > y_cap]
@@ -81,7 +83,7 @@ def main():
     ax.legend()
 
     fig.tight_layout()
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path)
     plt.show()
 
 

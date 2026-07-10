@@ -61,6 +61,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from lxml import etree
@@ -129,7 +131,7 @@ def _make_plot(times, demand_curves, warm_up_candidates):
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{network_name}.png"
 
     # 2. Create figure
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots()
 
     # 3. One curve per demand
     for demand, vehicle_counts in demand_curves.items():
@@ -172,7 +174,7 @@ def _make_plot(times, demand_curves, warm_up_candidates):
     plt.tight_layout()
 
     # 7. Save
-    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.savefig(path)
 
 
 if __name__ == "__main__":

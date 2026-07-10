@@ -49,6 +49,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import pandas as pd
 from matplotlib.ticker import PercentFormatter
 
@@ -107,7 +109,7 @@ def _make_plot(thresholds, rgaps, demand):
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
 
     # 2. Create figure
-    plt.figure(figsize=(10, 6))
+    plt.figure()
 
     # 3. Draw a line
     # Convert to categorical
@@ -126,7 +128,7 @@ def _make_plot(thresholds, rgaps, demand):
     plt.tight_layout()
 
     # 6. Save
-    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.savefig(path)
 
 
 if __name__ == "__main__":

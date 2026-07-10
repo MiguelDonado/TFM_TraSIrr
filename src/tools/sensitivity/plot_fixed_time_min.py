@@ -58,6 +58,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import pandas as pd
 from matplotlib.ticker import PercentFormatter
 
@@ -147,7 +149,7 @@ def _make_plot(rgap_curves, missingness_props, demand):
 
     # 2. Create figure with two side-by-side subplots (left subplot bigger)
     fig, (ax1, ax2) = plt.subplots(
-        1, 2, figsize=(16, 5), gridspec_kw={"width_ratios": [2, 1]}
+        1, 2, gridspec_kw={"width_ratios": [2, 1]}
     )
 
     # 3. Left subplot: R-gap convergence curves (one per candidate)
@@ -188,7 +190,7 @@ def _make_plot(rgap_curves, missingness_props, demand):
     plt.tight_layout()
 
     # 8. Save
-    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.savefig(path)
     plt.close(fig)
 
 

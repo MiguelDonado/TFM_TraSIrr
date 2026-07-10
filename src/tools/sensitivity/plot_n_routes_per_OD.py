@@ -36,6 +36,8 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
+plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import numpy as np
 import pandas as pd
 from matplotlib.ticker import PercentFormatter
@@ -99,7 +101,7 @@ def _make_plot(n_routes, rgaps, episodes, demand):
     plot_prefix = "n_routes_per_OD_"
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
 
-    fig, ax1 = plt.subplots(figsize=(8, 5))
+    fig, ax1 = plt.subplots()
     # Convert to categorical
     x = range(len(n_routes))
 
@@ -143,7 +145,7 @@ def _make_plot(n_routes, rgaps, episodes, demand):
     ax1.grid(True, alpha=0.25)
     ax1.yaxis.set_major_formatter(PercentFormatter())
     plt.tight_layout()
-    plt.savefig(path, dpi=300, bbox_inches="tight")
+    plt.savefig(path)
 
 
 if __name__ == "__main__":

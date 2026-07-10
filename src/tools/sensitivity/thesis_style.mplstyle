@@ -1,0 +1,24 @@
+# Matplotlib style sheet for thesis plots.
+#
+# Loaded by every sensitivity plot script via:
+#   plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
+#
+# Settings here become the defaults for all figures created in that script,
+# so individual plt.subplots() / plt.savefig() calls need not repeat them.
+# Any value can still be overridden per-figure by passing the argument explicitly.
+
+# Figure size: LaTeX \textwidth (4.98 in) × (textwidth / golden ratio)
+figure.figsize : 4.98, 3.08
+
+# Font sizes
+font.size             : 10
+axes.titlesize        : 10
+axes.labelsize        : 10
+xtick.labelsize       : 9
+ytick.labelsize       : 9
+legend.fontsize       : 9
+legend.title_fontsize : 9
+
+# Save defaults
+savefig.dpi  : 300
+savefig.bbox : tight
