@@ -14,37 +14,39 @@ learning:
 simulation:
   warm_up_time: 60
   simulation_time: 360
+  min_distance_factor: 0.8
+  maxtries: 1000
 
 network_path:
-  network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  # network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
 duarouter:
   routing_algorithm: "CH"
-  random_factor: 100
-  max_attempts: 10
+  random_factor: 5
+  max_attempts: 25
   n_threads: 7
   n_routes_per_OD: 3
 
 stopping_rule:
-  max_episodes: 100
+  max_episodes: 150
   tolerance_stopping_rule: 0.01
   k_no_change: 3
 
 demand_calibration:
   heuristic_veh_km_hour_initial_guess: 100
-  target_congestion_metric: 2.5
+  target_congestion_metric: 1.6
   tolerance_demand_calibration: 0.1
   k_demand_calib: 1
-  min_distance_factor: 0.2
 
 interval_time:
   time_interval_heuristic: 0.5
-  fixed_time_interval: false
-  fixed_time_min: 15
+  fixed_time_interval: true
+  fixed_time_min: 0.25
 
 randomtrips:
-  max_size_od_space: 5
-  fringe_factor: 50
+  max_size_od_space: 10
+  fringe_factor: 5
 
 due_convergence: 
   threshold_density: 10

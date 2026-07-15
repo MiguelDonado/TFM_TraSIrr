@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-07-15T11:46:08.854325+01:00 by Eclipse SUMO sumo 1.26.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"/>
+        <route-files value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/ff_edges_routes.xml"/>
+    </input>
+
+    <output>
+        <vehroute-output value="/home/miguel/6.Projects/Thesis/sumo/demand_calibration/ff_edges_vehroute.xml"/>
+        <vehroute-output.exit-times value="true"/>
+    </output>
+
+    <random_number>
+        <seed value="42"/>
+    </random_number>
+
+</sumoConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vehicle id="ff_edge_0" depart="0.00" arrival="38.00">
+        <route edges="E11_12_EB E10_11_EB E10_15_SB" exitTimes="11.00 21.00 38.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_1" depart="200.00" arrival="242.00">
+        <route edges="E10_15_NB E10_11_WB E4_11_NB" exitTimes="217.00 227.00 242.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_2" depart="400.00" arrival="436.00">
+        <route edges="E14_15_EB E10_15_NB E10_17_SEB" exitTimes="411.00 426.00 436.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_3" depart="600.00" arrival="640.00">
+        <route edges="E10_11_EB E10_15_SB E14_15_WB" exitTimes="611.00 630.00 640.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_4" depart="800.00" arrival="830.00">
+        <route edges="E10_11_EB E10_16_EB E16_17_SB" exitTimes="811.00 821.00 830.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_5" depart="1000.00" arrival="1028.00">
+        <route edges="E16_17_NB E10_16_WB E9_10_NB" exitTimes="1010.00 1020.00 1028.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_6" depart="1200.00" arrival="1232.00">
+        <route edges="E16_17_SB E10_17_NWB E10_16_EB" exitTimes="1210.00 1223.00 1232.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_7" depart="1400.00" arrival="1429.00">
+        <route edges="E10_11_EB E10_17_SEB E17_19_SB" exitTimes="1411.00 1422.00 1429.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_8" depart="1600.00" arrival="1666.00">
+        <route edges="E12_13_NB E11_12_EB E11_14_SB" exitTimes="1637.00 1647.00 1666.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_9" depart="1800.00" arrival="1841.00">
+        <route edges="E10_11_WB E11_12_WB E3_12_NB" exitTimes="1812.00 1822.00 1841.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_10" depart="2000.00" arrival="2036.00">
+        <route edges="E14_15_WB E11_14_NB E10_11_EB" exitTimes="2010.00 2028.00 2036.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_11" depart="2200.00" arrival="2235.00">
+        <route edges="E10_11_WB E11_14_SB E14_23_SB" exitTimes="2211.00 2227.00 2235.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_12" depart="2400.00" arrival="2463.00">
+        <route edges="E13_24_WB E12_13_NB E11_12_EB" exitTimes="2412.00 2452.00 2463.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_13" depart="2600.00" arrival="2647.00">
+        <route edges="E11_12_WB E12_13_SB E13_24_EB" exitTimes="2611.00 2639.00 2647.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_14" depart="2800.00" arrival="2853.00">
+        <route edges="E12_13_SB E13_24_EB E21_24_EB" exitTimes="2835.00 2845.00 2853.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_15" depart="3000.00" arrival="3051.00">
+        <route edges="E21_24_WB E13_24_WB E12_13_NB" exitTimes="3010.00 3019.00 3051.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_16" depart="3200.00" arrival="3235.00">
+        <route edges="E11_14_SB E14_15_EB E15_22_SB" exitTimes="3217.00 3227.00 3235.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_17" depart="3400.00" arrival="3449.00">
+        <route edges="E10_15_SB E14_15_WB E11_14_NB" exitTimes="3419.00 3430.00 3449.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_18" depart="3600.00" arrival="3628.00">
+        <route edges="E22_23_WB E14_23_NB E14_15_EB" exitTimes="3610.00 3620.00 3628.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_19" depart="3800.00" arrival="3827.00">
+        <route edges="E11_14_SB E14_23_SB E23_24_SB" exitTimes="3815.00 3821.00 3827.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_20" depart="4000.00" arrival="4039.00">
+        <route edges="E10_15_SB E15_19_EB E19_20_SB" exitTimes="4016.00 4026.00 4039.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_21" depart="4200.00" arrival="4240.00">
+        <route edges="E17_19_SB E15_19_WB E10_15_NB" exitTimes="4211.00 4222.00 4240.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_22" depart="4400.00" arrival="4430.00">
+        <route edges="E20_22_NWB E15_22_NB E15_19_EB" exitTimes="4413.00 4422.00 4430.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_23" depart="4600.00" arrival="4632.00">
+        <route edges="E10_15_SB E15_22_SB E22_23_WB" exitTimes="4616.00 4623.00 4632.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_24" depart="4800.00" arrival="4834.00">
+        <route edges="E10_17_SEB E16_17_NB E16_18_EB" exitTimes="4814.00 4825.00 4834.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_25" depart="5000.00" arrival="5031.00">
+        <route edges="E10_16_EB E16_17_SB E10_17_NWB" exitTimes="5010.00 5020.00 5031.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_26" depart="5200.00" arrival="5253.00">
+        <route edges="E10_16_EB E16_18_EB E18_20_SWB" exitTimes="5211.00 5220.00 5253.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_27" depart="5400.00" arrival="5456.00">
+        <route edges="E18_20_NEB E16_18_WB E8_16_NB" exitTimes="5435.00 5446.00 5456.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_28" depart="5600.00" arrival="5627.00">
+        <route edges="E15_19_EB E17_19_NB E16_17_NB" exitTimes="5610.00 5619.00 5627.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_29" depart="5800.00" arrival="5831.00">
+        <route edges="E10_17_SEB E17_19_SB E15_19_WB" exitTimes="5814.00 5823.00 5831.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_30" depart="6000.00" arrival="6059.00">
+        <route edges="E19_20_SB E18_20_NEB E7_18_NB" exitTimes="6017.00 6051.00 6059.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_31" depart="6200.00" arrival="6255.00">
+        <route edges="E16_18_EB E18_20_SWB E19_20_NB" exitTimes="6211.00 6240.00 6255.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_32" depart="6400.00" arrival="6466.00">
+        <route edges="E18_20_SWB E19_20_NB E17_19_NB" exitTimes="6437.00 6457.00 6466.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_33" depart="6600.00" arrival="6638.00">
+        <route edges="E15_19_EB E19_20_SB E20_22_NWB" exitTimes="6610.00 6626.00 6638.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_34" depart="6800.00" arrival="6842.00">
+        <route edges="E1_3_NB E1_2_EB E2_6_SB" exitTimes="6811.00 6834.00 6842.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_35" depart="7000.00" arrival="7041.00">
+        <route edges="E2_6_NB E1_2_WB E1_3_SB" exitTimes="7011.00 7033.00 7041.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_36" depart="7200.00" arrival="7249.00">
+        <route edges="E3_12_NB E1_3_NB E1_2_EB" exitTimes="7217.00 7225.00 7249.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_37" depart="7400.00" arrival="7447.00">
+        <route edges="E1_2_WB E1_3_SB E3_12_SB" exitTimes="7424.00 7433.00 7447.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_38" depart="7600.00" arrival="7651.00">
+        <route edges="E21_22_SB E20_21_EB E18_20_NEB" exitTimes="7611.00 7621.00 7651.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_39" depart="7800.00" arrival="7853.00">
+        <route edges="E18_20_SWB E20_21_WB E21_22_NB" exitTimes="7833.00 7844.00 7853.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_40" depart="8000.00" arrival="8060.00">
+        <route edges="E18_20_SWB E20_22_NWB E15_22_NB" exitTimes="8036.00 8051.00 8060.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_41" depart="8200.00" arrival="8232.00">
+        <route edges="E15_22_SB E20_22_SEB E20_21_WB" exitTimes="8209.00 8222.00 8232.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_42" depart="8400.00" arrival="8432.00">
+        <route edges="E20_21_WB E21_22_NB E20_22_SEB" exitTimes="8410.00 8419.00 8432.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_43" depart="8600.00" arrival="8631.00">
+        <route edges="E15_22_SB E21_22_SB E21_24_WB" exitTimes="8611.00 8621.00 8631.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_44" depart="8800.00" arrival="8822.00">
+        <route edges="E13_24_EB E21_24_EB E20_21_EB" exitTimes="8809.00 8816.00 8822.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_45" depart="9000.00" arrival="9027.00">
+        <route edges="E20_21_WB E21_24_WB E23_24_NB" exitTimes="9010.00 9018.00 9027.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_46" depart="9200.00" arrival="9232.00">
+        <route edges="E14_23_SB E22_23_EB E21_22_SB" exitTimes="9210.00 9222.00 9232.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_47" depart="9400.00" arrival="9429.00">
+        <route edges="E15_22_SB E22_23_WB E14_23_NB" exitTimes="9410.00 9420.00 9429.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_48" depart="9600.00" arrival="9630.00">
+        <route edges="E13_24_EB E23_24_NB E22_23_EB" exitTimes="9610.00 9621.00 9630.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_49" depart="9800.00" arrival="9827.00">
+        <route edges="E14_23_SB E23_24_SB E13_24_WB" exitTimes="9809.00 9818.00 9827.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_50" depart="10000.00" arrival="10044.00">
+        <route edges="E5_6_EB E2_6_NB E1_2_WB" exitTimes="10010.00 10020.00 10044.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_51" depart="10200.00" arrival="10242.00">
+        <route edges="E1_2_EB E2_6_SB E5_6_WB" exitTimes="10225.00 10234.00 10242.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_52" depart="10400.00" arrival="10439.00">
+        <route edges="E11_12_WB E3_12_NB E3_4_EB" exitTimes="10411.00 10429.00 10439.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_53" depart="10600.00" arrival="10652.00">
+        <route edges="E1_3_SB E3_12_SB E12_13_SB" exitTimes="10609.00 10624.00 10652.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_54" depart="10800.00" arrival="10835.00">
+        <route edges="E1_3_SB E3_4_EB E4_11_SB" exitTimes="10810.00 10820.00 10835.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_55" depart="11000.00" arrival="11037.00">
+        <route edges="E4_11_NB E3_4_WB E1_3_NB" exitTimes="11018.00 11028.00 11037.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_56" depart="11200.00" arrival="11234.00">
+        <route edges="E10_11_WB E4_11_NB E4_5_EB" exitTimes="11210.00 11226.00 11234.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_57" depart="11400.00" arrival="11439.00">
+        <route edges="E3_4_EB E4_11_SB E11_12_WB" exitTimes="11410.00 11430.00 11439.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_58" depart="11600.00" arrival="11624.00">
+        <route edges="E3_4_EB E4_5_EB E5_9_SB" exitTimes="11609.00 11616.00 11624.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_59" depart="11800.00" arrival="11826.00">
+        <route edges="E5_6_WB E4_5_WB E3_4_WB" exitTimes="11810.00 11818.00 11826.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_60" depart="12000.00" arrival="12028.00">
+        <route edges="E4_5_EB E5_6_EB E6_8_SB" exitTimes="12009.00 12019.00 12028.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_61" depart="12200.00" arrival="12230.00">
+        <route edges="E2_6_SB E5_6_WB E4_5_WB" exitTimes="12211.00 12221.00 12230.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_62" depart="12400.00" arrival="12432.00">
+        <route edges="E8_9_WB E5_9_NB E5_6_EB" exitTimes="12411.00 12422.00 12432.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_63" depart="12600.00" arrival="12624.00">
+        <route edges="E4_5_EB E5_9_SB E9_10_SB" exitTimes="12610.00 12618.00 12624.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_64" depart="12800.00" arrival="12827.00">
+        <route edges="E7_8_WB E6_8_NB E2_6_NB" exitTimes="12811.00 12819.00 12827.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_65" depart="13000.00" arrival="13025.00">
+        <route edges="E2_6_SB E6_8_SB E8_9_WB" exitTimes="13009.00 13017.00 13025.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_66" depart="13200.00" arrival="13231.00">
+        <route edges="E16_18_EB E7_18_NB E7_8_WB" exitTimes="13211.00 13222.00 13231.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_67" depart="13400.00" arrival="13429.00">
+        <route edges="E7_8_EB E7_18_SB E16_18_WB" exitTimes="13411.00 13420.00 13429.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_68" depart="13600.00" arrival="13628.00">
+        <route edges="E6_8_SB E7_8_EB E7_18_SB" exitTimes="13610.00 13619.00 13628.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_69" depart="13800.00" arrival="13830.00">
+        <route edges="E7_18_NB E7_8_WB E6_8_NB" exitTimes="13811.00 13821.00 13830.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_70" depart="14000.00" arrival="14027.00">
+        <route edges="E10_16_EB E8_16_NB E7_8_EB" exitTimes="14010.00 14019.00 14027.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_71" depart="14200.00" arrival="14226.00">
+        <route edges="E6_8_SB E8_16_SB E10_16_WB" exitTimes="14210.00 14218.00 14226.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_72" depart="14400.00" arrival="14429.00">
+        <route edges="E5_9_SB E8_9_EB E8_16_SB" exitTimes="14410.00 14420.00 14429.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_73" depart="14600.00" arrival="14630.00">
+        <route edges="E6_8_SB E8_9_WB E5_9_NB" exitTimes="14610.00 14620.00 14630.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_74" depart="14800.00" arrival="14830.00">
+        <route edges="E10_11_EB E9_10_NB E8_9_EB" exitTimes="14811.00 14821.00 14830.00"/>
+    </vehicle>
+
+    <vehicle id="ff_edge_75" depart="15000.00" arrival="15027.00">
+        <route edges="E5_9_SB E9_10_SB E10_11_WB" exitTimes="15010.00 15018.00 15027.00"/>
+    </vehicle>
+
+</routes>

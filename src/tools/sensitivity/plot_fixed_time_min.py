@@ -71,16 +71,13 @@ from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from utils.run_training_BM import run_full_training_BM
 
-# FIXED_TIME_MIN_CANDIDATES = [
-#     5 / 60,  # 5 s
-#     10 / 60,  # 10 s
-#     15 / 60,  # 15 s
-#     30 / 60,  # 30 s
-# ]
-# DEMANDS = [1000, 1500, 1750, 2000]
-
-FIXED_TIME_MIN_CANDIDATES = [1, 5]
-DEMANDS = [1000]
+FIXED_TIME_MIN_CANDIDATES = [
+    5 / 60,  # 5 s
+    10 / 60,  # 10 s
+    15 / 60,  # 15 s
+    30 / 60,  # 30 s
+]
+DEMANDS = [1000, 1500, 1750, 2000]
 
 
 def main():
@@ -148,9 +145,7 @@ def _make_plot(rgap_curves, missingness_props, demand):
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
 
     # 2. Create figure with two side-by-side subplots (left subplot bigger)
-    fig, (ax1, ax2) = plt.subplots(
-        1, 2, gridspec_kw={"width_ratios": [2, 1]}
-    )
+    fig, (ax1, ax2) = plt.subplots(1, 2, gridspec_kw={"width_ratios": [2, 1]})
 
     # 3. Left subplot: R-gap convergence curves (one per candidate)
     # R-gap is stored as a percentage (e.g. 20.0 means 20 %)

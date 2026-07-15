@@ -1,2 +1,2 @@
-Proportion missing: 0.3022
-Total missing: 15826
+Proportion missing: 0.7970
+Total missing: 1252088

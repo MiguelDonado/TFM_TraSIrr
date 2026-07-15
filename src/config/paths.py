@@ -281,9 +281,17 @@ SUMO_CONF_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "basic.cfg"
 
 # Free-flow simulation: one vehicle per unique route on an empty network,
 # used to obtain accurate route-level free-flow travel times
+# (used in demand_calibration, as the denominator on the congestion metric)
 ROUTES_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_routes.xml"
 SUMO_CONF_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff.cfg"
 TRIPS_INFO_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_tripsinfo.xml"
+
+# Free-flow edge simulation: one vehicle per edge (sandwich route) on an empty network,
+# used to obtain simulation-based free-flow travel times for every edge
+# (used in R-gap computation when imputing missing values)
+ROUTES_FF_EDGES = DEMAND_CALIBRATION_DIR / "ff_edges_routes.xml"
+SUMO_CONF_FF_EDGES = DEMAND_CALIBRATION_DIR / "ff_edges.cfg"
+VEHROUTE_FF_EDGES = DEMAND_CALIBRATION_DIR / "ff_edges_vehroute.xml"
 
 # ============================================================
 # Sensitivity
