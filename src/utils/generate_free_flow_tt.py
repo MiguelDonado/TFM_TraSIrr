@@ -1,7 +1,33 @@
 """
-Derives free-flow travel time per edge from the SUMO network (length / speed)
-and stores it as a lookup table. Also computes route-level free-flow costs by
-summing edge costs, used in scenario to get the median as heuristic for the adaptive time interval
+Free-flow travel time utilities for edges and routes.
+
+Function                              Purpose
+------------------------------------  -----------------------------------------------
+generate_free_flow_tt_links           Build FREE_FLOW_TRAVEL_TIMES parquet (length/speed
+                                      per edge). Used as imputation fallback in the TDSP
+                                      link cost table and as edge weights for route-level
+                                      cost functions below.
+
+generate_free_flow_tt_links_simulation  Alternative to the above (NOT currently wired in).
+                                      Runs a dedicated SUMO episode with one sandwich-route
+                                      vehicle per edge to get simulation-based free-flow TTs.
+                                      Kept for reference; not used because junction crossing
+                                      time is bundled into the measurement, making the TT
+                                      predecessor-dependent rather than an intrinsic edge
+                                      property.
+                                      (basically the travel time on the edge depended on the
+                                      predecessor edge, and thats not intuitive. The free flow
+                                      travel time of an edge should be independent of wherever
+                                      you are coming from, at least we want to assume that,
+                                      for simplification)
+
+generate_free_flow_tt_paths           Sum edge costs along every route for each OD pair.
+                                      Used by Scenario to compute the median free-flow
+                                      route TT, which drives the adaptive time-interval
+                                      heuristic.
+
+generate_free_flow_tt_shortest_paths  Same as above but returns only the shortest-path
+                                      cost per OD pair as {(origin, dest): tt}.
 """
 
 import subprocess

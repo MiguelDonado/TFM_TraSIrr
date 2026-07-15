@@ -35,6 +35,65 @@ it is dimensionless and comparable across networks and demand levels.
 R-gap = 0.20 means drivers experienced, on average, travel costs 20 % above the
 time-dependent shortest-path cost.
 
+Sources of inaccuracy
+---------------------
+The dominant source of inaccuracy is time aggregation. The avg link travel time
+table stores one mean cost per (edge, interval), so every vehicle departing within
+the same interval is assumed to face the same shortest path. In reality congestion
+changes continuously: a vehicle leaving at 8:02 may have a different optimal route
+than one leaving at 8:09. The larger the interval, the less precise the edge-cost
+estimates and the less accurate the resulting shortest paths.
+
+  Example: two vehicles use the same edge in interval t. The first experiences
+  5 min, the second 20 min. The table records 12.5 min. If the interval were
+  split, the first vehicle’s edge cost would be 5 min and the edge would appear
+  in its shortest path; the second’s would be 20 min and the edge might not.
+  Aggregating over the full interval distorts both.
+
+Why the R-gap can be negative
+------------------------------
+If c*_{odt} is overestimated (due to the aggregation above), the term
+(c_{odtp} − c*_{odt}) can become negative for vehicles whose actual cost is below
+the aggregated "shortest path" cost. The sum across all vehicles can then be
+negative even when drivers took the true shortest path.
+
+  Example: vehicle 1 took the true shortest path of 20 min; vehicle 2 took
+  the true shortest path of 60 min. Both depart in the same interval and the
+  aggregated c*_{odt} = 45 min.
+
+    Accurate:   (20−20)·1 + (60−60)·1 =   0
+    Aggregated: (20−45)·1 + (60−45)·1 = −10
+
+  The R-gap is negative despite both drivers being at equilibrium.
+
+Why time aggregation can violate FIFO
+--------------------------------------
+Aggregating travel times over an interval can make the link cost table
+non-FIFO: a vehicle entering an edge later may exit earlier than one that
+entered before it, which is physically impossible but can appear in the
+aggregated data.
+
+  Example: in interval t, the first vehicle traverses an edge in 80 s and the
+  last vehicle traverses it in 20 s (congestion clearing). The table records
+  50 s for interval t. In interval t+1 all vehicles take 20 s, so the table
+  records 20 s.
+
+  Now suppose vehicle A enters the edge at t=28 s (interval t) and vehicle B
+  enters at t=30 s (interval t+1):
+
+    A exits at: 28 + 50 = 78 s
+    B exits at: 30 + 20 = 50 s
+
+  B exits before A despite entering later — FIFO is violated. Smaller
+  intervals reduce this effect by making each bucket more homogeneous.
+
+When edge costs are temporally aggregated, the estimated shortest path is itself
+only an approximation of the true shortest path experienced by each individual
+vehicle. Consequently, the computed R-gap captures not only the actual network
+disequilibrium but also an approximation error introduced by temporal aggregation.
+As the assignment interval widens, this error grows because a wider range of
+traffic conditions is collapsed into a single travel time.
+
 References
 ----------
 Linares Herreros, María Paz, and Jaime Barceló Bugeda.
