@@ -24,7 +24,6 @@ This YAML contains all the chosen values of the hyperparameters
    - tolerance_stopping_rule
    - k_no_change
    - heuristic_veh_km_hour_initial_guess
-   - k_demand_calib
    - fringe_factor
    - duaIterate_max_iterations
    - duaIterate_step_length
@@ -36,7 +35,7 @@ A principle of experimental design is to fix parameters in an order that respect
 In experiment evaluation, Im only gonna analyze Sioux Falls network.
 In methodology or wherever is needed to illustrate concepts I will use toy network as well.
 
-3. Hyperparameters that will be investigated in research questions:
+1. Hyperparameters that will be investigated in research questions:
    - seed
    - learning_rate
    - memory_rate

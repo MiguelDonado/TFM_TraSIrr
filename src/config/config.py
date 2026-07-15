@@ -109,8 +109,6 @@ class Config:
     target_congestion_metric: float
     # If the actual congestion ratio is closer than this tolerance to the target congestion we considered the calibration done
     tolerance_demand_calibration: float
-    # Proportional term that is used on the update rule in demand calibration
-    k_demand_calib: float
     # Result
     n_agents: int = field(init=False)
     # min-distance = min-distance-factor x network diagonal

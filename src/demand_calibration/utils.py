@@ -22,12 +22,24 @@ Two-phase procedure
    and adjusting n_agents after each simulation:
 
        error         = target_congestion_metric - observed_congestion_ratio
-       update_factor = clip(1 + k_demand_calib × error, 0.6, 1.4)
-       n_agents      = int(n_agents × update_factor)
+       update_factor = clip(1 + k × error, 0.7, 1.3)
+       n_{t+1}       = (1 − α) × n_t  +  α × (n_t × update_factor),   α = 0.3
 
-   Large errors produce aggressive corrections; smaller errors produce smoother
-   corrections, helping convergence.
-   The clip to [0.6, 1.4] prevents overshooting on the first iterations.
+   Two mechanisms prevent oscillation around the target:
+
+   Adaptive gain — k shrinks as |error| shrinks:
+       |error| > 0.4  →  k = 0.6
+       |error| > 0.15 →  k = 0.3
+       otherwise      →  k = 0.1
+   The correction is already proportional to the error, so it naturally
+   decreases as the target is approached. Adaptive gain adds a second layer:
+   the controller intentionally becomes less aggressive near the target,
+   so the demand shrinks for two reasons — the error is smaller and the
+   gain is smaller — reducing the risk of overshooting.
+
+   Smoothing — only a fraction α of the recommended update is applied each
+   iteration.
+
    Stops when |error| < tolerance_demand_calibration.
 
 Returns
@@ -134,10 +146,20 @@ def _calibration_loop(
         if abs(error) < config.tolerance_demand_calibration:
             return agents, unique_ods
 
-        update_factor = 1 + (config.k_demand_calib * error)
+        # Adaptive gain
+        if abs(error) > 0.4:
+            k = 0.6
+        elif abs(error) > 0.15:
+            k = 0.3
+        else:
+            k = 0.1
+
+        update_factor = 1 + (k * error)
         update_factor = round(float(np.clip(update_factor, 0.7, 1.3)), 3)
 
-        demand = int(demand * update_factor)
+        # Smoothing
+        alpha = 0.3
+        demand = int((1 - alpha) * demand + alpha * (demand * update_factor))
 
         # Increment cunter
         i += 1
