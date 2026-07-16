@@ -35,9 +35,9 @@ congestion) via threshold lower bounds stored in CONGESTION_REGIMES. These
 thresholds are qualitative and somewhat arbitrary — what matters is that they
 produce meaningfully distinct traffic states for the experiments. For each regime,
 the representative demand is selected as the first demand value where the metric
-exceeds the regime threshold and the immediately following demand value also stays
-above it. This two-point rule avoids picking a noisy spike that immediately drops
-back below the threshold.
+exceeds the regime threshold. Because the nested demand structure ensures the
+congestion curve is approximately monotonically increasing, a single crossing
+point is sufficient — no two-point confirmation is needed.
 
 The representative demands selected here are used throughout the thesis experiments
 to evaluate the MARL algorithm's performance under different congestion levels.
@@ -139,9 +139,9 @@ def main():
 
 
 def _find_representative_demand(demands, values, threshold):
-    """First demand where the metric exceeds threshold and the next point also stays above."""
-    for i in range(len(values) - 1):
-        if values[i] > threshold and values[i + 1] > threshold:
+    """First demand where the metric exceeds threshold."""
+    for i, v in enumerate(values):
+        if v > threshold:
             return demands[i]
     return None
 

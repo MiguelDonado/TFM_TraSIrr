@@ -30,10 +30,8 @@ stopping_rule:
   tolerance_stopping_rule: 0.01
   k_no_change: 3
 
-demand_calibration:
-  heuristic_veh_km_hour_initial_guess: 100
-  target_congestion_metric: 2.5
-  tolerance_demand_calibration: 0.1
+demand:
+  n_agents: 2000
 
 interval_time:
   time_interval_heuristic: 0.5

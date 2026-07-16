@@ -6,9 +6,8 @@ data structures consumed every episode:
   self.agents    — list of dicts {id, origin, destination, departure_time}
   self.od_routes — {(origin, dest): [[edge, …], …]} with k route alternatives
 
-Agents and unique_ods are generated externally by the demand calibration
-loop (via utils.generate_agents) and passed in, so the OD matrix
-used here is identical to the one calibration converged on.
+Agents and unique_ods are generated externally (via utils.generate_agents)
+and passed in.
 
 Construction runs three steps automatically in __init__:
 1. Routes       — compute k alternative routes per OD by calling duarouter

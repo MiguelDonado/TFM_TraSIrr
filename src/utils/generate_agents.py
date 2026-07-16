@@ -15,6 +15,12 @@ build_od_space + generate_agents_from_od_space — used by the congestion metric
     generate_agents_from_od_space sample from that counter without re-invoking
     randomTrips, ensuring that higher demand levels are strict supersets of lower
     ones (nested demand structure).
+
+    Without this, each demand level was generated independently, so the 1700- and
+    1800-vehicle scenarios had entirely unrelated route distributions. For example,
+    1700 vehicles might send 800 through a bottleneck and 900 elsewhere, while 1800
+    vehicles might send only 500 through the same bottleneck and 1300 elsewhere —
+    producing a lower congestion metric at higher demand, breaking monotonicity.
 """
 
 import os

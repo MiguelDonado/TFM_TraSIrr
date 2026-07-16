@@ -8,7 +8,7 @@ training over up to config.max_episodes days, DUE convergence checks
 
 Execution order
 ---------------
-0. Demand calibration   — find n_agents that hits target congestion ratio
+0. Generate agents      — sample OD pairs and departure times for config.n_agents
 1. Scenario             — generate OD pairs, k routes, SUMO config files
 2. Environment          — SUMO subprocess wrapper (file-based, no TraCI)
 3. Agents               — initialise BMAgent probability vectors
@@ -36,7 +36,7 @@ import pandas as pd
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
 from config.paths import POLICY_CHANGE_BM
-from demand_calibration.utils import demand_calibration
+from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import (
     accumulate_results,
@@ -69,9 +69,9 @@ def main():
         save_simulation_run_id(run.info.run_id)
 
         # -----------------------------
-        # 0. DEMAND CALIBRATION
+        # 0. GENERATE AGENTS
         # -----------------------------
-        agents, unique_ods = demand_calibration(last_iteration_gui=False)
+        agents, unique_ods = demand_from_count(config.n_agents)
 
         # -----------------------------
         # 1. CREATE SCENARIO (files)

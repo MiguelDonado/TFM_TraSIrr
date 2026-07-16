@@ -14,6 +14,7 @@ learning:
 simulation:
   warm_up_time: 600
   simulation_time: 3600
+  min_distance_factor: 0.2
 
 network_path:
   network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
@@ -30,11 +31,8 @@ stopping_rule:
   tolerance_stopping_rule: 0.01
   k_no_change: 3
 
-demand_calibration:
-  heuristic_veh_km_hour_initial_guess: 100
-  target_congestion_metric: 2.5
-  tolerance_demand_calibration: 0.1
-  min_distance_factor: 0.2
+demand:
+  n_agents: 2000
 
 interval_time:
   time_interval_heuristic: 0.5
