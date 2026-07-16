@@ -40,10 +40,12 @@ intervals (seconds) once the general trend had been identified.
 
 Decision rule:
 Select the smallest interval whose R-gap curve remains as close to zero
-as possible while avoiding frequent negative R-gap values.
+as possible while avoiding frequent negative R-gap values and taking into account
+the trade-off with missing values. If two candidates produce similar R-gap curves,
+prefer the one that generates fewer missing values.
 
 Final decision:
-15 seconds (0.25 minutes).
+30 seconds (0.5 minutes).
 
 Run with: python src/tools/sensitivity/plot_fixed_time_min.py <config.yaml>
 

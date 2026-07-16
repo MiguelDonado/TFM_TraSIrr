@@ -102,10 +102,8 @@ class Config:
     #####
     # Interval time
     #####
-    time_interval: int = field(init=False)  # Seconds
-    time_interval_heuristic: float
-    fixed_time_interval: bool
-    fixed_time_min: int
+    fixed_time_min: float
+    time_interval: int = field(init=False)  # Seconds — derived from fixed_time_min
 
     #####################
     # 4. Simulation time
@@ -176,6 +174,9 @@ class Config:
 
         # Compute warm-up BM agents
         self.warm_up = self.n_routes_per_OD * 3
+
+        # Compute time interval in seconds
+        self.time_interval = int(self.fixed_time_min * 60)
 
 
 #####

@@ -37,9 +37,7 @@ demand:
   n_agents: 2000
 
 interval_time:
-  time_interval_heuristic: 0.5
-  fixed_time_interval: true
-  fixed_time_min: 0.25  # minutes
+  fixed_time_min: 0.5  # minutes
 
 randomtrips:
   max_size_od_space: 10

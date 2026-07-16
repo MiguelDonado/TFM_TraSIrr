@@ -49,9 +49,6 @@ from config.paths import (
     UNDESIRED_ROUTE_FILE,
     VEHROUTE_XML,
 )
-from utils.generate_free_flow_tt import (
-    generate_free_flow_tt_paths,
-)
 from utils.od_routes import od_routes_to_rows, parse_route
 from utils.sumo_xml import write_meandata_file, write_sumo_conf
 
@@ -219,8 +216,6 @@ class Scenario:
     def _save_scenario_data(self):
         self._save_od_routes()
 
-        self._set_time_interval()
-
         self._add_time_intervals_to_agents()
 
         self._save_agents()
@@ -314,28 +309,10 @@ class Scenario:
                 )
             f.write("</routes>\n")
 
-    def _compute_median_free_flow_travel_time(self):
-        path_costs = generate_free_flow_tt_paths(self.od_routes)
-
-        median_free_flow_tt = float(np.median(path_costs))
-        return median_free_flow_tt
-
     def _save_od_routes(self):
         processed_od_routes = self._process_od_routes()
         df = pd.DataFrame(processed_od_routes)
         df.to_parquet(OD_ROUTES, engine="pyarrow")
-
-    def _set_time_interval(self):
-        # FIXED
-        if config.fixed_time_interval:
-            config.time_interval = int(config.fixed_time_min * 60)
-
-        # SET TIME INTERVAL USED THROUGHOUT THE PROGRAM (AUTOMATICALLY ADAPTED TO EACH NETWORK)
-        else:
-            config.time_interval = int(
-                self._compute_median_free_flow_travel_time()
-                * config.time_interval_heuristic
-            )
 
     def _add_time_intervals_to_agents(self):
         # // represents integer division
