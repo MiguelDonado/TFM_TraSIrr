@@ -45,10 +45,7 @@ from experiment import (
     run_final_simulation,
     save_processed_data,
 )
-from mlflow_tracking.simulation import (
-    log_simulation_mlflow,
-    save_simulation_run_id,
-)
+from mlflow_tracking.simulation import log_simulation_mlflow
 from mlflow_tracking.utils import set_up_mlflow
 from simulation.environment import Environment
 from simulation.scenario import Scenario
@@ -56,71 +53,6 @@ from stopping_rule.stopping_rule import (
     check_convergence,
     create_policies_dict,
 )
-
-
-def main():
-    # Reproducibility
-    rng = np.random.default_rng(config.seed)
-    seeds = rng.integers(0, 100000, size=config.max_attempts)
-
-    set_up_mlflow()
-    with mlflow.start_run() as run:
-        # Save simulation run id
-        save_simulation_run_id(run.info.run_id)
-
-        # -----------------------------
-        # 0. GENERATE AGENTS
-        # -----------------------------
-        agents, unique_ods = demand_from_count(config.n_agents)
-
-        # -----------------------------
-        # 1. CREATE SCENARIO (files)
-        # -----------------------------
-        scen = Scenario(
-            map=config.network,
-            agents=agents,
-            unique_ods=unique_ods,
-            seeds=seeds,
-        )
-
-        # -----------------------------
-        # 2. CREATE ENVIRONMENT
-        # -----------------------------
-        env = Environment(scenario=scen)
-
-        # -----------------------------
-        # 3. CREATE AGENTS
-        # -----------------------------
-        agents = initialize_agents(scen=scen)
-
-        if config.last_episode_gui_BM:
-            run_final_simulation()
-
-        # -----------------------------
-        # 4. TRAINING LOOP
-        # -----------------------------
-        results, policy_change_history = _run_training_loop(env=env, agents=agents)
-
-        # -----------------------------
-        # 5. SAVE OUTPUT
-        # -----------------------------
-        save_processed_data(results)
-        df_policy_change = pd.DataFrame(policy_change_history)
-        df_policy_change.to_parquet(POLICY_CHANGE_BM)
-        # -----------------------------
-        # 6. CHECK DUE convergence
-        # -----------------------------
-        run_due_convergence_checks(
-            scen=scen, end_time=config.end_time, time_interval=config.time_interval
-        )
-
-        # -----------------------------
-        # 7. MLflow (Artifact storage, Experiment tracking)
-        # -----------------------------
-        log_simulation_mlflow(run_id=run.info.run_id)
-
-        # Play sound to signal end of script
-        os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
 
 
 def _run_training_loop(
@@ -205,14 +137,73 @@ def _run_training_loop(
     return results, policy_change_history
 
 
-def run():
+def main():
     log_run_mode(config.mode, config.have_precomputed_routes, config.episodes_gui)
 
     if config.mode == RunMode.EVAL_GUI:
         run_final_simulation()
-    else:
-        main()
+        return
+
+    # Reproducibility
+    rng = np.random.default_rng(config.seed)
+    seeds = rng.integers(0, 100000, size=config.max_attempts)
+
+    set_up_mlflow()
+    with mlflow.start_run() as run:
+        # -----------------------------
+        # 0. GENERATE AGENTS
+        # -----------------------------
+        agents, unique_ods = demand_from_count(config.n_agents)
+
+        # -----------------------------
+        # 1. CREATE SCENARIO (files)
+        # -----------------------------
+        scen = Scenario(
+            map=config.network,
+            agents=agents,
+            unique_ods=unique_ods,
+            seeds=seeds,
+        )
+
+        # -----------------------------
+        # 2. CREATE ENVIRONMENT
+        # -----------------------------
+        env = Environment(scenario=scen)
+
+        # -----------------------------
+        # 3. CREATE AGENTS
+        # -----------------------------
+        agents = initialize_agents(scen=scen)
+
+        if config.last_episode_gui_BM:
+            run_final_simulation()
+
+        # -----------------------------
+        # 4. TRAINING LOOP
+        # -----------------------------
+        results, policy_change_history = _run_training_loop(env=env, agents=agents)
+
+        # -----------------------------
+        # 5. SAVE OUTPUT
+        # -----------------------------
+        save_processed_data(results)
+        df_policy_change = pd.DataFrame(policy_change_history)
+        df_policy_change.to_parquet(POLICY_CHANGE_BM)
+
+        # -----------------------------
+        # 6. CHECK DUE convergence
+        # -----------------------------
+        run_due_convergence_checks(
+            scen=scen, end_time=config.end_time, time_interval=config.time_interval
+        )
+
+        # -----------------------------
+        # 7. MLflow (Artifact storage, Experiment tracking)
+        # -----------------------------
+        log_simulation_mlflow(run_id=run.info.run_id)
+
+    os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
 
 
 if __name__ == "__main__":
-    run()
+    main()

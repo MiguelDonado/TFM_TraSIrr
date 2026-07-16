@@ -37,7 +37,6 @@ from config.paths import (
     DUA_PATHS,
     DUE_DATA_DIR,
     EXPERIMENTS_TMP,
-    MLFLOW_SOURCE_RUN_ID,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     STATISTICS_PARQUET,
@@ -62,18 +61,7 @@ def log_simulation_mlflow(run_id):
     set_simulation_tags(run_id)
 
 
-def save_simulation_run_id(run_id):
-    """
-    This function saves the run_id of the simulation run, so that
-    following analysis run can identify the simulation run id, and
-    use it to identify the simulation run is analysing
-    """
-    with open(MLFLOW_SOURCE_RUN_ID, "w") as f:
-        f.write(run_id)
-
-
 def set_simulation_tags(run_id):
-    mlflow.set_tag("source_run_id", run_id)
     mlflow.set_tag("run_type", "simulation")
     mlflow.set_tag("algorithm", "BM")
     run_name = (

@@ -1,11 +1,15 @@
-base_config: /home/miguel/6.Projects/Thesis/experiments/rq2/base.yaml
+base_config: /home/miguel/6.Projects/Thesis/experiments/rq1/base.yaml
 
 grid:
   randomness:
     seed:
       - 42
-      - 24
-      - 8
+      - 1999
+      - 2026
+      - 123
       - 7
-      - 23
-    
+  demand:
+    n_agents:
+      - 1500
+      - 2000
+      - 2500

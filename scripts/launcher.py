@@ -54,7 +54,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
 from itertools import product
 from pathlib import Path
 
@@ -85,7 +84,7 @@ def _load_design(path):
     return base_config_path, param_specs
 
 
-def _write_temp_config(base_config_path, param_specs, combination):
+def _write_temp_config(base_config_path, param_specs, combination, research_question=None):
     # 1. Load base config file
     with open(base_config_path) as f:
         config = yaml.safe_load(f)
@@ -93,6 +92,10 @@ def _write_temp_config(base_config_path, param_specs, combination):
     # 2. Update config values with the actual grid combination
     for (section, param, _), value in zip(param_specs, combination):
         config[section][param] = value
+
+    # 3. Inject research question so it is logged as an MLflow param
+    if research_question:
+        config["mode_and_flags"]["research_question"] = research_question
 
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".yaml", dir=EXPERIMENTS_TMP, delete=False
@@ -111,24 +114,29 @@ def main():
     # 3. Extract grid combinations
     base_config_path, param_specs = _load_design(path)
 
-    # 4. For each combination of parameters
+    # 4. For each combination of parameters, run the simulation
     for combination in product(*[values for _, _, values in param_specs]):
 
         # 5. Write a temporary config YAML file containing the combination of
         # hyperparameters to try
-        tmp_path = _write_temp_config(base_config_path, param_specs, combination)
+        tmp_path = _write_temp_config(base_config_path, param_specs, combination, research_question)
 
         # 6. Run simulation code with YAML config tmp file
         subprocess.run(["python", "main.py", tmp_path], cwd=BASE_DIR / "src")
 
-        # 7. (Optionally) Run analysis code
-        if research_question:
-            subprocess.run(
-                [
-                    "python",
-                    str(BASE_DIR / "scripts" / "run_analysis.py"),
-                    research_question,
-                ]
-            )
-
         os.unlink(tmp_path)
+
+    # 7. (Optionally) Run analysis once after all combinations are complete,
+    # so it can aggregate results across the full grid (e.g. across seeds)
+    if research_question:
+        subprocess.run(
+            [
+                "python",
+                str(BASE_DIR / "scripts" / "run_analysis.py"),
+                research_question,
+            ]
+        )
+
+
+if __name__ == "__main__":
+    main()

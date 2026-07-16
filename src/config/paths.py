@@ -442,9 +442,6 @@ MEANDATA_AGGREGATED = EDGE_VISUALIZATION_DIR / "meandata_aggregated.xml"
 # ============================================================
 # MLFLOW
 # ============================================================
-# File that stores the run id of the simulation run
-MLFLOW_SOURCE_RUN_ID = DATA_DIR / "MLflow" / "source_run_id.txt"
-
 # ============================================================
 # EXPERIMENTS
 # ============================================================

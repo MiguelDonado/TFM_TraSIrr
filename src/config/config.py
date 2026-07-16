@@ -163,6 +163,7 @@ class Config:
     last_episode_gui_duaIterate: bool
     config_name: str
     mode: RunMode = RunMode.TRAIN
+    research_question: str = ""
     episodes_gui: set[int] = field(default_factory=lambda: {})
 
     #####################
