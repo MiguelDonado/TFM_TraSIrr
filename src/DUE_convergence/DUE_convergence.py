@@ -228,6 +228,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
         time_interval=time_interval,
         vehroute_file=DUA_EXTRA.vehroute_processed,
         edgedata_file=DUA_EXTRA.edgedata_processed,
+        threshold_density=threshold_density,
         agents_od_file=AGENTS_OD,
         missingness_edge_file=DUA_PATHS.missingness_edge,
         missingness_episode_file=DUA_PATHS.missingness_episode,
