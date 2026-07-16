@@ -54,9 +54,10 @@ from utils.sumo_xml import write_sumo_conf
 
 
 class DemandCalibration:
-    def __init__(self, map, agents):
+    def __init__(self, map, agents, seed=None):
         self.network = map
         self.agents = agents
+        self.seed = seed if seed is not None else config.seed
 
         self.od_routes = {}
 
@@ -100,8 +101,6 @@ class DemandCalibration:
             str(config.n_threads),
             "--routing-algorithm",
             config.routing_algorithm,
-            "--seed",
-            str(config.seed),
         ]
         subprocess.run(cmd, check=True)
 
@@ -139,7 +138,7 @@ class DemandCalibration:
             net_file=self.network,
             route_files=ROUTES_FREE_FLOW,
             report_outputs={"tripinfo-output": TRIPS_INFO_FREE_FLOW},
-            seed=config.seed,
+            seed=self.seed,
         )
 
         # 3. Run simulation
@@ -164,7 +163,7 @@ class DemandCalibration:
             net_file=self.network,
             route_files=ROUTES_DEMAND_CALIBRATION,
             report_outputs={"tripinfo-output": TRIPS_INFO_XML},
-            seed=config.seed,
+            seed=self.seed,
         )
 
         self.conf = SUMO_CONF_DEMAND_CALIBRATION
@@ -179,10 +178,10 @@ class DemandCalibration:
 
     def compute_congestion_metric(self):
         self.run_episode()
-        durations = self._parse_trips_duration()
+        durations_by_id = self._parse_trips_duration()
         per_agent_metric = [
-            self._compute_agent_metric(agent, duration)
-            for agent, duration in zip(self.agents, durations)
+            self._compute_agent_metric(agent, durations_by_id[agent["id"]])
+            for agent in self.agents
         ]
 
         congestion_metric_value = round(np.mean(per_agent_metric), 5)
@@ -204,6 +203,7 @@ class DemandCalibration:
 
     def _parse_trips_duration(self):
         tree = etree.parse(TRIPS_INFO_XML)
-        durations = tree.xpath("//tripinfo/@duration")
-        durations = [float(duration) for duration in durations]
-        return durations
+        return {
+            trip.get("id"): float(trip.get("duration"))
+            for trip in tree.xpath("//tripinfo")
+        }

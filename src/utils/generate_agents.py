@@ -19,16 +19,18 @@ from utils.network import compute_diagonal_network
 
 
 def generate_agents(
-    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None
+    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None, seed=None
 ):
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor
+
+    seed = seed if seed is not None else config.seed
 
     n_agents = n_agents_warmup + n_agents_post_warmup
 
     agents = []
     od_pairs, unique_ods = generate_od_for_agents(
-        n_agents, n_agents_post_warmup, rng, min_distance_factor
+        n_agents, n_agents_post_warmup, rng, min_distance_factor, seed
     )
     departure_times = generate_departure_times(n_agents, rng)
     for i in range(n_agents):
@@ -45,13 +47,15 @@ def generate_agents(
     return agents, unique_ods
 
 
-def generate_od_for_agents(n_agents, n_agents_post_warmup, rng, min_distance_factor):
+def generate_od_for_agents(
+    n_agents, n_agents_post_warmup, rng, min_distance_factor, seed
+):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
         # Generate random ods for agents
         generate_random_trips_agents(
-            n_agents_post_warmup, trips_file, min_distance_factor
+            n_agents_post_warmup, trips_file, min_distance_factor, seed
         )
         # OD space
         od_space = parse_od_agents(trips_file)
@@ -69,7 +73,7 @@ def generate_od_for_agents(n_agents, n_agents_post_warmup, rng, min_distance_fac
 
 
 def generate_random_trips_agents(
-    n_agents_post_warmup, output_file, min_distance_factor
+    n_agents_post_warmup, output_file, min_distance_factor, seed
 ):
     """
     Generate random trips for the requested number of agents.
@@ -120,7 +124,7 @@ def generate_random_trips_agents(
         "--min-distance",
         str(min_distance),
         "--seed",
-        str(config.seed),
+        str(seed),
         "-o",
         output_file,
         "--maxtries",
@@ -196,3 +200,33 @@ def generate_departure_times(n_agents, rng):
     # Sort departure times, to avoid problems in SUMO simulation and for clarity. The agent_1 should be the first to departure, the agent_2 the second...
     departure_times.sort()
     return departure_times
+
+
+def build_od_space(n_agents_post_warmup, min_distance_factor=None, seed=None):
+    if min_distance_factor is None:
+        min_distance_factor = config.min_distance_factor
+    seed = seed if seed is not None else config.seed
+    with tempfile.TemporaryDirectory() as tmpdir:
+        trips_file = os.path.join(tmpdir, "trips.xml")
+        generate_random_trips_agents(
+            n_agents_post_warmup, trips_file, min_distance_factor, seed
+        )
+        od_space = parse_od_agents(trips_file)
+        return restrict_od_space(
+            od_space, config.max_size_od_space, n_agents_post_warmup
+        )
+
+
+def generate_agents_from_od_space(od_space_counter, n_agents, rng):
+    od_pairs, unique_ods = sample_od_space(od_space_counter, n_agents, rng)
+    departure_times = generate_departure_times(n_agents, rng)
+    agents = [
+        {
+            "id": f"agent_{i + 1}",
+            "origin": od_pairs[i][0],
+            "destination": od_pairs[i][1],
+            "departure_time": departure_times[i],
+        }
+        for i in range(n_agents)
+    ]
+    return agents, unique_ods

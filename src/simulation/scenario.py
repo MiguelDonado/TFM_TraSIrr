@@ -51,7 +51,6 @@ from config.paths import (
     VEHROUTE_XML,
 )
 from utils.generate_free_flow_tt import (
-    generate_free_flow_tt_links,
     generate_free_flow_tt_paths,
 )
 from utils.od_routes import od_routes_to_rows, parse_route
@@ -65,6 +64,7 @@ class Scenario:
         agents,
         unique_ods,
         seeds,
+        seed=None,
         k=None,
         random_factor=None,
         max_attempts=None,
@@ -78,6 +78,7 @@ class Scenario:
         self.network = map
         self.agents = agents
         self.unique_ods = unique_ods
+        self.seed = seed if seed is not None else config.seed
 
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
@@ -140,7 +141,7 @@ class Scenario:
 
             # 2. Compute best route according shortest-path
             best_routes = self._run_duarouter(
-                trips_file, routes_file, random_factor=1.0, seed=config.seed
+                trips_file, routes_file, random_factor=1.0
             )
 
             if not best_routes:
@@ -198,7 +199,7 @@ class Scenario:
         write_sumo_conf(
             output_path=SUMO_CONF,
             net_file=self.network,
-            seed=config.seed,
+            seed=self.seed,
             additional_files=MEANDATA,
             report_outputs={
                 "tripinfo-output": TRIPS_INFO_XML,
@@ -278,7 +279,8 @@ class Scenario:
 
         total_df.to_csv(OD_MATRIX_TOTAL, index=False)
 
-    def _run_duarouter(self, trips_file, routes_file, random_factor, seed):
+    def _run_duarouter(self, trips_file, routes_file, random_factor, seed=None):
+
         cmd = [
             "duarouter",
             "-n",
@@ -297,7 +299,7 @@ class Scenario:
             "--weights.random-factor",
             str(random_factor),
             "--seed",
-            str(seed),
+            str(self.seed),
         ]
 
         subprocess.run(cmd, check=True)

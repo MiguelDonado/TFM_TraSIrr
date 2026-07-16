@@ -71,7 +71,7 @@ def generate_free_flow_tt_links():
     df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
 
 
-def generate_free_flow_tt_links_simulation():
+def generate_free_flow_tt_links_simulation(seed=None):
     """
     Called once per program execution.
     Used for imputing missing values in the link costs table.
@@ -81,6 +81,8 @@ def generate_free_flow_tt_links_simulation():
     (no acceleration bias). Falls back to length/speed for any edge SUMO did
     not record (source/sink edges or insertion failures).
     """
+    seed = seed if seed is not None else config.seed
+
     tree = etree.parse(config.network)
 
     # Collect non-internal edges with length/speed as fallback values
@@ -140,7 +142,7 @@ def generate_free_flow_tt_links_simulation():
             "vehroute-output": VEHROUTE_FF_EDGES,
             "vehroute-output.exit-times": "true",
         },
-        seed=config.seed,
+        seed=seed,
     )
     subprocess.run(["sumo", "-c", str(SUMO_CONF_FF_EDGES)], check=True)
 

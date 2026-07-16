@@ -11,13 +11,14 @@ from simulation.environment import Environment
 from simulation.scenario import Scenario
 
 
-def run_full_training_BM(agents, unique_ods, k=None, due=True):
+def run_full_training_BM(agents, unique_ods, k=None, due=True, seed=None):
 
     # 0. Manage default arguments
     k = k if k is not None else config.n_routes_per_OD
+    seed = seed if seed is not None else config.seed
 
     # 1. Reproducibility
-    rng = np.random.default_rng(config.seed)
+    rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 
     # 2. Create Scenario (files)
@@ -29,7 +30,7 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True):
     env = Environment(scenario=scen)
 
     # 3. Initialize agents
-    rl_agents = initialize_agents(scen=scen, seed=config.seed)
+    rl_agents = initialize_agents(scen=scen, seed=seed)
 
     # -----------------------------
     # 4. TRAINING LOOP
@@ -54,10 +55,12 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True):
         )
 
 
-def run_single_episode_BM(agents, unique_ods):
+def run_single_episode_BM(agents, unique_ods, seed=None):
+
+    seed = seed if seed is not None else config.seed
 
     # 1. Reproducibility
-    rng = np.random.default_rng(config.seed)
+    rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 
     # 2. Create Scenario (files)
@@ -69,7 +72,7 @@ def run_single_episode_BM(agents, unique_ods):
     env = Environment(scenario=scen)
 
     # 3. Initialize agents
-    rl_agents = initialize_agents(scen=scen, seed=config.seed)
+    rl_agents = initialize_agents(scen=scen, seed=seed)
 
     # 4. Choose routes
     actions = select_actions(rl_agents)

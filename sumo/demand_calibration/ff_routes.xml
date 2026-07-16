@@ -1,22 +1,22 @@
 <routes>
-	<route id="ff_route_0" edges="E19_20_NB E17_19_NB E10_17_NWB E10_11_WB E11_12_WB E3_12_NB"/>
+	<route id="ff_route_0" edges="E1_2_EB E2_6_SB E6_8_SB E8_16_SB E16_17_SB E17_19_SB E19_20_SB E20_21_WB"/>
 	<vehicle id="ff_0" route="ff_route_0" depart="0"/>
-	<route id="ff_route_1" edges="E1_3_SB E3_4_EB E4_5_EB E5_9_SB E8_9_EB E7_8_EB E7_18_SB E18_20_SWB"/>
+	<route id="ff_route_1" edges="E1_2_EB E2_6_SB E5_6_WB E5_9_SB E9_10_SB E10_15_SB E15_22_SB E21_22_SB"/>
 	<vehicle id="ff_1" route="ff_route_1" depart="200"/>
-	<route id="ff_route_2" edges="E19_20_NB E17_19_NB E10_17_NWB E10_11_WB E11_12_WB E3_12_NB E1_3_NB"/>
+	<route id="ff_route_2" edges="E1_3_SB E3_4_EB E4_5_EB E5_9_SB E9_10_SB E10_15_SB E15_22_SB E20_22_SEB"/>
 	<vehicle id="ff_2" route="ff_route_2" depart="400"/>
-	<route id="ff_route_3" edges="E20_22_NWB E15_22_NB E10_15_NB E9_10_NB E5_9_NB E4_5_WB E3_4_WB E1_3_NB"/>
+	<route id="ff_route_3" edges="E20_22_NWB E15_22_NB E10_15_NB E10_16_EB E8_16_NB E6_8_NB E2_6_NB"/>
 	<vehicle id="ff_3" route="ff_route_3" depart="600"/>
-	<route id="ff_route_4" edges="E13_24_EB E23_24_NB E14_23_NB E11_14_NB E11_12_WB E3_12_NB E1_3_NB E1_2_EB E2_6_SB"/>
+	<route id="ff_route_4" edges="E19_20_NB E17_19_NB E10_17_NWB E10_11_WB E11_12_WB E3_12_NB"/>
 	<vehicle id="ff_4" route="ff_route_4" depart="800"/>
-	<route id="ff_route_5" edges="E3_4_EB E4_5_EB E5_6_EB E6_8_SB E7_8_EB E7_18_SB E18_20_SWB"/>
+	<route id="ff_route_5" edges="E21_22_NB E15_22_NB E10_15_NB E10_16_EB E8_16_NB E6_8_NB E2_6_NB"/>
 	<vehicle id="ff_5" route="ff_route_5" depart="1000"/>
-	<route id="ff_route_6" edges="E20_21_EB E19_20_NB E17_19_NB E10_17_NWB E10_11_WB E11_12_WB E3_12_NB E1_3_NB"/>
+	<route id="ff_route_6" edges="E13_24_WB E12_13_NB E3_12_NB E3_4_EB E4_5_EB E5_6_EB E2_6_NB E1_2_WB"/>
 	<vehicle id="ff_6" route="ff_route_6" depart="1200"/>
-	<route id="ff_route_7" edges="E1_3_SB E3_4_EB E4_5_EB E5_9_SB E9_10_SB E10_15_SB E15_22_SB E21_22_SB"/>
+	<route id="ff_route_7" edges="E1_2_WB E1_3_SB E3_4_EB E4_11_SB E11_14_SB E14_23_SB E23_24_SB E13_24_WB"/>
 	<vehicle id="ff_7" route="ff_route_7" depart="1400"/>
-	<route id="ff_route_8" edges="E1_2_WB E1_3_SB E3_12_SB E12_13_SB E13_24_EB E21_24_EB"/>
+	<route id="ff_route_8" edges="E20_22_NWB E15_22_NB E10_15_NB E10_11_WB E11_12_WB E3_12_NB"/>
 	<vehicle id="ff_8" route="ff_route_8" depart="1600"/>
-	<route id="ff_route_9" edges="E1_2_EB E2_6_SB E5_6_WB E4_5_WB E3_4_WB E3_12_SB E12_13_SB"/>
+	<route id="ff_route_9" edges="E2_6_SB E5_6_WB E4_5_WB E3_4_WB E3_12_SB E12_13_SB"/>
 	<vehicle id="ff_9" route="ff_route_9" depart="1800"/>
 </routes>

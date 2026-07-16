@@ -91,7 +91,7 @@ def main():
         # -----------------------------
         # 3. CREATE AGENTS
         # -----------------------------
-        agents = initialize_agents(scen=scen, seed=config.seed)
+        agents = initialize_agents(scen=scen)
 
         if config.last_episode_gui_BM:
             run_final_simulation()

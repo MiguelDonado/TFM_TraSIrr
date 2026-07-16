@@ -70,21 +70,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR
 from demand_calibration.demand_calibration import DemandCalibration
-from utils.generate_agents import generate_agents
+from utils.generate_agents import build_od_space, generate_agents_from_od_space
 
 # CONSTANTS
 SEEDS = [42, 123, 1999, 2026]
-# SEEDS = [42]
+
 # Adjust per network: lower bound should cover free-flow, upper bound should
 # reach heavy congestion. Step size trades resolution against runtime.
-# DEMANDS = range(1000, 2500, 100)
-DEMANDS = range(1000, 2500, 100)
+DEMANDS = range(1000, 5000, 100)
 
 # Congestion regime thresholds (lower bound, label, band color, accent color for markers)
 CONGESTION_REGIMES = [
     (1.0, "Free-flow", "#d9f0a3", None),
-    (1.2, "Low congestion", "#fecc5c", "#c05800"),
-    (3.0, "Severe congestion", "#fd8d3c", "#a82000"),
+    (1.2, "Moderate congestion", "#fecc5c", "#c05800"),
+    (2.0, "High congestion", "#fd8d3c", "#a82000"),
 ]
 
 
@@ -93,31 +92,46 @@ def main():
     for seed in SEEDS:
         # 0. Container
         result = []
+        accumulated_agents = []
+        prev_demand = 0
+
+        # 1. Build one shared OD space for this seed, using the outer seed so
+        #    different SEEDS entries get distinct OD pools from randomTrips.
+        rng = np.random.default_rng(seed)
+        od_space = build_od_space(max(DEMANDS), seed=seed)
+
         for demand in DEMANDS:
 
-            # 1. Log
+            # 2. Log
             print("\n##########")
             print(f"# {demand}")
             print("##########")
 
-            # 2. Every iteration gets a fresh rng starting from the same point
-            rng = np.random.default_rng(seed)
+            # 2. Generate only the incremental agents for this demand step so that
+            #    demand=N is always a strict superset of demand=N-step (nested demands).
+            delta = demand - prev_demand
+            delta_agents, _ = generate_agents_from_od_space(od_space, delta, rng)
+            accumulated_agents.extend(delta_agents)
 
-            # 3. Create agents data structure
-            demand_warmup = int(demand * config.warm_up_time / config.end_time)
-            demand_post_warmup = demand - demand_warmup
-            agents, _ = generate_agents(demand_warmup, demand_post_warmup, rng)
+            # 3. Sort agents data structure by departure time
+            accumulated_agents.sort(key=lambda a: a["departure_time"])
 
-            # 4. Get metric value
-            demand_calibration = DemandCalibration(config.network, agents)
+            # 4. Re-number IDs so DemandCalibration sees a consistent sequence.
+            agents_for_sim = [
+                {**a, "id": f"agent_{i + 1}"} for i, a in enumerate(accumulated_agents)
+            ]
+
+            # 5. Get metric value
+            demand_calibration = DemandCalibration(config.network, agents_for_sim)
             congestion_metric_value = demand_calibration.compute_congestion_metric()
 
-            # 5. Store
+            # 6. Store
             result.append(
                 {"demand": demand, "congestion_metric": congestion_metric_value},
             )
+            prev_demand = demand
 
-        # 6. Plot
+        # 5. Plot
         _make_plot(result, seed)
 
 

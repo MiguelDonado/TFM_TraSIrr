@@ -33,12 +33,13 @@ def write_meandata_file(output_path, edgedata_file, time_interval):
 def write_sumo_conf(
     output_path,
     net_file,
-    seed,
+    seed=None,
     route_files=None,
     additional_files=None,
     report_outputs=None,
     device_outputs=None,
 ):
+
     root = etree.Element("configuration")
     inp = etree.SubElement(root, "input")
     etree.SubElement(inp, "net-file", value=str(net_file))
@@ -54,8 +55,9 @@ def write_sumo_conf(
         for tag, val in report_outputs.items():
             etree.SubElement(rep, tag, value=str(val))
 
-    rnd = etree.SubElement(root, "random")
-    etree.SubElement(rnd, "seed", value=str(seed))
+    if seed:
+        rnd = etree.SubElement(root, "random")
+        etree.SubElement(rnd, "seed", value=str(seed))
 
     if device_outputs:
         dev = etree.SubElement(root, "device")

@@ -14,7 +14,10 @@ from config.config import config
 from .agent import BMAgent
 
 
-def initialize_agents(scen, seed):
+def initialize_agents(scen, seed=None):
+
+    seed = seed if seed is not None else config.seed
+
     agents = {}
     for i, agent_info in enumerate(scen.agents):
         agent_id = agent_info["id"]

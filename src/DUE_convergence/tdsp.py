@@ -338,7 +338,10 @@ def run_tdsp_pipeline(
     shortest_path_dir,
     cost_min_paths,
     threshold_density,
+    seed=None,
 ):
+
+    seed = seed if seed is not None else config.seed
 
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
@@ -360,7 +363,7 @@ def run_tdsp_pipeline(
     # 4.3. Compute the time dependence shortest paths
     compute_time_dependent_shortest_paths(
         config.network,
-        config.seed,
+        seed,
         weights_dir=weights_dir,
         shortest_path_dir=shortest_path_dir,
     )
