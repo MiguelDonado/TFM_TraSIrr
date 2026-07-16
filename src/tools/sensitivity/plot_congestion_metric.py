@@ -10,8 +10,10 @@ The congestion metric is the average ratio of actual to free-flow trip duration:
     congestion_metric = (1/N) * sum( T_i / T_i_free )  for i = 1..N agents
 
 where T_i is the actual trip duration and T_i_free is the free-flow shortest-path
-duration under an empty network. A value of 1.4 means trips take on average 40%
-longer than free-flow. The metric is dimensionless and monotonically increasing
+duration under an empty network. A congestion metric of C indicates that, on
+average, trips take C times longer than under free-flow conditions. For example,
+a value of 2.0 means that average trip durations are twice their corresponding
+free-flow travel times. The metric is dimensionless and monotonically increasing
 with congestion level.
 
 Free-flow travel times
@@ -28,13 +30,14 @@ ratio takes value of 1 for very low demands as it should.
 
 Congestion regimes and decision rule
 -------------------------------------
-Two congestion regimes are defined (low, severe) via threshold lower bounds stored
-in CONGESTION_REGIMES. These thresholds are qualitative and somewhat arbitrary —
-what matters is that they produce meaningfully distinct traffic states for the
-experiments. For each regime, the representative demand is selected as the first
-demand value where the metric exceeds the regime threshold and the immediately
-following demand value also stays above it. This two-point rule avoids picking a
-noisy spike that immediately drops back below the threshold.
+Three congestion regimes are defined (free-flow, moderate congestion, high
+congestion) via threshold lower bounds stored in CONGESTION_REGIMES. These
+thresholds are qualitative and somewhat arbitrary — what matters is that they
+produce meaningfully distinct traffic states for the experiments. For each regime,
+the representative demand is selected as the first demand value where the metric
+exceeds the regime threshold and the immediately following demand value also stays
+above it. This two-point rule avoids picking a noisy spike that immediately drops
+back below the threshold.
 
 The representative demands selected here are used throughout the thesis experiments
 to evaluate the MARL algorithm's performance under different congestion levels.

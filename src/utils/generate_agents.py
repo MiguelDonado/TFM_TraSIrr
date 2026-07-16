@@ -1,10 +1,20 @@
 """
 Generates the agent list (OD pairs + departure times) from a network.
 
-Called by the demand calibration loop on each iteration with the current
-n_agents estimate. The final agents produced at convergence are passed
-directly to Scenario, so both calibration and training use the same OD
-matrix.
+Two entry points are provided depending on the use case:
+
+generate_agents — called by the demand calibration loop on each iteration
+    with the current n_agents estimate. Runs randomTrips internally on every
+    call. The final agents produced at convergence are passed directly to
+    Scenario, so both calibration and training use the same OD matrix.
+
+build_od_space + generate_agents_from_od_space — used by the congestion metric
+    sensitivity sweep (plot_congestion_metric.py), where the same OD pool must
+    be shared across all demand levels for a given seed. build_od_space runs
+    randomTrips once and returns the restricted OD counter; subsequent calls to
+    generate_agents_from_od_space sample from that counter without re-invoking
+    randomTrips, ensuring that higher demand levels are strict supersets of lower
+    ones (nested demand structure).
 """
 
 import os
