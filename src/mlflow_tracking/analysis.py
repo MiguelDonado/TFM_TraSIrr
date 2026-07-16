@@ -15,6 +15,7 @@ directory produced by the R script.
 """
 
 import subprocess
+from datetime import datetime
 
 import mlflow
 
@@ -27,7 +28,8 @@ def log_analysis_run_MLflow(research_question, artifact_path):
     set_up_mlflow()
 
     # 2. Start run and set name
-    with mlflow.start_run(run_name=f"BM_analysis_{research_question}"):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    with mlflow.start_run(run_name=f"BM_analysis_{research_question}_{timestamp}"):
 
         # 3. Set tags
         _set_analysis_tags(research_question)

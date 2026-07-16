@@ -5,17 +5,16 @@ The experiment has two run types in MLflow:
   simulation (when running the BM training loop)  — logged here
   analysis (when running R analysis scripts on the simulation outputs)  — logged by mlflow_tracking/analysis.py
 
-Each simulation run is tagged with its own run_id so it can be linked
-to its corresponding analysis run in the MLflow UI without relying on
-run names or timestamps.
+Simulation runs are linked to their analysis run via the shared
+params.research_question value.
 
 Logs
 ----
-Parameters  — learning_rate, memory_level, target_congestion_metric,
-              network name, git commit hash
-Metrics     — bm_rgap (time series), BM mean_tt (time series),
-              BM mean_pol_change (time series), BM ep_to_conv (scalar),
-              duaIterate_final_rgap (scalar)
+Parameters  — full config (seed, n_agents, learning_rate, memory_level,
+              network name, git commit hash, ...)
+Metrics     — bm_rgap_pct (time series), mean_tt (time series),
+              mean_pol_change (time series), ep_to_conv (scalar),
+              duaIterate_final_rgap_pct (scalar)
 Artifacts   — full config JSON, agent_state/, processed/, DUE/ directories
 """
 
@@ -33,10 +32,8 @@ from config.config import config
 from config.paths import (
     AGENT_STATE_DIR,
     BM_PATHS,
-    DUA_EXTRA,
     DUA_PATHS,
     DUE_DATA_DIR,
-    EXPERIMENTS_TMP,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     STATISTICS_PARQUET,
@@ -64,14 +61,8 @@ def log_simulation_mlflow(run_id):
 def set_simulation_tags(run_id):
     mlflow.set_tag("run_type", "simulation")
     mlflow.set_tag("algorithm", "BM")
-    run_name = (
-        f"BM_simulation_mem{config.memory_level}_l{config.learning_rate}_{run_id[:6]}"
-    )
+    run_name = f"BM_s{config.seed}_n{config.n_agents}_mem{config.memory_level}_l{config.learning_rate}_{run_id[:6]}"
     mlflow.set_tag("mlflow.runName", run_name)
-
-
-def build_simulation_run_name():
-    return f"BM_simulation_mem{config.memory_level}_l{config.learning_rate}"
 
 
 ##########
@@ -116,9 +107,6 @@ def _log_bm_metrics():
     # 0. Log Rgap metric related to BM algorithm (all episodes) :  Series
     _log_bm_rgap_metric()
 
-    # 1. Episodes required for convergence
-    _log_bm_episode_convergence()
-
     # 2. Mean travel time (time series)
     _log_bm_mean_travel_time()
 
@@ -137,20 +125,7 @@ def _log_bm_rgap_metric():
     _log_metric_over_time(
         df=df_rgap_bm, metric_name=metric_name, col_metric=col_metric, col_step=col_step
     )
-
-
-def _log_bm_episode_convergence():
-    # 1. Read parquet file that contains "episode | rgap" for BM algorithm
-    df_rgap_bm = pd.read_parquet(BM_PATHS.rgap)
-    # 2. Get last episode
-    last_row_rgap_bm = df_rgap_bm.iloc[-1]
-    bm_episode_convergence = last_row_rgap_bm["episode"]
-
-    # Log metrics
-    metric = {
-        "ep_to_conv": bm_episode_convergence,
-    }
-    mlflow.log_metrics(metric)
+    mlflow.log_metric("ep_to_conv", int(df_rgap_bm["episode"].iloc[-1]))
 
 
 def _log_bm_mean_travel_time():
@@ -185,27 +160,7 @@ def _log_bm_policy_change():
 
 
 def _log_duaIterate_metrics():
-    # 1. Log Rgap metrics related to duaIterate (only last episode)
     _log_duaIterate_rgap_metric()
-
-    # 2. Mean travel time (time series)
-    # _log_duaIterate_mean_travel_time()
-
-
-def _log_duaIterate_mean_travel_time():
-    # 1. Read parquet file that contains "Iteration | Mean_travel_time"
-    df_mean_tt_duaIterate = pd.read_parquet(DUA_EXTRA.mean_tt)
-
-    # 2. Log duaIterate mean travel time over time (series)
-    metric_name = "duaIterate_mean_travel_time"
-    col_metric = "Mean_travel_time"
-    col_step = "Iteration"
-    _log_metric_over_time(
-        df=df_mean_tt_duaIterate,
-        metric_name=metric_name,
-        col_metric=col_metric,
-        col_step=col_step,
-    )
 
 
 def _log_duaIterate_rgap_metric():
@@ -220,7 +175,6 @@ def _log_duaIterate_rgap_metric():
 
 
 def _log_mlflow_artifacts():
-    mlflow.log_artifact(EXPERIMENTS_TMP)
     mlflow.log_artifact(AGENT_STATE_DIR)
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)
