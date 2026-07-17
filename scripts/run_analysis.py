@@ -2,8 +2,8 @@
 Renders the Quarto report for a research question and logs results to MLflow.
 
 Usage:
-  python run_analysis.py <research_question>              full pipeline
-  python run_analysis.py <research_question> --prepare-only  data prep only
+  python scripts/run_analysis.py <research_question>              full pipeline
+  python scripts/run_analysis.py <research_question> --prepare-only  data prep only
 
 Steps:
   1. Prepare data — pull simulation artifacts from MLflow across all runs
@@ -16,9 +16,14 @@ Steps:
   3. Log         — log the rendered report and figures as an MLflow analysis run.  (skipped with --prepare-only)
 
 --prepare-only is useful when developing R scripts
+
+----- Valid Research Questions arguments -----
+RQ1
+
 """
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -34,6 +39,8 @@ def run_analysis_rq():
     """Execute a research question analysis and log results to MLflow."""
 
     research_question = sys.argv[1]
+    if not re.match(r"^RQ\d+$", research_question):
+        sys.exit(f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ...")
     prepare_only = "--prepare-only" in sys.argv
 
     _prepare_data(research_question)
@@ -58,7 +65,7 @@ def _prepare_data(research_question: str) -> None:
 
 def _prepare_rq1_data() -> None:
     """Pull R-gap artifacts from all RQ1 simulation runs and save combined parquets."""
-    filter_string = "params.research_question = 'RQ1' and tags.run_type = 'simulation'"
+    filter_string = "tags.research_question = 'RQ1' and tags.run_type = 'simulation'"
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "n_agents"]
 

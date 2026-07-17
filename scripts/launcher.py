@@ -2,7 +2,15 @@
 Grid-search launcher. Runs src/main.py for every parameter combination defined
 in a design YAML, then optionally renders the Quarto analysis for a given RQ.
 
-Usage: python scripts/launcher.py <design.yaml> [<research_question>]
+Usage:
+  python scripts/launcher.py <design.yaml>                       simulations only
+  python scripts/launcher.py <design.yaml> <research_question>   simulations + full analysis
+  python scripts/launcher.py <design.yaml> <research_question> --prepare-only
+                                                                 simulations + data prep only
+
+When a research question is provided, it is injected into each temp config so
+simulation runs are tagged with tags.research_question in MLflow. This enables
+run_analysis.py to filter and aggregate artifacts across all combinations.
 
 The design YAML must have two keys:
   base_config: path to the base config.yaml
@@ -51,6 +59,7 @@ line per seed to visualise individual variability.
 """
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -111,7 +120,11 @@ def main():
     # 1. Config file path of the experiment that will be run
     path = sys.argv[1]
     # 2. Research question that will be analyzed
-    research_question = sys.argv[2] if len(sys.argv) > 2 else None
+    research_question = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else None
+    prepare_only = "--prepare-only" in sys.argv
+
+    if research_question and not re.match(r"^RQ\d+$", research_question):
+        sys.exit(f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ...")
 
     # 3. Extract grid combinations
     base_config_path, param_specs = _load_design(path)
@@ -143,13 +156,10 @@ def main():
     # 8. (Optionally) Run analysis once after all combinations are complete,
     # so it can aggregate results across the full grid (e.g. across seeds)
     if research_question:
-        subprocess.run(
-            [
-                "python",
-                str(BASE_DIR / "scripts" / "run_analysis.py"),
-                research_question,
-            ]
-        )
+        cmd = ["python", str(BASE_DIR / "scripts" / "run_analysis.py"), research_question]
+        if prepare_only:
+            cmd.append("--prepare-only")
+        subprocess.run(cmd)
 
 
 if __name__ == "__main__":

@@ -61,6 +61,8 @@ def log_simulation_mlflow(run_id):
 def set_simulation_tags(run_id):
     mlflow.set_tag("run_type", "simulation")
     mlflow.set_tag("algorithm", "BM")
+    if config.research_question:
+        mlflow.set_tag("research_question", config.research_question)
     run_name = f"BM_s{config.seed}_n{config.n_agents}_mem{config.memory_level}_l{config.learning_rate}_{run_id[:6]}"
     mlflow.set_tag("mlflow.runName", run_name)
 
