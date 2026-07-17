@@ -27,7 +27,7 @@ baseline.
 2. Refined R-gap by departure interval in final episode (temporal heterogeneity).
 3. OD-specific R-gap boxplot in final episode (spatial heterogeneity).
 4. Maximum OD-specific R-gap evolution (robustness of convergence).
-
+session_notes_2026-07-17.md
 ```{r}
 #| label: setup
 

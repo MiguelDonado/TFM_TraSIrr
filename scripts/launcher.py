@@ -2,7 +2,7 @@
 Grid-search launcher. Runs src/main.py for every parameter combination defined
 in a design YAML, then optionally renders the Quarto analysis for a given RQ.
 
-Usage: python launcher.py <design.yaml> [<research_question>]
+Usage: python scripts/launcher.py <design.yaml> [<research_question>]
 
 The design YAML must have two keys:
   base_config: path to the base config.yaml
@@ -84,7 +84,9 @@ def _load_design(path):
     return base_config_path, param_specs
 
 
-def _write_temp_config(base_config_path, param_specs, combination, research_question=None):
+def _write_temp_config(
+    base_config_path, param_specs, combination, research_question=None
+):
     # 1. Load base config file
     with open(base_config_path) as f:
         config = yaml.safe_load(f)
@@ -114,19 +116,31 @@ def main():
     # 3. Extract grid combinations
     base_config_path, param_specs = _load_design(path)
 
+    combinations = list(product(*[values for _, _, values in param_specs]))
+    total = len(combinations)
+
     # 4. For each combination of parameters, run the simulation
-    for combination in product(*[values for _, _, values in param_specs]):
+    for i, combination in enumerate(combinations, start=1):
 
-        # 5. Write a temporary config YAML file containing the combination of
+        # 5. Logging (progress and current combination)
+        combo_str = " | ".join(
+            f"{section}.{param}={value}"
+            for (section, param, _), value in zip(param_specs, combination)
+        )
+        print(f"\n--- [{i}/{total}] {combo_str} ---\n")
+
+        # 6. Write a temporary config YAML file containing the combination of
         # hyperparameters to try
-        tmp_path = _write_temp_config(base_config_path, param_specs, combination, research_question)
+        tmp_path = _write_temp_config(
+            base_config_path, param_specs, combination, research_question
+        )
 
-        # 6. Run simulation code with YAML config tmp file
-        subprocess.run(["python", "main.py", tmp_path], cwd=BASE_DIR / "src")
+        # 7. Run simulation code with YAML config tmp file
+        subprocess.run(["python", "src/main.py", tmp_path], cwd=BASE_DIR)
 
         os.unlink(tmp_path)
 
-    # 7. (Optionally) Run analysis once after all combinations are complete,
+    # 8. (Optionally) Run analysis once after all combinations are complete,
     # so it can aggregate results across the full grid (e.g. across seeds)
     if research_question:
         subprocess.run(
