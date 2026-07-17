@@ -23,7 +23,15 @@ baseline.
 
 **The plots to answer this question will be:**
 
-1. Aggregate R-gap evolution (main convergence evidence).
+1. Aggregate R-gap evolution (main convergence evidence). 
+  In particular:
+  Figure 1. Learning curves
+    Mean R-gap vs episode.
+    Mean ± SD across seeds.
+    Faceted by congestion regime.
+    One line per algorithm.
+
+
 2. Refined R-gap by departure interval in final episode (temporal heterogeneity).
 3. OD-specific R-gap boxplot in final episode (spatial heterogeneity).
 4. Maximum OD-specific R-gap evolution (robustness of convergence).
@@ -41,7 +49,7 @@ library(arrow)
 ```{r}
 #| label: load_custom_functions
 
-library(here)
+# library(here)
 
 # Load custom theme
 source(file = here("r","shared","theme.R"))
@@ -52,69 +60,67 @@ theme_set(theme_thesis())
 
 
 ```{r}
-#| label: paths
-
-base_dir <- "/home/miguel/6.Projects/Thesis/data/DUE"
-
-algorithms <- c("BM", "duaIterate")
-
-paths <- map(algorithms, \(alg) {
-  list(
-    rgap = file.path(base_dir, alg, "R-gap", "rgap.parquet"),
-    rgap_od = file.path(base_dir, alg, "R-gap", "rgap_by_od.parquet"),
-    refined_rgap = file.path(base_dir, alg, "R-gap", "refined_rgap.parquet"),
-    refined_rgap_od = file.path(base_dir, alg, "R-gap", "refined_rgap_by_od.parquet")
-  )}
-)
-
-names(paths) <- algorithms
-```
-
-```{r}
 #| label: data
 
-data <- map(paths, \(x) map(x, read_parquet))
-```
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ1","data")
 
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |> 
+  (\(x) set_names(x, tools::file_path_sans_ext(basename(x))))() |> 
+  map(read_parquet)
+```
 
 ```{r}
 #| label: data_plot1
 
-# Plot1: R-gap evolution across episode for the learning algorithms (general rgap)
-# map: For each element of the list, extract the rgap df
-# imap: For each dataframe, get the df and the name of the algorithm
-# Outcome_df = episode | rgap | algorithm
-# list_rbind: Combine dataframes of the different algorithms
+rgap_df <- bind_rows(
+  mutate(data$bm_rgap, algorithm = "BM"),
+  mutate(data$dua_rgap, algorithm = "duaIterate")
+) |> 
+  mutate(
+    congestion_regime = factor(
+      n_agents,
+      levels = c(1500,2000,2500),
+      labels = c("Low (1500)", "Moderate (2000)", "High (2500)")
+    )
+  )
 
-rgap_df <- data |> 
-  map("rgap") |> 
-  imap(\(x,name) mutate(x, algorithm = name)) |> 
-  list_rbind()
+rgap_summary <- rgap_df |> 
+  group_by(algorithm, congestion_regime, episode) |> 
+  summarise(
+    mean_rgap = mean(rgap),
+    sd_rgap = sd(rgap),
+    .groups = "drop"
+  )
 
-rgap_df <- rgap_df |> 
-  filter(algorithm!="duaIterate")
+rgap_summary <- rgap_summary |> 
+  filter(algorithm == "BM")
 ```
 
 ```{r}
 #| label: plot1
 
-# scales = "free_y": Each facet get its own y-axis
-
 ggplot(
-  data = rgap_df,
-  mapping = aes(
-    x = episode,
-    y = rgap,
-  )
+  data = rgap_summary,
+  mapping = aes(x = episode, y = mean_rgap, color = algorithm, fill = algorithm)
 ) +
-  geom_line() + 
-  facet_wrap(
-    ~algorithm, scales = "free_y"
+  geom_ribbon(
+    aes(ymin = mean_rgap - sd_rgap, ymax = mean_rgap + sd_rgap),
+    alpha = 0.2, color = NA
   ) +
+  geom_line() +
+  facet_wrap(~congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
+    subtitle = "Mean ± SD across seeds",
     x = "Episode",
-    y = "R-gap (%)"
+    y = "R-gap (%)",
+    color = "Algorithm",
+    fill = "Algorithm"
   )
 
 ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"))

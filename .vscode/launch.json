@@ -82,5 +82,14 @@
       "console": "integratedTerminal",
       "justMyCode": true,
     },
+    {
+      "name": "Debug launcher.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/launcher.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/home/miguel/6.Projects/Thesis/experiments/rq1/design.yaml", "RQ1", "--prepare-only"]
+    },
   ]
 }

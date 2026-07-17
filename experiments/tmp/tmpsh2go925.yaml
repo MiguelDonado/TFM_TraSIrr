@@ -1,7 +1,7 @@
 configuration_name:
   config_name: production
 demand:
-  n_agents: 1500
+  n_agents: 2000
 duarouter:
   max_attempts: 25
   n_routes_per_OD: 3

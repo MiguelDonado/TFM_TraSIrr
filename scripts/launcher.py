@@ -120,11 +120,15 @@ def main():
     # 1. Config file path of the experiment that will be run
     path = sys.argv[1]
     # 2. Research question that will be analyzed
-    research_question = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else None
+    research_question = (
+        sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else None
+    )
     prepare_only = "--prepare-only" in sys.argv
 
     if research_question and not re.match(r"^RQ\d+$", research_question):
-        sys.exit(f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ...")
+        sys.exit(
+            f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ..."
+        )
 
     # 3. Extract grid combinations
     base_config_path, param_specs = _load_design(path)
@@ -149,14 +153,20 @@ def main():
         )
 
         # 7. Run simulation code with YAML config tmp file
-        subprocess.run(["python", "src/main.py", tmp_path], cwd=BASE_DIR)
+        # sys.executable ensures the subprocess uses the same Python interpreter
+        # (and therefore the same virtualenv) as the launcher itself.
+        subprocess.run([sys.executable, "src/main.py", tmp_path], cwd=BASE_DIR)
 
         os.unlink(tmp_path)
 
     # 8. (Optionally) Run analysis once after all combinations are complete,
     # so it can aggregate results across the full grid (e.g. across seeds)
     if research_question:
-        cmd = ["python", str(BASE_DIR / "scripts" / "run_analysis.py"), research_question]
+        cmd = [
+            sys.executable,
+            str(BASE_DIR / "scripts" / "run_analysis.py"),
+            research_question,
+        ]
         if prepare_only:
             cmd.append("--prepare-only")
         subprocess.run(cmd)
