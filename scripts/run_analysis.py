@@ -1,7 +1,9 @@
 """
 Renders the Quarto report for a research question and logs results to MLflow.
 
-Usage: python run_analysis.py <research_question>   (e.g. RQ1)
+Usage:
+  python run_analysis.py <research_question>              full pipeline
+  python run_analysis.py <research_question> --prepare-only  data prep only
 
 Steps:
   1. Prepare data — pull simulation artifacts from MLflow across all runs
@@ -10,8 +12,10 @@ Steps:
      single DataFrame. params_to_attach controls which MLflow params (e.g. seed,
      n_agents) are added as columns, so each row in the combined DataFrame can be
      identified by the run (combination) it came from. run_id is always added automatically.
-  2. Render      — run quarto render on r/<RQ>/<RQ>.qmd.
-  3. Log         — log the rendered report and figures as an MLflow analysis run.
+  2. Render      — run quarto render on r/<RQ>/<RQ>.qmd.  (skipped with --prepare-only)
+  3. Log         — log the rendered report and figures as an MLflow analysis run.  (skipped with --prepare-only)
+
+--prepare-only is useful when developing R scripts
 """
 
 import os
@@ -30,8 +34,13 @@ def run_analysis_rq():
     """Execute a research question analysis and log results to MLflow."""
 
     research_question = sys.argv[1]
+    prepare_only = "--prepare-only" in sys.argv
 
     _prepare_data(research_question)
+
+    if prepare_only:
+        return
+
     _render_analysis(research_question)
     log_analysis_run_MLflow(
         research_question=research_question,
