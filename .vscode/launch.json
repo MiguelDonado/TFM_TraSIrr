@@ -48,6 +48,15 @@
       "justMyCode": true,
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
     },
+      {
+      "name": "Debug plot_congestion_metric.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tools/sensitivity/plot_congestion_metric.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
+    },
     {
       "name": "Debug plot_warm_up.py",
       "type": "debugpy",

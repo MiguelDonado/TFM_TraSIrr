@@ -20,7 +20,7 @@ factory, so BM and duaIterate share the same directory structure under
 their respective roots without duplicating path definitions.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 
 
@@ -453,3 +453,34 @@ hyperparameter values of the current parameter combination. The resulting
 configuration file is stored here and used to run the experiment.
 """
 EXPERIMENTS_TMP = BASE_DIR / "experiments" / "tmp"
+
+# ============================================================
+# Directory creation
+# ============================================================
+
+
+def _iter_paths():
+    """Yield every Path defined in this module, including ones nested
+    inside dataclass instances (DuePaths, DuaIteratePaths) and lists."""
+    for value in globals().values():
+        # 1. Single variable
+        if isinstance(value, Path):
+            yield value
+        # 2. List or tuple
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                if isinstance(item, Path):
+                    yield item
+        # 3. Dataclass fields
+        elif is_dataclass(value) and not isinstance(value, type):
+            for field in fields(value):
+                item = getattr(value, field.name)
+                if isinstance(item, Path):
+                    yield item
+
+
+def ensure_dirs() -> None:
+    """Create every directory implied by the paths in this module, if missing."""
+    dirs = {path.parent if path.suffix else path for path in _iter_paths()}
+    for directory in dirs:
+        directory.mkdir(parents=True, exist_ok=True)

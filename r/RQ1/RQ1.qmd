@@ -24,18 +24,13 @@ baseline.
 **The plots to answer this question will be:**
 
 1. Aggregate R-gap evolution (main convergence evidence). 
-  In particular:
-  Figure 1. Learning curves
-    Mean R-gap vs episode.
-    Mean ± SD across seeds.
-    Faceted by congestion regime.
-    One line per algorithm.
+2. Heatmap R-gap by departure interval
+3. Empirical CDF of od r-gap
+
+For more detail, check the research questions document.
 
 
-2. Refined R-gap by departure interval in final episode (temporal heterogeneity).
-3. OD-specific R-gap boxplot in final episode (spatial heterogeneity).
-4. Maximum OD-specific R-gap evolution (robustness of convergence).
-session_notes_2026-07-17.md
+
 ```{r}
 #| label: setup
 
@@ -131,120 +126,48 @@ ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"))
 
 # Plot2: Refined r-gap (by interval) of the last episode for the learning algorithms
 
-refined_rgap_df <- data |> 
-  map("refined_rgap") |> 
-  imap(\(x,name) mutate(x, algorithm = name)) |> 
-  list_rbind()
+refined_rgap_df <- bind_rows(
+  mutate(data$bm_refined_rgap, algorithm = "BM"),
+  mutate(data$dua_refined_rgap, algorithm = "duaIterate")
+) |> 
+  mutate(
+    congestion_regime = factor(
+      n_agents,
+      levels = c(1500, 2000, 2500),
+      labels = c("Low (1500)", "Moderate (2000)", "High (2500)")
+    )
+  )
 
-refined_rgap_df_last_ep <- refined_rgap_df |> 
-  group_by(algorithm) |> 
-  filter(episode == max(episode)) |> 
-  ungroup()
+refined_rgap_summary <- refined_rgap_df |> 
+  group_by(algorithm, congestion_regime, episode, time_interval) |> 
+  summarise(
+    mean_refined_rgap = mean(refined_rgap),
+    .groups = "drop"
+  )
 ```
 
 ```{r}
 #| label: plot2
 
-### OPTION A
 ggplot(
-  data = refined_rgap_df_last_ep,
-  mapping = aes(
-    x = time_interval,
-    y = refined_rgap,
-    color = algorithm
-  )
+  data = refined_rgap_summary, 
+  mapping = aes(x = episode, y = time_interval, fill = mean_refined_rgap)
 ) +
-  geom_smooth(se = FALSE, span = 0.15) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  facet_grid(algorithm ~ congestion_regime) +
   labs(
-    title = "Refined R-gap by Departure Interval (smoothed)",
-    subtitle = "Comparison between algorithms in the final episode",
-    x = "Departure Time Interval",
-    y = "Refined R-gap (%) (smoothed)"
-  )
-
-### OPTION B
-ggplot(
-  data = refined_rgap_df_last_ep,
-  mapping = aes(
-    x = time_interval,
-    y = refined_rgap,
-    color = algorithm
-  )
-) +
-  geom_line(alpha = 0.7) +
-  labs(
-    title = "Refined R-gap by Departure Interval",
-    subtitle = "Comparison between algorithms in the final episode",
-    x = "Departure Time Interval",
-    y = "Refined R-gap (%)"
-  )
-ggsave(here("r","RQ1","figures","plot2a_refined_rgap.png"))
-```
-
-```{r}
-#| label: data_plot3
-
-# Analyze OD-specific R-gap (distribution)
-
-rgap_od_df <- data |> 
-  map("rgap_od") |> 
-  imap(\(x,name) mutate(x, algorithm = name)) |> 
-  list_rbind()
-
-rgap_od_last_ep_df <- rgap_od_df |> 
-  group_by(algorithm) |> 
-  filter(episode == max(episode))
-```
-
-```{r}
-#| label: plot3
-
-# Option C
-ggplot(
-  data = rgap_od_last_ep_df,
-  mapping = aes(
-    x = algorithm,
-    y = rgap,
-    fill = algorithm
-  ) 
-) +
-  geom_boxplot() +
-  labs(
-  title = "Distribution of OD-Specific R-gaps",
-  subtitle = "Comparison between algorithms in the final episode",
-  x = NULL,
-  y = "OD-Specific R-gap (%)"
-)
-ggsave(here("r","RQ1","figures","plot3c_rgap_od.png"))
-```
-
-```{r}
-#| label: data_plot4
-
-# Visualize the maximum od-specific r-gap evolution
-
-rgap_od_df_max <- 
-  rgap_od_df |> 
-  group_by(algorithm, episode) |> 
-  summarise(max_rgap = max(abs(rgap))) |> filter(algorithm != "duaIterate")
-```
-
-```{r}
-#| label: plot4
-
-ggplot(
-  data = rgap_od_df_max,
-  mapping = aes(x = episode, y = max_rgap, color = algorithm)
-) + 
-  geom_line() +
-  labs(
-    title = "Evolution of maximum OD-Specific R-gap",
-    subtitle = "Comparison between algorithms in the final episode",
+    title = "Refined R-gap by departure interval across episodes",
+    subtitle = "Mean across seeds",
     x = "Episode",
-    y = "Max. od-specific rgap (%)" 
+    y = "Departure interval",
+    fill = "Mean refined\nR-gap (%)"
   )
-ggsave(here("r","RQ1","figures","plot4_rgap_od_max.png"))
+
+ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"))
 ```
+
+
 
 <!-- The file refined_rgap_by_od is not needed to be analyzed. A plot using this file would not add anything new. -->
 

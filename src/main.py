@@ -35,7 +35,7 @@ import pandas as pd
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import RunMode, config
-from config.paths import POLICY_CHANGE_BM
+from config.paths import POLICY_CHANGE_BM, ensure_dirs
 from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import (
@@ -138,13 +138,17 @@ def _run_training_loop(
 
 
 def main():
+    # 1. Make sure all necessary directories exist
+    ensure_dirs()
+
+    # 2. Check mode in which program is being runned
     log_run_mode(config.mode, config.have_precomputed_routes, config.episodes_gui)
 
     if config.mode == RunMode.EVAL_GUI:
         run_final_simulation()
         return
 
-    # Reproducibility
+    # 3. Reproducibility
     rng = np.random.default_rng(config.seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 
