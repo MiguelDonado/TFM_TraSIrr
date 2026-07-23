@@ -258,8 +258,11 @@ class Scenario:
             .reset_index(name="count")  # Resets index and creates column count
         )
 
-        # Save all intervals in one file
-        grouped.to_csv(OD_MATRIX_INTERVALS, index=False)
+        # Save all intervals in one file; the interval width is baked into the filename
+        interval_path = OD_MATRIX_INTERVALS.with_name(
+            f"{OD_MATRIX_INTERVALS.stem}_{interval_size}s{OD_MATRIX_INTERVALS.suffix}"
+        )
+        grouped.to_csv(interval_path, index=False)
 
         # Optional: total OD matrix (without intervals)
         counts = Counter(od_list)

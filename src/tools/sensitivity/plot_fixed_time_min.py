@@ -70,7 +70,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from config.config import config
 from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
 from demand_calibration.utils import demand_from_count
-from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from utils.run_training_BM import run_full_training_BM
 
 FIXED_TIME_MIN_CANDIDATES = [
@@ -85,43 +84,39 @@ DEMANDS = [1000, 1500, 1750, 2000]
 def main():
 
     # 0. For each demand check r-gap and missingess for different time intervals
+    total = len(DEMANDS) * len(FIXED_TIME_MIN_CANDIDATES)
+    i = 0
     for demand in DEMANDS:
-
-        print("\n##########")
-        print(f"# Demand {demand}")
-        print("##########")
 
         # 1. Calibrate demand (nº agents)
         calibrated_agents, unique_ods = demand_from_count(demand)
 
-        # 2. Run full BM training once (route choices are independent of fixed_time_min)
-        run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, due=False)
-
-        # 3. Containers
+        # 2. Containers
         rgap_curves = {}
         missingness_props = {}
 
-        # 4. Check r-gap and missingness for a given time interval
+        # 3. Re-run full BM training once per candidate. Route choices themselves
+        # don't depend on fixed_time_min, but SUMO's edgedata density (used by the
+        # r-gap's TDSP imputation) is aggregated *during simulation* over
+        # config.time_interval, so it has to be re-measured fresh for every
+        # candidate rather than reused from a single shared run.
         for fixed_time_min in FIXED_TIME_MIN_CANDIDATES:
-            print("\n##########")
-            print(f"# fixed_time_min: {fixed_time_min} min")
-            print("##########")
 
-            # 5. Update the time interval globally so all downstream functions use it
+            # 3b. Log (progress and current combination)
+            i += 1
+            print(f"\n--- [{i}/{total}] demand={demand} fixed_time_min={fixed_time_min} ---\n")
+
+            # 4. Update the time interval globally so all downstream functions use it
             # We also convert it to seconds
             config.time_interval = int(fixed_time_min * 60)
 
-            # 6. Compute R-gap and missingness for this time interval
-            run_due_convergence_checks(
-                end_time=config.end_time,
-                time_interval=config.time_interval,
-                duaIterate=False,
-            )
+            # 5. Run full BM training and compute R-gap/missingness for this time interval
+            run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, due=True)
 
-            # 7. Record full R-gap convergence curve
+            # 6. Record full R-gap convergence curve
             rgap_curves[fixed_time_min] = pd.read_parquet(BM_PATHS.rgap)["rgap"]
 
-            # 8. Record aggregate missingness proportion
+            # 7. Record aggregate missingness proportion
             missingness_props[fixed_time_min] = _parse_missingness_proportion(
                 BM_PATHS.missingness_report
             )
