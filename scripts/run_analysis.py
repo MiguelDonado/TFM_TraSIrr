@@ -17,6 +17,10 @@ Steps:
 
 --prepare-only is useful when developing R scripts
 
+----- Evaluation runs analyzed -----
+Analysis will be performed for runs tagged with status = "active". 
+Runs tagged with status = "archived" will not be analyzed. 
+
 ----- Valid Research Questions arguments -----
 RQ1
 
@@ -65,7 +69,7 @@ def _prepare_data(research_question: str) -> None:
 
 def _prepare_rq1_data() -> None:
     """Pull R-gap artifacts from all RQ1 simulation runs and save combined parquets."""
-    filter_string = "tags.research_question = 'RQ1' and tags.run_type = 'simulation'"
+    filter_string = "tags.research_question = 'RQ1' and tags.run_type = 'simulation' and tags.status != 'archived'"
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "n_agents"]
 

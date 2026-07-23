@@ -23,11 +23,11 @@ baseline.
 
 **The plots to answer this question will be:**
 
-1. Aggregate R-gap evolution (main convergence evidence). 
-2. Heatmap R-gap by departure interval
-3. Empirical CDF of od r-gap
+1. Aggregate R-gap evolution (main convergence evidence).
+2. Heatmap R-gap by departure interval (all episodes)
+3. Worst-case (90th percentile) OD-specific R-gap by seed
 
-For more detail, check the research questions document.
+For more details, check the research questions document.
 
 
 
@@ -39,18 +39,36 @@ library(renv)
 renv::load()
 library(tidyverse)
 library(arrow)
+library(ggh4x)
 ```
 
 ```{r}
 #| label: load_custom_functions
 
-# library(here)
+library(here)
 
 # Load custom theme
 source(file = here("r","shared","theme.R"))
 
 # Make it global theme (every plot automatically uses it)
 theme_set(theme_thesis())
+
+# Builds the congestion_regime factor from whatever n_agents values are
+# present in the data, instead of hardcoding levels/labels per plot.
+congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
+
+make_congestion_regime <- function(n_agents) {
+  levels_sorted <- sort(unique(n_agents))
+  
+  if (length(congestion_regime_tiers) != length(levels_sorted)) {
+    stop("The number of congestion regime tiers must equal the number of unique agent counts.")
+  }
+  
+  factor(
+    n_agents, 
+    levels = levels_sorted,
+    labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
+}
 ```
 
 
@@ -70,79 +88,102 @@ data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |>
 ```
 
 ```{r}
+#| label: representative_seeds_spaghetti_plots
+
+# Randomly select 3 seeds (seeded so the same 3 - and their colors - are
+# picked every time this re-renders)
+set.seed(123)
+representative_seeds <- sample(unique(data$bm_rgap$seed), size = 3)
+
+labels_seeds <- c("S1", "S2", "S3")
+
+color_lines <- c(
+  "S1" = "#0072B2",  # blue
+  "S2" = "#E69F00",  # orange
+  "S3" = "#009E73"   # bluish green
+  )  
+```
+
+
+```{r}
 #| label: data_plot1
 
-rgap_df <- bind_rows(
-  mutate(data$bm_rgap, algorithm = "BM"),
-  mutate(data$dua_rgap, algorithm = "duaIterate")
-) |> 
+# Not aggregating mean +/- SD across seeds here: seeds finish training at very
+# different episode counts (e.g. High regime: some stop by episode ~22, one
+# runs to 129), so for a large share of each panel's episode range the "mean"
+# would silently collapse to a single seed's raw value (SD undefined). Each
+# seed's own trajectory is plotted instead - no cross-seed averaging, so no
+# misleading shrinking-N problem.
+
+rgap_df <- data$bm_rgap |>
   mutate(
-    congestion_regime = factor(
-      n_agents,
-      levels = c(1500,2000,2500),
-      labels = c("Low (1500)", "Moderate (2000)", "High (2500)")
-    )
+    congestion_regime = make_congestion_regime(n_agents),
+    ) |>
+  filter(
+    seed %in% representative_seeds
+  ) |> 
+  mutate(
+    seed_fct = factor(seed, levels = representative_seeds, labels = labels_seeds)
   )
 
-rgap_summary <- rgap_df |> 
-  group_by(algorithm, congestion_regime, episode) |> 
-  summarise(
-    mean_rgap = mean(rgap),
-    sd_rgap = sd(rgap),
-    .groups = "drop"
-  )
-
-rgap_summary <- rgap_summary |> 
-  filter(algorithm == "BM")
+plot1_annotation <- rgap_df |> 
+  group_by(seed, n_agents) |> 
+  slice_max(episode, n = 1, with_ties = FALSE)
 ```
 
 ```{r}
 #| label: plot1
 
 ggplot(
-  data = rgap_summary,
-  mapping = aes(x = episode, y = mean_rgap, color = algorithm, fill = algorithm)
+  data = rgap_df,
+  mapping = aes(x = episode, y = rgap, color = seed_fct, group = seed_fct)
 ) +
-  geom_ribbon(
-    aes(ymin = mean_rgap - sd_rgap, ymax = mean_rgap + sd_rgap),
-    alpha = 0.2, color = NA
-  ) +
   geom_line() +
-  facet_wrap(~congestion_regime) +
+  geom_point(data = plot1_annotation, size = 1.25) +
+  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  facet_grid(. ~ congestion_regime, scales = "free_x", space = "free_x") +
+  scale_color_manual(name = "Seed", values = color_lines) +
   labs(
     title = "R-gap evolution across episodes",
-    subtitle = "Mean ± SD across seeds",
+    subtitle = "Training trajectories for three random seeds (BM)",
     x = "Episode",
-    y = "R-gap (%)",
-    color = "Algorithm",
-    fill = "Algorithm"
-  )
+    y = "R-gap (%)"
+  ) +
+  facetted_pos_scales(
+    x = list(
+      scale_x_continuous(breaks = scales::breaks_width(10)),
+      scale_x_continuous(breaks = scales::breaks_width(10)),
+      scale_x_continuous(breaks = scales::breaks_width(10))
+    )
+  ) +
+  scale_y_continuous(breaks = scales::breaks_width(5))
 
-ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"))
+ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
 ```
 
 ```{r}
 #| label: data_plot2
 
-# Plot2: Refined r-gap (by interval) of the last episode for the learning algorithms
+# Not aggregating (mean) across seeds here, same reasoning as plot1: seeds
+# finish training at very different episode counts, so a per-episode mean
+# across seeds would silently collapse to a shrinking number of contributing
+# seeds. Each of the 3 representative seeds is plotted as its own heatmap
+# instead (rows), with congestion regime as columns - full seed set is still
+# used for any statistical summaries elsewhere, just not for this plot.
+#
+# duaIterate is excluded (as before): its refined R-gap was only ever
+# computed for the final iteration, not per-episode, so it has nothing to
+# show along an episode x-axis.
 
-refined_rgap_df <- bind_rows(
-  mutate(data$bm_refined_rgap, algorithm = "BM"),
-  mutate(data$dua_refined_rgap, algorithm = "duaIterate")
-) |> 
+refined_rgap_df <- data$bm_refined_rgap |>
   mutate(
-    congestion_regime = factor(
-      n_agents,
-      levels = c(1500, 2000, 2500),
-      labels = c("Low (1500)", "Moderate (2000)", "High (2500)")
-    )
-  )
-
-refined_rgap_summary <- refined_rgap_df |> 
-  group_by(algorithm, congestion_regime, episode, time_interval) |> 
-  summarise(
-    mean_refined_rgap = mean(refined_rgap),
-    .groups = "drop"
+    congestion_regime = make_congestion_regime(n_agents)
+  ) |>
+  filter(
+    seed %in% representative_seeds
+  ) |>
+  mutate(
+    seed_fct = factor(seed, levels = representative_seeds, labels = labels_seeds)
   )
 ```
 
@@ -150,21 +191,67 @@ refined_rgap_summary <- refined_rgap_df |>
 #| label: plot2
 
 ggplot(
-  data = refined_rgap_summary, 
-  mapping = aes(x = episode, y = time_interval, fill = mean_refined_rgap)
+  data = refined_rgap_df,
+  mapping = aes(x = episode, y = time_interval, fill = refined_rgap)
 ) +
   geom_tile() +
-  scale_fill_viridis_c() +
-  facet_grid(algorithm ~ congestion_regime) +
+  scale_fill_viridis_c(
+    limits = c(0, 50),
+    oob = scales::squish
+  ) +
+  facet_grid(seed_fct ~ congestion_regime, scales = "free_x", space = "free_x") +
   labs(
     title = "Refined R-gap by departure interval across episodes",
-    subtitle = "Mean across seeds",
+    subtitle = "Per-seed trajectories for three random seeds (BM)",
     x = "Episode",
     y = "Departure interval",
-    fill = "Mean refined\nR-gap (%)"
+    fill = "Refined\nR-gap (%)"
   )
 
-ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"))
+ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, height = 10)
+```
+
+```{r}
+#| label: data_plot3
+
+# Plot3: worst-case (90th percentile) OD-specific r-gap, one value per
+# algorithm x seed, computed across that seed's own final episode. 
+
+rgap_od_df <- bind_rows(
+  mutate(data$bm_rgap_by_od, algorithm = "BM"),
+  mutate(data$dua_rgap_by_od, algorithm = "duaIterate")
+) |>
+  mutate(congestion_regime = make_congestion_regime(n_agents))
+
+rgap_od_seed_summary <- rgap_od_df |>
+  group_by(algorithm, congestion_regime, n_agents, seed) |>
+  filter(episode == max(episode)) |>
+  summarise(
+    p90_rgap = quantile(rgap, 0.9),
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: plot3
+
+ggplot(
+  data = rgap_od_seed_summary,
+  mapping = aes(x = algorithm, y = p90_rgap, fill = algorithm)
+) +
+  geom_boxplot(outlier.shape = NA, width = 0.5, linewidth = 0.6, alpha = 0.6) +
+  geom_jitter(width = 0.08, height = 0, size = 2.5, shape = 21, color = "black") +
+  scale_fill_manual(values = c(BM = "#2a78d6", duaIterate = "#eb6834")) +
+  guides(fill = "none") +
+  facet_wrap(~congestion_regime) +
+  labs(
+    title = "Worst-case OD-specific R-gap",
+    subtitle = "90th percentile across each seed's 10 active OD pairs, final episode",
+    x = "Algorithm",
+    y = "90th percentile R-gap (%)"
+  )
+
+ggsave(here("r","RQ1","figures","plot3_od_rgap_worstcase.png"))
 ```
 
 
