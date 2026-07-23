@@ -216,8 +216,6 @@ class Scenario:
     def _save_scenario_data(self):
         self._save_od_routes()
 
-        self._add_time_intervals_to_agents()
-
         self._save_agents()
 
         od_pairs = [(a["origin"], a["destination"]) for a in self.agents]
@@ -313,11 +311,6 @@ class Scenario:
         processed_od_routes = self._process_od_routes()
         df = pd.DataFrame(processed_od_routes)
         df.to_parquet(OD_ROUTES, engine="pyarrow")
-
-    def _add_time_intervals_to_agents(self):
-        # // represents integer division
-        for agent in self.agents:
-            agent["time_interval"] = agent["departure_time"] // config.time_interval
 
     def _save_agents(self):
         df = pd.DataFrame(self.agents)

@@ -224,11 +224,12 @@ def _compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
     )
 
 
-def generate_demand_odt():
+def generate_demand_odt(time_interval):
     """
     This method basically generates a table that contains the demand for each od for all time intervals
     """
     agents_od = pd.read_parquet(AGENTS_OD)
+    agents_od["time_interval"] = agents_od["departure_time"] // time_interval
     demand_odt = (
         agents_od.groupby(["origin", "destination", "time_interval"])
         .size()

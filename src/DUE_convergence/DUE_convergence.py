@@ -100,7 +100,7 @@ def _generate_generic_files_due_convergence():
     # 1. Generate essential files
     ## Parquet
     generate_time_intervals_table(end_time, time_interval)
-    generate_demand_odt()
+    generate_demand_odt(time_interval)
     ## XML
     generate_trips_odt_file()
 
@@ -109,13 +109,14 @@ def _check_due_convergence_BM(end_time, time_interval, threshold_density):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
-    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths)
+    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths, time_interval=time_interval)
 
     # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
         actions_path=ACTIONS,
         trips_info_processed_path=TRIPS_INFO_PARQUET,
         output_file=BM_PATHS.cost_paths,
+        time_interval = time_interval
     )
 
     # 4. TIME DEPENDENCE SHORTEST PATH
@@ -183,7 +184,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
     compute_flows_odtp_k(
-        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths
+        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths, time_interval=time_interval
     )
 
     # 8. Process trips_info file
@@ -197,6 +198,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
         actions_path=DUA_EXTRA.actions,
         trips_info_processed_path=DUA_EXTRA.trips_info_processed,
         output_file=DUA_PATHS.cost_paths,
+        time_interval=time_interval
     )
 
     # 10. Process vehroute duaIterate

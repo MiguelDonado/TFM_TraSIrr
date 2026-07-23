@@ -18,15 +18,16 @@ from lxml import etree
 from config.paths import AGENTS_OD
 
 
-def _load_actions_and_agents(actions_path):
+def _load_actions_and_agents(actions_path, time_interval):
     df_actions = pd.read_parquet(actions_path)
     df_actions.rename(columns={"action": "path"}, inplace=True)
     df_agents_od = pd.read_parquet(AGENTS_OD)
     df_agents_od.rename(columns={"id": "agent_id"}, inplace=True)
+    df_agents_od["time_interval"] = df_agents_od["departure_time"] // time_interval
     return df_actions, df_agents_od
 
 
-def compute_flows_odtp_k(actions_path, output_file):
+def compute_flows_odtp_k(actions_path, output_file, time_interval):
     """
     Called once per program execution
     This function is used to get the table with all the: "Flows assigned on path p for OD pair (o,d) departing at the time interval t, at episode k"
@@ -34,7 +35,7 @@ def compute_flows_odtp_k(actions_path, output_file):
     """
     # df_actions = Observations table (fact table)
     # df_agents = Lookup table
-    df_actions, df_agents_od = _load_actions_and_agents(actions_path)
+    df_actions, df_agents_od = _load_actions_and_agents(actions_path, time_interval)
 
     # Left join (one to many)
     df_merged_flows = df_actions.merge(df_agents_od, on="agent_id", how="left")
@@ -51,7 +52,7 @@ def compute_flows_odtp_k(actions_path, output_file):
 
 
 def compute_travel_time_paths_odtp_k(
-    actions_path, trips_info_processed_path, output_file
+    actions_path, trips_info_processed_path, output_file, time_interval
 ):
     """
     Called once per program execution
@@ -61,7 +62,7 @@ def compute_travel_time_paths_odtp_k(
 
     # df_actions = Observations table (fact table)
     # df_agents = Lookup table
-    df_actions, df_agents_od = _load_actions_and_agents(actions_path)
+    df_actions, df_agents_od = _load_actions_and_agents(actions_path, time_interval)
     # Observations table (fact table). Trips info contains data about the whole episode for each vehicle (Duration = travel time...)
     df_travel_times = pd.read_parquet(
         trips_info_processed_path, columns=["episode", "vehicle_id", "duration"]
