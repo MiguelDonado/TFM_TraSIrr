@@ -28,6 +28,7 @@ import subprocess
 import tempfile
 from collections import Counter
 
+import numpy as np
 from lxml import etree
 
 from config.config import config
@@ -35,8 +36,10 @@ from utils.network import compute_diagonal_network
 
 
 def generate_agents(
-    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None
+    n_agents_warmup, n_agents_post_warmup, min_distance_factor=None
 ):
+
+    rng = np.random.default_rng(config.seed)
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor
 

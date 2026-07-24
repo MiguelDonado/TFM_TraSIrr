@@ -40,7 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR
-from demand_calibration.utils import demand_calibration
+from demand_calibration.utils import demand_from_count
 from simulation.scenario import Scenario
 from utils.route_tt_ratio import compute_route_tt_ratios
 
@@ -55,7 +55,7 @@ def main():
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 
     # 1. Calibrate demand (nº agents)
-    agents, unique_ods = demand_calibration(last_iteration_gui=False)
+    agents, unique_ods = demand_from_count(config.n_agents)
 
     # 2. Containers
     all_n_ods_with_k_routes = []

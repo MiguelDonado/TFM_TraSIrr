@@ -40,9 +40,6 @@ def main():
     demand_warmup = int(DEMAND * config.warm_up_time / config.end_time)
     demand_post_warmup = DEMAND - demand_warmup
 
-    # 1. Reproducibility
-    rng = np.random.default_rng(config.seed)
-
     # 2. Containers
     all_fftts = []
     labels = []
@@ -56,7 +53,7 @@ def main():
 
         # 1. Generate agents objects
         agents, _ = generate_agents(
-            demand_warmup, demand_post_warmup, rng, min_distance_factor
+            demand_warmup, demand_post_warmup, min_distance_factor
         )
 
         # 2. Compute ff tt shortest paths
