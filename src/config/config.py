@@ -1,12 +1,10 @@
 """
 Central configuration for the experiment.
 
-Defines two objects used throughout the codebase:
+Defines the object used throughout the codebase:
 
   config   — singleton Config dataclass instance, populated at import
-             time from a YAML file passed as the first CLI argument,
-             with an optional --mode flag (default: train)
-  RunMode  — enum controlling the execution mode (TRAIN)
+             time from a YAML file passed as the first CLI argument
 
 Config hyperparameter groups
 -----------------------------
@@ -18,7 +16,7 @@ Config hyperparameter groups
   Duarouter           — routing algorithm, random_factor, n_routes_per_OD
   Stopping rule       — max_episodes, tolerance, k_no_change
   DUE convergence     — threshold_density, duaIterate settings
-  Mode & flags        — episodes_gui, gui flags
+  Flags               — episodes_gui, gui flags
 
 Derived fields (computed in __post_init__)
 ------------------------------------------
@@ -34,20 +32,11 @@ YAML locations
 
 import argparse
 from dataclasses import dataclass, field
-from enum import Enum
 
 import yaml
 
 
-##############################
-# Run modes
-##############################
-# Enum: Clean way to represent a variable that can only take a few predefined values
-class RunMode(Enum):
-    TRAIN = "train"
-
-
-def load_config(path, mode):
+def load_config(path):
     with open(path) as f:
         data = yaml.safe_load(f)
 
@@ -56,7 +45,7 @@ def load_config(path, mode):
     for section in data.values():
         flat.update(section)
 
-    return Config(mode=mode, **flat)
+    return Config(**flat)
 
 
 ##############################
@@ -153,12 +142,11 @@ class Config:
     duaIterate_step_length: float
 
     #####################
-    # 10. Mode & flags
+    # 10. Flags
     #####################
     last_episode_gui_BM: bool
     last_episode_gui_duaIterate: bool
     config_name: str
-    mode: RunMode = RunMode.TRAIN
     research_question: str = ""
     episodes_gui: set[int] = field(default_factory=lambda: {})
 
@@ -182,16 +170,11 @@ class Config:
 # 1. Parse CLI arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("config", nargs="?")  # Optional positional argument
-parser.add_argument(
-    "--mode", choices=[m.value for m in RunMode], default=RunMode.TRAIN.value
-)
 args = parser.parse_args()
-
-mode = RunMode(args.mode)
 
 # 2. Check validity arguments
 if args.config is None:
     parser.error("the following argument is required: config")
 
 # 3. Initialize config object
-config = load_config(args.config, mode)
+config = load_config(args.config)

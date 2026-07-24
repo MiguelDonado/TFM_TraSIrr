@@ -21,8 +21,6 @@ Entry points
 ------------
 run()               called by __main__ or by scripts/launcher.py
                     (launcher runs grid-search experiments in batch)
-config.mode         controls behaviour:
-                        TRAIN       — full run (default)
 """
 
 import os
@@ -38,7 +36,6 @@ from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import (
     accumulate_results,
-    log_run_mode,
     prepare_data,
     run_final_simulation,
     save_processed_data,
@@ -139,10 +136,7 @@ def main():
     # 1. Make sure all necessary directories exist
     ensure_dirs()
 
-    # 2. Check mode in which program is being runned
-    log_run_mode(config.mode, config.episodes_gui)
-
-    # 3. Reproducibility
+    # 2. Reproducibility
     rng = np.random.default_rng(config.seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 

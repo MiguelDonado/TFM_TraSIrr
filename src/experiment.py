@@ -18,8 +18,8 @@ actions      — route index chosen by each agent per episode
 rewards      — travel time received by each agent per episode
 BM_results   — agent internal state (ET, PT, stimulus) per episode
 
-Also contains two mode-utility functions used by main.py:
-  log_run_mode        — prints a startup summary of the selected run mode
+Also contains two utility functions used by main.py:
+  log_episodes_gui     — prints which episodes have GUI enabled, if any
   run_final_simulation — replays the last episode in sumo-gui
 """
 
@@ -31,7 +31,7 @@ import pandas as pd
 import yaml
 from lxml import etree
 
-from config.config import RunMode, config
+from config.config import config
 from config.paths import (
     ACTIONS,
     BM_RESULTS,
@@ -164,18 +164,6 @@ def _prepare_bm_data(episode, agents):
                 }
             )
     return rows
-
-
-def log_run_mode(mode, episodes_gui):
-    print(f"Mode '{mode}' has been selected.\n")
-
-    if mode == RunMode.TRAIN:
-        msg_gui = f"GUI enabled for episodes {episodes_gui}" if episodes_gui else ""
-
-        if msg_gui:
-            print(msg_gui)
-    print("\n")
-
 
 def run_final_simulation():
     cmd = [

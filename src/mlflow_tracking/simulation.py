@@ -72,7 +72,6 @@ def set_simulation_tags(run_id):
 ##########
 def _log_mlflow_params():
     config_dict = asdict(config)
-    config_dict["mode"] = config.mode.value
     config_dict["network"] = Path(config.network).stem
     config_dict["episodes_gui"] = list(config.episodes_gui)
 
@@ -86,7 +85,6 @@ def _log_mlflow_params():
 
 def _log_config_artifact():
     config_dict = asdict(config)
-    config_dict["mode"] = config.mode.value
     with NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump(config_dict, f, indent=4)
 
