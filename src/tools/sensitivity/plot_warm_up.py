@@ -69,7 +69,7 @@ from lxml import etree
 
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR, TRIPS_INFO_XML
-from demand_calibration.utils import demand_from_count
+from utils.generate_agents import demand_from_count
 from utils.run_training_BM import run_single_episode_BM
 
 

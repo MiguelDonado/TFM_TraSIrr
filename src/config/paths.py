@@ -261,27 +261,27 @@ MEANDATA = SUMO_DIR / "config" / "meandata.xml"
 YAML_CONF = BASE_DIR / "src" / "config" / "config.yaml"
 
 # ============================================================
-# Demand calibration
+# Congestion simulation
 # ============================================================
 
-# Dir that contains files used during demand_calibration
-DEMAND_CALIBRATION_DIR = SUMO_DIR / "demand_calibration"
+# Dir that contains files used by the congestion simulator (sensitivity tools)
+CONGESTION_SIM_DIR = SUMO_DIR / "congestion_sim"
 
-# File that contains the trips (demand calibration)
-TRIPS_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "trips.xml"
+# File that contains the trips
+TRIPS_CONGESTION_SIM = CONGESTION_SIM_DIR / "trips.xml"
 
-# File that stores the routes (shortest paths) (demand calibration)
-ROUTES_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "routes.xml"
+# File that stores the routes (shortest paths)
+ROUTES_CONGESTION_SIM = CONGESTION_SIM_DIR / "routes.xml"
 
-# SUMO Config file needed for simulation (demand calibration)
-SUMO_CONF_DEMAND_CALIBRATION = DEMAND_CALIBRATION_DIR / "basic.cfg"
+# SUMO Config file needed for simulation
+SUMO_CONF_CONGESTION_SIM = CONGESTION_SIM_DIR / "basic.cfg"
 
 # Free-flow simulation: one vehicle per unique route on an empty network,
 # used to obtain accurate route-level free-flow travel times
-# (used in demand_calibration, as the denominator on the congestion metric)
-ROUTES_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_routes.xml"
-SUMO_CONF_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff.cfg"
-TRIPS_INFO_FREE_FLOW = DEMAND_CALIBRATION_DIR / "ff_tripsinfo.xml"
+# (used as the denominator on the congestion metric)
+ROUTES_FREE_FLOW = CONGESTION_SIM_DIR / "ff_routes.xml"
+SUMO_CONF_FREE_FLOW = CONGESTION_SIM_DIR / "ff.cfg"
+TRIPS_INFO_FREE_FLOW = CONGESTION_SIM_DIR / "ff_tripsinfo.xml"
 
 # ============================================================
 # Sensitivity

@@ -27,8 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR
-from demand_calibration.demand_calibration import DemandCalibration
 from utils.generate_agents import generate_agents
+from utils.generate_free_flow_tt import compute_od_free_flow_tt
 
 
 def main():
@@ -56,13 +56,8 @@ def main():
             demand_warmup, demand_post_warmup, min_distance_factor
         )
 
-        # 2. Compute ff tt shortest paths
-        demand_calibration = DemandCalibration(config.network, agents)
-
-        # 3. Collect free-flow travel times
-        free_flow_travel_times_short_paths = list(
-            demand_calibration.od_min_paths_ff_tt.values()
-        )
+        od_free_flow_tt = compute_od_free_flow_tt(config.network, agents)
+        free_flow_travel_times_short_paths = list(od_free_flow_tt.values())
 
         # 4. Store fftt correspondent to current min_distance_factor
         all_fftts.append(free_flow_travel_times_short_paths)

@@ -80,7 +80,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR
-from demand_calibration.demand_calibration import DemandCalibration
+from tools.sensitivity.congestion_simulator import CongestionSimulator
 from utils.generate_agents import build_od_space, generate_agents_from_od_space
 
 # CONSTANTS
@@ -128,14 +128,14 @@ def main():
             # 3. Sort agents data structure by departure time
             accumulated_agents.sort(key=lambda a: a["departure_time"])
 
-            # 4. Re-number IDs so DemandCalibration sees a consistent sequence.
+            # 4. Re-number IDs so CongestionSimulator sees a consistent sequence.
             agents_for_sim = [
                 {**a, "id": f"agent_{i + 1}"} for i, a in enumerate(accumulated_agents)
             ]
 
             # 5. Get metric value
-            demand_calibration = DemandCalibration(config.network, agents_for_sim)
-            congestion_metric_value = demand_calibration.compute_congestion_metric()
+            congestion_simulator = CongestionSimulator(config.network, agents_for_sim)
+            congestion_metric_value = congestion_simulator.compute_congestion_metric()
 
             # 6. Store
             results.append(

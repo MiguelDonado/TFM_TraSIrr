@@ -32,7 +32,6 @@ import pandas as pd
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from config.paths import POLICY_CHANGE_BM, ensure_dirs
-from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import (
     accumulate_results,
@@ -48,6 +47,7 @@ from stopping_rule.stopping_rule import (
     check_convergence,
     create_policies_dict,
 )
+from utils.generate_agents import demand_from_count
 from utils.generate_free_flow_tt import generate_free_flow_tt_links
 
 

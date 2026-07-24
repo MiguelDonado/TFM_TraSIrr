@@ -40,8 +40,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
 from config.paths import SENSITIVITY_PLOTS_DIR
-from demand_calibration.utils import demand_from_count
 from simulation.scenario import Scenario
+from utils.generate_agents import demand_from_count
 from utils.route_tt_ratio import compute_route_tt_ratios
 
 

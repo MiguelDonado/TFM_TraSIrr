@@ -1,12 +1,19 @@
 """
 Generates the agent list (OD pairs + departure times) from a network.
 
-Two entry points are provided depending on the use case:
+Three entry points are provided depending on the use case:
 
-generate_agents — called by the demand calibration loop on each iteration
-    with the current n_agents estimate. Runs randomTrips internally on every
-    call. The final agents produced at convergence are passed directly to
-    Scenario, so both calibration and training use the same OD matrix.
+demand_from_count(n_agents) → (agents, unique_ods)
+    Generates the agent list for a fixed, pre-determined agent count.
+    agents      — list of dicts with keys: id, origin, destination, departure_time
+    unique_ods  — unique (origin, dest) pairs in the OD pool, needed by
+                  Scenario to compute k alternative routes
+
+generate_agents — runs randomTrips internally on every call to produce a
+    fresh OD sample for the requested warmup/post-warmup agent counts.
+    Used by demand_from_count and by the sensitivity tools under
+    src/tools/sensitivity/ that sweep a single parameter (e.g.
+    min_distance_factor) while holding demand fixed.
 
 build_od_space + generate_agents_from_od_space — used by the congestion metric
     sensitivity sweep (plot_congestion_metric.py), where the same OD pool must
@@ -33,6 +40,15 @@ from lxml import etree
 
 from config.config import config
 from utils.network import compute_diagonal_network
+
+
+def demand_from_count(n_agents):
+    """Generate agents directly from a fixed agent count."""
+
+    demand_warmup = int(n_agents * config.warm_up_time / config.end_time)
+    demand_post_warmup = n_agents - demand_warmup
+    agents, unique_ods = generate_agents(demand_warmup, demand_post_warmup)
+    return agents, unique_ods
 
 
 def generate_agents(
