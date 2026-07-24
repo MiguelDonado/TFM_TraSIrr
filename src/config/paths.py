@@ -239,9 +239,6 @@ ENVIRONMENT_DIR = DATA_DIR / "environment"
 # Dir that contains files used by SUMO
 SUMO_DIR = BASE_DIR / "sumo"
 
-# Dir that contains profiles of the program
-PROFILING_DIR = BASE_DIR / "profiling"
-
 # ============================================================
 # SUMO files
 # ============================================================

@@ -31,39 +31,7 @@ python src/main.py <config.yaml>
 ---
 
 ## 2. Run analysis manually
-
-```sh
-cd /home/miguel/6.Projects/Thesis
-python scripts/run_analysis.py RQ1
-```
-
----
+See module docstring /home/miguel/6.Projects/Thesis/scripts/run_analysis.py
 
 ## 3. Batch run (grid search)
-
-```sh
-cd /home/miguel/6.Projects/Thesis
-python scripts/launcher.py <design.yaml> [<research_question>]
-```
-
-The launcher iterates over every parameter combination defined in the design YAML,
-writes a temp config, runs `main.py` for each, and optionally runs the analysis.
-
-**Design files:**
-
-| File | Research question |
-|------|------------------|
-| `experiments/rq1/design.yaml` | RQ1 |
-| `experiments/rq2/design.yaml` | RQ2 |
-
-Example with analysis:
-
-```sh
-python scripts/launcher.py experiments/rq1/design.yaml RQ1
-```
-
-## 4. Congestion metric plot
-```sh
-cd /home/miguel/6.Projects/Thesis
-python src/tools/plot_congestion_metric.py <design.yaml>
-```
+See module docstring /home/miguel/6.Projects/Thesis/scripts/launcher.py

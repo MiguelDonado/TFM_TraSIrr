@@ -1,6 +1,8 @@
 This YAML contains all the chosen values of the hyperparameters
 /home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml
 
+### Non-study hyperparameters
+
 1. Perform sensitivity analysis on hyperparameters that directly influence the learning algorithm
    or the r-gap values:
    - min_distance_factor
@@ -35,13 +37,9 @@ A principle of experimental design is to fix parameters in an order that respect
 In experiment evaluation, Im only gonna analyze Sioux Falls network.
 In methodology or wherever is needed to illustrate concepts I will use toy network as well.
 
-1. Hyperparameters that will be investigated in research questions:
+### Hyperparameters that will be investigated in research questions:
    - seed
    - learning_rate
    - memory_rate
    - target_congestion_metric
 
-
-**PENDING SENSITIVITY ANALYSIS**
-
-TIME_INTERVAL_HEURISTIC

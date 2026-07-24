@@ -1,51 +1,6 @@
 **Purpose**: Informal reasoning of secondary decisions in my project
 **Structure of the document** : sections + bullet points + short reasoning blocks
 
-## 1. Flowchart
-
-- Layers: Conceptual
-
-**Reasoning**
-
-Instead of each layer refer to one python file, each layer refers to some concept, i.e. scenario, agent (contains all agent-related code)
-
-## 2. Functions learned during the project 
-
-- Weighted average: np.average(array, weights)
-- rowwise(): Change tidyverse behavior to apply logic per row instead of per column
-
-**Reasoning**
-
-- We can compute a weighted average using `np.average(array, weights = weights)`
-- rowwise() explanation:
-```r
-# 1. In dplyr, operations normally work on whole columns at once
-df %>%
-    mutate(x2 = x * 2)
-# Here x is a vector (entire column)
-# R does vectorized computation
-# Internally:
-x2 = [x1*2, x2*2, x3*2, ...]
-
-# 2. In our case:
-rowwise() %>%
-  mutate(time = list(seq(entry_time, exit_times))) 
-
-# entry_time is a vector (column)
-# exit_times is a vector (column)
-
-# So R tries to do:
-seq(c(5,10,3,...), c(9,12,7,...))
-# So is not taking just the entry_time and the exit_times of the actual row, but instead it takes the whole column
-
-# 3. What rowwise() does:
-# Change behavior to: 
-# Treat each row as a mini dataframe of size 1
-# With rowwise()
-for each row:
-    seq(entry_time_i, exit_time_i)
-```
-
 ## 3. Efficiency
 
 - Parse XML output files: Parse inmediately and store metrics
@@ -92,20 +47,6 @@ user_1    25       B        20
  - So, although hierarchical representations (nested dictionaries, JSON structure) are common in data storage and transmission, they introduce additional complexity when performing data analysis in environments such as tidyverse in R.
 
 
-## 5. Programming style
-
-- Programming paradigm: OOP
-
-**Reasoning**
-- I prefer to use OOP instead of functional programming, because a class is better if we want to extend functionality in the future. For example, for the `io_module` I had the doubt of using functions instead of classes (Parser, Plotter...) but for the sake of being able to easily extend it I sticked to OOP.
-
-## 6. Parsing outputs
-
-- Programming language: Python
-
-**Reasoning**
-For simplicity has to be done in Python, because we have to parse the outputs files after each episode.
-
 ## 7. Format output files
 
 - Format: Parquet
@@ -118,23 +59,9 @@ If when using a network that is very big, I have some scalability issue when wri
 
 
 ## Pending
-Use multiple seeds for all research questions.
-En la research question 1, calcularlo para distintas densidades de trafico (congested, partially congested...)
-Para la research question 2, correr los plots de la research question 1 para un par de valores (0.85, 0.9...)
-Parece ser que la demanda era muy poca, porque el rgap de 0.002 es muy pequeño.
-R-gap en porcentaje o en valores numericos
-Check if median travel times being so small could be a problem for the experiment and our conclusions
+- SUMO docker
 
 
-
-
-
-
-
-- **Implementations**:
-  1. SUMO docker
-  2. Run Claude rest of audits
-  3. Repasar lo que dijo molano y mari paz
 
 - **To write**:
   - Let clear, what it means a simulation, an episode, a time interval, experiment run (some explanatory figure may ease understanding)
@@ -142,15 +69,12 @@ Check if median travel times being so small could be a problem for the experimen
   - Briefly acknowledge on the thesis that Im applying TDSP on a non-FIFO table. Example paragraph:
     - The time-dependent shortest-path calculations were performed on discretized average link travel-time tables extracted from SUMO. Due to temporal aggregation, some link travel-time profiles do not strictly satisfy the FIFO property. Consequently, the TDSP computations should be interpreted as approximate shortest paths. However, the resulting Rgap values exhibited the expected convergence behavior, both during Bush-Mosteller learning and during DUA iterations, suggesting that the impact of these violations is limited for the studied scenarios.
 
-- **Doubts**: 
-
 - **To read**:
   1. Important conversation about applying modern RL instead of Bush-Mosteller: https://chatgpt.com/c/69e5ffba-c078-8333-a234-3301f406e233
-  2. Echar un vistazo al articulo que paso Manuel Molano  
 
 - **R**:
   1. Arreglar large parquet files, no puedo cargarlos todo en R. open_dataset instead Cargar solo por episodio...
   2. Arreglar en script R, que cuando commputo el travel time utilizando vehroutes no esta bien. Porque para la primera fila de acda vehiculo y cada episodio, estoy asumiento que el entry travel time es 0, y eso ahora no es cierto, puesto que los vehiculos tienen departure_time distinto de 0. Lo que deberia hacer es utilizar el departure time de cada vehiculo.
   3. When using R combine with sf package (represent networks greatly)
 
-- **MLFlow**
+
