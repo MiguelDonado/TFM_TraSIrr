@@ -48,6 +48,7 @@ from stopping_rule.stopping_rule import (
     check_convergence,
     create_policies_dict,
 )
+from utils.generate_free_flow_tt import generate_free_flow_tt_links
 
 
 def _run_training_loop(
@@ -184,6 +185,7 @@ def main():
         # -----------------------------
         # 6. CHECK DUE convergence
         # -----------------------------
+        generate_free_flow_tt_links()
         run_due_convergence_checks(
             scen=scen, end_time=config.end_time, time_interval=config.time_interval
         )

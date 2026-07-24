@@ -35,18 +35,16 @@ from utils.network import compute_diagonal_network
 
 
 def generate_agents(
-    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None, seed=None
+    n_agents_warmup, n_agents_post_warmup, rng, min_distance_factor=None
 ):
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor
-
-    seed = seed if seed is not None else config.seed
 
     n_agents = n_agents_warmup + n_agents_post_warmup
 
     agents = []
     od_pairs, unique_ods = generate_od_for_agents(
-        n_agents, n_agents_post_warmup, rng, min_distance_factor, seed
+        n_agents, n_agents_post_warmup, rng, min_distance_factor
     )
     departure_times = generate_departure_times(n_agents, rng)
     for i in range(n_agents):
@@ -64,14 +62,14 @@ def generate_agents(
 
 
 def generate_od_for_agents(
-    n_agents, n_agents_post_warmup, rng, min_distance_factor, seed
+    n_agents, n_agents_post_warmup, rng, min_distance_factor
 ):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
         # Generate random ods for agents
         generate_random_trips_agents(
-            n_agents_post_warmup, trips_file, min_distance_factor, seed
+            n_agents_post_warmup, trips_file, min_distance_factor, config.seed
         )
         # OD space
         od_space = parse_od_agents(trips_file)
