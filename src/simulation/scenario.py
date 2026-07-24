@@ -24,12 +24,9 @@ Construction runs three steps automatically in __init__:
 import os
 import subprocess
 import tempfile
-import xml.etree.ElementTree as ET
 from collections import Counter
 
-import numpy as np
 import pandas as pd
-from lxml import etree
 
 from config.config import config
 from config.paths import (
@@ -58,10 +55,8 @@ class Scenario:
         agents,
         unique_ods,
         seeds,
-        seed=None,
         k=None,
         random_factor=None,
-        max_attempts=None,
     ):
         """
         Parameters:
@@ -72,7 +67,6 @@ class Scenario:
         self.network = map
         self.agents = agents
         self.unique_ods = unique_ods
-        self.seed = seed if seed is not None else config.seed
 
         # Dictionary that stores set of routes for each OD-pair
         self.od_routes = {}  # (origin, dest) → routes
@@ -84,7 +78,6 @@ class Scenario:
         random_factor = (
             random_factor if random_factor is not None else config.random_factor
         )
-        max_attempts = max_attempts if max_attempts is not None else config.max_attempts
 
         self.od_routes = self.compute_k_routes(
             seeds, k=k, random_factor=random_factor
@@ -166,7 +159,7 @@ class Scenario:
         write_sumo_conf(
             output_path=SUMO_CONF,
             net_file=self.network,
-            seed=self.seed,
+            seed=config.seed,
             additional_files=MEANDATA,
             report_outputs={
                 "tripinfo-output": TRIPS_INFO_XML,
@@ -245,6 +238,8 @@ class Scenario:
 
     def _run_duarouter(self, trips_file, routes_file, random_factor, seed=None):
 
+        seed = seed if seed is not None else config.seed
+
         cmd = [
             "duarouter",
             "-n",
@@ -263,7 +258,7 @@ class Scenario:
             "--weights.random-factor",
             str(random_factor),
             "--seed",
-            str(self.seed),
+            str(seed),
         ]
 
         subprocess.run(cmd, check=True)
