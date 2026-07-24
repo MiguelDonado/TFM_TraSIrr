@@ -23,7 +23,6 @@ run()               called by __main__ or by scripts/launcher.py
                     (launcher runs grid-search experiments in batch)
 config.mode         controls behaviour:
                         TRAIN       — full run (default)
-                        COMPUTE_ROUTES — generate routes then exit
                         EVAL_GUI    — replay last episode in sumo-gui
 """
 
@@ -142,7 +141,7 @@ def main():
     ensure_dirs()
 
     # 2. Check mode in which program is being runned
-    log_run_mode(config.mode, config.have_precomputed_routes, config.episodes_gui)
+    log_run_mode(config.mode, config.episodes_gui)
 
     if config.mode == RunMode.EVAL_GUI:
         run_final_simulation()

@@ -8,19 +8,6 @@ generate_free_flow_tt_links           Build FREE_FLOW_TRAVEL_TIMES parquet (leng
                                       link cost table and as edge weights for route-level
                                       cost functions below.
 
-generate_free_flow_tt_links_simulation  Alternative to the above (NOT currently wired in).
-                                      Runs a dedicated SUMO episode with one sandwich-route
-                                      vehicle per edge to get simulation-based free-flow TTs.
-                                      Kept for reference; not used because junction crossing
-                                      time is bundled into the measurement, making the TT
-                                      predecessor-dependent rather than an intrinsic edge
-                                      property.
-                                      (basically the travel time on the edge depended on the
-                                      predecessor edge, and thats not intuitive. The free flow
-                                      travel time of an edge should be independent of wherever
-                                      you are coming from, at least we want to assume that,
-                                      for simplification)
-
 generate_free_flow_tt_paths           Sum edge costs along every route for each OD pair.
                                       Used by Scenario to compute the median free-flow
                                       route TT, which drives the adaptive time-interval
@@ -69,113 +56,6 @@ def generate_free_flow_tt_links():
 
     df = pd.DataFrame(data)
     df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
-
-
-def generate_free_flow_tt_links_simulation(seed=None):
-    """
-    Called once per program execution.
-    Used for imputing missing values in the link costs table.
-
-    Runs a dedicated SUMO episode on an empty network with one vehicle per edge,
-    using sandwich routes [P, E, S] so the vehicle enters E at free-flow speed
-    (no acceleration bias). Falls back to length/speed for any edge SUMO did
-    not record (source/sink edges or insertion failures).
-    """
-    seed = seed if seed is not None else config.seed
-
-    tree = etree.parse(config.network)
-
-    # Collect non-internal edges with length/speed as fallback values
-    edges_data = {}
-    for edge in tree.xpath("//edge[not(@function='internal')]"):
-        edge_id = edge.get("id")
-        lane = edge.find("lane")
-        edges_data[edge_id] = {
-            "length": float(lane.get("length")),
-            "speed": float(lane.get("speed")),
-        }
-    edges = list(edges_data.keys())
-
-    # Build predecessor/successor maps from network connections
-    predecessors = {}
-    successors = {}
-    for conn in tree.xpath("//connection"):
-        from_edge = conn.get("from")
-        to_edge = conn.get("to")
-        if (
-            from_edge
-            and to_edge
-            and not from_edge.startswith(":")
-            and not to_edge.startswith(":")
-        ):
-            # setdefault: If the key does not exist, give me an empty list automatically
-            predecessors.setdefault(to_edge, []).append(from_edge)
-            successors.setdefault(from_edge, []).append(to_edge)
-
-    # Build sandwich routes: [P, E, S], [P, E], [E, S], or [E]
-    routes = []  # list of (edge_list, has_predecessor)
-    for edge_id in edges:
-        pred = predecessors.get(edge_id, [None])[0]
-        succ = successors.get(edge_id, [None])[0]
-        route = []
-        if pred:
-            route.append(pred)
-        route.append(edge_id)
-        if succ:
-            route.append(succ)
-        routes.append((route, pred is not None))
-
-    # Write routes file: one vehicle per edge, staggered 200s apart
-    with open(ROUTES_FF_EDGES, "w") as f:
-        f.write("<routes>\n")
-        for i, (route, _) in enumerate(routes):
-            f.write(f'\t<vehicle id="ff_edge_{i}" depart="{i * 200}">\n')
-            f.write(f'\t\t<route edges="{" ".join(route)}"/>\n')
-            f.write(f"\t</vehicle>\n")
-        f.write("</routes>\n")
-
-    write_sumo_conf(
-        output_path=SUMO_CONF_FF_EDGES,
-        net_file=config.network,
-        route_files=ROUTES_FF_EDGES,
-        report_outputs={
-            "vehroute-output": VEHROUTE_FF_EDGES,
-            "vehroute-output.exit-times": "true",
-        },
-        seed=seed,
-    )
-    subprocess.run(["sumo", "-c", str(SUMO_CONF_FF_EDGES)], check=True)
-
-    # Parse vehroute: extract TT for each target edge
-    # Route has predecessor → E is at index 1: TT = exit_times[1] - exit_times[0]
-    # No predecessor (source edge) → E is at index 0: TT = exit_times[0] - depart
-    veh_tree = etree.parse(VEHROUTE_FF_EDGES)
-    edge_tt = {}
-    for vehicle in veh_tree.xpath("//vehicle"):
-        vid = vehicle.get("id")
-        i = int(vid.split("_")[-1])
-        target_edge = edges[i]
-        has_pred = routes[i][1]
-        depart = i * 200.0
-
-        route_elem = vehicle.find("route")
-        exit_times = list(map(float, route_elem.get("exitTimes").split()))
-
-        tt = exit_times[1] - exit_times[0] if has_pred else exit_times[0] - depart
-        edge_tt[target_edge] = tt
-
-    data = [
-        {
-            "edge": e,
-            # dict.get(key, default) returns the value for key if it exists
-            # in the dict, otherwise returns default. length / speed is a fallback
-            "free_flow_travel_time": edge_tt.get(
-                e, edges_data[e]["length"] / edges_data[e]["speed"]  #
-            ),
-        }
-        for e in edges
-    ]
-    pd.DataFrame(data).to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
 
 
 def generate_free_flow_tt_paths(od_routes):

@@ -100,21 +100,16 @@ Because an empty network is not realistic, we should avoid to include in our ana
   3. `choose_action(agent)`: Each agent has its own rng object, that is used to select randomly an action by using `rng.random.choice()`.
 
 ## 6. Run modes
-- Number of run modes: 3
+- Number of run modes: 2
 
 **Reasoning**
 - Following the different modes in which the script can be executed:
-  1. *compute_routes*:
-     - Use case: With large networks, calling duarouter to compute_k_routes() is the bottleneck. If we wanna do experimentation on the same network and with the same number of agents, we can avoid having to recompute the k routes each time. So we can run the script on this mode during night on a large network, to get the k routes for all od pairs.
-  2. *eval_gui*:
+  1. *eval_gui*:
      - Use case: If we wanna visualize with the GUI the previous final episode (previous script execution)
-  3. *train*:
+  2. *train*:
      - Use case: Normal use of the script. It has several flags that modifies the script behavior. 
        - Flags:
-         1. *have_precomputed_routes*: 
-            - True: Load od pairs and k routes from a file.
-            - False: Compute k routes using duarouter
-         2. *episodes_gui*: Visualize with GUI the given episodes
+         1. *episodes_gui*: Visualize with GUI the given episodes
 
 ## 7. Networks
 - Networks used in papers I read and some other popular traffic networks

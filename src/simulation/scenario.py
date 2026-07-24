@@ -11,8 +11,7 @@ and passed in.
 
 Construction runs three steps automatically in __init__:
 1. Routes       — compute k alternative routes per OD by calling duarouter
-                  repeatedly with a random edge-weight perturbation; or load
-                  from a precomputed parquet if have_precomputed_routes=True.
+                  repeatedly with a random edge-weight perturbation
 2. Environment  — save agents, OD routes, free-flow link costs, OD matrix,
                   and time interval table to parquet files under data/.
 3. Config       — write the SUMO .sumocfg and meandata XML files used by
@@ -24,7 +23,6 @@ Construction runs three steps automatically in __init__:
 
 import os
 import subprocess
-import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -33,7 +31,7 @@ import numpy as np
 import pandas as pd
 from lxml import etree
 
-from config.config import RunMode, config
+from config.config import config
 from config.paths import (
     AGENTS_OD,
     EDGEDATA_XML,
@@ -88,38 +86,11 @@ class Scenario:
         )
         max_attempts = max_attempts if max_attempts is not None else config.max_attempts
 
-        self._load_or_compute_routes(
-            seeds=seeds, k=k, random_factor=random_factor, max_attempts=max_attempts
+        self.od_routes = self.compute_k_routes(
+            seeds, k=k, random_factor=random_factor
         )
         self._save_scenario_data()
         self.conf = self._generate_conf()
-
-    def _load_or_compute_routes(self, seeds, k, random_factor, max_attempts):
-        if config.have_precomputed_routes:
-            self.reconstruct_od_routes()
-        else:
-            self.od_routes = self.compute_k_routes(
-                seeds, k=k, random_factor=random_factor
-            )
-
-    def reconstruct_od_routes(self):
-        df = pd.read_parquet(OD_ROUTES)
-
-        df = df.sort_values(["origin", "dest", "route_id", "step"])
-
-        od_routes = {}
-
-        grouped = df.groupby(["origin", "dest", "route_id"])
-
-        for (origin, dest, route_id), group in grouped:
-            route = group["edge"].tolist()
-
-            key = (origin, dest)
-            if key not in od_routes:
-                od_routes[key] = []
-            od_routes[key].append(route)
-
-        self.od_routes = od_routes
 
     def compute_k_routes(
         self,
@@ -224,8 +195,6 @@ class Scenario:
             od_pairs, departure_times, interval_size=config.time_interval
         )
 
-        self._handle_compute_routes_mode()
-
     def _process_od_routes(self):
         """
         I want this format
@@ -318,9 +287,3 @@ class Scenario:
     def _save_agents(self):
         df = pd.DataFrame(self.agents)
         df.to_parquet(AGENTS_OD, engine="pyarrow")
-
-    def _handle_compute_routes_mode(self):
-        # Check RunMode
-        if config.mode == RunMode.COMPUTE_ROUTES:
-            print(f"\nThe OD pairs and its k routes have been saved in {OD_ROUTES}")
-            sys.exit()

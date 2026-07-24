@@ -459,28 +459,36 @@ EXPERIMENTS_TMP = BASE_DIR / "experiments" / "tmp"
 # ============================================================
 
 
-def _iter_paths():
-    """Yield every Path defined in this module, including ones nested
+def _iter_paths() -> list[Path]:
+    """Returns a list with all the paths defined in this module, including ones nested
     inside dataclass instances (DuePaths, DuaIteratePaths) and lists."""
+    
+    paths = []
+
     for value in globals().values():
         # 1. Single variable
         if isinstance(value, Path):
-            yield value
+            paths.append(value)
         # 2. List or tuple
         elif isinstance(value, (list, tuple)):
             for item in value:
                 if isinstance(item, Path):
-                    yield item
+                    paths.append(item)
         # 3. Dataclass fields
         elif is_dataclass(value) and not isinstance(value, type):
             for field in fields(value):
                 item = getattr(value, field.name)
                 if isinstance(item, Path):
-                    yield item
+                    paths.append(item)
+    return paths
 
 
 def ensure_dirs() -> None:
     """Create every directory implied by the paths in this module, if missing."""
-    dirs = {path.parent if path.suffix else path for path in _iter_paths()}
+    paths = _iter_paths()
+
+    # Get all directories used to store data
+    dirs = {path.parent if path.suffix else path for path in paths}
     for directory in dirs:
+        # If directory does not exist create. If it does, nothing happens
         directory.mkdir(parents=True, exist_ok=True)

@@ -31,7 +31,6 @@ python src/main.py <config.yaml>
 **Optional `--mode` flag** (default: `train`):
 
 ```sh
-python src/main.py <config.yaml> --mode compute_routes   # generate routes then exit
 python src/main.py <config.yaml> --mode eval_gui         # replay last episode in SUMO GUI
 python src/main.py <config.yaml> --mode train            # full training run (default)
 ```

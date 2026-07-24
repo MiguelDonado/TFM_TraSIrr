@@ -39,7 +39,6 @@ from config.paths import (
     EDGEDATA_XML,
     FCD_PARQUET,
     FCD_XML,
-    OD_ROUTES,
     REWARDS,
     ROUTES,
     STATISTICS_PARQUET,
@@ -167,31 +166,14 @@ def _prepare_bm_data(episode, agents):
     return rows
 
 
-def log_run_mode(mode, have_precomputed_routes, episodes_gui):
-    print("\n\n#########################")
-    print("RUN MODE")
-    print("#########################")
-
+def log_run_mode(mode, episodes_gui):
     print(f"Mode '{mode}' has been selected.\n")
 
-    if mode == RunMode.COMPUTE_ROUTES:
-        print(
-            (
-                "The script will generate OD pairs and compute k routes. "
-                f"Results will be saved in {OD_ROUTES}"
-            )
-        )
-    elif mode == RunMode.EVAL_GUI:
+    if mode == RunMode.EVAL_GUI:
         print("The script will visualize the previous final episode using the GUI.")
     elif mode in {RunMode.TRAIN}:
-        msg_precomputed_routes = (
-            f"Using precomputed routes from {OD_ROUTES}."
-            if have_precomputed_routes
-            else "k routes will be generated using the duarouter."
-        )
         msg_gui = f"GUI enabled for episodes {episodes_gui}" if episodes_gui else ""
 
-        print(msg_precomputed_routes)
         if msg_gui:
             print(msg_gui)
     print("\n")

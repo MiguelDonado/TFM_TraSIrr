@@ -6,8 +6,7 @@ Defines two objects used throughout the codebase:
   config   — singleton Config dataclass instance, populated at import
              time from a YAML file passed as the first CLI argument,
              with an optional --mode flag (default: train)
-  RunMode  — enum controlling the execution mode (TRAIN, COMPUTE_ROUTES,
-             EVAL_GUI)
+  RunMode  — enum controlling the execution mode (TRAIN, EVAL_GUI)
 
 Config hyperparameter groups
 -----------------------------
@@ -19,7 +18,7 @@ Config hyperparameter groups
   Duarouter           — routing algorithm, random_factor, n_routes_per_OD
   Stopping rule       — max_episodes, tolerance, k_no_change
   DUE convergence     — threshold_density, duaIterate settings
-  Mode & flags        — have_precomputed_routes, episodes_gui, gui flags
+  Mode & flags        — episodes_gui, gui flags
 
 Derived fields (computed in __post_init__)
 ------------------------------------------
@@ -45,7 +44,6 @@ import yaml
 ##############################
 # Enum: Clean way to represent a variable that can only take a few predefined values
 class RunMode(Enum):
-    COMPUTE_ROUTES = "compute_routes"
     TRAIN = "train"
     EVAL_GUI = "eval_gui"
 
@@ -158,7 +156,6 @@ class Config:
     #####################
     # 10. Mode & flags
     #####################
-    have_precomputed_routes: bool
     last_episode_gui_BM: bool
     last_episode_gui_duaIterate: bool
     config_name: str

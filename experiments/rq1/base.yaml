@@ -48,6 +48,5 @@ due_convergence:
   duaIterate_step_length: 0.1
 
 mode_and_flags:
-  have_precomputed_routes: false
   last_episode_gui_BM: false
   last_episode_gui_duaIterate: false
