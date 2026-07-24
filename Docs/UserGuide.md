@@ -28,13 +28,6 @@ python src/main.py <config.yaml>
 | `experiments/developer_modes/development.yaml` | Full dev run |
 | `experiments/developer_modes/production.yaml` | Production settings |
 
-**Optional `--mode` flag** (default: `train`):
-
-```sh
-python src/main.py <config.yaml> --mode eval_gui         # replay last episode in SUMO GUI
-python src/main.py <config.yaml> --mode train            # full training run (default)
-```
-
 ---
 
 ## 2. Run analysis manually

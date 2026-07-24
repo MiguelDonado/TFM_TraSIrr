@@ -6,7 +6,7 @@ Defines two objects used throughout the codebase:
   config   — singleton Config dataclass instance, populated at import
              time from a YAML file passed as the first CLI argument,
              with an optional --mode flag (default: train)
-  RunMode  — enum controlling the execution mode (TRAIN, EVAL_GUI)
+  RunMode  — enum controlling the execution mode (TRAIN)
 
 Config hyperparameter groups
 -----------------------------
@@ -45,7 +45,6 @@ import yaml
 # Enum: Clean way to represent a variable that can only take a few predefined values
 class RunMode(Enum):
     TRAIN = "train"
-    EVAL_GUI = "eval_gui"
 
 
 def load_config(path, mode):
@@ -191,19 +190,8 @@ args = parser.parse_args()
 mode = RunMode(args.mode)
 
 # 2. Check validity arguments
-# If not eval_gui mode YAML config file is required
-if mode != RunMode.EVAL_GUI and args.config is None:
+if args.config is None:
     parser.error("the following argument is required: config")
 
-# If eval_gui, YAML config file cannot be provided
-if mode == RunMode.EVAL_GUI and args.config is not None:
-    parser.error("'config' cannot be provided when using '--mode eval_gui'.")
-
 # 3. Initialize config object
-if mode == RunMode.EVAL_GUI:
-    template_config = (
-        "/home/miguel/6.Projects/Thesis/experiments/developer_modes/eval_gui.yaml"
-    )
-    config = load_config(template_config, mode)
-else:
-    config = load_config(args.config, mode)
+config = load_config(args.config, mode)

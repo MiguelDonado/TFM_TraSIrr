@@ -100,13 +100,11 @@ Because an empty network is not realistic, we should avoid to include in our ana
   3. `choose_action(agent)`: Each agent has its own rng object, that is used to select randomly an action by using `rng.random.choice()`.
 
 ## 6. Run modes
-- Number of run modes: 2
+- Number of run modes: 1
 
 **Reasoning**
 - Following the different modes in which the script can be executed:
-  1. *eval_gui*:
-     - Use case: If we wanna visualize with the GUI the previous final episode (previous script execution)
-  2. *train*:
+  1. *train*:
      - Use case: Normal use of the script. It has several flags that modifies the script behavior. 
        - Flags:
          1. *episodes_gui*: Visualize with GUI the given episodes

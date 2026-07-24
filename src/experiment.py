@@ -169,9 +169,7 @@ def _prepare_bm_data(episode, agents):
 def log_run_mode(mode, episodes_gui):
     print(f"Mode '{mode}' has been selected.\n")
 
-    if mode == RunMode.EVAL_GUI:
-        print("The script will visualize the previous final episode using the GUI.")
-    elif mode in {RunMode.TRAIN}:
+    if mode == RunMode.TRAIN:
         msg_gui = f"GUI enabled for episodes {episodes_gui}" if episodes_gui else ""
 
         if msg_gui:

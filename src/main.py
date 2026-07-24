@@ -23,7 +23,6 @@ run()               called by __main__ or by scripts/launcher.py
                     (launcher runs grid-search experiments in batch)
 config.mode         controls behaviour:
                         TRAIN       — full run (default)
-                        EVAL_GUI    — replay last episode in sumo-gui
 """
 
 import os
@@ -33,7 +32,7 @@ import numpy as np
 import pandas as pd
 
 from agents.factory import initialize_agents, select_actions, update_agents
-from config.config import RunMode, config
+from config.config import config
 from config.paths import POLICY_CHANGE_BM, ensure_dirs
 from demand_calibration.utils import demand_from_count
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
@@ -143,10 +142,6 @@ def main():
     # 2. Check mode in which program is being runned
     log_run_mode(config.mode, config.episodes_gui)
 
-    if config.mode == RunMode.EVAL_GUI:
-        run_final_simulation()
-        return
-
     # 3. Reproducibility
     rng = np.random.default_rng(config.seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
@@ -178,14 +173,13 @@ def main():
         # -----------------------------
         agents = initialize_agents(scen=scen)
 
-        if config.last_episode_gui_BM:
-            run_final_simulation()
-
         # -----------------------------
         # 4. TRAINING LOOP
         # -----------------------------
         results, policy_change_history = _run_training_loop(env=env, agents=agents)
 
+        if config.last_episode_gui_BM:
+            run_final_simulation()
         # -----------------------------
         # 5. SAVE OUTPUT
         # -----------------------------
