@@ -25,6 +25,8 @@ def initialize_agents(scen, seed=None):
 
         routes = scen.od_routes[od]
 
+        # Distinct seed per agent (factory.py passes seed+i) so each agent's
+        # select_action draws are independent, not correlated across agents.
         agents[agent_id] = BMAgent(
             agent_id=agent_id,
             routes=routes,

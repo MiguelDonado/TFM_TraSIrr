@@ -34,6 +34,7 @@ from config.paths import (
     EDGEDATA_XML,
     FCD_XML,
     MEANDATA,
+    OD_MATRIX_DIR,
     OD_MATRIX_INTERVALS,
     OD_MATRIX_TOTAL,
     OD_ROUTES,
@@ -79,6 +80,8 @@ class Scenario:
             random_factor if random_factor is not None else config.random_factor
         )
 
+        # The seeds we passed in main.py, are used when computing k routes per OD,
+        # as a method to alter randomly the cost of the edges to find alternative routes
         self.od_routes = self.compute_k_routes(
             seeds, k=k, random_factor=random_factor
         )
@@ -111,6 +114,7 @@ class Scenario:
             routes_per_od = [[r] for r in best_routes]
 
             # 3. Generate alternative routes
+            # It uses the seeds passed from main.py, to alter the cost of edges
             self._fill_alternative_routes(
                 routes_per_od, trips_file, routes_file, seeds, k, random_factor
             )
@@ -134,11 +138,12 @@ class Scenario:
             if all(len(rlist) >= k for rlist in routes_per_od):
                 break
 
+            # So each time we call duarouter, assigns different random factor to each edge
             new_routes = self._run_duarouter(
                 trips_file,
                 routes_file,
                 random_factor=random_factor,
-                seed=seed,  # So each time we call duarouter, assigns different random factor to each edge
+                seed=seed,  
             )
 
             if not new_routes:
@@ -202,6 +207,11 @@ class Scenario:
     ########################
 
     def _write_od_matrix(self, od_list, departure_times_list, interval_size):
+
+        # Clear stale files from previous runs (filename encodes interval_size,
+        # so runs with a different config.time_interval leave old files behind)
+        for f in OD_MATRIX_DIR.glob("*"):
+            f.unlink()
 
         df = pd.DataFrame(
             [(o, d, t) for (o, d), t in zip(od_list, departure_times_list)],
