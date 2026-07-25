@@ -151,16 +151,14 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     generate_trips_file_duaIterate(scen.agents)
 
     # 2. Execute duaIterate
-    call_duaIterate(
-        config.network, config.duaIterate_max_iterations, config.duaIterate_step_length
-    )
+    call_duaIterate()
 
     # 3. Run simulation
     if config.last_episode_gui_duaIterate:
-        run_simulation_duaIterate(config.duaIterate_max_iterations)
+        run_simulation_duaIterate()
 
     # 4. Extract routes file last iteration duaIterate
-    routes_file = extract_routes_file_duaIterate(config.duaIterate_max_iterations)
+    routes_file = extract_routes_file_duaIterate()
     copy2(routes_file, DUA_EXTRA.routes)
     # 5. Compute od routes table
     dict_agent_routes, od_routes = compute_od_routes_table_duaIterate(
@@ -182,7 +180,6 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # 8. Process trips_info file
     process_trips_info_duaIterate(
-        max_iterations=config.duaIterate_max_iterations,
         output_file=DUA_EXTRA.trips_info_processed,
     )
 
@@ -195,24 +192,19 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # 10. Process vehroute duaIterate
     process_vehroute_duaIterate(
-        max_iterations=config.duaIterate_max_iterations,
         output_file=DUA_EXTRA.vehroute_processed,
     )
 
     # 11. Generate meandata_file
-    meandata_duaIterate_file = generate_meandata_file(
-        max_iterations=config.duaIterate_max_iterations
-    )
+    meandata_duaIterate_file = generate_meandata_file()
 
     # 12. Generate edgedata file
     generate_edgedata_file(
-        max_iterations=config.duaIterate_max_iterations,
         meandata_duaIterate_file=meandata_duaIterate_file,
     )
 
     # 13. Process edgedata file
     process_edgedata_duaIterate(
-        max_iterations=config.duaIterate_max_iterations,
         output_file=DUA_EXTRA.edgedata_processed,
     )
 
@@ -245,10 +237,10 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # Compute mean tt duaIterate
-    compute_avg_tt_duaIterate(max_iterations=config.duaIterate_max_iterations)
+    compute_avg_tt_duaIterate()
 
     ################
     # 15. Delete duaIterate folders
-    delete_duaIterate_folders(config.duaIterate_max_iterations)
+    delete_duaIterate_folders()
     for file in UNDESIRED_duaIterate_FILES:
         file.unlink()

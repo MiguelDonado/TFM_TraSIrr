@@ -65,8 +65,8 @@ from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file
 
 
-def compute_avg_tt_duaIterate(max_iterations):
-    folder_numbers = [str(number).zfill(3) for number in range(max_iterations)]
+def compute_avg_tt_duaIterate():
+    folder_numbers = [str(number).zfill(3) for number in range(config.duaIterate_max_iterations)]
 
     mean_tt_iterations = []
     for folder_number in folder_numbers:
@@ -97,17 +97,17 @@ def generate_trips_file_duaIterate(agents):
         f.write("</routes>\n")
 
 
-def call_duaIterate(network, max_iterations, step_length):
+def call_duaIterate():
     cmd = [
         "duaIterate.py",
         "-n",
-        network,
+        config.network,
         "-t",
         DUA_EXTRA.trips,
         "--last-step",
-        str(max_iterations),
+        str(config.duaIterate_max_iterations),
         "sumo--step-length",
-        str(step_length),
+        str(config.duaIterate_step_length),
         "sumo--vehroute-output",
         "vehroute.xml",
         "sumo--vehroute-output.exit-times",
@@ -117,23 +117,23 @@ def call_duaIterate(network, max_iterations, step_length):
     subprocess.run(cmd, check=True)
 
 
-def run_simulation_duaIterate(max_iterations):
-    folder_number = _last_iteration_folder(max_iterations)
+def run_simulation_duaIterate():
+    folder_number = _last_iteration_folder()
     path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
     cmd = ["sumo-gui", "-c", path_config_file]
     subprocess.run(cmd, check=True)
 
 
-def delete_duaIterate_folders(max_iterations):
-    target_numbers = [str(number).zfill(3) for number in range(max_iterations)]
+def delete_duaIterate_folders():
+    target_numbers = [str(number).zfill(3) for number in range(config.duaIterate_max_iterations)]
 
     for number in target_numbers:
         path_to_delete = BASE_DIR / number
         shutil.rmtree(path_to_delete)
 
 
-def extract_routes_file_duaIterate(max_iterations):
-    folder_number = _last_iteration_folder(max_iterations)
+def extract_routes_file_duaIterate():
+    folder_number = _last_iteration_folder()
 
     # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
@@ -201,11 +201,11 @@ def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes, outpu
     df.to_parquet(output_file, engine="pyarrow")
 
 
-def process_trips_info_duaIterate(max_iterations, output_file):
+def process_trips_info_duaIterate(output_file):
     """
     Builds the processed trips info file
     """
-    folder_number = _last_iteration_folder(max_iterations)
+    folder_number = _last_iteration_folder()
 
     # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
@@ -223,11 +223,11 @@ def process_trips_info_duaIterate(max_iterations, output_file):
     df.to_parquet(output_file, engine="pyarrow")
 
 
-def process_vehroute_duaIterate(max_iterations, output_file):
+def process_vehroute_duaIterate(output_file):
     """
     Builds the processed vehroute file
     """
-    folder_number = _last_iteration_folder(max_iterations)
+    folder_number = _last_iteration_folder()
 
     # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
@@ -243,11 +243,11 @@ def process_vehroute_duaIterate(max_iterations, output_file):
     df.to_parquet(output_file, engine="pyarrow")
 
 
-def process_edgedata_duaIterate(max_iterations, output_file):
+def process_edgedata_duaIterate(output_file):
     """
     Builds the processed vehroute file
     """
-    folder_number = _last_iteration_folder(max_iterations)
+    folder_number = _last_iteration_folder()
 
     # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
@@ -308,8 +308,8 @@ def _process_od_routes(od_routes):
     return od_routes_to_rows(od_routes)
 
 
-def generate_meandata_file(max_iterations):
-    folder_number = _last_iteration_folder(max_iterations)
+def generate_meandata_file():
+    folder_number = _last_iteration_folder()
 
     # Path of the folder that contains last iteration duaIterate
     folder_path = BASE_DIR / folder_number
@@ -321,8 +321,8 @@ def generate_meandata_file(max_iterations):
     return path
 
 
-def generate_edgedata_file(max_iterations, meandata_duaIterate_file):
-    folder_number = _last_iteration_folder(max_iterations)
+def generate_edgedata_file(meandata_duaIterate_file):
+    folder_number = _last_iteration_folder()
     path_config_file = BASE_DIR / folder_number / f"iteration_{folder_number}.sumocfg"
 
     tree = etree.parse(path_config_file)
@@ -346,8 +346,8 @@ def generate_edgedata_file(max_iterations, meandata_duaIterate_file):
     subprocess.run(cmd, check=True)
 
 
-def _last_iteration_folder(max_iterations: int):
+def _last_iteration_folder():
     """
     Return zero-padded folder name for the last duaIterate iteration.
     """
-    return str(max_iterations - 1).zfill(3)
+    return str(config.duaIterate_max_iterations - 1).zfill(3)
