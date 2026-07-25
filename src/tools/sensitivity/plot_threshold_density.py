@@ -87,8 +87,6 @@ def main():
 
         # 5. Compute R-gap BM-algorithm
         run_due_convergence_checks(
-            end_time=config.end_time,
-            time_interval=config.time_interval,
             duaIterate=False,
             threshold_density=threshold,
         )

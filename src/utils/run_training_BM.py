@@ -49,8 +49,6 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True, seed=None):
     if due:
         run_due_convergence_checks(
             scen=scen,
-            end_time=config.end_time,
-            time_interval=config.time_interval,
             duaIterate=False,
         )
 

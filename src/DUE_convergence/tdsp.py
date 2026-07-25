@@ -60,9 +60,9 @@ from config.paths import FREE_FLOW_TRAVEL_TIMES, TIMES_INTERVAL, TRIPS_TDSP
 
 
 def _compute_edge_travel_times(
-    vehroute_file, agents_od_file, time_interval
+    vehroute_file, agents_od_file
 ) -> pd.DataFrame:
-    delta_t = time_interval
+    delta_t = config.time_interval
 
     # 1. Read vehroute file (travel time edges)
     df_edges = pd.read_parquet(vehroute_file)
@@ -280,7 +280,7 @@ def run_duarouter(network, trips_file, routes_file, weights_file, seed):
         alt_route_file_to_delete.unlink()
 
 
-def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_paths):
+def compute_cost_min_paths_odt_k(shortest_path_dir, cost_min_paths):
     """
     Computes the table that contains the cost for all time dependent shortest paths
     """
@@ -296,7 +296,7 @@ def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_path
         for odt in odt_s:
 
             depart = float(odt.get("depart"))
-            interval = int(depart // time_interval)
+            interval = int(depart // config.time_interval)
 
             cost = odt.xpath("route/@cost")[0]
 
@@ -325,7 +325,6 @@ def compute_cost_min_paths_odt_k(time_interval, shortest_path_dir, cost_min_path
 
 
 def run_tdsp_pipeline(
-    time_interval,
     vehroute_file,
     edgedata_file,
     agents_od_file,
@@ -346,7 +345,6 @@ def run_tdsp_pipeline(
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
     compute_travel_time_links_t_k(
-        time_interval=time_interval,
         network=config.network,
         threshold_density=threshold_density,
         output_file=cost_links,
@@ -369,7 +367,6 @@ def run_tdsp_pipeline(
     )
     # 4.4. Compute cost time dependence shortest paths for all time intervals and for all episodes
     compute_cost_min_paths_odt_k(
-        time_interval=time_interval,
         cost_min_paths=cost_min_paths,
         shortest_path_dir=shortest_path_dir,
     )
@@ -380,7 +377,6 @@ def run_tdsp_pipeline(
 
 
 def compute_travel_time_links_t_k(
-    time_interval,
     network,
     threshold_density,
     output_file,
@@ -419,7 +415,6 @@ def compute_travel_time_links_t_k(
     df_edges = _compute_edge_travel_times(
         vehroute_file=vehroute_file,
         agents_od_file=agents_od_file,
-        time_interval=time_interval,
     )
     avg_tt = _build_full_grid(df_edges, all_edges)
     _save_missingness_report(

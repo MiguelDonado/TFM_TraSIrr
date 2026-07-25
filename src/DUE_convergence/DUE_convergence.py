@@ -6,6 +6,7 @@ the training loop in main.py.
 
 Shared prerequisites (generated first)
 ---------------------------------------
+- Free-flow travel times per edge (imputation fallback for the TDSP link cost table)
 - Time intervals table
 - Demand ODT table (agents per OD per time interval)
 - TDSP trips file (all OD × time interval combinations)
@@ -40,9 +41,9 @@ from config.paths import (
     EDGEDATA_PARQUET,
     TRIPS_INFO_PARQUET,
     VEHROUTE_PARQUET,
-    Path,
     UNDESIRED_duaIterate_FILES,
 )
+from utils.generate_free_flow_tt import generate_free_flow_tt_links
 
 from .aggregation import compute_flows_odtp_k, compute_travel_time_paths_odtp_k
 from .duaiterate import (
@@ -70,7 +71,7 @@ from .tdsp import run_tdsp_pipeline
 
 
 def run_due_convergence_checks(
-    end_time, time_interval, duaIterate=True, scen=None, threshold_density=None
+    duaIterate=True, scen=None, threshold_density=None
 ):
     threshold_density = (
         threshold_density if threshold_density is not None else config.threshold_density
@@ -81,47 +82,39 @@ def run_due_convergence_checks(
     if duaIterate:
         _check_due_convergence_duaIterate(
             scen=scen,
-            end_time=end_time,
-            time_interval=time_interval,
             threshold_density=threshold_density,
         )
 
     _check_due_convergence_BM(
-        end_time=end_time,
-        time_interval=time_interval,
         threshold_density=threshold_density,
     )
 
 
 def _generate_generic_files_due_convergence():
-    end_time = config.end_time
-    time_interval = config.time_interval
-
     # 1. Generate essential files
     ## Parquet
-    generate_time_intervals_table(end_time, time_interval)
-    generate_demand_odt(time_interval)
+    generate_free_flow_tt_links()
+    generate_time_intervals_table(config.end_time, config.time_interval)
+    generate_demand_odt(config.time_interval)
     ## XML
     generate_trips_odt_file()
 
 
-def _check_due_convergence_BM(end_time, time_interval, threshold_density):
+def _check_due_convergence_BM(threshold_density):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
-    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths, time_interval=time_interval)
+    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths)
 
     # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
         actions_path=ACTIONS,
         trips_info_processed_path=TRIPS_INFO_PARQUET,
         output_file=BM_PATHS.cost_paths,
-        time_interval = time_interval
     )
 
     # 4. TIME DEPENDENCE SHORTEST PATH
     run_tdsp_pipeline(
-        time_interval=time_interval,
         vehroute_file=VEHROUTE_PARQUET,
         edgedata_file=EDGEDATA_PARQUET,
         agents_od_file=AGENTS_OD,
@@ -148,7 +141,7 @@ def _check_due_convergence_BM(end_time, time_interval, threshold_density):
     )
 
 
-def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_density):
+def _check_due_convergence_duaIterate(scen, threshold_density):
     ########################
     # Check duaIterate Rgap
     ########################
@@ -184,7 +177,7 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
     compute_flows_odtp_k(
-        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths, time_interval=time_interval
+        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths
     )
 
     # 8. Process trips_info file
@@ -198,7 +191,6 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
         actions_path=DUA_EXTRA.actions,
         trips_info_processed_path=DUA_EXTRA.trips_info_processed,
         output_file=DUA_PATHS.cost_paths,
-        time_interval=time_interval
     )
 
     # 10. Process vehroute duaIterate
@@ -227,7 +219,6 @@ def _check_due_convergence_duaIterate(scen, end_time, time_interval, threshold_d
     ######
     # 14. TIME DEPENDENCE SHORTEST PATH
     run_tdsp_pipeline(
-        time_interval=time_interval,
         vehroute_file=DUA_EXTRA.vehroute_processed,
         edgedata_file=DUA_EXTRA.edgedata_processed,
         threshold_density=threshold_density,
