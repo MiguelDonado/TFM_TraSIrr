@@ -29,8 +29,6 @@ cause is the network/demand configuration, not the learning algorithm.
 
 """
 
-from shutil import copy2
-
 from config.config import config
 from config.paths import (
     ACTIONS,
@@ -159,7 +157,6 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # 4. Extract routes file last iteration duaIterate
     routes_file = extract_routes_file_duaIterate()
-    copy2(routes_file, DUA_EXTRA.routes)
     # 5. Compute od routes table
     dict_agent_routes, od_routes = compute_od_routes_table_duaIterate(
         routes_file=routes_file, output_file=DUA_EXTRA.od_routes

@@ -157,10 +157,6 @@ class DuaIteratePaths:
         XML file that contains the trips used by DuaIterate
         (only contains the trips, not the routes)
 
-    routes
-        XML file that contains the routes computed by DuaIterate
-        for every vehicle
-
     od_routes
         File that contains the routes used for each od
         in the last DuaIterate iteration
@@ -186,7 +182,6 @@ class DuaIteratePaths:
 
     mean_tt: Path
     trips: Path
-    routes: Path
     od_routes: Path
     actions: Path
     trips_info_processed: Path
@@ -378,7 +373,6 @@ DUA_PATHS = _due_paths(DUE_DATA_duaIterate)
 DUA_EXTRA = DuaIteratePaths(
     mean_tt=DUE_DATA_duaIterate / "mean_tt.parquet",
     trips=DUE_DATA_duaIterate / "trips.xml",
-    routes=SUMO_DIR / "routes" / "routes_duaIterate.rou.xml",
     od_routes=DUE_DATA_duaIterate / "od_routes.parquet",
     actions=DUE_DATA_duaIterate / "actions.parquet",
     trips_info_processed=DUE_DATA_duaIterate / "trips_info_processed.parquet",
