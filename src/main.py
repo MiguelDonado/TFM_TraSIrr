@@ -137,7 +137,9 @@ def main():
     # 1. Make sure all necessary directories exist
     ensure_dirs()
 
-    # 2. Reproducibility
+    # 2. Reproducibility 
+    # rng: This object is only used to sample the seeds below
+    # seeds: These are only used when computing k routes for each OD pair, as a way to alter the edge costs.
     rng = np.random.default_rng(config.seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 

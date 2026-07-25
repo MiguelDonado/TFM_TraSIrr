@@ -55,6 +55,13 @@ def generate_agents(
     n_agents_warmup, n_agents_post_warmup, min_distance_factor=None
 ):
 
+    # Reproducibility
+    # rng: This object is used to sample ODs for the agents from the restricted OD space
+    # and to sample the departure times.
+    # Is generated inside generate_agents, to ensure the generating agent process gives
+    # the same results when calling it with the same demand and config.seed. 
+    # That is the expected behavior, because when computing the congestion metric, 
+    # we expect that for the same demand we obtain the same congestion metric.
     rng = np.random.default_rng(config.seed)
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor
