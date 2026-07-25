@@ -159,7 +159,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     routes_file = extract_routes_file_duaIterate()
     # 5. Compute od routes table
     dict_agent_routes, od_routes = compute_od_routes_table_duaIterate(
-        routes_file=routes_file, output_file=DUA_EXTRA.od_routes
+        routes_file=routes_file
     )
 
     # 6. Compute actions table
@@ -167,7 +167,6 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
         agents=scen.agents,
         dict_agent_routes=dict_agent_routes,
         od_routes=od_routes,
-        output_file=DUA_EXTRA.actions,
     )
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
@@ -176,9 +175,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # 8. Process trips_info file
-    process_trips_info_duaIterate(
-        output_file=DUA_EXTRA.trips_info_processed,
-    )
+    process_trips_info_duaIterate()
 
     # 9. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
@@ -188,9 +185,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # 10. Process vehroute duaIterate
-    process_vehroute_duaIterate(
-        output_file=DUA_EXTRA.vehroute_processed,
-    )
+    process_vehroute_duaIterate()
 
     # 11. Generate meandata_file
     meandata_duaIterate_file = generate_meandata_file()
@@ -201,9 +196,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # 13. Process edgedata file
-    process_edgedata_duaIterate(
-        output_file=DUA_EXTRA.edgedata_processed,
-    )
+    process_edgedata_duaIterate()
 
     ######
     # 14. TIME DEPENDENCE SHORTEST PATH

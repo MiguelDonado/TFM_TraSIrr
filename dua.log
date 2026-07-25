@@ -4,16 +4,16 @@ Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '000/iteration_000.sumocfg']
 Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
-Loading additional-files from '000/../edgedata.add.xml' ... done (1ms).
+Loading additional-files from '000/../edgedata.add.xml' ... done (0ms).
 Loading route-files incrementally from '000/trips_000.rou.xml.gz'
 Loading done.
 Simulation version 1.26.0 started with time: 0.00.
 Simulation ended at time: 4288.10.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 9.35s
- Real time factor: 458.669
- UPS: 398214.354476
+ Duration: 9.30s
+ Real time factor: 460.888
+ UPS: 400140.369733
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -24,16 +24,16 @@ Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '001/iteration_001.sumocfg']
 Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
-Loading additional-files from '001/../edgedata.add.xml' ... done (0ms).
+Loading additional-files from '001/../edgedata.add.xml' ... done (1ms).
 Loading route-files incrementally from '001/trips_001.rou.xml.gz'
 Loading done.
 Simulation version 1.26.0 started with time: 0.00.
 Simulation ended at time: 4031.80.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.14s
- Real time factor: 785.161
- UPS: 374514.703019
+ Duration: 5.43s
+ Real time factor: 743.189
+ UPS: 354494.562212
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -55,9 +55,9 @@ Warning: Vehicle 'agent_649' ends teleporting on edge 'E10_11_WB', time=1676.70.
 Simulation ended at time: 4027.40.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.90s
- Real time factor: 682.379
- UPS: 367089.291766
+ Duration: 5.85s
+ Real time factor: 688.915
+ UPS: 370605.713308
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -81,9 +81,9 @@ Warning: Vehicle 'agent_736' ends teleporting on edge 'E10_11_WB', time=1771.40.
 Simulation ended at time: 4008.20.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.58s
- Real time factor: 718.573
- UPS: 372712.083184
+ Duration: 5.67s
+ Real time factor: 706.415
+ UPS: 366406.062742
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -105,9 +105,9 @@ Simulation version 1.26.0 started with time: 0.00.
 Simulation ended at time: 4038.70.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.62s
- Real time factor: 718.63
- UPS: 367411.032028
+ Duration: 5.55s
+ Real time factor: 727.301
+ UPS: 371844.048262
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -127,9 +127,9 @@ Simulation version 1.26.0 started with time: 0.00.
 Simulation ended at time: 4016.10.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.39s
- Real time factor: 745.102
- UPS: 370153.061224
+ Duration: 5.35s
+ Real time factor: 750.954
+ UPS: 373060.022438
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -141,7 +141,7 @@ Warning: No interval matches passed time=31.23 in edge 'E22_23_WB'.
 Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '006/iteration_006.sumocfg']
-Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
 Loading additional-files from '006/../edgedata.add.xml' ... done (1ms).
 Loading route-files incrementally from '006/trips_006.rou.xml.gz'
 Loading done.
@@ -150,8 +150,8 @@ Simulation ended at time: 4005.40.
 Reason: All vehicles have left the simulation.
 Performance:
  Duration: 5.45s
- Real time factor: 734.936
- UPS: 368797.064220
+ Real time factor: 735.476
+ UPS: 369067.939772
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -164,7 +164,7 @@ Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '007/iteration_007.sumocfg']
 Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
-Loading additional-files from '007/../edgedata.add.xml' ... done (0ms).
+Loading additional-files from '007/../edgedata.add.xml' ... done (1ms).
 Loading route-files incrementally from '007/trips_007.rou.xml.gz'
 Loading done.
 Simulation version 1.26.0 started with time: 0.00.
@@ -172,8 +172,8 @@ Simulation ended at time: 4032.60.
 Reason: All vehicles have left the simulation.
 Performance:
  Duration: 5.43s
- Real time factor: 742.652
- UPS: 369502.578269
+ Real time factor: 742.926
+ UPS: 369638.725129
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -186,7 +186,7 @@ Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '008/iteration_008.sumocfg']
 Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
-Loading additional-files from '008/../edgedata.add.xml' ... done (1ms).
+Loading additional-files from '008/../edgedata.add.xml' ... done (0ms).
 Loading route-files incrementally from '008/trips_008.rou.xml.gz'
 Loading done.
 Simulation version 1.26.0 started with time: 0.00.
@@ -195,9 +195,9 @@ Warning: Vehicle 'agent_654' ends teleporting on edge 'E11_12_WB', time=1709.10.
 Simulation ended at time: 4014.90.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.36s
- Real time factor: 749.328
- UPS: 370032.661441
+ Duration: 5.40s
+ Real time factor: 742.95
+ UPS: 366882.864545
 Vehicles:
  Inserted: 2000
  Running: 0
@@ -210,7 +210,7 @@ Warning: No interval matches passed time=31.24 in edge 'E22_23_WB'.
 Success.
 -------------------------------------------------------------------------------
 ['/usr/local/share/sumo/bin/sumo', '-c', '009/iteration_009.sumocfg']
-Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (8ms).
+Loading net-file from '/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml' ... done (7ms).
 Loading additional-files from '009/../edgedata.add.xml' ... done (1ms).
 Loading route-files incrementally from '009/trips_009.rou.xml.gz'
 Loading done.
@@ -220,9 +220,9 @@ Warning: Vehicle 'agent_654' ends teleporting on edge 'E11_12_WB', time=1747.30.
 Simulation ended at time: 4006.90.
 Reason: All vehicles have left the simulation.
 Performance:
- Duration: 5.37s
- Real time factor: 745.608
- UPS: 368804.428731
+ Duration: 5.46s
+ Real time factor: 734.268
+ UPS: 363194.978926
 Vehicles:
  Inserted: 2000
  Running: 0

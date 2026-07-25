@@ -159,7 +159,7 @@ def _decompress_gzip(gzip_path, xml_path):
             shutil.copyfileobj(f_in, f_out)
 
 
-def compute_od_routes_table_duaIterate(routes_file, output_file):
+def compute_od_routes_table_duaIterate(routes_file):
     """
     This function computes the od routes table used during computation Rgap
     """
@@ -179,12 +179,12 @@ def compute_od_routes_table_duaIterate(routes_file, output_file):
     processed_od_routes = _process_od_routes(od_routes)
 
     df = pd.DataFrame(processed_od_routes)
-    df.to_parquet(output_file, engine="pyarrow")
+    df.to_parquet(DUA_EXTRA.od_routes, engine="pyarrow")
 
     return dict_agent_routes, od_routes
 
 
-def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes, output_file):
+def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes):
     """
     Compute actions table used during Rgap computation
     """
@@ -198,10 +198,10 @@ def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes, outpu
         actions.append({"episode": 1, "agent_id": agent_id, "action": idx_route})
 
     df = pd.DataFrame(actions)
-    df.to_parquet(output_file, engine="pyarrow")
+    df.to_parquet(DUA_EXTRA.actions, engine="pyarrow")
 
 
-def process_trips_info_duaIterate(output_file):
+def process_trips_info_duaIterate():
     """
     Builds the processed trips info file
     """
@@ -220,10 +220,10 @@ def process_trips_info_duaIterate(output_file):
 
     # Save trips info processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(output_file, engine="pyarrow")
+    df.to_parquet(DUA_EXTRA.trips_info_processed, engine="pyarrow")
 
 
-def process_vehroute_duaIterate(output_file):
+def process_vehroute_duaIterate():
     """
     Builds the processed vehroute file
     """
@@ -240,10 +240,10 @@ def process_vehroute_duaIterate(output_file):
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(output_file, engine="pyarrow")
+    df.to_parquet(DUA_EXTRA.vehroute_processed, engine="pyarrow")
 
 
-def process_edgedata_duaIterate(output_file):
+def process_edgedata_duaIterate():
     """
     Builds the processed vehroute file
     """
@@ -260,7 +260,7 @@ def process_edgedata_duaIterate(output_file):
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(output_file, engine="pyarrow")
+    df.to_parquet(DUA_EXTRA.edgedata_processed, engine="pyarrow")
 
 
 def _parse_routes(routes_file):
