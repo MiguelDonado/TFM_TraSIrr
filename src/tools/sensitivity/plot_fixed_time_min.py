@@ -111,7 +111,12 @@ def main():
             config.time_interval = int(fixed_time_min * 60)
 
             # 5. Run full BM training and compute R-gap/missingness for this time interval
-            run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, due=True)
+            run_full_training_BM(
+                agents=calibrated_agents,
+                unique_ods=unique_ods,
+                due=True,
+                save_output=False,
+            )
 
             # 6. Record full R-gap convergence curve
             rgap_curves[fixed_time_min] = pd.read_parquet(BM_PATHS.rgap)["rgap"]

@@ -75,7 +75,9 @@ def main():
     calibrated_agents, unique_ods = demand_from_count(DEMAND)
 
     # 2. Compute BM r-gap table for given threshold_density
-    run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, due=False)
+    run_full_training_BM(
+        agents=calibrated_agents, unique_ods=unique_ods, due=False, save_output=False
+    )
 
     # 3. Container
     last_rgaps = []

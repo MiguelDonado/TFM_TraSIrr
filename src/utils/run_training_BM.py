@@ -1,24 +1,117 @@
+"""
+Entry points for running Bush-Mosteller agent training and single episodes.
+
+run_full_training_BM() drives the full multi-episode training loop and
+optionally checks DUE convergence afterwards. run_single_episode_BM() runs
+one episode with fixed actions, useful for debugging outside training.
+"""
+
 import numpy as np
 import pandas as pd
 
-from agents.factory import initialize_agents, select_actions
+from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from config.paths import POLICY_CHANGE_BM
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
-from experiment import save_processed_data
-from main import _run_training_loop
+from experiment import accumulate_results, prepare_data, save_processed_data
 from simulation.environment import Environment
 from simulation.scenario import Scenario
+from stopping_rule.stopping_rule import check_convergence, create_policies_dict
 
 
-def run_full_training_BM(agents, unique_ods, k=None, due=True, seed=None):
+def _run_training_loop(
+    env,
+    agents,
+):
+    # > Policy stability
+    no_change_count = 0  # Counter consecutive times without policy changes
+    policies_history = []  # Stores policies of all agents for all episodes
+    policy_change_history = []
+
+    # > Data
+    results = {
+        "aggregated": [],
+        "vehroute": [],
+        "trips_info": [],
+        "fcd": [],
+        "edgedata": [],
+        "actions": [],
+        "rewards": [],
+        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
+    }
+
+    for episode in range(1, config.max_episodes + 1):
+
+        print(f"\n--- Episode {episode} ---")
+
+        # -----------------------------
+        # 1. AGENTS CHOOSE ACTIONS
+        # -----------------------------
+        # actions is a single dictionary {agent_1: 0, agent_2: 3, ...}
+        actions = select_actions(agents)
+
+        # -----------------------------
+        # 2. RUN EPISODE
+        # -----------------------------
+        env.run_episode(actions, episode)
+
+        # -----------------------------
+        # 3. GET REWARDS
+        # -----------------------------
+        rewards = env.get_rewards()
+
+        # -----------------------------
+        # 4. UPDATE AGENTS
+        # -----------------------------
+        # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
+        # After updating agents, they store the policy for NEXT EPISODE
+        current_policies = create_policies_dict(agents)
+        # Store current policies in history
+        policies_history.append(current_policies)
+
+        update_agents(
+            actions=actions,
+            agents=agents,
+            episode=episode,
+            rewards=rewards,
+            warm_up=config.warm_up,
+        )
+
+        # -----------------------------
+        # 5. PREPARE GENERATED DATA
+        # -----------------------------
+        result = prepare_data(episode, actions, rewards, agents)
+        accumulate_results(results, result)
+
+        # -----------------------------
+        # 6. STOPPING RULE
+        # -----------------------------
+        should_stop, no_change_count, mean_policy_change = check_convergence(
+            policies_history=policies_history,
+            episode=episode,
+            no_change_count=no_change_count,
+        )
+        if mean_policy_change:
+            policy_change_history.append(
+                {"episode": episode, "mean_policy_change": mean_policy_change}
+            )
+
+        if should_stop:
+            break
+    return results, policy_change_history
+
+
+def run_full_training_BM(
+    agents, unique_ods, k=None, due=True, duaIterate=False, save_output=True
+):
 
     # 0. Manage default arguments
     k = k if k is not None else config.n_routes_per_OD
-    seed = seed if seed is not None else config.seed
 
     # 1. Reproducibility
-    rng = np.random.default_rng(seed)
+    # rng: This object is only used to sample the seeds below
+    # seeds: These are only used when computing k routes for each OD pair, as a way to alter the edge costs.
+    rng = np.random.default_rng(config.seed)
     seeds = rng.integers(0, 100000, size=config.max_attempts)
 
     # 2. Create Scenario (files)
@@ -30,7 +123,7 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True, seed=None):
     env = Environment(scenario=scen)
 
     # 3. Initialize agents
-    rl_agents = initialize_agents(scen=scen, seed=seed)
+    rl_agents = initialize_agents(scen=scen, seed=config.seed)
 
     # -----------------------------
     # 4. TRAINING LOOP
@@ -40,16 +133,17 @@ def run_full_training_BM(agents, unique_ods, k=None, due=True, seed=None):
     # -----------------------------
     # 5. SAVE OUTPUT
     # -----------------------------
-    save_processed_data(results)
-    df_policy_change = pd.DataFrame(policy_change_history)
-    df_policy_change.to_parquet(POLICY_CHANGE_BM)
+    if save_output:
+        save_processed_data(results)
+        df_policy_change = pd.DataFrame(policy_change_history)
+        df_policy_change.to_parquet(POLICY_CHANGE_BM)
     # -----------------------------
     # 6. CHECK DUE convergence
     # -----------------------------
     if due:
         run_due_convergence_checks(
             scen=scen,
-            duaIterate=False,
+            duaIterate=duaIterate,
         )
 
 

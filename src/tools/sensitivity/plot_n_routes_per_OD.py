@@ -52,8 +52,8 @@ from utils.run_training_BM import run_full_training_BM
 
 def main():
     # 0. Set-up
-    DEMANDS = [1000, 1500]
-    N_ROUTES_PER_OD = [2, 3]
+    DEMANDS = [1300, 2000]
+    N_ROUTES_PER_OD = list(range(2,10))
 
     for demand in DEMANDS:
         print("##########")
@@ -74,7 +74,9 @@ def main():
             print(f"# N routes per OD: {n}")
             print("##########")
 
-            run_full_training_BM(agents=calibrated_agents, unique_ods=unique_ods, k=n)
+            run_full_training_BM(
+                agents=calibrated_agents, unique_ods=unique_ods, k=n, save_output=False
+            )
 
             # 4. Get values of metrics (last episode and its r-gap)
             last_row = pd.read_parquet(BM_PATHS.rgap).iloc[-1]
