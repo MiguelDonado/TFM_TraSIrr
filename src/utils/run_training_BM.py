@@ -102,7 +102,7 @@ def _run_training_loop(
 
 
 def run_full_training_BM(
-    agents, unique_ods, k=None, due=True, duaIterate=False, save_output=True
+    agents, unique_ods, k=None, due=True, duaIterate=False
 ):
 
     # 0. Manage default arguments
@@ -133,10 +133,9 @@ def run_full_training_BM(
     # -----------------------------
     # 5. SAVE OUTPUT
     # -----------------------------
-    if save_output:
-        save_processed_data(results)
-        df_policy_change = pd.DataFrame(policy_change_history)
-        df_policy_change.to_parquet(POLICY_CHANGE_BM)
+    save_processed_data(results)
+    df_policy_change = pd.DataFrame(policy_change_history)
+    df_policy_change.to_parquet(POLICY_CHANGE_BM)
     # -----------------------------
     # 6. CHECK DUE convergence
     # -----------------------------

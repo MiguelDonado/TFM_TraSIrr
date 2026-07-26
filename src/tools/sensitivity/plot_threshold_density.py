@@ -29,9 +29,9 @@ Decision rule: Choose the threshold_density that yields the lowest final R-gap.
 If the curve is flat, the hyperparameter has negligible impact and any value
 (e.g. the default of 0) can be kept.
 
-Final decision: 10
-(R-gap varies substantially for threshold values below approximately 5 vehicles/km/lane.
-Beyond 10 vehicles/km/lane, further increases had a negligible effect on the R-gap.)
+Final decision: 20
+(R-gap varies substantially for threshold values below approximately 10 vehicles/km/lane.
+Beyond 20 vehicles/km/lane, further increases had a negligible effect on the R-gap.)
 
 
 Run with: python src/tools/sensitivity/plot_threshold_density.py <config.yaml>
@@ -69,14 +69,14 @@ THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 50]
 def main():
 
     # 0. Set-up
-    DEMAND = 1000
+    DEMAND = 1300
 
     # 1. Calibrate demand (nº agents)
     calibrated_agents, unique_ods = demand_from_count(DEMAND)
 
     # 2. Compute BM r-gap table for given threshold_density
     run_full_training_BM(
-        agents=calibrated_agents, unique_ods=unique_ods, due=False, save_output=False
+        agents=calibrated_agents, unique_ods=unique_ods, due=False
     )
 
     # 3. Container

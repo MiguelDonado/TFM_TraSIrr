@@ -57,14 +57,13 @@ def generate_free_flow_tt_links():
     df.to_parquet(FREE_FLOW_TRAVEL_TIMES, engine="pyarrow", index=False)
 
 
-def compute_od_free_flow_tt(network, agents, seed=None):
+def compute_od_free_flow_tt(network, agents):
     """
     Returns {(origin, destination): free_flow_travel_time}.
     """
-    seed = seed if seed is not None else config.seed
 
     od_routes = _compute_shortest_path_routes(network, agents)
-    return _simulate_free_flow_tt(network, od_routes, seed)
+    return _simulate_free_flow_tt(network, od_routes)
 
 def _compute_shortest_path_routes(network, agents):
     with open(TRIPS_CONGESTION_SIM, "w") as f:
@@ -91,7 +90,7 @@ def _compute_shortest_path_routes(network, agents):
     return {(r[0], r[-1]): list(r) for r in unique_routes}
 
 
-def _simulate_free_flow_tt(network, od_routes, seed):
+def _simulate_free_flow_tt(network, od_routes):
     """
     Runs a single SUMO episode with one vehicle per OD pair on an empty network
     to obtain accurate route-level free-flow travel times.
@@ -113,7 +112,7 @@ def _simulate_free_flow_tt(network, od_routes, seed):
         net_file=network,
         route_files=ROUTES_FREE_FLOW,
         report_outputs={"tripinfo-output": TRIPS_INFO_FREE_FLOW},
-        seed=seed,
+        seed=config.seed,
     )
 
     subprocess.run(["sumo", "-c", str(SUMO_CONF_FREE_FLOW)], check=True)

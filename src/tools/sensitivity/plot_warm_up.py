@@ -18,7 +18,7 @@ Methodology
 -----------
 For each representative demand level:
 
-1. Calibrate the demand.
+1. Generate the agents
 2. Run only the first SUMO episode using a random routing policy.
 3. Compute the number of vehicles in the network every second and plot the resulting curve
 4. Select the smallest warm-up candidate after which the initial
@@ -87,7 +87,7 @@ def main():
 
     # 0. Set-up
     WARM_UP_CANDIDATES_MIN = [0, 5, 10, 15]  # minutes
-    DEMANDS = [1000, 1500, 1750]
+    DEMANDS = [1000, 1500, 1750, 2000]
 
     # 1. Container
     demand_curves = {}

@@ -38,7 +38,7 @@ robust estimate of the true congestion level at a given demand.
 
 Congestion regimes and decision rule
 -------------------------------------
-Three congestion regimes are defined (free-flow, moderate congestion, high
+Three congestion regimes are defined (near free-flow, moderate congestion, high
 congestion) via threshold lower bounds stored in CONGESTION_REGIMES. These
 thresholds are qualitative and somewhat arbitrary — what matters is that they
 produce meaningfully distinct traffic states for the experiments. For each regime,

@@ -43,12 +43,11 @@ from utils.sumo_xml import write_sumo_conf
 
 
 class CongestionSimulator:
-    def __init__(self, map, agents, seed=None):
+    def __init__(self, map, agents):
         self.network = map
         self.agents = agents
-        self.seed = seed if seed is not None else config.seed
 
-        self.od_min_paths_ff_tt = compute_od_free_flow_tt(self.network, agents, self.seed)
+        self.od_min_paths_ff_tt = compute_od_free_flow_tt(self.network, agents)
         self._generate_conf()
 
     def _generate_conf(self):
@@ -61,7 +60,7 @@ class CongestionSimulator:
             net_file=self.network,
             route_files=ROUTES_CONGESTION_SIM,
             report_outputs={"tripinfo-output": TRIPS_INFO_XML},
-            seed=self.seed,
+            seed=config.seed,
         )
 
         self.conf = SUMO_CONF_CONGESTION_SIM

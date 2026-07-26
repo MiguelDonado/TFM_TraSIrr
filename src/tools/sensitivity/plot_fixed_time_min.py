@@ -115,7 +115,6 @@ def main():
                 agents=calibrated_agents,
                 unique_ods=unique_ods,
                 due=True,
-                save_output=False,
             )
 
             # 6. Record full R-gap convergence curve

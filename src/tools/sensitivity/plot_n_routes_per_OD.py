@@ -75,7 +75,7 @@ def main():
             print("##########")
 
             run_full_training_BM(
-                agents=calibrated_agents, unique_ods=unique_ods, k=n, save_output=False
+                agents=calibrated_agents, unique_ods=unique_ods, k=n
             )
 
             # 4. Get values of metrics (last episode and its r-gap)
