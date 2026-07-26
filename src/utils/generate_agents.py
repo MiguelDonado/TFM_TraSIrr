@@ -62,6 +62,9 @@ def generate_agents(
     # the same results when calling it with the same demand and config.seed. 
     # That is the expected behavior, because when computing the congestion metric, 
     # we expect that for the same demand we obtain the same congestion metric.
+    # If the rng object were initialized outside the function, then if we are using the 
+    # same rng for different demand generations, is gonna be on a diferent state each time,
+    # and hence results would not be identical
     rng = np.random.default_rng(config.seed)
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor

@@ -241,7 +241,7 @@ def _fill_missing_travel_times(
 
 
 def compute_time_dependent_shortest_paths(
-    network, seed, weights_dir, shortest_path_dir
+    weights_dir, shortest_path_dir
 ):
     """
     This function computes the time dependent shortest path for all od and for all t
@@ -250,24 +250,22 @@ def compute_time_dependent_shortest_paths(
     for episode in range(1, episodes + 1):
         routes_file = shortest_path_dir / f"shortest_path_episode_{episode}.xml"
         weights_file = weights_dir / f"Weights_episode_{episode}.xml"
-        run_duarouter(network, TRIPS_TDSP, routes_file, weights_file, seed)
+        run_duarouter(routes_file, weights_file)
 
 
-def run_duarouter(network, trips_file, routes_file, weights_file, seed):
+def run_duarouter(routes_file, weights_file):
     cmd = [
         "duarouter",
         "-n",
-        network,
+        config.network,
         "--route-files",
-        trips_file,
+        TRIPS_TDSP,
         "--weight-files",
         weights_file,
         "--write-costs",
         "true",
         "-o",
         routes_file,
-        "--seed",
-        str(seed),
     ]
 
     subprocess.run(cmd, check=True)
@@ -337,10 +335,7 @@ def run_tdsp_pipeline(
     shortest_path_dir,
     cost_min_paths,
     threshold_density,
-    seed=None,
 ):
-
-    seed = seed if seed is not None else config.seed
 
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
@@ -360,8 +355,6 @@ def run_tdsp_pipeline(
     generate_weights_xmls(cost_links=cost_links, weights_dir=weights_dir)
     # 4.3. Compute the time dependence shortest paths
     compute_time_dependent_shortest_paths(
-        config.network,
-        seed,
         weights_dir=weights_dir,
         shortest_path_dir=shortest_path_dir,
     )

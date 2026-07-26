@@ -186,9 +186,7 @@ def main():
         # -----------------------------
         # 6. CHECK DUE convergence
         # -----------------------------
-        run_due_convergence_checks(
-            scen=scen
-        )
+        run_due_convergence_checks(scen=scen)
 
         # -----------------------------
         # 7. MLflow (Artifact storage, Experiment tracking)
