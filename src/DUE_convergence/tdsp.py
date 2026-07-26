@@ -167,7 +167,7 @@ def _save_missingness_report(
 def _fill_missing_travel_times(
     avg_tt, edgedata_file, all_edges, threshold_density
 ) -> pd.DataFrame:
-    # 1. Generate file with free flow travel times of all links in the network and load it
+    # 1. Load file with free flow travel times of all links in the network 
     free_flow = pd.read_parquet(FREE_FLOW_TRAVEL_TIMES)
 
     ###############
@@ -340,7 +340,6 @@ def run_tdsp_pipeline(
     # 4. TIME DEPENDENCE SHORTEST PATH
     # 4.1. Compute avg link travel time for all time intervals across all episodes
     compute_travel_time_links_t_k(
-        network=config.network,
         threshold_density=threshold_density,
         output_file=cost_links,
         agents_od_file=agents_od_file,
@@ -370,7 +369,6 @@ def run_tdsp_pipeline(
 
 
 def compute_travel_time_links_t_k(
-    network,
     threshold_density,
     output_file,
     agents_od_file,
@@ -404,7 +402,7 @@ def compute_travel_time_links_t_k(
         a) Fill forward: We do not have any vehicle entering on link at t (NaN) and density_t > 0  (congestion)
         b) Free-flow: Otherwise
     """
-    all_edges = load_network_edges(network)
+    all_edges = load_network_edges()
     df_edges = _compute_edge_travel_times(
         vehroute_file=vehroute_file,
         agents_od_file=agents_od_file,
@@ -520,8 +518,8 @@ def delete_files_due_convergence(weights_dir, shortest_paths_dir):
                     item.unlink()
 
 
-def load_network_edges(network) -> set:
+def load_network_edges() -> set:
     # 1. Get edges network
-    tree = etree.parse(network)
+    tree = etree.parse(config.network)
     all_edges = tree.xpath("//edge[not(@function='internal')]/@id")
     return set(all_edges)
