@@ -3,13 +3,13 @@ Stopping rule for the BM multi-agent training loop.
 
 The loop terminates when either condition is met:
   1. max_episodes is reached.
-  2. The mean L1 policy change across all agents falls below
+  2. The mean L1 policy change across post-warm-up agents falls below
      tolerance_stopping_rule for k_no_change consecutive episodes.
 
 Policy change metric
 --------------------
 At each episode, the L1 norm of (current_policy - previous_policy) is
-computed per agent, then averaged across all agents:
+computed per agent, then averaged across post-warm-up agents:
 
     mean_policy_change = mean( ||p_t - p_{t-1}||_1 )
 
@@ -24,11 +24,22 @@ In a multi-agent setting taking the max across agents was too restrictive
 and convergence was never declared. The mean tolerates a small number
 of still-adapting agents while the majority have stabilised.
 
-Warm-up
--------
+Warm-up (episodes)
+-------------------
 Policy change is not evaluated during the minimum warm-up period of agents. All agents
 start with a uniform policy and do not learn yet, so the L1 change is
 uninformative until after warm-up + 1 episodes.
+
+Post-warm-up agents (simulation time)
+--------------------------------------
+Separately, only agents whose departure_time falls after config.warm_up_time
+count towards mean_policy_change. Agents departing during that window exist
+only to load traffic onto the network before the measurement period and are
+not part of the demand being studied, so their (uninformative) policy shifts
+would otherwise dilute the convergence signal. Each BMAgent carries a
+post_warm_up flag (set in agents.factory.initialize_agents from its
+departure_time) for this purpose; create_policies_dict() filters on it, so
+policies_history only ever contains post-warm-up agents.
 """
 
 import numpy as np
@@ -42,7 +53,7 @@ from config.config import config
 
 def check_convergence(policies_history, episode, no_change_count):
 
-    # Get the maximum policy change across all agents
+    # Get the mean policy change across post-warm-up agents
     mean_policy_change = _compute_mean_policy_change(policies_history, episode)
 
     # Skip warm-up
@@ -75,17 +86,21 @@ def check_convergence(policies_history, episode, no_change_count):
 
 def create_policies_dict(BM_agents):
     """
-    Creates a dictionary with the BM_agents ids as keys
-    and their current policies as values
+    Creates a dictionary with the ids of post-warm-up BM_agents as keys
+    and their current policies as values.
+
+    Warm-up agents (bm.post_warm_up is False) are excluded here, which is
+    what keeps them out of policies_history and therefore out of the
+    stopping rule's convergence signal.
     """
-    policies_dict = {bm.id: bm.p for bm in BM_agents.values()}
+    policies_dict = {bm.id: bm.p for bm in BM_agents.values() if bm.post_warm_up}
     return policies_dict
 
 
 def _compute_mean_policy_change(policies_history, episode):
     """
     Computes the mean L1 policy change
-    between consecutive episodes across all agents.
+    between consecutive episodes across post-warm-up agents.
 
     The L1 norm measures the total probability mass
     shift in the policy vector.

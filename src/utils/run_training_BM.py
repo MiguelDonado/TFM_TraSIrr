@@ -64,6 +64,7 @@ def _run_training_loop(
         # 4. UPDATE AGENTS
         # -----------------------------
         # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
+        # Only post-warm-up agents are included (see stopping_rule.create_policies_dict)
         # After updating agents, they store the policy for NEXT EPISODE
         current_policies = create_policies_dict(agents)
         # Store current policies in history

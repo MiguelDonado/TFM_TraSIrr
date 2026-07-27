@@ -45,6 +45,12 @@ Warm-up conditions (both must be satisfied before learning begins)
    (prevents division by zero in the stimulus normalisation when
     some PT values are undefined)
 
+Note: this is unrelated to the agent's post_warm_up flag below, which is
+about simulation time (departure_time vs config.warm_up_time), not episode
+count — it marks whether the agent departs after the SUMO network's initial
+traffic-loading window, and is used by the stopping rule to decide which
+agents' policy changes count towards convergence.
+
 Agent lifecycle
 ---------------
   __init__       uniform probability vector p, empty history
@@ -61,7 +67,7 @@ class BMAgent:
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
@@ -69,6 +75,11 @@ class BMAgent:
         self.gamma = gamma  # Memory decay
         self.epsilon = epsilon
         self.rng = np.random.default_rng(seed)
+        self.departure_time = departure_time
+        # Whether this agent departs after the SUMO network warm-up window
+        # (see module docstring); used by the stopping rule to exclude
+        # warm-up agents from the convergence signal.
+        self.post_warm_up = post_warm_up
 
         # initial probabilities (uniform over routes, no preference in the beginning)
         self.p = np.ones(self.n_routes) / self.n_routes
