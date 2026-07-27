@@ -18,6 +18,21 @@ actions      — route index chosen by each agent per episode
 rewards      — travel time received by each agent per episode
 BM_results   — agent internal state (ET, PT, stimulus) per episode
 
+Post-warm-up filtering
+-----------------------
+Warm-up agents (BMAgent.post_warm_up is False) are excluded from every
+per-agent stream, so nothing downstream (DUE convergence, plots) needs to
+re-apply that filter itself:
+  - vehroute, trips_info, fcd  — parsed from raw SUMO XML (all vehicles),
+                                 then filtered post-parse by vehicle_id.
+  - actions, rewards, BM_results — filtered at generation time, since each
+                                 row is built directly from a BMAgent that
+                                 already carries post_warm_up.
+aggregated and edgedata are network/episode-level aggregates with no agent
+dimension — there is no per-agent row to filter, and they must keep
+reflecting all traffic (including warm-up vehicles) to stay physically
+correct.
+
 Also contains two utility functions used by main.py:
   log_episodes_gui     — prints which episodes have GUI enabled, if any
   run_final_simulation — replays the last episode in sumo-gui
@@ -68,13 +83,30 @@ from parsing.sumo_outputs import (
 
 
 def prepare_data(episode, actions, rewards, agents):
+
+    post_warm_up_ids = {
+        agent_id for agent_id, agent in agents.items() if agent.post_warm_up
+    }
+
+    # network aggregate, no agent dimension — never filtered
     aggregated_result = parse_aggregated_data(episode)
-    vehroute_result = parse_vehroute(episode, VEHROUTE_XML)
-    trips_info_result = parse_trips_info(episode, TRIPS_INFO_XML)
-    fcd_result = parse_fcd(episode)
+    vehroute_result = _filter_post_warm_up(
+        rows = parse_vehroute(episode, VEHROUTE_XML), 
+        post_warm_up_ids = post_warm_up_ids
+    )
+    trips_info_result = _filter_post_warm_up(
+        rows = parse_trips_info(episode, TRIPS_INFO_XML),
+        post_warm_up_ids = post_warm_up_ids
+    )
+    fcd_result = _filter_post_warm_up(
+        rows = parse_fcd(episode),
+        post_warm_up_ids = post_warm_up_ids
+    )
+    # network aggregate, no agent dimension — never filtered
     edgedata_result = parse_edgedata(episode, EDGEDATA_XML)
-    actions = _prepare_actions(episode, actions)
-    rewards = _prepare_rewards(episode, rewards)
+
+    actions = _prepare_actions(episode, actions, agents)
+    rewards = _prepare_rewards(episode, rewards, agents)
     bm_result = _prepare_bm_data(episode, agents)
     return {
         "aggregated_result": aggregated_result,
@@ -86,6 +118,11 @@ def prepare_data(episode, actions, rewards, agents):
         "rewards_result": rewards,
         "BM_result": bm_result,
     }
+
+
+def _filter_post_warm_up(rows, post_warm_up_ids):
+    return [row for row in rows if row["vehicle_id"] in post_warm_up_ids]
+
 
 
 def accumulate_results(results, result):
@@ -135,23 +172,27 @@ def save_processed_data(results):
 ########################################
 
 
-def _prepare_actions(episode, actions):
+def _prepare_actions(episode, actions, agents):
     rows = []
-    for agent, action in actions.items():
-        rows.append({"episode": episode, "agent_id": agent, "action": action})
+    for agent_id, action in actions.items():
+        if agents[agent_id].post_warm_up:
+            rows.append({"episode": episode, "agent_id": agent_id, "action": action})
     return rows
 
 
-def _prepare_rewards(episode, rewards):
+def _prepare_rewards(episode, rewards, agents):
     rows = []
-    for agent, reward in rewards.items():
-        rows.append({"episode": episode, "agent_id": agent, "reward": reward})
+    for agent_id, reward in rewards.items():
+        if agents[agent_id].post_warm_up:
+            rows.append({"episode": episode, "agent_id": agent_id, "reward": reward})
     return rows
 
 
 def _prepare_bm_data(episode, agents):
     rows = []
-    for _, agent in agents.items():
+    for agent in agents.values():
+        if not agent.post_warm_up:
+            continue
         for route_id, perceived_travel_time in enumerate(agent.perceived_travel_times):
             rows.append(
                 {
