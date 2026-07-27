@@ -25,6 +25,14 @@ behavioral intervention design.
 
 ---
 
+## Demo
+
+A short walkthrough of the pipeline in action:
+
+![Demo of the pipeline](Thesis.gif)
+
+---
+
 ## Research Scope
 
 The thesis investigates multiple research directions around day-to-day route choice
@@ -41,14 +49,32 @@ learning. The questions are grouped into the following themes:
 
 ---
 
+## Results
+
+**RQ1:** Does Bush-Mosteller multi-agent RL converge to a Dynamic User
+Equilibrium (DUE) in a microscopic SUMO traffic simulation? Convergence is
+measured via three R-gap variants — aggregate, by departure interval, and
+by OD pair — computed by the `DUE_convergence` pipeline (TDSP-based), and
+compared against `duaIterate`, SUMO's built-in DUE solver, as a baseline.
+Full analysis: [`r/RQ1/RQ1.qmd`](r/RQ1/RQ1.qmd).
+
+<p>
+<img src="r/RQ1/figures/plot1_rgap_evolution.png" width="32%" alt="R-gap evolution across episodes">
+<img src="r/RQ1/figures/plot2_refined_rgap_heatmap.png" width="32%" alt="Refined R-gap heatmap by departure interval">
+<img src="r/RQ1/figures/plot3_od_rgap_worstcase.png" width="32%" alt="Worst-case OD-specific R-gap">
+</p>
+
+---
+
 ## Technical Highlights
 
 - **Multi-agent RL system:** N Bush-Mosteller agents independently learn
   route-choice probabilities from daily travel time observations, with no
   centralised coordination.
-- **Demand calibration:** Iterative procedure that finds the agent count
-  producing a target congestion ratio before training begins, using a
-  proportional update rule with clipping to prevent overshooting.
+- **Congestion-metric sensitivity tools:** Measure the free-flow-normalised
+  congestion ratio produced by a given demand level, used to sweep
+  hyperparameters (agent count, warm-up time, etc.) against realistic
+  congestion regimes.
 - **No-TraCI architecture:** Routes are written as XML files each episode
   rather than injected via socket — significantly faster for episodic
   day-to-day learning where routes cannot change mid-episode.
@@ -89,26 +115,33 @@ learning. The questions are grouped into the following themes:
 
 ```
 src/
-├── main.py                      # Training loop orchestrator (steps 0–7)
+├── main.py                      # Training loop orchestrator (generate agents → train → MLflow → GUI replay)
+├── experiment.py                # Per-episode data collection + end-of-run persistence to Parquet
 ├── agents/
 │   ├── agent.py                 # BMAgent — ET, PT, stimulus, probability update
 │   └── factory.py               # Batch init / select / update over agent fleet
 ├── simulation/
 │   ├── scenario.py              # OD pairs, k routes via duarouter, SUMO config files
 │   └── environment.py           # SUMO subprocess wrapper (file-based, no TraCI)
-├── demand_calibration/          # Iterative calibration to target congestion ratio
-├── stopping_rule/               # L1 norm policy-change convergence check
+├── stopping_rule/               # L1 norm policy-change convergence check (post-warm-up agents only)
 ├── DUE_convergence/             # R-gap, TDSP, duaIterate benchmark pipeline
 ├── parsing/                     # XPath-driven SUMO XML parsers → Parquet
+├── analysis/                    # SUMO-GUI edge-colour comparison of BM vs duaIterate
 ├── mlflow_tracking/             # MLflow logging for simulation and analysis runs
+├── utils/                       # Agent/demand generation, free-flow TT, network stat helpers
+├── tools/                       # One-off network prep tools + sensitivity/ parameter sweeps
 └── config/
-    ├── config.py                # Config dataclass (10 hyperparameter groups) + RunMode
+    ├── config.py                # Config dataclass (hyperparameter groups) + RunMode
     ├── config.yaml              # XPath selectors for SUMO XML parsing
     └── paths.py                 # All paths derived from BASE_DIR
 scripts/
 ├── launcher.py                  # Grid-search launcher (YAML design → combinations)
 ├── run_analysis.py              # Quarto render + MLflow analysis run logging
 └── start_mlflow.py              # MLflow UI pointed at project SQLite backend
+experiments/
+├── rq1/                         # RQ1 configs: base.yaml + grid-search design.yaml
+├── rq2/                         # RQ2 configs
+└── developer_modes/             # debug / development / production config presets
 r/
 ├── RQ1/RQ1.qmd                  # Quarto report: R-gap convergence analysis
 └── shared/theme.R               # Shared ggplot2 theme for thesis figures

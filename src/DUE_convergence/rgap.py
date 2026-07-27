@@ -59,7 +59,7 @@ negative even when drivers took the true shortest path.
 
   Example: vehicle 1 took the true shortest path of 20 min; vehicle 2 took
   the true shortest path of 60 min. Both depart in the same interval and the
-  aggregated c*_{odt} = 45 min.
+  aggregated c*_{odt} (estimated shortest path) = 45 min.
 
     Accurate:   (20−20)·1 + (60−60)·1 =   0
     Aggregated: (20−45)·1 + (60−45)·1 = −10

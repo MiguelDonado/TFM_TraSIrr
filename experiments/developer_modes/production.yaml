@@ -49,5 +49,5 @@ due_convergence:
   duaIterate_step_length: 0.1
 
 mode_and_flags:
-  last_episode_gui_BM: false
+  last_episode_gui_BM: true
   last_episode_gui_duaIterate: false
