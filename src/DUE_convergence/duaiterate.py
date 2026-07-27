@@ -201,9 +201,9 @@ def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes):
     df.to_parquet(DUA_EXTRA.actions, engine="pyarrow")
 
 
-def process_trips_info_duaIterate():
+def process_trips_info_duaIterate(post_warm_up_ids):
     """
-    Builds the processed trips info file
+    Builds the processed trips info file (post-warm-up agents only)
     """
     folder_number = _last_iteration_folder()
 
@@ -217,15 +217,16 @@ def process_trips_info_duaIterate():
     processed_data = parse_trips_info(
         episode=1, trips_info_path=trips_info_duaIterate_path
     )
+    processed_data = [row for row in processed_data if row["vehicle_id"] in post_warm_up_ids]
 
     # Save trips info processed data in a parquet file
     df = pd.DataFrame(processed_data)
     df.to_parquet(DUA_EXTRA.trips_info_processed, engine="pyarrow")
 
 
-def process_vehroute_duaIterate():
+def process_vehroute_duaIterate(post_warm_up_ids):
     """
-    Builds the processed vehroute file
+    Builds the processed vehroute file (post-warm-up agents only)
     """
     folder_number = _last_iteration_folder()
 
@@ -237,6 +238,7 @@ def process_vehroute_duaIterate():
 
     # Parse vehroutes
     processed_data = parse_vehroute(episode=1, vehroute_path=vehroute_path)
+    processed_data = [row for row in processed_data if row["vehicle_id"] in post_warm_up_ids]
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)

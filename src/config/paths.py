@@ -342,8 +342,14 @@ BM_RESULTS = AGENT_STATE_DIR / "BM_results.parquet"
 # Internal environment data
 # ============================================================
 
-# File containing agents and its ods used throughout the program
+# File containing agents and its ods used throughout the program.
+# Post-warm-up agents only — this is what DUE convergence (aggregation.py,
+# rgap.py, tdsp.py) joins/reads directly.
 AGENTS_OD = ENVIRONMENT_DIR / "agents_od.parquet"
+
+# Debug-only counterpart of AGENTS_OD: every agent, including warm-up ones.
+# Not read by any pipeline code — kept around purely for manual inspection.
+AGENTS_OD_ALL = ENVIRONMENT_DIR / "agents_od_all.parquet"
 
 # File containing the link free flow travel times
 FREE_FLOW_TRAVEL_TIMES = ENVIRONMENT_DIR / "free_flow_travel_times.parquet"

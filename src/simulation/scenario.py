@@ -3,7 +3,8 @@ Builds and owns the static environment shared across all training episodes.
 
 Scenario is constructed once before the training loop and exposes two
 data structures consumed every episode:
-  self.agents    — list of dicts {id, origin, destination, departure_time}
+  self.agents    — list of dicts {id, origin, destination, departure_time,
+                   post_warm_up}
   self.od_routes — {(origin, dest): [[edge, …], …]} with k route alternatives
 
 Agents and unique_ods are generated externally (via utils.generate_agents)
@@ -14,6 +15,9 @@ Construction runs three steps automatically in __init__:
                   repeatedly with a random edge-weight perturbation
 2. Environment  — save agents, OD routes, free-flow link costs, OD matrix,
                   and time interval table to parquet files under data/.
+                  Agents are saved twice: AGENTS_OD (post-warm-up only, used
+                  by DUE convergence) and AGENTS_OD_ALL (every agent,
+                  debug-only, read by nothing).
 3. Config       — write the SUMO .sumocfg and meandata XML files used by
                   Environment.run_episode() every episode.
                   The meandata XML instructs SUMO to collect per-edge
@@ -31,6 +35,7 @@ import pandas as pd
 from config.config import config
 from config.paths import (
     AGENTS_OD,
+    AGENTS_OD_ALL,
     EDGEDATA_XML,
     FCD_XML,
     MEANDATA,
@@ -290,5 +295,13 @@ class Scenario:
         df.to_parquet(OD_ROUTES, engine="pyarrow")
 
     def _save_agents(self):
-        df = pd.DataFrame(self.agents)
+        # Debug-only: every agent, including warm-up ones. Not read by any
+        # pipeline code.
+        df_all = pd.DataFrame(self.agents)
+        df_all.to_parquet(AGENTS_OD_ALL, engine="pyarrow")
+
+        # AGENTS_OD proper: post-warm-up only. This is what DUE convergence
+        # (aggregation.py, rgap.py, tdsp.py) actually joins/reads.
+        post_warm_up_agents = [a for a in self.agents if a["post_warm_up"]]
+        df = pd.DataFrame(post_warm_up_agents)
         df.to_parquet(AGENTS_OD, engine="pyarrow")

@@ -145,7 +145,9 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     ########################
     print("--- duaIterate ---")
 
-    # 1. Generate trips file used by dueIterate (only ODs, no routes)
+    # 1. Generate trips file used by dueIterate (only ODs, no routes).
+    # I need to pass all agents, even warm-up because simulation has to be 
+    # run with all the agents
     generate_trips_file_duaIterate(scen.agents)
 
     # 2. Execute duaIterate
@@ -162,9 +164,13 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
         routes_file=routes_file
     )
 
-    # 6. Compute actions table
+    # 6. Compute actions table (post-warm-up agents only — dict_agent_routes
+    # still has every agent, since duaIterate simulated the full population,
+    # but the saved actions table should only reflect the demand under study)
+    post_warm_up_agents = [a for a in scen.agents if a["post_warm_up"]]
+    post_warm_up_ids = {a["id"] for a in post_warm_up_agents}
     compute_actions_table_duaIterate(
-        agents=scen.agents,
+        agents=post_warm_up_agents,
         dict_agent_routes=dict_agent_routes,
         od_routes=od_routes,
     )
@@ -175,7 +181,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # 8. Process trips_info file
-    process_trips_info_duaIterate()
+    process_trips_info_duaIterate(post_warm_up_ids = post_warm_up_ids)
 
     # 9. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
@@ -185,7 +191,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     )
 
     # 10. Process vehroute duaIterate
-    process_vehroute_duaIterate()
+    process_vehroute_duaIterate(post_warm_up_ids = post_warm_up_ids)
 
     # 11. Generate meandata_file
     meandata_duaIterate_file = generate_meandata_file()
