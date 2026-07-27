@@ -37,9 +37,10 @@ count towards mean_policy_change. Agents departing during that window exist
 only to load traffic onto the network before the measurement period and are
 not part of the demand being studied, so their (uninformative) policy shifts
 would otherwise dilute the convergence signal. Each BMAgent carries a
-post_warm_up flag (set in agents.factory.initialize_agents from its
-departure_time) for this purpose; create_policies_dict() filters on it, so
-policies_history only ever contains post-warm-up agents.
+post_warm_up flag (computed in utils.generate_agents.generate_agents when
+the agent list is built, passed through by agents.factory.initialize_agents)
+for this purpose; create_policies_dict() filters on it, so policies_history
+only ever contains post-warm-up agents.
 """
 
 import numpy as np

@@ -5,7 +5,8 @@ Three entry points are provided depending on the use case:
 
 demand_from_count(n_agents) → (agents, unique_ods)
     Generates the agent list for a fixed, pre-determined agent count.
-    agents      — list of dicts with keys: id, origin, destination, departure_time
+    agents      — list of dicts with keys: id, origin, destination,
+                  departure_time, post_warm_up
     unique_ods  — unique (origin, dest) pairs in the OD pool, needed by
                   Scenario to compute k alternative routes
 
@@ -14,6 +15,7 @@ generate_agents — runs randomTrips internally on every call to produce a
     Used by demand_from_count and by the sensitivity tools under
     src/tools/sensitivity/ that sweep a single parameter (e.g.
     min_distance_factor) while holding demand fixed.
+
 
 build_od_space + generate_agents_from_od_space — used by the congestion metric
     sensitivity sweep (plot_congestion_metric.py), where the same OD pool must
@@ -28,6 +30,9 @@ build_od_space + generate_agents_from_od_space — used by the congestion metric
     1700 vehicles might send 800 through a bottleneck and 900 elsewhere, while 1800
     vehicles might send only 500 through the same bottleneck and 1300 elsewhere —
     producing a lower congestion metric at higher demand, breaking monotonicity.
+
+    Unlike generate_agents, these agent dicts do NOT carry post_warm_up —
+    this path feeds CongestionSimulator only, which never reads that key.
 """
 
 import os
@@ -85,6 +90,7 @@ def generate_agents(
                 "origin": origin,
                 "destination": dest,
                 "departure_time": departure_time,
+                "post_warm_up": departure_time >= config.warm_up_time
             }
         )
     return agents, unique_ods

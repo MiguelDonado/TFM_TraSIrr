@@ -4,10 +4,10 @@ Batch operations over the full agent fleet, called from main.py.
 Three functions map the per-agent BMAgent methods onto all agents at once:
 
   initialize_agents  — instantiate one BMAgent per entry in scen.agents.
-                       Also derives each agent's post_warm_up flag (whether
-                       its departure_time falls after config.warm_up_time),
-                       consumed by the stopping rule to exclude warm-up
-                       agents from the convergence signal.
+                       Also passes through each agent's post_warm_up flag
+                       (computed in utils.generate_agents when the agent
+                       list is built), consumed by the stopping rule to
+                       exclude warm-up agents from the convergence signal.
   select_actions     — called before each episode; returns {agent_id: route_idx}
   update_agents      — called after each episode; updates each agent's policy
                        from its observed reward
@@ -29,12 +29,13 @@ def initialize_agents(scen, seed=None):
 
         routes = scen.od_routes[od]
 
-        # post_warm_up: departs after the SUMO network warm-up window, as
-        # opposed to only loading traffic during it. Consumed by the
-        # stopping rule (stopping_rule.create_policies_dict) to exclude
+        # post_warm_up (computed in utils.generate_agents.generate_agents,
+        # just passed through here): departs after the SUMO network warm-up
+        # window, as opposed to only loading traffic during it. Consumed by
+        # the stopping rule (stopping_rule.create_policies_dict) to exclude
         # warm-up agents from the convergence signal.
         departure_time = agent_info["departure_time"]
-        post_warm_up = departure_time >= config.warm_up_time
+        post_warm_up = agent_info["post_warm_up"]
 
         # Distinct seed per agent (factory.py passes seed+i) so each agent's
         # select_action draws are independent, not correlated across agents.
