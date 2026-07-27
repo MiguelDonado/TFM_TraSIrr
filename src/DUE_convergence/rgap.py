@@ -105,6 +105,7 @@ Linares Herreros, María Paz, and Jaime Barceló Bugeda.
 
 import pandas as pd
 
+from config.config import config
 from config.paths import AGENTS_OD, DEMAND_ODT, TIMES_INTERVAL, TRIPS_TDSP
 
 
@@ -224,12 +225,12 @@ def _compute_redefined_rgap_by_od(df, refined_rgap_by_od_path):
     )
 
 
-def generate_demand_odt(time_interval):
+def generate_demand_odt():
     """
     This method basically generates a table that contains the demand for each od for all time intervals
     """
     agents_od = pd.read_parquet(AGENTS_OD)
-    agents_od["time_interval"] = agents_od["departure_time"] // time_interval
+    agents_od["time_interval"] = agents_od["departure_time"] // config.time_interval
     demand_odt = (
         agents_od.groupby(["origin", "destination", "time_interval"])
         .size()
@@ -238,13 +239,13 @@ def generate_demand_odt(time_interval):
     demand_odt.to_parquet(DEMAND_ODT)
 
 
-def generate_time_intervals_table(end_time, time_interval):
+def generate_time_intervals_table():
     """
     Called once per program execution.
     Create a table that contains time interval | start time | end time
     """
-    starts = list(range(0, end_time, time_interval))
-    ends = [min(s + time_interval, end_time) for s in starts]
+    starts = list(range(0, config.end_time, config.time_interval))
+    ends = [min(s + config.time_interval, config.end_time) for s in starts]
     df = pd.DataFrame(
         {"interval": range(len(starts)), "start_time": starts, "end_time": ends}
     )
@@ -272,6 +273,9 @@ def generate_trips_odt_file():
         i = 0
 
         for _, interval_row in time_intervals_table.iterrows():
+
+            if interval_row["start_time"] < config.warm_up_time:
+                continue
 
             depart = interval_row["start_time"] + 1
 

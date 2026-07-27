@@ -44,6 +44,7 @@ def main():
         # -----------------------------
         # 0. GENERATE AGENTS
         # -----------------------------
+        # agents: Contains all agents (warm-up and post-warm-up)
         agents, unique_ods = demand_from_count(config.n_agents)
 
         # -----------------------------

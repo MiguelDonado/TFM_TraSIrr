@@ -92,8 +92,8 @@ def _generate_generic_files_due_convergence():
     # 1. Generate essential files
     ## Parquet
     generate_free_flow_tt_links()
-    generate_time_intervals_table(config.end_time, config.time_interval)
-    generate_demand_odt(config.time_interval)
+    generate_time_intervals_table()
+    generate_demand_odt()
     ## XML
     generate_trips_odt_file()
 

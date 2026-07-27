@@ -80,7 +80,11 @@ def generate_agents(
     od_pairs, unique_ods = generate_od_for_agents(
         n_agents, n_agents_post_warmup, rng, min_distance_factor
     )
-    departure_times = generate_departure_times(n_agents, rng)
+    departure_times = generate_departure_times(
+        n_agents_warm_up= n_agents_warmup,
+        n_agents_post_warm_up= n_agents_post_warmup, 
+        rng=rng
+    )
     for i in range(n_agents):
         origin, dest = od_pairs[i]
         departure_time = departure_times[i]
@@ -238,13 +242,23 @@ def sample_od_space(od_space_counter, n_agents, rng):
     return (ods, unique_ods)
 
 
-def generate_departure_times(n_agents, rng):
-    departure_times = rng.integers(
+def generate_departure_times(n_agents_warm_up, n_agents_post_warm_up, rng):
+
+    # 1. Generate random departure times for warm_up agents
+    departure_times_warm_up = rng.integers(
         0,
-        config.end_time,
-        size=n_agents,
+        config.warm_up_time,
+        size=n_agents_warm_up,
     )
 
+    # 2. Generate random departure times for post_warm_up agents
+    departure_times_post_warm_up = rng.integers(
+        config.warm_up_time,
+        config.end_time,
+        size=n_agents_post_warm_up,
+    )
+
+    departure_times = np.concatenate([departure_times_warm_up, departure_times_post_warm_up])
     departure_times = [int(departure_time) for departure_time in departure_times]
     # Sort departure times, to avoid problems in SUMO simulation and for clarity. The agent_1 should be the first to departure, the agent_2 the second...
     departure_times.sort()

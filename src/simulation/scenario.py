@@ -192,11 +192,8 @@ class Scenario:
 
         self._save_agents()
 
-        od_pairs = [(a["origin"], a["destination"]) for a in self.agents]
-        departure_times = [a["departure_time"] for a in self.agents]
-        self._write_od_matrix(
-            od_pairs, departure_times, interval_size=config.time_interval
-        )
+        post_warm_up_agents = [a for a in self.agents if a["post_warm_up"]]
+        self._write_od_matrix(post_warm_up_agents)
 
     def _process_od_routes(self):
         """
@@ -211,19 +208,19 @@ class Scenario:
     ### HELPER FUNCTIONS ###
     ########################
 
-    def _write_od_matrix(self, od_list, departure_times_list, interval_size):
+    def _write_od_matrix(self, agents):
 
-        # Clear stale files from previous runs (filename encodes interval_size,
+        # Clear stale files from previous runs (filename encodes config.time_interval,
         # so runs with a different config.time_interval leave old files behind)
         for f in OD_MATRIX_DIR.glob("*"):
             f.unlink()
 
         df = pd.DataFrame(
-            [(o, d, t) for (o, d), t in zip(od_list, departure_times_list)],
+            [(a["origin"], a["destination"], a["departure_time"]) for a in agents],
             columns=["origin", "destination", "departure_time"],
         )
 
-        df["interval"] = (df["departure_time"] // interval_size).astype(int)
+        df["interval"] = (df["departure_time"] // config.time_interval).astype(int)
 
         """
         interval	origin	destination	    count
@@ -237,12 +234,12 @@ class Scenario:
 
         # Save all intervals in one file; the interval width is baked into the filename
         interval_path = OD_MATRIX_INTERVALS.with_name(
-            f"{OD_MATRIX_INTERVALS.stem}_{interval_size}s{OD_MATRIX_INTERVALS.suffix}"
+            f"{OD_MATRIX_INTERVALS.stem}_{config.time_interval}s{OD_MATRIX_INTERVALS.suffix}"
         )
         grouped.to_csv(interval_path, index=False)
 
         # Optional: total OD matrix (without intervals)
-        counts = Counter(od_list)
+        counts = Counter((a["origin"], a["destination"]) for a in agents)
 
         total_df = pd.DataFrame(
             [(o, d, c) for (o, d), c in counts.items()],
