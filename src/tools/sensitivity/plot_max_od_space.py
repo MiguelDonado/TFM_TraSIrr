@@ -1,47 +1,28 @@
 """
-One-off tool: sweeps a range of n_routes_per_od values and plots three metrics
+One-off tool: sweeps a range of max_od_space values and plots three metrics
 used to select the best value.
 
-n_routes_per_od controls how many alternative routes each OD pair has available
-during learning. More routes give agents greater flexibility but enlarge the action
-space, which may slow convergence.
+max_od_space controls the maximum number of different OD pairs that the
+OD matrix will have. A priori, it is not easy to guess which effects it will have
+on the first r-gap, the last r-gap or on the episodes to convergence.
 
 Three metrics are plotted:
 
-  1) First-episode R-gap — measures route-set quality before learning starts.
-     Expected relationship: higher n_routes_per_od yields a higher initial
-     R-gap, since traffic starts out spread across a larger, potentially
-     worse route set.
-
-  2) Final R-gap — measures route-choice quality at convergence. Lower is better.
-     Expected relationship: higher n_routes_per_od yields lower R-gap, though
-     diminishing returns are more likely in low-congestion networks.
-
-  3) Episodes to convergence — measures learning speed. Lower is better.
-     Expected relationship: larger action spaces require more exploration,
-     so convergence should slow as n_routes_per_od grows.
-
-After checking the plot, hypothesis 3 is confirmed; hypothesis 2 is not —
-increasing n_routes_per_od does not produce a monotonic decrease in final
-R-gap in all congestion regimes. Hypothesis 1 is confirmed
+  1) First-episode R-gap 
+  2) Final R-gap
+  3) Episodes to convergence
 
 Decision rule: A high initial R-gap that the algorithm subsequently reduces
 is a desirable and illustrative property of the experiment. We therefore
-choose the n_routes_per_OD that produces a high initial R-gap and a lower
-final R-gap, without increasing exaggerately the number of episodes
+choose the max_od_space that produces a high initial R-gap and a lower
+final R-gap, without excessively increasing the number of episodes
 required for convergence.
 
-Final decision: 8
+Final decision: 
 
-Run with: python src/tools/sensitivity/plot_n_routes_per_OD.py <config.yaml>
+Run with: python src/tools/sensitivity/plot_max_od_space.py <config.yaml>
 
-Parameter dependencies: Its effect on the initial R-gap depends on
-random_factor. Raising n_routes_per_OD only has an effect once random_factor
-is high enough to actually find that many alternative routes per OD — below
-that threshold, the requested count is simply not reached. Given a
-sufficiently high random_factor, more routes per OD raises the first-episode
-R-gap, since traffic is then split across a larger, potentially worse route
-set.
+Parameter dependencies: Independent hyperparameter
 """
 
 import subprocess
@@ -49,8 +30,6 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-
-plt.style.use(Path(__file__).parent / "thesis_style.mplstyle")
 import pandas as pd
 from matplotlib.ticker import PercentFormatter
 
@@ -65,7 +44,7 @@ from utils.run_training_BM import run_full_training_BM
 def main():
     # 0. Set-up
     DEMANDS = [2000]
-    N_ROUTES_PER_OD = list(range(2,10))
+    MAX_OD_SPACE_LIST = list(range(5,55,5))
 
     for demand in DEMANDS:
         print("##########")
@@ -77,18 +56,21 @@ def main():
         episodes_to_converge = []
         first_rgaps = []
 
-        # 2. Calibrate demand (nº agents)
-        calibrated_agents, unique_ods = demand_from_count(demand)
+        # 2. Analyze different hyperparameter values
+        for max_od_space in MAX_OD_SPACE_LIST:
 
-        # 3. Analyze different hyperparameter values
-        for n in N_ROUTES_PER_OD:
+            config.max_size_od_space = max_od_space
+
+            # 3. Calibrate demand (nº agents)
+            calibrated_agents, unique_ods = demand_from_count(demand)
+
 
             print("##########")
-            print(f"# N routes per OD: {n}")
+            print(f"# Max number of OD pairs: {max_od_space}")
             print("##########")
 
             run_full_training_BM(
-                agents=calibrated_agents, unique_ods=unique_ods, k=n
+                agents=calibrated_agents, unique_ods=unique_ods
             )
 
             # 4. Get values of metrics (first episode, last episode and its r-gap)
@@ -104,25 +86,25 @@ def main():
             first_rgaps.append(first_rgap)
 
         _make_plot(
-            n_routes=N_ROUTES_PER_OD,
+            max_od_space=MAX_OD_SPACE_LIST,
             first_rgaps=first_rgaps,
             last_rgaps=last_rgaps,
             episodes=episodes_to_converge,
             demand=demand,
         )
+
     # Play sound to signal end of script
     subprocess.run(["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"])
 
-
-def _make_plot(n_routes, first_rgaps, last_rgaps, episodes, demand):
+def _make_plot(max_od_space, first_rgaps, last_rgaps, episodes, demand):
     # 1. Manage path
     network_name = Path(config.network).stem
-    plot_prefix = "n_routes_per_OD_"
+    plot_prefix = "max_OD_space_"
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
 
     _, ax1 = plt.subplots()
     # Convert to categorical
-    x = range(len(n_routes))
+    x = range(len(max_od_space))
 
     # 2. Left y-axis: R-gap (first and final episode)
     line1 = ax1.plot(
@@ -137,9 +119,9 @@ def _make_plot(n_routes, first_rgaps, last_rgaps, episodes, demand):
     line2 = ax1.plot(
         x, last_rgaps, color="tab:blue", marker="o", linewidth=2, label="Final R-gap"
     )
-    ax1.set_xlabel("Number of alternative routes per OD")
+    ax1.set_xlabel("Maximum number of OD pairs")
     ax1.set_xticks(x)
-    ax1.set_xticklabels(n_routes)
+    ax1.set_xticklabels(max_od_space)
     ax1.set_ylabel("R-gap", color="tab:blue")
     ax1.tick_params(axis="y", colors="tab:blue")
 
@@ -169,7 +151,7 @@ def _make_plot(n_routes, first_rgaps, last_rgaps, episodes, demand):
         ncol=2,
         frameon=False,
     )
-    plt.title(f"Effect of the Number of Alternative Routes per OD (demand = {demand})")
+    plt.title(f"Effect of the Maximum number of OD pairs (demand = {demand})")
     ax1.grid(True, alpha=0.25)
     ax1.yaxis.set_major_formatter(PercentFormatter())
     plt.tight_layout()

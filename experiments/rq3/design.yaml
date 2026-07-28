@@ -2,8 +2,8 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/rq2/base.yaml
 
 grid:
   learning:
-    memory_level:
-      - 1.00
+    learning_rate:
+      - 0.99
       - 0.90
       - 0.80
       - 0.70

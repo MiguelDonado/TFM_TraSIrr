@@ -19,15 +19,18 @@ A threshold of 0 means forward-fill is applied whenever any vehicle was
 recorded on the edge in that interval; higher thresholds require stronger
 congestion evidence before forward-fill is preferred over free-flow.
 
-The metric plotted:
+The metrics plotted:
 
-  Final R-gap — R-gap at the last training episode. Lower is better.
-  A higher value means drivers collectively lose more time by not switching
+  First-episode R-gap — R-gap at the first training episode.
+  Last-episode R-gap  — R-gap at the last training episode. Lower is better;
+  a higher value means drivers collectively lose more time by not switching
   to their time-dependent shortest path.
 
-Decision rule: Choose the threshold_density that yields the lowest final R-gap.
-If the curve is flat, the hyperparameter has negligible impact and any value
-(e.g. the default of 0) can be kept.
+Decision rule: A high initial R-gap that the algorithm subsequently reduces
+is a desirable and illustrative property of the experiment. Choose the
+threshold_density that yields a high R-gap in the first episode and a low
+R-gap in the last episode. If the curve is flat, the hyperparameter has
+negligible impact and any value (e.g. the default of 0) can be kept.
 
 Final decision: 20
 (R-gap varies substantially for threshold values below approximately 10 vehicles/km/lane.
@@ -36,12 +39,9 @@ Beyond 20 vehicles/km/lane, further increases had a negligible effect on the R-g
 
 Run with: python src/tools/sensitivity/plot_threshold_density.py <config.yaml>
 
-Parameter dependencies: Independent hyperparameter
-(The threshold_density parameter is considered an independent hyperparameter.
-Although its impact on the computed R-gap depends on factors such as the temporal
-aggregation interval, network congestion level, and the proportion of missing
-observations, these factors only influence the frequency with which the
-imputation rule is applied. They do not alter the decision rule itself)
+Parameter dependencies: Independent hyperparameter. It affects the imputation
+rule in the average link travel time table used during TDSP. A priori, we do
+not know whether it has an effect on the first-episode or last-episode R-gap.
 """
 
 import os
@@ -62,14 +62,14 @@ from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from utils.generate_agents import demand_from_count
 from utils.run_training_BM import run_full_training_BM
 
-THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 50]
+THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 30, 40, 50]
 # THRESHOLD_DENSITIES = [0, 2]
 
 
 def main():
 
     # 0. Set-up
-    DEMAND = 1300
+    DEMAND = 2000
 
     # 1. Calibrate demand (nº agents)
     calibrated_agents, unique_ods = demand_from_count(DEMAND)
@@ -80,6 +80,7 @@ def main():
     )
 
     # 3. Container
+    first_rgaps = []
     last_rgaps = []
 
     # 4. Check r-gap
@@ -93,15 +94,16 @@ def main():
             threshold_density=threshold,
         )
 
-        # 6. Record final R-gap (last episode)
-        last_rgap = pd.read_parquet(BM_PATHS.rgap).iloc[-1]["rgap"]
-        last_rgaps.append(last_rgap)
+        # 6. Record first and final R-gap (first/last episode)
+        rgap_series = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+        first_rgaps.append(rgap_series.iloc[0])
+        last_rgaps.append(rgap_series.iloc[-1])
 
-    _make_plot(THRESHOLD_DENSITIES, last_rgaps, DEMAND)
+    _make_plot(THRESHOLD_DENSITIES, first_rgaps, last_rgaps, DEMAND)
     os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
 
 
-def _make_plot(thresholds, rgaps, demand):
+def _make_plot(thresholds, first_rgaps, last_rgaps, demand):
 
     # 1. Manage path
     network_name = Path(config.network).stem
@@ -111,18 +113,20 @@ def _make_plot(thresholds, rgaps, demand):
     # 2. Create figure
     plt.figure()
 
-    # 3. Draw a line
+    # 3. Draw lines
     # Convert to categorical
     x = range(len(thresholds))
-    plt.plot(x, rgaps, marker="o", linewidth=2)
+    plt.plot(x, first_rgaps, marker="o", linewidth=2, label="First episode R-gap")
+    plt.plot(x, last_rgaps, marker="o", linewidth=2, label="Final R-gap")
 
     # 4. Improve visualization
     plt.xlabel("threshold_density (vehicles/km/lane)")
-    plt.ylabel("Final R-gap")
-    plt.title("Effect of threshold_density on final R-gap")
+    plt.ylabel("R-gap")
+    plt.title("Effect of threshold_density on R-gap")
     plt.xticks(x, thresholds)
     plt.gca().yaxis.set_major_formatter(PercentFormatter())
     plt.grid(axis="y", alpha=0.3)
+    plt.legend()
 
     # 5. Automatically adjust spacing
     plt.tight_layout()

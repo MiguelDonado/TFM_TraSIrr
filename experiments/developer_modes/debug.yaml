@@ -23,10 +23,10 @@ network_path:
 
 duarouter:
   routing_algorithm: "CH"
-  random_factor: 5
+  random_factor: 50
   max_attempts: 25
   n_threads: 7
-  n_routes_per_OD: 3
+  n_routes_per_OD: 8
 
 stopping_rule:
   max_episodes: 15
@@ -34,7 +34,7 @@ stopping_rule:
   k_no_change: 3
 
 demand:
-  n_agents: 100
+  n_agents: 20
 
 interval_time:
   fixed_time_min: 0.5  # minutes
@@ -44,8 +44,8 @@ randomtrips:
   fringe_factor: 5
 
 due_convergence: 
-  threshold_density: 20
-  duaIterate_max_iterations: 2
+  threshold_density: 40
+  duaIterate_max_iterations: 1
   duaIterate_step_length: 0.1
 
 mode_and_flags:
