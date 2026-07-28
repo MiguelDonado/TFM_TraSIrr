@@ -266,6 +266,7 @@ def run_duarouter(routes_file, weights_file):
         "true",
         "-o",
         routes_file,
+        "--no-step-log"
     ]
 
     subprocess.run(cmd, check=True)

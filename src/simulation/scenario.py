@@ -271,6 +271,7 @@ class Scenario:
             str(random_factor),
             "--seed",
             str(seed),
+            "--no-step-log"
         ]
 
         subprocess.run(cmd, check=True)

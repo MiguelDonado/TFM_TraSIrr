@@ -82,6 +82,7 @@ def _compute_shortest_path_routes(network, agents):
         "-o", str(ROUTES_CONGESTION_SIM),
         "--routing-threads", str(config.n_threads),
         "--routing-algorithm", config.routing_algorithm,
+        "--no-step-log"
     ]
     subprocess.run(cmd, check=True)
 

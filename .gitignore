@@ -12,4 +12,5 @@ renv/library/
 /mlruns
 mlflow.db
 /data
+/experiments/logs
 *claude*

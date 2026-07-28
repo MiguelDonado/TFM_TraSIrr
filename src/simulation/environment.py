@@ -96,6 +96,11 @@ class Environment:
             self.scenario.conf,
             "--route-files",  # Add the route-files through CLI (for simplicity, avoids having modify config file again)
             ROUTES,
+            # Replace the per-step log with a single end-of-run summary
+            # (duration, vehicles, teleports, collisions) so it's easy to sanity
+            # check the episode regardless of how the script is run.
+            "--no-step-log",
+            "--duration-log.statistics",
         ]
         subprocess.run(cmd)
 
