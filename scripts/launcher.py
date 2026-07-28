@@ -20,6 +20,27 @@ Each combination is written to a temp file in EXPERIMENTS_TMP, passed to
 main.py, then deleted. Pass a research question (e.g. RQ1) to also invoke
 run_analysis.py after each simulation run.
 
+Dev vs production configs
+--------------------------
+Each research question has two design YAMLs under experiments/rqN/:
+
+  design.yaml      — points at experiments/base.yaml (production scale:
+                      simulation_time=3600, warm_up_time=300, n_agents=2000).
+                      Used for the real, overnight runs (see run_batch.py).
+
+  design_dev.yaml  — points at experiments/base_dev.yaml, a copy of
+                      base.yaml with simulation_time, warm_up_time and
+                      n_agents scaled down ~10x. Same grid as design.yaml.
+                      Used to get a fast (minutes, not hours) run during the
+                      day, just to build/debug the RQ's analysis script
+                      (plot types, colors, axis ranges) against real-shaped
+                      data before waiting on the overnight production run.
+
+  Note: dev-scale R-gap magnitude and convergence timing will differ
+  somewhat from production (fewer agents, shorter horizon), so treat
+  anything tuned against design_dev.yaml output (axis ranges, thresholds)
+  as provisional until re-checked against a production run.
+
 Multi-seed evaluation
 ---------------------
 For each research question, every hyperparameter combination is evaluated across

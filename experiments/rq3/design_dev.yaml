@@ -1,0 +1,23 @@
+base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
+
+grid:
+  learning:
+    learning_rate:
+      - 0.30
+      # - 0.99
+      # - 0.90
+      # - 0.80
+      # - 0.70
+      # - 0.60
+      # - 0.50
+      # - 0.40
+      # - 0.30
+      # - 0.20
+  randomness:
+    seed:
+      - 42
+      # - 42
+      # - 5
+      # - 23
+      # - 1999
+      # - 8
