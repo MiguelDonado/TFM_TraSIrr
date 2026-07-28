@@ -7,11 +7,25 @@ A low α admits short-trip OD pairs. A high α over-constrains the OD pool,
 reducing the number of valid pairs until none can be found at the extreme.
 The plot makes the trade-off visible so α can be fixed before running experiments.
 
+Decision rule: A high initial R-gap that the algorithm subsequently reduces is a 
+desirable and illustrative property of the experiment. 
+In principle, α could be tuned to achieve this. We deliberately don't use it for that,
+though: α is set instead to guarantee a minimum trip length and travel time,
+so trips stay realistic given the network's size and its lack of traffic
+lights, regardless of the resulting R-gap.
+
 Final decision: α = 0.8
 
 Run with: python src/tools/sensitivity/plot_min_distance.py <config.yaml>
 
-Parameter dependencies: Independent hyperparameter
+Parameter dependencies: min_distance_factor's effect on the R-gap — especially
+the R-gap of early episodes — depends on random_factor. If routes are heavily
+constrained to be long, the shortest path and alternative routes don't differ
+much. If routes are less constrained and random_factor is high, an OD pair
+can end up with a short shortest path but much longer alternative routes,
+since random_factor inflates edge costs during alternative-route search.
+Early episodes then start out sampling these much worse alternative routes,
+inflating the R-gap.
 """
 
 import sys
@@ -34,7 +48,7 @@ from utils.generate_free_flow_tt import compute_od_free_flow_tt
 def main():
 
     # 0. Initial setup
-    MIN_DISTANCE_FACTORS = np.arange(0.7, 0.9, 0.02)
+    MIN_DISTANCE_FACTORS = np.arange(0.2, 0.9, 0.1)
     MIN_DISTANCE_FACTORS = [round(float(num), 2) for num in MIN_DISTANCE_FACTORS]
     DEMAND = 1000
     demand_warmup = int(DEMAND * config.warm_up_time / config.end_time)

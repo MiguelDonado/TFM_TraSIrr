@@ -282,7 +282,11 @@ def build_od_space(n_agents_post_warmup, min_distance_factor=None, seed=None):
 
 def generate_agents_from_od_space(od_space_counter, n_agents, rng):
     od_pairs, unique_ods = sample_od_space(od_space_counter, n_agents, rng)
-    departure_times = generate_departure_times(n_agents, rng)
+    # No warm-up/post-warm-up split here: this path feeds CongestionSimulator
+    # only, which never reads post_warm_up, so departure times are sampled
+    # uniformly across the full simulation window.
+    departure_times = rng.integers(0, config.end_time, size=n_agents)
+    departure_times = sorted(int(t) for t in departure_times)
     agents = [
         {
             "id": f"agent_{i + 1}",

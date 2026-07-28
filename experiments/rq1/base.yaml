@@ -22,7 +22,7 @@ network_path:
 
 duarouter:
   routing_algorithm: "CH"
-  random_factor: 5
+  random_factor: 50
   max_attempts: 25
   n_threads: 7
   n_routes_per_OD: 3
@@ -43,8 +43,8 @@ randomtrips:
   fringe_factor: 5
 
 due_convergence: 
-  threshold_density: 20
-  duaIterate_max_iterations: 10 # We do not care about duaIterate for RQ2 
+  threshold_density: 40
+  duaIterate_max_iterations: 1 # We do not care about duaIterate for RQ2 
   duaIterate_step_length: 0.1
 
 mode_and_flags:
