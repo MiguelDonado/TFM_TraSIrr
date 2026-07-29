@@ -185,26 +185,51 @@ refined_rgap_df <- data$bm_refined_rgap |>
   mutate(
     seed_fct = factor(seed, levels = representative_seeds, labels = labels_seeds)
   )
+
+cocient <- min(data$bm_refined_rgap$time_interval)
+
+refined_rgap_df_agg <- refined_rgap_df |> 
+  mutate(
+    interval_group = time_interval %/% cocient
+  ) |> 
+  mutate(
+    interval_group = factor(
+      interval_group,
+      levels = 1:max(interval_group),
+      labels = paste0(
+        seq(10, by = 10, length.out = max(interval_group)),
+        "—",
+        seq(19, by = 10, length.out = max(interval_group))
+      )
+      )
+  ) |> 
+  group_by(interval_group, seed_fct, congestion_regime, episode) |> 
+  summarise(median_refined_rgap=median(refined_rgap)) |> 
+  ungroup()
+
+refined_rgap_df_agg
 ```
 
 ```{r}
 #| label: plot2
 
 ggplot(
-  data = refined_rgap_df,
-  mapping = aes(x = episode, y = time_interval, fill = refined_rgap)
+  data = refined_rgap_df_agg,
+  mapping = aes(x = episode, y = interval_group, fill = median_refined_rgap)
 ) +
   geom_tile() +
+  scale_y_discrete(limits = rev) +
   scale_fill_viridis_c(
-    limits = c(0, 50),
-    oob = scales::squish
+    limits = c(0, 20),
+    oob = scales::squish,
+    option = "C"
   ) +
   facet_grid(seed_fct ~ congestion_regime, scales = "free_x", space = "free_x") +
   labs(
     title = "Refined R-gap by departure interval across episodes",
-    subtitle = "Per-seed trajectories for three random seeds (BM)",
+    subtitle = "Departure intervals were aggregated into 10-interval groups \n(median refined R-gap per group).",
     x = "Episode",
-    y = "Departure interval",
+    y = "Departure interval (group)",
     fill = "Refined\nR-gap (%)"
   )
 
