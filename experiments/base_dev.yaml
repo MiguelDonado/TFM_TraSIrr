@@ -44,7 +44,7 @@ randomtrips:
 
 due_convergence:
   threshold_density: 40
-  duaIterate_max_iterations: 1 # We do not care about duaIterate for RQ2
+  duaIterate_max_iterations: 10 
   duaIterate_step_length: 0.1
 
 mode_and_flags:

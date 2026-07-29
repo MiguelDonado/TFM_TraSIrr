@@ -11,11 +11,12 @@ console and experiments/logs/<timestamp>.log. If a run fails, it's recorded
 and the batch moves on to the next research question rather than aborting
 the whole night.
 
-Run with: python scripts/run_batch.py RQ1 RQ2 RQ3            simulations only
-          python scripts/run_batch.py RQ1 RQ2 RQ3 --analyze  simulations + analysis
+Run with: python scripts/run_batch.py RQ1 RQ2 RQ3 [--shutdown]      simulations only
+          python scripts/run_batch.py RQ1 RQ2 RQ3 --analyze [--shutdown]  simulations + analysis
 """
 
 import logging
+import platform
 import re
 import subprocess
 import sys
@@ -63,17 +64,17 @@ def main():
             results.append((research_question, "SKIPPED"))
             continue
 
-        # 6. Run launcher.py for this research question. Passing the research
-        # question to launcher.py also makes it run the analysis afterwards
-        # (see launcher.py's own usage docstring), so only pass it when
-        # --analyze was given.
+        # 6. Run launcher.py for this research question. launcher.py always
+        # infers the research question from design_path's parent directory
+        # and tags MLflow runs with it, so --analyze only controls whether
+        # it also runs the analysis afterwards (see launcher.py's docstring).
         cmd = [
             sys.executable,
             str(BASE_DIR / "scripts" / "launcher.py"),
             str(design_path),
         ]
         if "--analyze" in sys.argv:
-            cmd.append(research_question)
+            cmd.append("--analyze")
 
         # 7. Start another program, and give me an object that lets me interact with it
         # while it's running
@@ -100,6 +101,12 @@ def main():
     log.info("=== Batch summary ===")
     for research_question, status in results:
         log.info("%s: %s", research_question, status)
+
+
+    # 11. Shutdown computer
+    if "--shutdown" in sys.argv:
+        log.info("Batch complete. Shutting down computer in 1 minute...")
+        subprocess.run(["shutdown", "-h", "+1"])
 
 
 if __name__ == "__main__":

@@ -3,22 +3,23 @@ Grid-search launcher. Runs src/main.py for every parameter combination defined
 in a design YAML, then optionally renders the Quarto analysis for a given RQ.
 
 Usage:
-  python scripts/launcher.py <design.yaml>                       simulations only
-  python scripts/launcher.py <design.yaml> <research_question>   simulations + full analysis
-  python scripts/launcher.py <design.yaml> <research_question> --prepare-only
+  python scripts/launcher.py <design.yaml>                     simulations only
+  python scripts/launcher.py <design.yaml> --analyze            simulations + full analysis
+  python scripts/launcher.py <design.yaml> --analyze --prepare-only
                                                                  simulations + data prep only
 
-When a research question is provided, it is injected into each temp config so
-simulation runs are tagged with tags.research_question in MLflow. This enables
-run_analysis.py to filter and aggregate artifacts across all combinations.
+The research question is always inferred from the design YAML's parent
+directory (experiments/rq1/design.yaml -> RQ1) and injected into each temp
+config, so every simulation run is tagged with tags.research_question in
+MLflow regardless of --analyze. Pass --analyze to also invoke run_analysis.py after each
+simulation run.
 
 The design YAML must have two keys:
   base_config: path to the base config.yaml
   grid:        {section: {param: [values]}}
 
 Each combination is written to a temp file in EXPERIMENTS_TMP, passed to
-main.py, then deleted. Pass a research question (e.g. RQ1) to also invoke
-run_analysis.py after each simulation run.
+main.py, then deleted.
 
 Dev vs production configs
 --------------------------
@@ -48,7 +49,8 @@ multiple random seeds by including ``seed`` as an axis in the grid. This is
 necessary because the simulation has several independent sources of randomness
 — demand generation (randomTrips), RL exploration and action selection, and
 SUMO's internal stochasticity — so a single seed can produce results that are
-unusually good or bad purely by chance.
+unusually good or bad purely by chance. 
+In particular, the experiments will be evaluated using 5 different seeds.
 
 Results are summarised as mean ± standard deviation over seeds.
 For example, when studying the effect of the memory parameter (RQ2) (fake data):
@@ -140,16 +142,20 @@ def _write_temp_config(
 def main():
     # 1. Config file path of the experiment that will be run
     path = sys.argv[1]
-    # 2. Research question that will be analyzed
-    research_question = (
-        sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else None
-    )
+    analyze = "--analyze" in sys.argv
     prepare_only = "--prepare-only" in sys.argv
 
-    if research_question and not re.match(r"^RQ\d+$", research_question):
+    # 2. Research question is always inferred from the design YAML's parent
+    # directory (experiments/rq1/design.yaml -> RQ1), so every run is tagged
+    # regardless of whether --analyze was passed
+    design_dir = Path(path).resolve().parent.name
+    match = re.match(r"^rq(\d+)$", design_dir, re.IGNORECASE)
+    if not match:
         sys.exit(
-            f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ..."
+            f"Could not infer research question from '{design_dir}'. "
+            "design.yaml must live under experiments/rqN/."
         )
+    research_question = f"RQ{match.group(1)}"
 
     # 3. Extract grid combinations
     base_config_path, param_specs = _load_design(path)
@@ -165,7 +171,7 @@ def main():
             f"{section}.{param}={value}"
             for (section, param, _), value in zip(param_specs, combination)
         )
-        print(f"\n--- [{i}/{total}] {combo_str} ---\n")
+        print(f"\n--- [{i}/{total}] {combo_str} ---\n", flush=True)
 
         # 6. Write a temporary config YAML file containing the combination of
         # hyperparameters to try
@@ -180,9 +186,9 @@ def main():
 
         os.unlink(tmp_path)
 
-    # 8. (Optionally) Run analysis once after all combinations are complete,
-    # so it can aggregate results across the full grid (e.g. across seeds)
-    if research_question:
+    # 8. (Optionally) Run analysis once all combinations are complete, so it
+    # can aggregate results across the full grid (e.g. across seeds)
+    if analyze:
         cmd = [
             sys.executable,
             str(BASE_DIR / "scripts" / "run_analysis.py"),
