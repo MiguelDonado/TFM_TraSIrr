@@ -19,6 +19,11 @@ grid:
       - 23
       - 1999
       - 8
+  demand:
+    n_agents:
+      - 1300
+      - 1550
+      - 2000
   due_convergence: 
     duaIterate_max_iterations: 
       - 1

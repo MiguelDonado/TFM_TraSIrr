@@ -213,6 +213,8 @@ refined_rgap_df_agg
 ```{r}
 #| label: plot2
 
+upper_limit_color_scale <- quantile(refined_rgap_df_agg$median_refined_rgap, probs = c(0.95))
+
 ggplot(
   data = refined_rgap_df_agg,
   mapping = aes(x = episode, y = interval_group, fill = median_refined_rgap)
@@ -220,7 +222,7 @@ ggplot(
   geom_tile() +
   scale_y_discrete(limits = rev) +
   scale_fill_viridis_c(
-    limits = c(0, 20),
+    limits = c(0, upper_limit_color_scale),
     oob = scales::squish,
     option = "C"
   ) +
@@ -265,13 +267,13 @@ ggplot(
   mapping = aes(x = algorithm, y = p90_rgap, fill = algorithm)
 ) +
   geom_boxplot(outlier.shape = NA, width = 0.5, linewidth = 0.6, alpha = 0.6) +
-  geom_jitter(width = 0.08, height = 0, size = 2.5, shape = 21, color = "black") +
+  geom_jitter(width = 0.1, height = 0, size = 2.5, shape = 21, color = "black") +
   scale_fill_manual(values = c(BM = "#2a78d6", duaIterate = "#eb6834")) +
   guides(fill = "none") +
   facet_wrap(~congestion_regime) +
   labs(
-    title = "Worst-case OD-specific R-gap",
-    subtitle = "90th percentile across each seed's 10 active OD pairs, final episode",
+    title = "90th-percentile OD-specific R-gap",
+    subtitle = "90th percentile of the OD-specific R-gap across the 10 active OD pairs within each seed (final episode)",
     x = "Algorithm",
     y = "90th percentile R-gap (%)"
   )
