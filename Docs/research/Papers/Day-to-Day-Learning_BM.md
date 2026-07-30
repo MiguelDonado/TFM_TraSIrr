@@ -55,3 +55,8 @@ It uses 3 test networks.
 - The flow standard deviation in the last 100 days, is a statistic used to measure flow deviations.
 - Figure 15
   
+### Temporal link capacity degradation scenario
+- They fix the memory level at 0.8, and learning rate at 0.3.
+- In the third network, they reduce the capacity of one of the links by 50% on the 1001th day because of road maintainance and recover on the 2001th day.
+- It converges to UE before capacity degradation. When degradation occurs, those OD that are more affected by the edge would change more.
+- After link capacity is restored, the initial network equilibrium is restored.

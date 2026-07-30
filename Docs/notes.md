@@ -60,6 +60,13 @@ If when using a network that is very big, I have some scalability issue when wri
 
 ## Pending
 
+- Another of my research questions has to do with a temporal link degradation. And study if the algorithm is able to recover the equilibirum it reached before the degradation of the link, when the link has been restore the normal state. I was thinking that the best way to implement it, is make one of the links much slower by reducing the max limit speed. To do so I would create a copy of the network and modify one of the links speed. Additional to that I think I would have to do the next things:
+  1. Increase the max episodes
+  2. Disable the stopping rule, otherwise it would fire early since it will converge before degradation. To disable the stopping rule, I can do so by increasing k_no_change to a number larger than the max episodes.
+  3. As it was done in the paper, I wanna let the same amount of days before degradation, during degradation, and after degradation.
+  4. They do this experiment with the hyperparameter memory_level = 0.8 and learning_rate = =0.3. I guess memory_level has to be lower than one, so that after restoration of the link, the driver can forget with the time the bad travel times it got on the link when it was degraded, and so initial equilibirum could emerge again.
+
+
 **PARALLELIZE**
 3. Don't parallelize combinations naively — I checked config/paths.py: every output path (data/DUE/BM/R-gap/rgap.parquet, etc.) is fixed, not per-run. Two main.py processes running concurrently would clobber each other's scratch files mid-simulation. Real parallelism would need those paths made run-scoped (e.g. per-PID temp dirs) — a nontrivial refactor, so only worth it if the nightly batch keeps growing and single-machine wall-clock becomes the actual bottleneck.
 - That's a reasonable call — the risk isn't really about RAM headroom, it's that every output path in config/paths.py is fixed and shared, so two simulations running at once would overwrite each other's intermediate files mid-run in ways that could be hard to notice (wrong data silently mixed together) rather than a clean crash. Not worth that risk for a thesis where correctness of the numbers matters more than shaving off wall-clock time.

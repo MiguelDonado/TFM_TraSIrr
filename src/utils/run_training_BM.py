@@ -6,6 +6,8 @@ optionally checks DUE convergence afterwards. run_single_episode_BM() runs
 one episode with fixed actions, useful for debugging outside training.
 """
 
+import shutil
+
 import numpy as np
 import pandas as pd
 
@@ -40,9 +42,19 @@ def _run_training_loop(
         "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
     }
 
+    degradation_enabled = config.degradation_start_episode > 0
+
     for episode in range(1, config.max_episodes + 1):
 
         print(f"\n--- Episode {episode} ---")
+
+        if degradation_enabled:
+            if episode == config.degradation_start_episode:
+                print(f"--- Degrading network at episode {episode} ---")
+                shutil.copy(config.network_degraded, config.network)
+            elif episode == config.degradation_end_episode:
+                print(f"--- Restoring network at episode {episode} ---")
+                shutil.copy(config.network_normal, config.network)
 
         # -----------------------------
         # 1. AGENTS CHOOSE ACTIONS

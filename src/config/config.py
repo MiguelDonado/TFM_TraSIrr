@@ -149,6 +149,10 @@ class Config:
     config_name: str
     research_question: str = ""
     episodes_gui: set[int] = field(default_factory=lambda: {})
+    network_normal: str = ""
+    network_degraded: str = ""
+    degradation_start_episode: int = 0
+    degradation_end_episode: int = 0
 
     #####################
     # Derived values

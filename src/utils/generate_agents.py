@@ -36,6 +36,7 @@ build_od_space + generate_agents_from_od_space — used by the congestion metric
 """
 
 import os
+import shutil
 import subprocess
 import tempfile
 from collections import Counter
@@ -73,6 +74,9 @@ def generate_agents(
     rng = np.random.default_rng(config.seed)
     if min_distance_factor is None:
         min_distance_factor = config.min_distance_factor
+
+    if config.degradation_start_episode > 0:
+        shutil.copy(config.network_normal, config.network)
 
     n_agents = n_agents_warmup + n_agents_post_warmup
 
