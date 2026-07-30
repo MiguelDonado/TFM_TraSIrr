@@ -13,6 +13,8 @@ Three functions map the per-agent BMAgent methods onto all agents at once:
                        from its observed reward
 """
 
+import numpy as np
+
 from config.config import config
 
 from .agent import BMAgent
@@ -21,6 +23,10 @@ from .agent import BMAgent
 def initialize_agents(scen, seed=None):
 
     seed = seed if seed is not None else config.seed
+
+    # To ensure reproducibility when we are executing simulation with heteregeneous memory,
+    # in particular to ensure reproducibility of the draws from the beta distribution
+    rng = np.random.default_rng(seed)
 
     agents = {}
     for i, agent_info in enumerate(scen.agents):
@@ -37,6 +43,13 @@ def initialize_agents(scen, seed=None):
         departure_time = agent_info["departure_time"]
         post_warm_up = agent_info["post_warm_up"]
 
+        if config.heterogeneous_memory:
+            a = config.memory_mean * config.memory_concentration
+            b = config.memory_concentration*(1-config.memory_mean)
+            gamma = rng.beta(a, b)
+        else:
+            gamma = config.memory_level
+
         # Distinct seed per agent (factory.py passes seed+i) so each agent's
         # select_action draws are independent, not correlated across agents.
         agents[agent_id] = BMAgent(
@@ -44,7 +57,7 @@ def initialize_agents(scen, seed=None):
             routes=routes,
             seed=seed + i,
             beta=config.learning_rate,
-            gamma=config.memory_level,
+            gamma=gamma,
             epsilon=config.epsilon,
             departure_time=departure_time,
             post_warm_up=post_warm_up

@@ -1,0 +1,44 @@
+configuration_name:
+  config_name: production
+demand:
+  n_agents: 1550
+duarouter:
+  max_attempts: 25
+  n_routes_per_OD: 8
+  n_threads: 7
+  random_factor: 50
+  routing_algorithm: CH
+due_convergence:
+  duaIterate_max_iterations: 1
+  duaIterate_step_length: 0.1
+  threshold_density: 40
+interval_time:
+  fixed_time_min: 0.5
+learning:
+  heterogeneous_memory: true
+  learning_rate: 0.3
+  memory_concentration: 20
+  memory_level: 1
+  memory_mean: 0.7
+mode_and_flags:
+  last_episode_gui_BM: false
+  last_episode_gui_duaIterate: false
+  research_question: RQ5
+network_path:
+  network: /home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml
+numerical_constants:
+  epsilon: 1.0e-08
+randomness:
+  seed: 42
+randomtrips:
+  fringe_factor: 5
+  max_size_od_space: 10
+simulation:
+  maxtries: 1000
+  min_distance_factor: 0.8
+  simulation_time: 3600
+  warm_up_time: 300
+stopping_rule:
+  k_no_change: 3
+  max_episodes: 150
+  tolerance_stopping_rule: 0.01

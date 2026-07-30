@@ -193,11 +193,13 @@ def _prepare_bm_data(episode, agents):
     for agent in agents.values():
         if not agent.post_warm_up:
             continue
+        memory_level = agent.gamma
         for route_id, perceived_travel_time in enumerate(agent.perceived_travel_times):
             rows.append(
                 {
                     "episode": episode,
                     "agent_id": agent.id,
+                    "memory_level": memory_level,
                     "ET": agent.expected_travel_time,
                     "stimulus": agent.stimulus,
                     "route_id": route_id,

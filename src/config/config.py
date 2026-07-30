@@ -153,6 +153,9 @@ class Config:
     network_degraded: str = ""
     degradation_start_episode: int = 0
     degradation_end_episode: int = 0
+    heterogeneous_memory: bool = False
+    memory_mean: float = 0
+    memory_concentration: float = 0
 
     #####################
     # Derived values
