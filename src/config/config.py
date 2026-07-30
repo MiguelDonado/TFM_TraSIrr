@@ -17,6 +17,13 @@ Config hyperparameter groups
   Stopping rule       — max_episodes, tolerance, k_no_change
   DUE convergence     — threshold_density, duaIterate settings
   Flags               — episodes_gui, gui flags
+  Degradation         — network_normal/network_degraded, degradation_start/
+                        end_episode (RQ4: temporal link degradation, off
+                        by default — degradation_start_episode == 0)
+  Heterogeneity       — heterogeneous_memory, memory_mean, memory_concentration
+                        (RQ5: per-agent γ ~ Beta(mean·conc, (1-mean)·conc)
+                        instead of one shared config.memory_level, off by
+                        default)
 
 Derived fields (computed in __post_init__)
 ------------------------------------------

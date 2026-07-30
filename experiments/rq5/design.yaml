@@ -1,4 +1,21 @@
-# Heteregeneous agents
+# RQ5 — Heterogeneous memory levels across agents
+#
+# What it answers:
+# Does letting agents differ in how much they weight past experience (γ,
+# memory_level) — instead of the whole population sharing one value —
+# change route-choice equilibrium/convergence compared to the homogeneous
+# baseline (RQ2)?
+#
+# How:
+# - heterogeneous_memory=true makes each agent draw its own γ independently
+#   from Beta(a, b), reparametrized via mean/concentration:
+#     a = memory_mean * memory_concentration
+#     b = (1 - memory_mean) * memory_concentration
+#   memory_mean=0.7, memory_concentration=20 → Beta(14, 6): mean 0.7, ~95%
+#   of agents fall within [0.5, 0.9].
+# - Each agent's sampled γ is persisted per-row in BM_results
+#   (memory_level column), so it can be correlated against that agent's
+#   own behavior/convergence during analysis.
 
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 

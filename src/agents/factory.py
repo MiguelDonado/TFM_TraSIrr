@@ -11,6 +11,17 @@ Three functions map the per-agent BMAgent methods onto all agents at once:
   select_actions     — called before each episode; returns {agent_id: route_idx}
   update_agents      — called after each episode; updates each agent's policy
                        from its observed reward
+
+RQ5 heterogeneous memory
+-------------------------
+When config.heterogeneous_memory is true, each agent's γ (memory_level) is
+drawn independently from Beta(a, b) instead of all agents sharing
+config.memory_level, using the mean/concentration reparametrization:
+  a = memory_mean * memory_concentration
+  b = (1 - memory_mean) * memory_concentration
+Sampling uses a Generator seeded from initialize_agents' own `seed` param
+(not the global config.seed directly), so it stays reproducible under the
+same seed the per-agent action-selection RNGs are derived from.
 """
 
 import numpy as np

@@ -1,4 +1,25 @@
-# Temporal link degradation scenario
+# RQ4 — Temporal link degradation and equilibrium recovery
+#
+# What it answers:
+# If a link is temporarily degraded (lower speed limit) and then restored,
+# does day-to-day learning recover the same route-choice equilibrium it had
+# reached before the disruption?
+#
+# How:
+# - Training runs in three equal-length phases — normal (1-150), degraded
+#   (151-300), restored (301-450) — by swapping the live network file
+#   (network_normal / network_degraded) at degradation_start_episode /
+#   degradation_end_episode. Only one edge's speed differs between the two
+#   network files; topology is unchanged, so the k routes computed once at
+#   the start stay valid across all three phases.
+# - k_no_change is set far above max_episodes to disable the stopping rule
+#   — otherwise it would fire during the normal phase, before the
+#   disruption ever happens.
+# - memory_level=0.8 (with learning_rate=0.3, matching the reference paper's
+#   parameters for this experiment) gives agents a bounded memory horizon,
+#   so the bad travel times experienced while the link is degraded decay
+#   away after restoration instead of permanently biasing route choice —
+#   which is what should let the original equilibrium re-emerge.
 
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 

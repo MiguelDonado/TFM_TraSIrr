@@ -4,6 +4,18 @@ Entry points for running Bush-Mosteller agent training and single episodes.
 run_full_training_BM() drives the full multi-episode training loop and
 optionally checks DUE convergence afterwards. run_single_episode_BM() runs
 one episode with fixed actions, useful for debugging outside training.
+
+RQ4 network degradation
+-------------------------
+When config.degradation_start_episode > 0, _run_training_loop swaps the
+live network file (config.network) at two points: config.network_degraded
+is copied in at episode == degradation_start_episode, and
+config.network_normal is copied back at episode == degradation_end_episode.
+(generate_agents() has already reset config.network to normal before the
+loop starts — see utils/generate_agents.py.) Routes are computed once,
+before training, off the network's topology, which the degradation does
+not change (only one edge's speed), so route sets stay valid across all
+three phases.
 """
 
 import shutil

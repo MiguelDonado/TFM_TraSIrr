@@ -33,6 +33,15 @@ build_od_space + generate_agents_from_od_space — used by the congestion metric
 
     Unlike generate_agents, these agent dicts do NOT carry post_warm_up —
     this path feeds CongestionSimulator only, which never reads that key.
+
+RQ4 network reset
+------------------
+When config.degradation_start_episode > 0, generate_agents() resets the
+live network file (config.network) to config.network_normal before doing
+anything else. This is the earliest point config.network is read anywhere
+in the pipeline (demand generation runs before Scenario/route computation),
+so it guarantees a clean "normal" starting state regardless of how the
+previous run on this config ended (including a crash mid-degradation).
 """
 
 import os

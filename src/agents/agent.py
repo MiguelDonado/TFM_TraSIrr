@@ -13,7 +13,11 @@ Notation
 β  (beta)   — learning rate: controls how fast the agent updates
                its route probabilities after each experience
 γ  (gamma)  — memory level: exponential decay applied to past travel
-               times (recent experiences matter more than older ones)
+               times (recent experiences matter more than older ones).
+               Normally the same for every agent (config.memory_level);
+               under RQ5 (config.heterogeneous_memory), agents.factory
+               samples a different γ per agent from a Beta distribution
+               before construction
 ET          — Expected Travel Time: what the agent expects the trip to
                take, computed as a γ-weighted average over all past
                travel times across all routes

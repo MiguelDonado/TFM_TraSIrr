@@ -1,4 +1,12 @@
-# Temporal link degradation scenario
+# RQ4 (dev-scale) — Temporal link degradation and equilibrium recovery
+#
+# Fast smoke-test variant of experiments/rq4/design.yaml: single seed, single
+# n_agents, base_dev.yaml's shorter simulation_time/warm_up_time, and
+# max_episodes scaled down to 300 (100 normal / 100 degraded / 100 restored,
+# degradation_start_episode=101, degradation_end_episode=201). Used to
+# confirm the network swap actually fires and shifts travel time on the
+# degraded edge before committing to the full overnight run. See
+# design.yaml for the research question and mechanism.
 
 base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
 
