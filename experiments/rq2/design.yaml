@@ -1,3 +1,11 @@
+# What it answers the memory level:
+# How much should I use my past experience when interpreting the current situation
+
+# More detail:
+# - It influences how past experiences are retained when computing the stimulus.
+# - With lower memory, recent travel times dominate, and the agent forgets historical information
+
+
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:

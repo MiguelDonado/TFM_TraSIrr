@@ -12,8 +12,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-**RQ2:** Analyze whether reducing the memory level of agents
-  prevents the BM model from converging towards a DUE state
+**RQ2:** Analyze whether the learning rate parameter affects
+  the convergence speed of the BM model without significantly altering
+  the final ability of the system to approach a DUE state.
 
 Convergence is measured via three R-gap variants computed by the `DUE_convergence`
 package: aggregated R-gap (overall convergence level), refined R-gap by departure
@@ -25,9 +26,9 @@ On this research question only the aggregated R-gap will be considered.
 
 **The plots to answer this question will be:**
 
-1. Aggregated R-gap for different memory levels across episodes (representative learning dynamics)
+1. Aggregated R-gap for different learning rates across episodes (representative learning dynamics)
 2. Sensitivity analysis
-3. Variability across seeds
+3. Convergence episode vs Learning rate
 
 For more details, check the research questions document.
 
@@ -57,7 +58,8 @@ theme_set(theme_thesis())
 
 # Builds the congestion_regime factor from whatever n_agents values are
 # present in the data, instead of hardcoding levels/labels per plot.
-congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
+# congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
+congestion_regime_tiers <- c("High")
 
 make_congestion_regime <- function(n_agents) {
   levels_sorted <- sort(unique(n_agents))
@@ -78,7 +80,7 @@ make_congestion_regime <- function(n_agents) {
 #| label: data
 
 # This function helps us to create reliable file paths
-data_dir <- here("r","RQ2","data")
+data_dir <- here("r","RQ3","data")
 
 # Dynamic data import
 # 1) list.files(): returns a vector with the file paths
@@ -100,7 +102,7 @@ representative_seeds <- sample(unique(data$bm_rgap$seed), size = 3)
 labels_seeds <- c("S1", "S2", "S3")
 
 color_lines <- c(
-  "1.0" = "#0072B2",  # blue
+  "0.9" = "#0072B2",  # blue
   "0.6" = "#E69F00",  # orange
   "0.2" = "#009E73"  # bluish green
 ) 
@@ -110,8 +112,8 @@ color_lines <- c(
 ```{r}
 #| label: data_plot1
 
-representative_memory_levels <- c("1.0","0.6","0.2")
-representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("γ = ", x))
+representative_learning_rate_levels <- c("0.9","0.6","0.2")
+representative_learning_rate_labels <- map_chr(representative_learning_rate_levels, \(x) paste0("l = ", x))
 
 # Not aggregating mean +/- SD across seeds here: seeds finish training at very
 # different episode counts (e.g. High regime: some stop by episode ~22, one
@@ -131,12 +133,12 @@ rgap_df <- data$bm_rgap |>
     seed_fct = factor(seed, levels = representative_seeds, labels = labels_seeds)
   ) |> 
   filter(
-    memory_level %in% representative_memory_levels
+    learning_rate %in% representative_learning_rate_levels
   ) |> 
   mutate(
-    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
+    learning_rate_fct = factor(learning_rate, levels = representative_learning_rate_levels, labels = representative_learning_rate_labels) 
   ) |> 
-  mutate(memory_level_fct = fct_rev(memory_level_fct))
+  mutate(learning_rate_fct = fct_rev(learning_rate_fct))
 ```
 
 ```{r}
@@ -150,16 +152,16 @@ ggplot(
 ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
-  facet_grid(memory_level_fct ~ congestion_regime) +
+  facet_grid(learning_rate_fct ~ congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
-    subtitle = "Representative learning trajectories for three memory levels and three random seeds (BM)",
+    subtitle = "Representative learning trajectories for three learning rates and three random seeds (BM)",
     x = "Episode",
     y = "R-gap (%)"
   ) +
 coord_cartesian(ylim=c(-5,upper_limit_y_axis))
 
-ggsave(here("r","RQ2","figures","plot1_rgap_evolution_mem_seed.png"), width = 12, height = 6)
+ggsave(here("r","RQ3","figures","plot1_rgap_evolution_l_seed.png"), width = 12, height = 6)
 ```
 
 ```{r}
@@ -167,16 +169,16 @@ ggsave(here("r","RQ2","figures","plot1_rgap_evolution_mem_seed.png"), width = 12
 
 sensitivity_df <- data$bm_rgap |> 
   mutate(
-    memory_level = as.numeric(memory_level),
+    learning_rate = as.numeric(learning_rate),
     congestion_regime = make_congestion_regime(n_agents),
   ) |> 
   select(-c(n_agents)) |> 
-  group_by(seed, congestion_regime, memory_level) |> 
+  group_by(seed, congestion_regime, learning_rate) |> 
   slice_max(episode, n = 1) |> 
   ungroup() 
 
 sensitivity_df_summary <- sensitivity_df |> 
-  group_by(memory_level, congestion_regime) |> 
+  group_by(learning_rate, congestion_regime) |> 
   summarise(
     median_rgap = median(rgap)
   ) |> 
@@ -190,7 +192,7 @@ sensitivity_df_summary <- sensitivity_df |>
 ggplot(
   data = sensitivity_df_summary,
   mapping = aes(
-    x = memory_level,
+    x = learning_rate,
     y = median_rgap
   )
 ) +
@@ -199,7 +201,7 @@ ggplot(
   geom_line(
     data = sensitivity_df,
     mapping = aes(
-      x = memory_level,
+      x = learning_rate,
       y = rgap,
       group = seed
     ),
@@ -209,55 +211,94 @@ ggplot(
   ) +
   facet_wrap(~congestion_regime) +
   labs(
-    title = "Sensitivity of R-gap to memory level",
+    title = "Sensitivity of R-gap to learning rate",
     subtitle = "Final-episode R-gap for five random seeds (thin lines) \nand their median (thick line)",
-    x = "Memory level (γ)",
+    x = "Learning_rate (l)",
     y = "R-gap (%)"
   ) + 
   scale_x_continuous(
-    breaks = unique(sensitivity_df$memory_level)
+    breaks = unique(sensitivity_df$learning_rate)
   )
 
-ggsave(here("r","RQ2","figures","plot2_sensitivity_analysis_memory.png"), width = 12, height = 6)
+ggsave(here("r","RQ3","figures","plot2_sensitivity_analysis_learning.png"), width = 12, height = 6)
 ```
 
 ```{r}
 #| label: data_plot3
 
-variability_df <- sensitivity_df |> 
-  group_by(memory_level, congestion_regime) |> 
+rgap_threshold <- 5
+
+convergence_speed_df <- data$bm_rgap |> 
+  mutate(
+    learning_rate = as.numeric(learning_rate),
+    congestion_regime = make_congestion_regime(n_agents),
+  ) |> 
+  select(-c(n_agents)) |>
+  mutate(
+    below = rgap < rgap_threshold
+  ) |> 
+  group_by(seed, learning_rate, congestion_regime) |> 
+  # TRUE if all remaining episodes are below threshold
+  mutate(
+    remainder = map_lgl(
+      # Returns a vector with all the row numbers
+      row_number(),
+      \(x) all(below[x:n()])
+      )
+  ) |> 
+  filter(remainder) |> 
+  slice_head(n = 1) |> 
+  rename(
+    convergence_episode = episode
+  ) |> 
+  ungroup() |> 
+  select(-c(below, remainder))
+
+convergence_speed_df_summary <- convergence_speed_df |> 
+  group_by(learning_rate, congestion_regime) |> 
   summarise(
-    sd_rgap = sd(rgap)
+    median_convergence_episode = median(convergence_episode)
   ) |> 
   ungroup()
-
+  
+  
 ```
 
 ```{r}
 #| label: plot3 
 
-# THIS FIGURE IS OPTIONAL, ONLY KEEP IT IF INTERESTING RESULTS
-
 ggplot(
-  data = variability_df,
+  data = convergence_speed_df_summary,
   mapping = aes(
-    x = memory_level,
-    y = sd_rgap
+    x = learning_rate,
+    y = median_convergence_episode
   )
 ) +
   geom_point() +
-  geom_line(linewidth = 1.1) +
+  geom_line(linewidth=1.4) +
+  geom_line(
+    data = convergence_speed_df,
+    mapping = aes(
+      x = learning_rate,
+      y = convergence_episode,
+      group = seed
+    ),
+    linewidth = 0.45,
+    alpha = 0.6,
+    colour = "grey60"
+  ) +
   facet_wrap(~congestion_regime) +
   labs(
-    title = "Variability final episode R-gap across seeds",
-    subtitle = "Standard deviation of the final-episode R-gap across five random seeds (BM)",
-    x = "Memory level (γ)",
-    y = "Standard deviation of final R-gap (%)"
+    title = "Sensitivity of R-gap to learning rate",
+    subtitle = "Final-episode R-gap for five random seeds (thin lines) \nand their median (thick line)",
+    x = "Learning rate (l)",
+    y = "R-gap (%)"
   ) + 
   scale_x_continuous(
-    breaks = unique(sensitivity_df$memory_level)
+    breaks = unique(convergence_speed_df$learning_rate)
   )
 
-ggsave(here("r","RQ2","figures","plot3_variability_seeds.png"), width = 12, height = 6)
+ggsave(here("r","RQ3","figures","plot3_convergence_speed_l.png"), width = 12, height = 6)
+
 
 ```

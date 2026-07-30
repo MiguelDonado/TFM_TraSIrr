@@ -26,6 +26,7 @@ sweep) are also excluded, so dev-scale runs never mix into the report.
 ----- Valid Research Questions arguments -----
 RQ1
 RQ2
+RQ3
 
 """
 
@@ -70,6 +71,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq1_data()
     elif research_question == "RQ2":
         _prepare_rq2_data()
+    elif research_question == "RQ3":
+        _prepare_rq3_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -117,6 +120,32 @@ def _prepare_rq2_data() -> None:
     }
 
     data_dir = BASE_DIR / "r" / "RQ2" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq3_data() -> None:
+    """Pull R-gap artifacts from all RQ3 simulation runs and save combined parquets."""
+    filter_string = (
+        "tags.research_question = 'RQ3' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "learning_rate", "n_agents"]
+
+    artifacts = {
+        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+        "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ3" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     for name, artifact_path in artifacts.items():

@@ -1,3 +1,11 @@
+# What it answers the learning rate:
+# How much should I update my beliefs after receiving new information (stimulus)
+
+# More detail:
+# - It represents the speed of adaptation
+# - How fast it reacts to new experiences
+
+
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:
