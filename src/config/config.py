@@ -24,6 +24,12 @@ Config hyperparameter groups
                         (RQ5: per-agent γ ~ Beta(mean·conc, (1-mean)·conc)
                         instead of one shared config.memory_level, off by
                         default)
+  Nonlinear stimulus  — nonlinear_stimulus, stimulus_tau
+                        (RQ6: hard-threshold/dead-zone transform of the
+                        stimulus signal — f(S) = sign(S)·(max(0,|S|-τ)/(1-τ))²
+                        — applied before it drives the probability update,
+                        off by default)
+
 
 Derived fields (computed in __post_init__)
 ------------------------------------------
@@ -163,6 +169,8 @@ class Config:
     heterogeneous_memory: bool = False
     memory_mean: float = 0
     memory_concentration: float = 0
+    nonlinear_stimulus: bool = False
+    stimulus_tau: float = 0.0
 
     #####################
     # Derived values

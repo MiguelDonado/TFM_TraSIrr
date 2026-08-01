@@ -1,0 +1,43 @@
+# RQ6 — Nonlinear (hard-threshold) reinforcement update
+#
+# What it answers:
+# Does replacing the linear stimulus->update mapping with a dead-zone/
+# threshold nonlinearity change route-switching frequency, convergence
+# speed/stability, and R-gap evolution, compared to the linear baseline
+# (RQ2)?
+#
+# How:
+# - nonlinear_stimulus=true routes the raw stimulus S through
+#     f(S) = sign(S) * (max(0, |S|-tau) / (1-tau))^2
+#   before it drives the propensity update. |S|<=tau is a dead zone (no
+#   reaction to small perceived travel-time deviations); above tau the
+#   reaction grows quadratically, reaching the same magnitude as the
+#   linear rule at |S|=1.
+# - stimulus_tau grid sweeps the dead-zone width to see how threshold
+#   size affects route-switching/oscillation/convergence.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+grid:
+  learning:
+    nonlinear_stimulus:
+      - true
+    stimulus_tau:
+      # - 0.05
+      # - 0.1
+      # - 0.2
+      # - 0.3
+      - 0.5
+  randomness:
+    seed:
+      - 42
+      # - 5
+      # - 23
+      # - 1999
+      # - 8
+  demand:
+    n_agents:
+      - 1550
+  due_convergence:
+    duaIterate_max_iterations:
+      - 1

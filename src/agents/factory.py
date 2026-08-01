@@ -22,6 +22,13 @@ config.memory_level, using the mean/concentration reparametrization:
 Sampling uses a Generator seeded from initialize_agents' own `seed` param
 (not the global config.seed directly), so it stays reproducible under the
 same seed the per-agent action-selection RNGs are derived from.
+
+RQ6 nonlinear learning
+-------------------------
+When config.nonlinear_stimulus is true, each agent applies a transformation
+over the stimulus, that changes the mapping from stimulus to learning
+(learning here refers to the update in the probability of the chosen action) 
+to nonlinear.
 """
 
 import numpy as np
@@ -71,7 +78,9 @@ def initialize_agents(scen, seed=None):
             gamma=gamma,
             epsilon=config.epsilon,
             departure_time=departure_time,
-            post_warm_up=post_warm_up
+            post_warm_up=post_warm_up,
+            nonlinear_stimulus=config.nonlinear_stimulus,
+            stimulus_tau=config.stimulus_tau
         )
     return agents
 

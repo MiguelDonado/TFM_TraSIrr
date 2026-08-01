@@ -161,6 +161,22 @@ ggplot(
 ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
 ```
 
+## Interpretation plot 1: (R-gap evolution across episodes)
+- **Convergence speed:**
+  - Under Near free flow (1300), all seeds converge quickly (around episodes 30-40)
+  - Under Moderate (1550), convergence is slightly slower.
+  - Under High (2000), convergence is slower, around episodes 40-50, and much noisier (it has pretty large spikes)
+- **Stability:**
+  - Post-convergence stability: The trajectories show post-convergence stability nicely (once it converges to DUE, it remains in DUE for the rest of episodes).
+  - Convergence dynamics (rate of convergence once convergence begins): In the free-flow case it reaches DUE almost immediately. Moderate proceeds more gradually. High congestion also proceeds more gradually, and it has more fluctuations before settling.
+- **Robustness across seeds**
+  - Free-flow: Almost identical trajectories.
+  - Moderate: Pretty similar, but they show more variability. (the learning trajectories).
+  - High congestion: The scenario in which the learning trajectories show the biggest differences. One of the seeds have large spikes.
+  So the simulation is not very sensitive to the seed, in either the near-free flow or moderate scenario, but it shows more sensitivity to the sensitivity on the high congestion scenario.
+- **Effect of congestion**:
+  - It can be easily seen that higher congestion makes the problem harder, resulting in higher initial r-gaps, slower convergence, and more variability across seeds.
+
 ```{r}
 #| label: data_plot2
 
@@ -237,6 +253,36 @@ ggplot(
 
 ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, height = 10)
 ```
+
+## Interpretation plot 2:
+**Which intervals converge first?**
+Initially we could expect to see a strong diagonal pattern, indicating that later intervals take longer to converge, and that early intervals are the first ones to converge. 
+But, that is not the case with our plot, suggesting that most intervals improve at roughly the same time.
+That is the case for the 3 congestion regimes.
+
+**Effect of congestion regimes**
+It can be seen that higher congestion makes the problem harder, resulting in intervals with higher r-gap, represented with brighter bands.
+
+**Some intervals become unstable after initially converging?**
+In the moderate case, we can see on the seed 3, that some intervals become unstable after initially converging.
+In the high congestion case, it happens more times. For example, a few intervals on the seed 2 and on the seed 3 become unstable after converging. On the seed 1, it is harder to visualize, but there are also some intervals that become unstable after converging.
+
+**Late intervals consistently have large errors?**
+It can be easily visualized on the plot, that is not our case.
+
+**All intervals converge to the same r-gap?**
+In order to answer this question, we have to look at the colors of the band for the last episodes.
+
+In the near-free flow case most intervals achieve a very low r-gap, and hence it can be said that all intervals converge to the same r-gap.
+
+In the moderate case, most intervals achieve a very low r-gap. Except for the seed 3, where some intervals remain with higher r-gaps.
+
+In the high congestion case the r-gap of the final episode shows greater variability among intervals.
+
+The greater the congestion, the greater the variability of the final r-gap among intervals.
+
+
+
 
 ```{r}
 #| label: data_plot3

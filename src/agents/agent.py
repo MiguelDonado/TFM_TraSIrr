@@ -24,7 +24,9 @@ ET          — Expected Travel Time: what the agent expects the trip to
 PT_r        — Perceived Travel Time for route r: γ-weighted average
                of past travel times on route r specifically
 stimulus    — normalised signal in [-1, 1] measuring how much better
-               or worse the chosen route was relative to ET
+               or worse the chosen route was relative to ET.
+                Under RQ6, the raw stimulus is passed through the threshold
+                function before driving the update
 
 Formulas
 --------
@@ -71,13 +73,15 @@ class BMAgent:
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, nonlinear_stimulus, stimulus_tau):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
         self.beta = beta  # Learning rate
         self.gamma = gamma  # Memory decay
         self.epsilon = epsilon
+        self.nonlinear_stimulus = nonlinear_stimulus
+        self.stimulus_tau = stimulus_tau
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
         # Whether this agent departs after the SUMO network warm-up window
@@ -174,6 +178,23 @@ class BMAgent:
             stimulus = diff / biggest_loss
             return stimulus
 
+    def _apply_stimulus_threshold(self, stimulus):
+        """
+        RQ6 nonlinear reinforcement: hard-threshold (dead-zone) transform of
+        the raw stimulus, applied before it drives the propensity update.
+
+        f(S) = sign(S) · ( max(0, |S| - τ) / (1 - τ) )²
+
+        |S| <= τ  →  f(S) = 0          small deviations are ignored entirely
+        |S| = 1   →  f(S) = sign(S)    renormalised back to the full [-1, 1] range
+        Quadratic ramp in between: suppresses reactions just above τ more than
+        reactions near |S| = 1, i.e. weak sensitivity near threshold, strong
+        sensitivity to severe deviations.
+        """
+        tau = self.stimulus_tau
+        magnitude = max(0.0, abs(stimulus) - tau) / (1 - tau + self.epsilon)
+        return float(np.sign(stimulus) * magnitude**2)
+
     def _update_probabilities(self, chosen, stimulus):
         p = self.p.copy()
 
@@ -240,5 +261,8 @@ class BMAgent:
             self._compute_perceived_travel_times()
 
             self.stimulus = self._compute_stimulus(chosen)
+
+            if self.nonlinear_stimulus:
+                self.stimulus = self._apply_stimulus_threshold(self.stimulus)
 
             self._update_probabilities(chosen, self.stimulus)
