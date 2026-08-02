@@ -150,6 +150,7 @@ ggplot(
 ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_hline(yintercept = 5, alpha = 0.6, linewidth = 0.7, color = "#B22222") +
   facet_grid(memory_level_fct ~ congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
@@ -162,8 +163,27 @@ coord_cartesian(ylim=c(-5,upper_limit_y_axis))
 ggsave(here("r","RQ2","figures","plot1_rgap_evolution_mem_seed.png"), width = 12, height = 6)
 ```
 
+## Interpretation plot 1
+
+- **Oscillatory behavior**:
+There is no evidence that decreasing memory produces oscillatory behavior.
+
+- **DUE convergence**:
+All memory levels eventually approach similar low R-gap values (DUE state)
+
+- **Behavioral convergence**:
+Higher memory levels lead to earlier stabilization of the agents policies.
+
+- **Robustness across seeds**:
+Similar results are obtained across seeds.
+
+Hence memory has relatively influence on the evolution of the aggregated R-gap, but it has a clear influence on behavioral convergence.
+
+Intuitively, higher memory enables agents to accumulate knowledge over time, leading to earlier stabilization of route-choice policies. Lower memory places greater emphasis on recent experiences, causing policies to continue adapting for more episodes.
+
 ```{r}
 #| label: data_plot2
+#| eval: false
 
 sensitivity_df <- data$bm_rgap |> 
   mutate(
@@ -186,6 +206,7 @@ sensitivity_df_summary <- sensitivity_df |>
 
 ```{r}
 #| label: plot2
+#| eval: false
 
 ggplot(
   data = sensitivity_df_summary,
@@ -219,45 +240,4 @@ ggplot(
   )
 
 ggsave(here("r","RQ2","figures","plot2_sensitivity_analysis_memory.png"), width = 12, height = 6)
-```
-
-```{r}
-#| label: data_plot3
-
-variability_df <- sensitivity_df |> 
-  group_by(memory_level, congestion_regime) |> 
-  summarise(
-    sd_rgap = sd(rgap)
-  ) |> 
-  ungroup()
-
-```
-
-```{r}
-#| label: plot3 
-
-# THIS FIGURE IS OPTIONAL, ONLY KEEP IT IF INTERESTING RESULTS
-
-ggplot(
-  data = variability_df,
-  mapping = aes(
-    x = memory_level,
-    y = sd_rgap
-  )
-) +
-  geom_point() +
-  geom_line(linewidth = 1.1) +
-  facet_wrap(~congestion_regime) +
-  labs(
-    title = "Variability final episode R-gap across seeds",
-    subtitle = "Standard deviation of the final-episode R-gap across five random seeds (BM)",
-    x = "Memory level (γ)",
-    y = "Standard deviation of final R-gap (%)"
-  ) + 
-  scale_x_continuous(
-    breaks = unique(sensitivity_df$memory_level)
-  )
-
-ggsave(here("r","RQ2","figures","plot3_variability_seeds.png"), width = 12, height = 6)
-
 ```

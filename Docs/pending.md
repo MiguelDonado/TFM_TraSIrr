@@ -10,7 +10,7 @@ DOUBTS:
 **RQ1:**
 LISTO
 **RQ2**
-El otro dia ya se ejecutaron todas las simulaciones
+LISTO
 **RQ3**
 LISTO
 
