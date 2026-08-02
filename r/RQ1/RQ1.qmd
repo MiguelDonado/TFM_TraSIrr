@@ -162,6 +162,9 @@ ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"), width = 12, height 
 ```
 
 ## Interpretation plot 1: (R-gap evolution across episodes)
+It should be noted, that the first episodes (for this particular case the first 24 episodes) 
+are a warm-up in which the agents only explore and do not learn. 
+Learning phase begins at episode 25.
 - **Convergence speed:**
   - Under Near free flow (1300), all seeds converge quickly (around episodes 30-40)
   - Under Moderate (1550), convergence is slightly slower.
@@ -172,7 +175,7 @@ ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"), width = 12, height 
 - **Robustness across seeds**
   - Free-flow: Almost identical trajectories.
   - Moderate: Pretty similar, but they show more variability. (the learning trajectories).
-  - High congestion: The scenario in which the learning trajectories show the biggest differences. One of the seeds have large spikes.
+  - High congestion: The scenario in which the trajectories show the biggest differences. One of the seeds have large spikes.
   So the simulation is not very sensitive to the seed, in either the near-free flow or moderate scenario, but it shows more sensitivity to the sensitivity on the high congestion scenario.
 - **Effect of congestion**:
   - It can be easily seen that higher congestion makes the problem harder, resulting in higher initial r-gaps, slower convergence, and more variability across seeds.
@@ -255,6 +258,9 @@ ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, h
 ```
 
 ## Interpretation plot 2:
+It should be noted, that the first episodes (for this particular case the first 24 episodes) 
+are a warm-up in which the agents only explore and do not learn. 
+Learning phase begins at episode 25.
 **Which intervals converge first?**
 Initially we could expect to see a strong diagonal pattern, indicating that later intervals take longer to converge, and that early intervals are the first ones to converge. 
 But, that is not the case with our plot, suggesting that most intervals improve at roughly the same time.
@@ -319,7 +325,7 @@ ggplot(
   facet_wrap(~congestion_regime) +
   labs(
     title = "90th-percentile OD-specific R-gap",
-    subtitle = "90th percentile of the OD-specific R-gap across the 10 active OD pairs within each seed (final episode)",
+    subtitle = "90th percentile of the OD-specific R-gap across the \n10 active OD pairs within each seed (final episode)",
     x = "Algorithm",
     y = "90th percentile R-gap (%)"
   )
@@ -327,7 +333,20 @@ ggplot(
 ggsave(here("r","RQ1","figures","plot3_od_rgap_worstcase.png"))
 ```
 
+## Interpretation plot 3:
 
+- **Near free-flow**:
+Both algorithms achieve excellent OD-specific equilibrium quality.
+  - DuaIterate has slightly greater variability across seeds. 
+Hence the low aggregated R-gap is accompanied by good equilibirum quality for nearly all OD pairs.
+
+- **Moderate**:
+Both algorithms achieve great OD-specific equilibrium, though with slightly greater values than in the near free flow case. Both algorithms, show for 2 seeds a 90th percentile r-gap between 5-10%, they would still be consider pretty close to equilibrium. 
+
+- **High congestion**:
+Both algorithms exhibit substantially larger 90th-percentile R-gap values than under lower demand. BM consistently presents higher values, with 3 seeds with a 90th percentile r-gap value above 10%.
+
+This reflects that for higher congestions, despite achieving low aggregated r-gap values, some subset of OD pairs remain poorly equilibrated. 
 
 <!-- The file refined_rgap_by_od is not needed to be analyzed. A plot using this file would not add anything new. -->
 

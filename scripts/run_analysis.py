@@ -143,6 +143,7 @@ def _prepare_rq3_data() -> None:
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
+        "bm_policy_change": "agent_state/policy_change_BM.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ3" / "data"

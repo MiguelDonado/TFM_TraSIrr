@@ -29,6 +29,7 @@ On this research question only the aggregated R-gap will be considered.
 1. Aggregated R-gap for different learning rates across episodes (representative learning dynamics)
 2. Sensitivity analysis
 3. Convergence episode vs Learning rate
+4. (Appendix) Policy stabilization
 
 For more details, check the research questions document.
 
@@ -59,7 +60,7 @@ theme_set(theme_thesis())
 # Builds the congestion_regime factor from whatever n_agents values are
 # present in the data, instead of hardcoding levels/labels per plot.
 # congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
-congestion_regime_tiers <- c("High")
+congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
 
 make_congestion_regime <- function(n_agents) {
   levels_sorted <- sort(unique(n_agents))
@@ -152,6 +153,7 @@ ggplot(
 ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_hline(yintercept = 5, alpha = 0.6, linewidth = 0.7, color = "#B22222") +
   facet_grid(learning_rate_fct ~ congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
@@ -163,6 +165,12 @@ coord_cartesian(ylim=c(-5,upper_limit_y_axis))
 
 ggsave(here("r","RQ3","figures","plot1_rgap_evolution_l_seed.png"), width = 12, height = 6)
 ```
+
+## Interpretation plot 1:
+- **Final equilibrium quality**:  Despite the difference learning rates, in all cases it converges to DUE state. Therefore the learning rate has little influence on the final ability of the BM model to approach a DUE state. It also 
+- **Behavioral convergence**: Higher learning rates lead to earlier stabilization of agents route choice policies.
+- **Stability**: Contrary to the initial expectation, increasing the learning rate did not induce sustained oscillations in the aggregated R-gap trajectories.
+- **Robustness across seeds**: All seeds exhibit pretty similar behavior.
 
 ```{r}
 #| label: data_plot2
@@ -222,6 +230,8 @@ ggplot(
 
 ggsave(here("r","RQ3","figures","plot2_sensitivity_analysis_learning.png"), width = 12, height = 6)
 ```
+
+Across all congestion regimes, the final R-gap remains relatively stable over the tested range of learning rates. Overall, the results indicate that the learning rate has little influence on the final equilibrium quality.
 
 ```{r}
 #| label: data_plot3
@@ -287,18 +297,81 @@ ggplot(
     alpha = 0.6,
     colour = "grey60"
   ) +
-  facet_wrap(~congestion_regime) +
+  facet_wrap(~congestion_regime, scales = "free_y") +
   labs(
-    title = "Sensitivity of R-gap to learning rate",
-    subtitle = "Final-episode R-gap for five random seeds (thin lines) \nand their median (thick line)",
+    title = "Sensitivity of convergence speed to learning rate",
+    subtitle = paste0("First episode after which the R-gap remains below ", rgap_threshold, "%"),
     x = "Learning rate (l)",
-    y = "R-gap (%)"
+    y = "Convergence episode"
   ) + 
   scale_x_continuous(
     breaks = unique(convergence_speed_df$learning_rate)
+  ) +
+  theme(
+    axis.text.x = element_text(size = 12)
   )
 
 ggsave(here("r","RQ3","figures","plot3_convergence_speed_l.png"), width = 12, height = 6)
-
-
 ```
+
+## Interpretation plot 3
+
+- **Convergence speed (DUE)**: 
+  - Higher learning rates generally reduce the convergence episode.
+  - The benefit of increasing the learning rate becomes more pronounced as the network becomes more congested. The improvement is much more substantial in the high congestion case (roughly 63 - 35/40) 
+  - Most of the gain seems to occur between 0.2 and 0.6. Beyond that, increasing the learning rate further produces relatively small additional reductions in convergence speed.
+  
+- **Robustness across seeds**: All seeds show similar behavior.
+
+```{r}
+#| label: data_plot4
+
+plot4_learning_rate_levels <- c("0.2", "0.4", "0.6", "0.8", "0.99")
+
+# Single representative seed (reusing the first of plot1's representative_seeds)
+# instead of averaging across seeds - seeds finish training at different episode
+# counts, so a cross-seed mean would shrink in N towards the tail of each panel.
+plot4_seed <- representative_seeds[1]
+
+policy_change_df <- data$bm_policy_change |>
+  mutate(
+    learning_rate = as.numeric(learning_rate),
+    congestion_regime = make_congestion_regime(n_agents),
+  ) |>
+  select(-c(n_agents)) |>
+  filter(
+    seed == plot4_seed,
+    as.character(learning_rate) %in% plot4_learning_rate_levels
+  )
+```
+
+```{r}
+#| label: plot4
+
+ggplot(
+  data = policy_change_df,
+  mapping = aes(
+    x = episode,
+    y = mean_policy_change,
+    color = fct_rev(factor(learning_rate))
+  )
+) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~congestion_regime) +
+  scale_color_viridis_d(
+      option = "plasma",
+      direction = -1,
+      name = "Learning rate"
+  ) +
+  labs(
+    title = "Policy stabilization across learning rates",
+    subtitle = "Mean policy change per episode for a representative seed (BM)",
+    x = "Episode",
+    y = "Mean policy change"
+  )
+
+ggsave(here("r","RQ3","figures","plot4_policy_stabilization_learning_rate.png"), width = 12, height = 6)
+```
+
+## Interpretation plot 4
+- It shows that increasing the learning rate results in larger initial policy adjustments but also earlier stabilization of agents policies.

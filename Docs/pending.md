@@ -8,10 +8,9 @@ DOUBTS:
 - In research, it's better to report exactly what your experiments demonstrate than to try to make them fit previous expectations.
 
 **RQ1:**
-1. Interpreation plot 3 RQ1 with the new simulation data. (remember to put active to the new simulation, and archived to the previous ones.)
-2. Update RQ1 interpretation, taking into account that the first 24 episodes, agents are only exploring and not learning.
-
+LISTO
+**RQ2**
+El otro dia ya se ejecutaron todas las simulaciones
 **RQ3**
-1. Run simulation RQ3 but for n_agents = 1300 (near free flow) and n_agents = 1550 (moderate).
-2. 
+LISTO
 
