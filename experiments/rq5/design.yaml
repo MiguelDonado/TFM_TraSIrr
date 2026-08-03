@@ -30,15 +30,15 @@ grid:
   randomness:
     seed:
       - 42
-      # - 5
-      # - 23
-      # - 1999
-      # - 8
+      - 5
+      - 23
+      - 1999
+      - 8
   demand:
     n_agents:
-      # - 1300
+      - 1300
       - 1550
-      # - 2000
+      - 2000
   due_convergence: 
     duaIterate_max_iterations: 
       - 1

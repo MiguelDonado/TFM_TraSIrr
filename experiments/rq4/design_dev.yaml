@@ -20,7 +20,10 @@ grid:
     network_normal:
       - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml"
     network_degraded:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net copy.xml"
+      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-15_Sioux_Falls.net.xml"
   stopping_rule:
     max_episodes:
       - 300

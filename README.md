@@ -64,6 +64,31 @@ Full analysis: [`r/RQ1/RQ1.qmd`](r/RQ1/RQ1.qmd).
 <img src="r/RQ1/figures/plot3_od_rgap_worstcase.png" width="32%" alt="Worst-case OD-specific R-gap">
 </p>
 
+**RQ2:** Does reducing agents' memory level prevent the Bush-Mosteller model from
+converging to a DUE? Convergence is measured via the aggregated R-gap — computed by
+the `DUE_convergence` pipeline (TDSP-based) — across different memory levels, and
+compared against `duaIterate` as a baseline.
+Full analysis: [`r/RQ2/RQ2.qmd`](r/RQ2/RQ2.qmd).
+
+<p>
+<img src="r/RQ2/figures/plot1_rgap_evolution_mem_seed.png" width="48%" alt="R-gap evolution across episodes for different memory levels">
+</p>
+
+**RQ3:** Does the learning rate affect BM's convergence speed without significantly
+altering its final ability to approach a DUE? Convergence is measured via the
+aggregated R-gap — computed by the `DUE_convergence` pipeline (TDSP-based) — across
+different learning rates, and compared against `duaIterate` as a baseline.
+Full analysis: [`r/RQ3/RQ3.qmd`](r/RQ3/RQ3.qmd).
+
+<p>
+<img src="r/RQ3/figures/plot1_rgap_evolution_l_seed.png" width="32%" alt="R-gap evolution across episodes for different learning rates">
+<img src="r/RQ3/figures/plot2_sensitivity_analysis_learning.png" width="32%" alt="Sensitivity analysis of final R-gap to learning rate">
+<img src="r/RQ3/figures/plot3_convergence_speed_l.png" width="32%" alt="Convergence episode vs learning rate">
+</p>
+<p>
+<img src="r/RQ3/figures/plot4_policy_stabilization_learning_rate.png" width="48%" alt="Appendix: policy stabilization by learning rate">
+</p>
+
 ---
 
 ## Technical Highlights

@@ -1,8 +1,0 @@
-<routes>
-	<trip id="t0" from="E1_2_EB" to="E6_7_EB" depart="1"/>
-	<trip id="t1" from="E1_2_EB" to="E3_4_EB" depart="1"/>
-	<trip id="t2" from="E1_2_EB" to="E6_7_EB" depart="20"/>
-	<trip id="t3" from="E1_2_EB" to="E3_4_EB" depart="20"/>
-	<trip id="t4" from="E1_2_EB" to="E6_7_EB" depart="39"/>
-	<trip id="t5" from="E1_2_EB" to="E3_4_EB" depart="39"/>
-</routes>
