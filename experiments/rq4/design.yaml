@@ -26,14 +26,15 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 grid:
   learning:
     memory_level: 
-      - 0.8
+      - 1
   network_path:
     network:
       - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/Sioux_Falls.net.xml"
     network_normal:
       - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml"
     network_degraded:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
   stopping_rule:
     max_episodes:
       - 450
@@ -47,14 +48,14 @@ grid:
   randomness:
     seed:
       - 42
-      - 5
-      - 23
-      - 1999
-      - 8
+      # - 5
+      # - 23
+      # - 1999
+      # - 8
   demand:
     n_agents:
-      - 1300
-      - 1550
+      # - 1300
+      # - 1550
       - 2000
   
   due_convergence: 

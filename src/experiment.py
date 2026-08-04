@@ -16,11 +16,12 @@ fcd          — sampled vehicle XY positions across timesteps
 edgedata     — per-edge density and flow per time interval
 actions      — route index chosen by each agent per episode
 rewards      — travel time received by each agent per episode
-BM_results   — agent internal state (ET, PT, stimulus, memory_level) per
-               episode. memory_level is each agent's own γ — constant
-               across an agent's rows, but heterogeneous across agents
-               when config.heterogeneous_memory is true (RQ5), so it's
-               persisted per row rather than assumed from config.memory_level.
+BM_results   — agent internal state (ET, PT, stimulus, p, memory_level) per
+               episode, one row per (agent, route). memory_level is each
+               agent's own γ — constant across an agent's rows, but
+               heterogeneous across agents when config.heterogeneous_memory
+               is true (RQ5), so it's persisted per row rather than assumed
+               from config.memory_level.
 
 Post-warm-up filtering
 -----------------------
@@ -208,6 +209,7 @@ def _prepare_bm_data(episode, agents):
                     "stimulus": agent.stimulus,
                     "route_id": route_id,
                     "PT": float(perceived_travel_time),
+                    "p": float(agent.p[route_id]),
                 }
             )
     return rows

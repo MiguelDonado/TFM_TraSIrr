@@ -16,7 +16,7 @@ mlflow.db
 *claude*
 
 # generated analysis outputs (RQ scripts regenerate these)
-r/RQ*/data/*.parquet
+r/RQ*/data/**/*.parquet
 r/RQ*/figures/*.png
 
 # reference screenshots pulled into literature-review notes

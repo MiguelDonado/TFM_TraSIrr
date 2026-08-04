@@ -62,7 +62,7 @@ Agent lifecycle
   __init__       uniform probability vector p, empty history
   select_action  sample route index from p
   update         append (route, tt) to history, then (if past warm-up)
-                 recompute ET → PT → stimulus → update p
+                 recompute ET → PT → stimulus → update p (it must sum up to 1)
 """
 
 import numpy as np
@@ -172,11 +172,16 @@ class BMAgent:
         if diff >= 0:
             biggest_benefit = max(expected_tt - perceived_tt) + self.epsilon
             stimulus = diff / biggest_benefit
-            return stimulus
         else:
             biggest_loss = abs(min(expected_tt - perceived_tt)) + self.epsilon
             stimulus = diff / biggest_loss
-            return stimulus
+
+        # Make sure stimulus is between [-1,1]
+        tol = 1e-7
+        if not (-1 - tol <= stimulus <= 1 + tol):
+            raise ValueError("Stimulus must be between -1 and 1.")
+
+        return stimulus
 
     def _apply_stimulus_threshold(self, stimulus):
         """
@@ -196,6 +201,7 @@ class BMAgent:
         return float(np.sign(stimulus) * magnitude**2)
 
     def _update_probabilities(self, chosen, stimulus):
+        # Copy so a failed validation below never leaves self.p corrupted
         p = self.p.copy()
 
         # Good route
@@ -205,8 +211,15 @@ class BMAgent:
         else:
             p = self._penalise_chosen(p, chosen, stimulus)
 
-        # Normalize
-        self.p = p / np.sum(p)
+        # If the sum is close to 1, renormalize to remove tiny numerical error.
+        s = np.sum(p)
+        
+        if np.isclose(s, 1.0, atol=1e-3):
+            p = p / s
+        else:
+            raise ValueError(f"Probabilities must sum to 1, got {s}")
+
+        self.p = p
 
     def _reinforce_chosen(self, p, chosen, stimulus):
         """
@@ -217,11 +230,11 @@ class BMAgent:
         unchosen routes bounded above 0. Called only when stimulus >= 0.
         """
         # Update chosen route
-        p[chosen] += (1 - p[chosen]) * self.beta * stimulus
+        p[chosen] = p[chosen] + (1 - p[chosen]) * self.beta * stimulus
         # Adjust other routes
         for k in range(self.n_routes):
             if k != chosen:
-                p[k] -= p[k] * self.beta * stimulus
+                p[k] = p[k] - p[k] * self.beta * stimulus
         return p
 
     def _penalise_chosen(self, p, chosen, stimulus):
@@ -232,14 +245,17 @@ class BMAgent:
         p_chosen factor keeps p_chosen bounded above 0. Division by (1 - p_chosen)
         renormalises the remaining mass to preserve sum(p) = 1. Called only when stimulus < 0.
         """
-        # Update chosen route
-        p[chosen] += p[chosen] * self.beta * stimulus
-        # Adjust other routes
+        old_chosen = p[chosen]
+    
+        # chosen update (Eq. 2)
+        p[chosen] = old_chosen + old_chosen * self.beta * stimulus
+
+        # Scale remaining probabilities to preserve unity (corrected versio Eq. 9)
+        scale = (1 - old_chosen - old_chosen * self.beta * stimulus) / (1 - old_chosen)
+
         for k in range(self.n_routes):
             if k != chosen:
-                p[k] = (p[k] - p[k] * p[chosen] * self.beta * stimulus) / (
-                    1 - p[chosen]
-                )
+                p[k] = p[k] * scale
         return p
 
     def _update_history(self, chosen, reward):
@@ -261,6 +277,7 @@ class BMAgent:
             self._compute_perceived_travel_times()
 
             self.stimulus = self._compute_stimulus(chosen)
+             
 
             if self.nonlinear_stimulus:
                 self.stimulus = self._apply_stimulus_threshold(self.stimulus)

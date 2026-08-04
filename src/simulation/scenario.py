@@ -26,6 +26,7 @@ Construction runs three steps automatically in __init__:
 """
 
 import os
+import pprint
 import subprocess
 import tempfile
 from collections import Counter
@@ -128,7 +129,8 @@ class Scenario:
             UNDESIRED_ROUTE_FILE.unlink(missing_ok=True)
 
             od_routes = dict(zip(self.unique_ods, routes_per_od))
-            # 5. Return k routes
+
+            # 6. Return k routes
             return od_routes
 
     def _fill_alternative_routes(

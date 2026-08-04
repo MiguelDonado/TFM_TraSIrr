@@ -51,7 +51,7 @@ def _run_training_loop(
         "edgedata": [],
         "actions": [],
         "rewards": [],
-        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array)
+        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array), p (array)
     }
 
     degradation_enabled = config.degradation_start_episode > 0
