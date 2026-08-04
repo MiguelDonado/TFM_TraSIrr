@@ -18,6 +18,7 @@ not change (only one edge's speed), so route sets stay valid across all
 three phases.
 """
 
+import json
 import shutil
 
 import numpy as np
@@ -25,12 +26,17 @@ import pandas as pd
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
-from config.paths import POLICY_CHANGE_BM
+from config.paths import AGENT_DEBUG_TRACE, POLICY_CHANGE_BM
 from DUE_convergence.DUE_convergence import run_due_convergence_checks
 from experiment import accumulate_results, prepare_data, save_processed_data
 from simulation.environment import Environment
 from simulation.scenario import Scenario
 from stopping_rule.stopping_rule import check_convergence, create_policies_dict
+
+# Debug: dump this agent's full state (history, p, ET, PT, stimulus) after
+# every episode to AGENT_DEBUG_TRACE, viewable in VS Code as a folding JSON
+# tree like the debugger's Locals/Watch panel. Set to None to disable.
+DEBUG_AGENT_ID = "agent_1000"
 
 
 def _run_training_loop(
@@ -41,6 +47,7 @@ def _run_training_loop(
     no_change_count = 0  # Counter consecutive times without policy changes
     policies_history = []  # Stores policies of all agents for all episodes
     policy_change_history = []
+    debug_trace = []  # DEBUG_AGENT_ID's full state, one entry per episode
 
     # > Data
     results = {
@@ -102,6 +109,11 @@ def _run_training_loop(
             warm_up=config.warm_up,
         )
 
+        if DEBUG_AGENT_ID is not None:
+            debug_trace.append(
+                {"episode": episode, **agents[DEBUG_AGENT_ID].snapshot()}
+            )
+
         # -----------------------------
         # 5. PREPARE GENERATED DATA
         # -----------------------------
@@ -123,6 +135,11 @@ def _run_training_loop(
 
         if should_stop:
             break
+
+    if DEBUG_AGENT_ID is not None:
+        with open(AGENT_DEBUG_TRACE, "w") as f:
+            json.dump(debug_trace, f, indent=2)
+
     return results, policy_change_history
 
 

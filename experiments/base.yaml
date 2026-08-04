@@ -23,7 +23,7 @@ network_path:
 duarouter:
   routing_algorithm: "CH"
   random_factor: 50
-  max_attempts: 500
+  max_attempts: 25
   n_threads: 7
   n_routes_per_OD: 8
 

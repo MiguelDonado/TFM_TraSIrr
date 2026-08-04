@@ -29,7 +29,7 @@ duarouter:
   n_routes_per_OD: 8
 
 stopping_rule:
-  max_episodes: 150
+  max_episodes: 26
   tolerance_stopping_rule: 0.01
   k_no_change: 3
 

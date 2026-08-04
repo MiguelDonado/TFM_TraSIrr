@@ -214,7 +214,7 @@ class BMAgent:
         # If the sum is close to 1, renormalize to remove tiny numerical error.
         s = np.sum(p)
         
-        if np.isclose(s, 1.0, atol=1e-3):
+        if np.isclose(s, 1.0, atol=1e-3) or self.n_routes == 1:
             p = p / s
         else:
             raise ValueError(f"Probabilities must sum to 1, got {s}")
@@ -261,6 +261,23 @@ class BMAgent:
     def _update_history(self, chosen, reward):
         info = (chosen, reward)
         self.history.append(info)
+
+    def snapshot(self):
+        """
+        Full internal state as JSON-serializable primitives (numpy arrays →
+        lists, numpy scalars → float/int). Used for debug traces of a single
+        agent across episodes — see run_training_BM.DEBUG_AGENT_ID — dumped
+        as JSON so it can be browsed as a folding tree in VS Code, the same
+        way the debugger's Locals/Watch panel shows nested variables.
+        """
+        return {
+            "id": self.id,
+            "history": [[int(route), float(tt)] for route, tt in self.history],
+            "p": self.p.tolist(),
+            "expected_travel_time": float(self.expected_travel_time),
+            "perceived_travel_times": self.perceived_travel_times.tolist(),
+            "stimulus": float(self.stimulus),
+        }
 
     def update(self, chosen, reward, warm_up, episode):
         self._update_history(chosen, reward)
