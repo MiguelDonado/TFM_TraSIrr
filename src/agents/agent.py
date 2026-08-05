@@ -232,14 +232,29 @@ class BMAgent:
         p_chosen factor keeps p_chosen bounded above 0. Division by (1 - p_chosen)
         renormalises the remaining mass to preserve sum(p) = 1. Called only when stimulus < 0.
         """
-        # Update chosen route
-        p[chosen] += p[chosen] * self.beta * stimulus
-        # Adjust other routes
+        old_chosen = p[chosen]
+
+        # chosen update (Eq. 2)
+        p[chosen] = old_chosen + old_chosen * self.beta * stimulus
+
+        # Exceptional case in which old_chosen == 1
+        if old_chosen == 1:
+            diff = 1 - p[chosen]
+            for k in range(self.n_routes):
+                if k != chosen:
+                    p[k] = diff / (self.n_routes - 1)
+            return p
+
+        # Scale remaining probabilities to preserve unity (orrected version Eq. 9)
+        scale = (1 - old_chosen - old_chosen * self.beta * stimulus) / (1 - old_chosen)
+
         for k in range(self.n_routes):
             if k != chosen:
-                p[k] = (p[k] - p[k] * p[chosen] * self.beta * stimulus) / (
-                    1 - p[chosen]
-                )
+                # Excepcional case in which some route has 0 probbaility, so that it can be recovered
+                if p[k] == 0:
+                    p[k] = (p[k] + self.epsilon) * scale
+                else:
+                    p[k] = p[k] * scale
         return p
 
     def _update_history(self, chosen, reward):
