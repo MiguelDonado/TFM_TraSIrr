@@ -338,6 +338,10 @@ REWARDS = AGENT_STATE_DIR / "rewards.parquet"
 # File containing BM data (stimulus, expected travel time...) across agents and episodes
 BM_RESULTS = AGENT_STATE_DIR / "BM_results.parquet"
 
+# File containing the full state trace (history, p, ET, PT, stimulus) of a
+# single agent across episodes — see run_training_BM.DEBUG_AGENT_ID
+AGENT_DEBUG_TRACE = AGENT_STATE_DIR / "agent_debug_trace.json"
+
 # ============================================================
 # Internal environment data
 # ============================================================
