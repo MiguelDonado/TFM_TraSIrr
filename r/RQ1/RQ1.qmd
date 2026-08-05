@@ -104,6 +104,16 @@ color_lines <- c(
   )  
 ```
 
+```{r}
+#| label: get_warm_up_period(exploration)
+
+# It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
+
+exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
+
+```
+
+
 
 ```{r}
 #| label: data_plot1
@@ -138,6 +148,32 @@ ggplot(
   data = rgap_df,
   mapping = aes(x = episode, y = rgap, color = seed_fct, group = seed_fct)
 ) +
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = (exploration_phase_floor - 2) / 2,
+    y = Inf,
+    label = "pre-learning \nphase",
+    fontface = "bold",
+    colour = "firebrick",
+    vjust = 2.5,
+    size = 3.5
+  ) +
   geom_line() +
   geom_point(data = plot1_annotation, size = 1.25) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
@@ -252,7 +288,9 @@ ggplot(
     x = "Episode",
     y = "Departure interval (group)",
     fill = "Refined\nR-gap (%)"
-  )
+  ) + 
+  geom_vline(xintercept = exploration_phase_floor, colour = "black", linewidth = 1.2)   +
+  geom_vline(xintercept = exploration_phase_floor, colour = "white", linewidth = 0.5,  linetype = "dotdash") 
 
 ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, height = 10)
 ```

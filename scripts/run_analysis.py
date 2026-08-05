@@ -85,7 +85,7 @@ def _prepare_rq1_data() -> None:
         "and tags.status != 'archived' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
-    params_to_attach = ["seed", "n_agents"]
+    params_to_attach = ["seed", "n_agents", "warm_up"]
 
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
