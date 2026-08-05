@@ -201,6 +201,7 @@ class BMAgent:
         return float(np.sign(stimulus) * magnitude**2)
 
     def _update_probabilities(self, chosen, stimulus):
+        # Copy so a failed validation below never leaves self.p corrupted
         p = self.p.copy()
 
         # Good route
@@ -210,8 +211,16 @@ class BMAgent:
         else:
             p = self._penalise_chosen(p, chosen, stimulus)
 
+        # If the sum is close to 1, renormalize to remove tiny numerical error.
+        s = np.sum(p)
+
+        if np.isclose(s, 1.0, atol=1e-3) or self.n_routes == 1:
+            p = p / s
+        else:
+            raise ValueError(f"Probabilities must sum to 1, got {s}")
+
         # Normalize
-        self.p = p / np.sum(p)
+        self.p = p 
 
     def _reinforce_chosen(self, p, chosen, stimulus):
         """
