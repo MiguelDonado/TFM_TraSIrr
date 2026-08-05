@@ -42,6 +42,20 @@ anything else. This is the earliest point config.network is read anywhere
 in the pipeline (demand generation runs before Scenario/route computation),
 so it guarantees a clean "normal" starting state regardless of how the
 previous run on this config ended (including a crash mid-degradation).
+
+Custom OD pairs (config.custom_od_pairs)
+------------------------------------------
+When config.custom_od_pairs is non-empty (toy networks / manual OD control),
+generate_od_for_agents skips randomTrips entirely and samples agents
+directly from the hand-picked (origin, destination, count) list — see
+generate_od_for_agents_custom. count is a weight, not an exact allocation:
+sample_od_space normalizes the counts across pairs and draws n_agents total
+from that distribution, the same way it would from randomTrips-derived
+counts — it does not guarantee exactly `count` agents land on that pair.
+The exact alternative routes for each pair (also given in
+config.custom_od_pairs) are consumed separately, by Scenario.compute_k_routes,
+which likewise skips the duarouter route search when this config field is set.
+
 """
 
 import os
@@ -117,6 +131,9 @@ def generate_od_for_agents(
     n_agents, n_agents_post_warmup, rng, min_distance_factor
 ):
 
+    if config.custom_od_pairs:
+        return generate_od_for_agents_custom(n_agents, rng)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
         # Generate random ods for agents
@@ -137,6 +154,18 @@ def generate_od_for_agents(
         )
     return (od_pairs, unique_ods)
 
+def generate_od_for_agents_custom(n_agents, rng):
+    """
+    Build the OD pool directly from config.custom_od_pairs instead of
+    sampling from randomTrips output. No route-diversity screen: the caller
+    picked these pairs (and their routes, consumed later by
+    Scenario.compute_k_routes) by hand.
+    """
+    od_space_counter = [
+        ((pair["origin"], pair["destination"]), pair["count"])
+        for pair in config.custom_od_pairs
+    ]
+    return sample_od_space(od_space_counter, n_agents, rng)
 
 def generate_random_trips_agents(
     n_agents_post_warmup, output_file, min_distance_factor, seed

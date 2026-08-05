@@ -100,6 +100,9 @@ class Scenario:
         random_factor,
     ):
 
+        if config.custom_od_pairs:
+            return self._custom_routes()
+
         with tempfile.TemporaryDirectory() as tmpdir:
             trips_file = os.path.join(tmpdir, "trips.xml")
             routes_file = os.path.join(tmpdir, "routes.xml")
@@ -130,6 +133,19 @@ class Scenario:
             od_routes = dict(zip(self.unique_ods, routes_per_od))
             # 5. Return k routes
             return od_routes
+
+    def _custom_routes(self):
+        """
+        Skip the duarouter route search: config.custom_od_pairs already
+        specifies the exact alternative routes per OD pair by hand (toy
+        networks / manual OD control).
+        """
+        routes_by_od = {
+            (pair["origin"], pair["destination"]): pair["routes"] 
+            for pair in config.custom_od_pairs
+        }
+        return {od: routes_by_od[od] for od in self.unique_ods}
+
 
     def _fill_alternative_routes(
         self, routes_per_od, trips_file, routes_file, seeds, k, random_factor

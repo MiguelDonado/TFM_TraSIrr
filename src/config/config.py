@@ -29,6 +29,12 @@ Config hyperparameter groups
                         stimulus signal — f(S) = sign(S)·(max(0,|S|-τ)/(1-τ))²
                         — applied before it drives the probability update,
                         off by default)
+  Custom demand       — custom_od_pairs (toy networks / manual OD control):
+                        hand-picked OD pairs, agent split, and exact
+                        alternative routes, bypassing randomTrips and the
+                        duarouter route search. Off by default (empty list).
+                        See utils/generate_agents.py and
+                        simulation/scenario.py for where it's consumed.
 
 
 Derived fields (computed in __post_init__)
@@ -171,6 +177,38 @@ class Config:
     memory_concentration: float = 0
     nonlinear_stimulus: bool = False
     stimulus_tau: float = 0.0
+
+    #####################
+    # Custom demand (toy networks / manual OD control)
+    #####################
+    # When non-empty, replaces randomTrips-based OD generation (generate_agents)
+    # AND the duarouter route search (Scenario.compute_k_routes) with hand-picked
+    # values. Each entry:
+    #   origin, destination — edge IDs in config.network
+    #   count                — number of agents sampled onto this OD pair
+    #                         (raw counts, not normalized — same convention
+    #                         as an OD matrix; sample_od_space normalizes
+    #                         internally to draw the total agent count)
+    #   routes              — list of alternative routes for this OD pair, each
+    #                         a list of edge IDs from origin to destination
+    custom_od_pairs: list = field(default_factory=list)
+
+    # Example (in a YAML section, any section name works — load_config flattens
+    # them all before constructing Config):
+    # custom_demand:
+    #   custom_od_pairs:
+    #     - origin: "E1_2_WB"
+    #       destination: "E21_24_EB"
+    #       count: 500
+    #       routes:
+    #         - ["E1_2_WB", "E1_3_SB", "E3_12_SB", "E12_13_SB", "E13_24_EB", "E21_24_EB"]
+    #         - ["E1_2_WB", "E1_3_SB", "E3_4_EB", "E4_11_SB", "E11_14_SB", "E14_23_SB", "E23_24_SB", "E21_24_EB"]
+    #     - origin: "E3_4_EB"
+    #       destination: "E20_21_EB"
+    #       count: 300
+    #       routes:
+    #         - ["E3_4_EB", "E4_11_SB", "E11_14_SB", "E14_23_SB", "E23_24_SB", "E21_24_EB", "E20_21_EB"]
+
 
     #####################
     # Derived values
