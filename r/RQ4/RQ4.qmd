@@ -175,19 +175,19 @@ p1_a <- ggplot(
 # Efficiently dealing with large dataframes
 
 # 1. Partition parquet file
-pq_path <- here("r/RQ4/data/trips_info_partitioned")
+pq_path_trip_info <- here("r/RQ4/data/trips_info_partitioned")
 data$bm_trips_info |> 
   group_by(seed) |> 
-  write_dataset(path = pq_path, format = "parquet")
+  write_dataset(path = pq_path_trip_info, format = "parquet")
 
 # 2. List partitioned parquet files
 tibble(
-  files = list.files(pq_path, recursive = TRUE),
-  size_MB = file.size(file.path(pq_path, files)) / 1024^2
+  files = list.files(pq_path_trip_info, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_trip_info, files)) / 1024^2
 )
 
 # 3. Use dplyr with arrow
-trips_info_pq <- open_dataset(pq_path)
+trips_info_pq <- open_dataset(pq_path_trip_info)
 query <- trips_info_pq |> 
   mutate(
     duration = as.numeric(duration)
@@ -283,9 +283,40 @@ p1_a / p1_b +
 ggsave(here("r","RQ4","figures","plot1_rgap_meantt_evolution.png"), width = 12, height = 6)
 ```
 
+```{r}
+#| label: data_plot_2
 
+degraded_edges <- c("E10_15_NB", "E10_15_SB")
 
+# Efficiently dealing with large dataframes
 
+# 1. Partition parquet file
+pq_path_edgedata <- here("r/RQ4/data/edgedata_partitioned")
+data$bm_edgedata |> 
+  group_by(seed) |> 
+  write_dataset(path = pq_path_edgedata, format = "parquet")
 
+# 2. List partitioned parquet files
+tibble(
+  files = list.files(pq_path_edgedata, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_edgedata, files)) / 1024^2
+)
 
+# 3. Use dplyr with arrow
+edgedata_pq <- open_dataset(pq_path_edgedata)
+query <- edgedata_pq |> 
+  # Filter only by degraded edges
+  filter(edge %in% degraded_edges) 
+# |> 
+  # mutate(
+  #   entered = as.numeric(entered)
+  # ) |> 
+  # group_by(episode, seed, n_agents) |> 
+  # summarise(
+  #   flow_edge = sum(entered)
+  # ) |> 
+  # ungroup()
 
+flow_degraded_edges_df <- query |> collect()
+
+```
