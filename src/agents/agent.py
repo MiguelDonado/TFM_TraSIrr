@@ -172,11 +172,16 @@ class BMAgent:
         if diff >= 0:
             biggest_benefit = max(expected_tt - perceived_tt) + self.epsilon
             stimulus = diff / biggest_benefit
-            return stimulus
         else:
             biggest_loss = abs(min(expected_tt - perceived_tt)) + self.epsilon
             stimulus = diff / biggest_loss
-            return stimulus
+
+        # Make sure stimulus is between [-1,1]
+        tol = 1e-4
+        if not (-1 - tol <= stimulus <= 1 + tol):
+            raise ValueError("Stimulus must be between -1 and 1.")
+
+        return stimulus
 
     def _apply_stimulus_threshold(self, stimulus):
         """
