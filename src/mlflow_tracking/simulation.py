@@ -34,6 +34,7 @@ from config.paths import (
     BM_PATHS,
     DUA_PATHS,
     DUE_DATA_DIR,
+    ENVIRONMENT_DIR,
     POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
     STATISTICS_PARQUET,
@@ -178,6 +179,7 @@ def _log_mlflow_artifacts():
     mlflow.log_artifact(AGENT_STATE_DIR)
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)
+    mlflow.log_artifact(ENVIRONMENT_DIR)
 
 
 def _log_metric_over_time(df, metric_name, col_metric, col_step):

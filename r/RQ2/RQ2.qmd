@@ -114,6 +114,8 @@ color_lines <- c(
 exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
 ```
 
+## Network equilibrium
+
 ```{r}
 #| label: data_plot1
 
@@ -283,7 +285,7 @@ ggplot(
   labs(
     title = "Sensitivity of R-gap to memory level",
     subtitle = "Final-episode R-gap for five random seeds (thin lines) \nand their median (thick line)",
-    x = "Memory level (γ)",
+    x = "Memory level",
     y = "R-gap (%)"
   ) + 
   scale_x_continuous(
@@ -292,3 +294,31 @@ ggplot(
 
 ggsave(here("r","RQ2","figures","plot2_sensitivity_analysis_memory.png"), width = 12, height = 6)
 ```
+
+The second plot relative to the sensitivity of the r-gap to the memory level, 
+is not included. When there is no sensitivity, it's enough with the first plot. The second plot is only necessary in the case that there is sensitivity.
+
+
+## Behavioral convergence
+```{r}
+#| label: data_plot_3
+
+# The OD matrix doesnt depend on memory level. So, we pick one memory level at random
+set.seed(123)
+representative_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
+
+representative_OD <- data$demand_odt |> 
+  filter(
+    memory_level == representative_memory_level,
+    seed == representative_seeds[1], 
+    n_agents == 2000
+  ) |> 
+  select(-c(run_id, warm_up, memory_level)) |> 
+  group_by(origin, destination, seed, n_agents) |> 
+  summarise(demand = sum(count)) |> 
+  ungroup()
+
+
+```
+
+
