@@ -385,23 +385,58 @@ query <- flow_paths_pq |>
   ) |> 
   ungroup()
 
-flow_paths_df <- query |> collect()
+flow_paths_df_query <- query |> collect()
 
 # Check to ensure flow paths computation is correct
-total_n_agents <- flow_paths_df |> group_by(memory_level, n_agents, episode) |> summarise(total_agents = sum(flow)) |> ungroup() |> distinct(total_agents)
+total_n_agents <- flow_paths_df_query |> group_by(memory_level, n_agents, episode) |> summarise(total_agents = sum(flow)) |> ungroup() |> summarise(n = n_distinct(total_agents)) |> ungroup() |> pull(n)
 
 if (total_n_agents > 3) {
   stop("Something is wrong in the computation\n
        of flow_paths_df.\ntotal_n_agents cannot be greater than 3.")
 }
-
-flow_paths_df <- flow_paths_df |> 
-  mutate(
-    congestion_regime = make_congestion_regime(n_agents),
-  ) |> 
-  select(-c(n_agents))
 ```
 
+```{r}
+#| label: data_plot_3_part_c
+
+# 1. Data wrangling df
+path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
+path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
+
+flow_paths_df <- flow_paths_df_query |> 
+  mutate(
+    congestion_regime = make_congestion_regime(n_agents),
+    memory_level_fct = factor(
+      memory_level, 
+      levels = representative_memory_levels, 
+      labels = representative_memory_levels_labels),
+    path = factor(
+      path, 
+      levels = path_levels,
+      labels = path_levels_labels
+    )
+  ) |> 
+  select(-c(n_agents, memory_level)) |> 
+  mutate(
+    memory_level_fct = forcats::fct_rev(memory_level_fct)
+  )
+```
+
+```{r}
+#| label: breaks_plot3
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step_plot3 <- floor(max_episode / 50) * 10
+breaks_plot3 <- seq(0, max_episode, by = step_plot3)
+
+# Remove breaks that are within step of the learning start
+breaks_plot3 <- breaks[abs(breaks - exploration_phase_floor) >= step_plot3 / 2]
+# Add the learning start break
+breaks_plot3 <- sort(c(breaks_plot3, exploration_phase_floor))
+labels_plot3 <- as.character(breaks_plot3)
+labels_plot3[breaks_plot3==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
 
 ```{r}
 #| label: plot3
@@ -410,10 +445,43 @@ flow_paths_df <- flow_paths_df |>
 
 ggplot(
   data = flow_paths_df, 
-  mapping = aes(x = episode, y = flow, group = path)
+  mapping = aes(x = episode, y = flow, group = path, color = path)
 ) +
-  geom_line() +
-  facet_grid(memory_level ~ congestion_regime)
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.06
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.4
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_line(linewidth = 0.7) +
+  facet_grid(memory_level_fct ~ congestion_regime) +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1, size = 9),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    legend.title = element_text(size = 11),
+    legend.text  = element_text(size = 10),
+    legend.key.size = unit(0.6, "lines")
+    
+) + 
+  scale_x_continuous(breaks = breaks_plot3, labels = labels_plot3) +
+  labs(
+    y = "Route flow (vehicles)",
+    x = "Episode",
+    title = "Behavioral convergence: Route flow evolution",
+    subtitle = "Evolution of route flows for a representative OD pair. \nEach colored line represents the flow assigned to one feasible route."
+  ) 
 ```
 
 
