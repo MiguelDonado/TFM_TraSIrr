@@ -111,10 +111,7 @@ color_lines <- c(
 # It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
 
 exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
-
 ```
-
-
 
 ```{r}
 #| label: data_plot1

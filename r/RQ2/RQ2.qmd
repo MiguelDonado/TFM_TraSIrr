@@ -57,7 +57,7 @@ theme_set(theme_thesis())
 
 # Builds the congestion_regime factor from whatever n_agents values are
 # present in the data, instead of hardcoding levels/labels per plot.
-congestion_regime_tiers <- c("Near free-flow", "Moderate", "High")
+congestion_regime_tiers <- c("Near free-flow", "Moderate congestion", "High congestion")
 
 make_congestion_regime <- function(n_agents) {
   levels_sorted <- sort(unique(n_agents))
@@ -106,12 +106,19 @@ color_lines <- c(
 ) 
 ```
 
+```{r}
+#| label: get_warm_up_period(exploration)
+
+# It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
+
+exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
+```
 
 ```{r}
 #| label: data_plot1
 
 representative_memory_levels <- c("1.0","0.6","0.2")
-representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("γ = ", x))
+representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("Memory = ", x))
 
 # Not aggregating mean +/- SD across seeds here: seeds finish training at very
 # different episode counts (e.g. High regime: some stop by episode ~22, one
@@ -140,6 +147,23 @@ rgap_df <- data$bm_rgap |>
 ```
 
 ```{r}
+#| label: breaks_plot1
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step <- floor(max_episode / 30) * 10
+breaks <- seq(0, max_episode, by = step)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= (step/2.25)]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+
+```{r}
 #| label: plot1
 
 upper_limit_y_axis <- quantile(rgap_df$rgap, probs = c(0.95))
@@ -148,9 +172,30 @@ ggplot(
   data = rgap_df,
   mapping = aes(x = episode, y = rgap, group = seed_fct)
 ) +
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
-  geom_hline(yintercept = 5, alpha = 0.6, linewidth = 0.7, color = "#B22222") +
+  geom_hline(
+    yintercept = 5,
+    colour = "grey40",
+    linetype = "longdash",
+    linewidth = 0.5
+  ) +
   facet_grid(memory_level_fct ~ congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
@@ -158,7 +203,13 @@ ggplot(
     x = "Episode",
     y = "R-gap (%)"
   ) +
-coord_cartesian(ylim=c(-5,upper_limit_y_axis))
+coord_cartesian(ylim=c(-5,upper_limit_y_axis)) +
+   scale_x_continuous(breaks = breaks, labels = labels) +
+theme(
+  axis.title.x = element_text(margin = margin(t = 1)),
+  axis.text.x = element_text(angle = 30, hjust = 1),
+  strip.text.y = element_text(angle = 0, size = 10)
+)
 
 ggsave(here("r","RQ2","figures","plot1_rgap_evolution_mem_seed.png"), width = 12, height = 6)
 ```
