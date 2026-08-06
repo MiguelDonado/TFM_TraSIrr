@@ -94,6 +94,7 @@ def _prepare_rq1_data() -> None:
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "dua_rgap_by_od": "DUE/duaIterate/R-gap/rgap_by_od.parquet",
         "dua_refined_rgap": "DUE/duaIterate/R-gap/refined_rgap.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet"
     }
 
     data_dir = BASE_DIR / "r" / "RQ1" / "data"
