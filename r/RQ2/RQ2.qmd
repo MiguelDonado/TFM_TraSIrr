@@ -301,24 +301,120 @@ is not included. When there is no sensitivity, it's enough with the first plot. 
 
 ## Behavioral convergence
 ```{r}
-#| label: data_plot_3
+#| label: data_plot_3_part1
 
-# The OD matrix doesnt depend on memory level. So, we pick one memory level at random
+# 1. Selecting a representative OD:
+#     - High congestion regime:  n_agents == 2000
+#     - Random seed: representative_seeds[1]
+#     - OD matrix is the same for all different memory levels keeping everything 
+#       else constant. We pick a random memory level: 
+#       sample(unique(data$demand_odt$memory_level), size = 1)
+#     - Once we have filtered for this scenario, we will choose an OD with high demand, 
+#       and that has a high number of available routes.
+
+# a) Filter to the particular scenario, and check the demand of all OD pairs.
 set.seed(123)
-representative_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
 
-representative_OD <- data$demand_odt |> 
+representative_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
+representative_seed <- representative_seeds[1]
+representative_congestion <- 2000
+
+
+# We wanna analyze the routes of one representative OD.
+# The OD to be analyzed 
+
+OD_counts <- data$demand_odt |> 
   filter(
     memory_level == representative_memory_level,
-    seed == representative_seeds[1], 
-    n_agents == 2000
+    seed == representative_seed, 
+    n_agents == representative_congestion
   ) |> 
   select(-c(run_id, warm_up, memory_level)) |> 
   group_by(origin, destination, seed, n_agents) |> 
   summarise(demand = sum(count)) |> 
+  ungroup() |> 
+  rename(
+    dest = destination
+  )
+
+# b) Filter to the particular scenario, and check the number of routes for each OD.
+OD_available_routes <- data$od_routes |> 
+  select(-c(run_id, seed, memory_level, n_agents, warm_up)) |> 
+  group_by(origin, dest) |> 
+  summarise(
+    n_routes = n_distinct(route_id)
+  )
+
+# c) Table containing OD pairs with demand and available routes
+representative_OD_df <- OD_counts |> 
+  left_join(OD_available_routes, by = c("origin", "dest"))
+
+representative_OD <- representative_OD_df |> 
+  arrange(desc(n_routes),desc(demand)) |> 
+  slice_head(n = 1) |> 
+  select(-c(seed, n_agents))
+```
+
+```{r}
+#| label: data_plot3_part_2
+# 2. Compute the flow on each route per episode
+# Efficiently dealing with large dataframes
+
+# 1. Partition parquet file
+pq_path_flow_paths <- here("r/RQ2/data/flow_paths_partitioned")
+data$flow_paths |> 
+  group_by(path) |> 
+  write_dataset(path = pq_path_flow_paths, format = "parquet")
+
+# 2. List partitioned parquet files
+tibble(
+  files = list.files(pq_path_flow_paths, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_flow_paths, files)) / 1024^2
+)
+
+# 3. Use dplyr with arrow
+flow_paths_pq <- open_dataset(pq_path_flow_paths)
+query <- flow_paths_pq |> 
+  filter(
+    memory_level %in% representative_memory_levels,
+    seed == representative_seed, 
+  ) |> 
+  group_by(episode, path, memory_level, n_agents) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
   ungroup()
 
+flow_paths_df <- query |> collect()
 
+# Check to ensure flow paths computation is correct
+total_n_agents <- flow_paths_df |> group_by(memory_level, n_agents, episode) |> summarise(total_agents = sum(flow)) |> ungroup() |> distinct(total_agents)
+
+if (total_n_agents > 3) {
+  stop("Something is wrong in the computation\n
+       of flow_paths_df.\ntotal_n_agents cannot be greater than 3.")
+}
+
+flow_paths_df <- flow_paths_df |> 
+  mutate(
+    congestion_regime = make_congestion_regime(n_agents),
+  ) |> 
+  select(-c(n_agents))
 ```
+
+
+```{r}
+#| label: plot3
+
+# This plots refers to a particular OD, for a particular seed, and facet for congestion and some representative memory_levels. 
+
+ggplot(
+  data = flow_paths_df, 
+  mapping = aes(x = episode, y = flow, group = path)
+) +
+  geom_line() +
+  facet_grid(memory_level ~ congestion_regime)
+```
+
 
 

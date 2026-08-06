@@ -122,7 +122,8 @@ def _prepare_rq2_data() -> None:
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
-        "od_routes": "environment/od_routes.parquet"
+        # "od_routes": "environment/od_routes.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet"
     }
 
     data_dir = BASE_DIR / "r" / "RQ2" / "data"
