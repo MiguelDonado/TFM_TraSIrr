@@ -268,12 +268,25 @@ refined_rgap_df_agg
 ```{r}
 #| label: plot2
 
+# Choose x-axis ticks
+max_episode <- max(refined_rgap_df_agg$episode)
+step <- floor(max_episode / 40) * 10
+breaks <- seq(0, max_episode, by = step)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= step]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+
 upper_limit_color_scale <- quantile(refined_rgap_df_agg$median_refined_rgap, probs = c(0.95))
 
 ggplot(
   data = refined_rgap_df_agg,
   mapping = aes(x = episode, y = interval_group, fill = median_refined_rgap)
 ) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   geom_tile() +
   scale_y_discrete(limits = rev) +
   scale_fill_viridis_c(
@@ -290,7 +303,7 @@ ggplot(
     fill = "Refined\nR-gap (%)"
   ) + 
   geom_vline(xintercept = exploration_phase_floor, colour = "black", linewidth = 1.2)   +
-  geom_vline(xintercept = exploration_phase_floor, colour = "white", linewidth = 0.5,  linetype = "dotdash") 
+  geom_vline(xintercept = exploration_phase_floor, colour = "white", linewidth = 0.5,  linetype = "dotdash")
 
 ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, height = 10)
 ```
