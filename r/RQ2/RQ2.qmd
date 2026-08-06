@@ -42,6 +42,8 @@ renv::load()
 library(tidyverse)
 library(arrow)
 library(ggh4x)
+library(glue)
+library(ggtext)
 ```
 
 ```{r}
@@ -301,31 +303,32 @@ is not included. When there is no sensitivity, it's enough with the first plot. 
 
 ## Behavioral convergence
 ```{r}
-#| label: data_plot_3_part1
+#| label: data_plot_3_route_flow
 
-# 1. Selecting a representative OD:
-#     - High congestion regime:  n_agents == 2000
-#     - Random seed: representative_seeds[1]
-#     - OD matrix is the same for all different memory levels keeping everything 
-#       else constant. We pick a random memory level: 
-#       sample(unique(data$demand_odt$memory_level), size = 1)
-#     - Once we have filtered for this scenario, we will choose an OD with high demand, 
-#       and that has a high number of available routes.
+# Things to take into account:
+# 1. OD matrix is different across congestion_regimes (keeping everything else constant)
+# 2. OD matrix is different across seeds (keeping everything else constant)
+# 3. OD matrix is the same across memory levels (keeping everything else constant)
 
-# a) Filter to the particular scenario, and check the demand of all OD pairs.
-set.seed(123)
-
-representative_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
+# When analyzing the impact of memory level on the route flow evolution, we just want to analyze one OD from a FIXED OD MATRIX!!!
+###########################
+# Hence to choose our representative OD we have to pick:
+# #########################
+# 1. representative_seed
 representative_seed <- representative_seeds[1]
+# 2. representative_congestion
 representative_congestion <- 2000
+representative_congestion_label <- "High congestion (2000)"
+# 3. random_memory_level
+set.seed(123)
+random_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
 
+# To choose a representative OD, basically we are going to select an OD with a high number of available routes and a high demand. So we need two things:
 
-# We wanna analyze the routes of one representative OD.
-# The OD to be analyzed 
-
-OD_counts <- data$demand_odt |> 
+# 1. OD matrix (contains the demand on each OD for this scenario)
+OD_matrix <- data$demand_odt |> 
   filter(
-    memory_level == representative_memory_level,
+    memory_level == random_memory_level,
     seed == representative_seed, 
     n_agents == representative_congestion
   ) |> 
@@ -337,27 +340,38 @@ OD_counts <- data$demand_odt |>
     dest = destination
   )
 
-# b) Filter to the particular scenario, and check the number of routes for each OD.
-OD_available_routes <- data$od_routes |> 
+# 2. OD_routes (available routes for each OD)
+OD_routes <- data$od_routes |> 
+  filter(
+    memory_level == random_memory_level,
+    seed == representative_seed, 
+    n_agents == representative_congestion
+  ) |> 
   select(-c(run_id, seed, memory_level, n_agents, warm_up)) |> 
   group_by(origin, dest) |> 
   summarise(
     n_routes = n_distinct(route_id)
-  )
+  ) |> 
+  ungroup()
 
-# c) Table containing OD pairs with demand and available routes
-representative_OD_df <- OD_counts |> 
-  left_join(OD_available_routes, by = c("origin", "dest"))
+# JOIN: od_matrix + od_routes
+OD_info <- OD_matrix |> 
+  left_join(OD_routes, by = c("origin", "dest"))
 
-representative_OD <- representative_OD_df |> 
+representative_OD <- OD_info |> 
   arrange(desc(n_routes),desc(demand)) |> 
   slice_head(n = 1) |> 
   select(-c(seed, n_agents))
 ```
 
 ```{r}
-#| label: data_plot3_part_2
-# 2. Compute the flow on each route per episode
+#| label: data_plot_3_route_flow_2
+
+# Now that we have the scenario (defined by the seed and congestion_regime) 
+# and we also have the representative OD whose paths we want to analyze, 
+# we need to do the following:
+
+# 1. Compute the flow on each route of the representative OD per episode
 # Efficiently dealing with large dataframes
 
 # 1. Partition parquet file
@@ -376,10 +390,15 @@ tibble(
 flow_paths_pq <- open_dataset(pq_path_flow_paths)
 query <- flow_paths_pq |> 
   filter(
-    memory_level %in% representative_memory_levels,
+    # Filter by the particular scenario
     seed == representative_seed, 
+    n_agents == representative_congestion,
+    memory_level %in% representative_memory_levels,
+    # Filter by the particular OD
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
   ) |> 
-  group_by(episode, path, memory_level, n_agents) |> 
+  group_by(episode, path, memory_level) |> 
   summarise(
     flow = sum(count)
   ) |> 
@@ -387,43 +406,50 @@ query <- flow_paths_pq |>
 
 flow_paths_df_query <- query |> collect()
 
-# Check to ensure flow paths computation is correct
-total_n_agents <- flow_paths_df_query |> group_by(memory_level, n_agents, episode) |> summarise(total_agents = sum(flow)) |> ungroup() |> summarise(n = n_distinct(total_agents)) |> ungroup() |> pull(n)
+# Check: The sum of flows across paths for the particular OD for one episode should be equal to the demand on that OD
+check_demand_od_df <- flow_paths_df_query |> 
+  group_by(episode, memory_level) |> 
+  summarise(
+    demand = sum(flow)
+  ) |> ungroup()
 
-if (total_n_agents > 3) {
-  stop("Something is wrong in the computation\n
-       of flow_paths_df.\ntotal_n_agents cannot be greater than 3.")
+demand_od_sum_paths <- unique(check_demand_od_df$demand)
+demand_od <- representative_OD$demand
+
+if (demand_od != demand_od_sum_paths) {
+  stop("Something is wrong in the computation of path flows for the particular OD and scenario.")
 }
 ```
 
 ```{r}
-#| label: data_plot_3_part_c
+#| label: data_plot_3_a_part_3
 
-# 1. Data wrangling df
+# Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
+
+# 1. Handling some things to convert path variable to factor
 path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
 path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
 
 flow_paths_df <- flow_paths_df_query |> 
   mutate(
-    congestion_regime = make_congestion_regime(n_agents),
-    memory_level_fct = factor(
+    # Convert to factors
+    congestion_regime = representative_congestion_label,
+    memory_level_fct = forcats::fct_rev(factor(
       memory_level, 
       levels = representative_memory_levels, 
-      labels = representative_memory_levels_labels),
+      labels = representative_memory_levels_labels)),
     path = factor(
       path, 
       levels = path_levels,
       labels = path_levels_labels
     )
   ) |> 
-  select(-c(n_agents, memory_level)) |> 
-  mutate(
-    memory_level_fct = forcats::fct_rev(memory_level_fct)
-  )
+  select(-c(memory_level))
 ```
 
 ```{r}
-#| label: breaks_plot3
+#| label: breaks_plot3_a
+#| eval: False
 
 # Choose x-axis ticks
 max_episode <- max(data$bm_rgap$episode)
@@ -439,14 +465,26 @@ labels_plot3[breaks_plot3==exploration_phase_floor] <- paste0("Learning\nstarts 
 ```
 
 ```{r}
-#| label: plot3
+#| label: plot3_a
 
-# This plots refers to a particular OD, for a particular seed, and facet for congestion and some representative memory_levels. 
+# This plots refers to a particular OD, for a particular seed and congestion regime, and facet for some representative memory_levels. 
 
 ggplot(
   data = flow_paths_df, 
   mapping = aes(x = episode, y = flow, group = path, color = path)
 ) +
+  geom_line(linewidth = 0.7) +
+  facet_grid(memory_level_fct ~ .) +
+  labs(
+    color = "Route",
+    y = "Route flow",
+    x = "Episode",
+    title = "Behavioral convergence: Evolution of route flows",
+    subtitle = glue(
+      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+    )
+  ) +
+  # Shaded region
   annotate(
     "rect",
     xmin = -Inf,
@@ -463,26 +501,65 @@ ggplot(
   color = "red",
   linewidth = 0.4
   ) +
+  annotate(
+    "text",
+    x = (exploration_phase_floor - 2) / 2,
+    y = Inf,
+    label = "pre-learning \nphase",
+    fontface = "bold",
+    colour = "firebrick",
+    vjust = 2.5,
+    size = 3.5
+  ) +
+  # Change color scale
   scale_color_brewer(palette = "Dark2") +
-  geom_line(linewidth = 0.7) +
-  facet_grid(memory_level_fct ~ congestion_regime) +
+  # Tweak miscellaneous stuff
   theme(
-    axis.text.x = element_text(angle = 30, hjust = 1, size = 9),
-    axis.title.x = element_text(size = 14),
-    axis.title.y = element_text(size = 14),
     legend.title = element_text(size = 11),
     legend.text  = element_text(size = 10),
-    legend.key.size = unit(0.6, "lines")
-    
-) + 
-  scale_x_continuous(breaks = breaks_plot3, labels = labels_plot3) +
-  labs(
-    y = "Route flow (vehicles)",
-    x = "Episode",
-    title = "Behavioral convergence: Route flow evolution",
-    subtitle = "Evolution of route flows for a representative OD pair. \nEach colored line represents the flow assigned to one feasible route."
-  ) 
+    legend.key.size = unit(0.6, "lines"),
+    plot.subtitle = element_text(size = 11)
+) 
+
+ggsave(here("r","RQ2","figures","plot3_route_flow_evolution.png"), width = 12, height = 6)
 ```
 
+```{r}
+#| label: data_plot3_b
+
+# Plot relative to the mean travel time of the routes, to check
+# redistribution occurs among near-equilibrium routes
+
+# 1. Compute the mean travel time on each route per episode
+# Efficiently dealing with large dataframes
+
+# 1. Partition parquet file
+pq_path_cost_paths <- here("r/RQ2/data/cost_paths_partitioned")
+data$cost_paths |> 
+  group_by(path) |> 
+  write_dataset(path = pq_path_cost_paths, format = "parquet")
+
+# 2. List partitioned parquet files
+tibble(
+  files = list.files(pq_path_cost_paths, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_cost_paths, files)) / 1024^2
+)
+
+# 3. Use dplyr with arrow
+cost_paths_pq <- open_dataset(pq_path_cost_paths)
+query <- cost_paths_pq |> 
+  filter(
+    memory_level %in% representative_memory_levels,
+    seed == representative_seed, 
+  ) |> 
+  group_by(episode, path, memory_level, n_agents) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
+  ungroup()
+
+flow_paths_df_query <- query |> collect()
+
+```
 
 
