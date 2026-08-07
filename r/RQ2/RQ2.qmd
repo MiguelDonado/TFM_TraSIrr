@@ -44,6 +44,7 @@ library(arrow)
 library(ggh4x)
 library(glue)
 library(ggtext)
+library(patchwork)
 ```
 
 ```{r}
@@ -422,7 +423,7 @@ if (demand_od != demand_od_sum_paths) {
 ```
 
 ```{r}
-#| label: data_plot_3_a_part_3
+#| label: data_plot_3_part_3
 
 # Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
 
@@ -443,12 +444,11 @@ flow_paths_df <- flow_paths_df_query |>
       levels = path_levels,
       labels = path_levels_labels
     )
-  ) |> 
-  select(-c(memory_level))
+  )
 ```
 
 ```{r}
-#| label: breaks_plot3_a
+#| label: breaks_plot3
 #| eval: False
 
 # Choose x-axis ticks
@@ -465,11 +465,11 @@ labels_plot3[breaks_plot3==exploration_phase_floor] <- paste0("Learning\nstarts 
 ```
 
 ```{r}
-#| label: plot3_a
+#| label: plot3
 
 # This plots refers to a particular OD, for a particular seed and congestion regime, and facet for some representative memory_levels. 
 
-ggplot(
+p_route_flow <- ggplot(
   data = flow_paths_df, 
   mapping = aes(x = episode, y = flow, group = path, color = path)
 ) +
@@ -479,7 +479,6 @@ ggplot(
     color = "Route",
     y = "Route flow",
     x = "Episode",
-    title = "Behavioral convergence: Evolution of route flows",
     subtitle = glue(
       "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
     )
@@ -518,48 +517,138 @@ ggplot(
     legend.title = element_text(size = 11),
     legend.text  = element_text(size = 10),
     legend.key.size = unit(0.6, "lines"),
-    plot.subtitle = element_text(size = 11)
+    plot.subtitle = element_text(size = 11),
+    strip.text.y = element_text(angle = 0, size = 10)
 ) 
-
-ggsave(here("r","RQ2","figures","plot3_route_flow_evolution.png"), width = 12, height = 6)
 ```
+
 
 ```{r}
 #| label: data_plot3_b
 
-# Plot relative to the mean travel time of the routes, to check
-# redistribution occurs among near-equilibrium routes
+# 1. We need to determine the convergence episode for each memory level and for the particular scenario (seed, OD pair)
 
-# 1. Compute the mean travel time on each route per episode
-# Efficiently dealing with large dataframes
+# We define convergence episode to be the episode at which the aggregate R-gap goes below a certain value and remains below that value until the end of training
+rgap_threshold <- 7.5
 
-# 1. Partition parquet file
-pq_path_cost_paths <- here("r/RQ2/data/cost_paths_partitioned")
-data$cost_paths |> 
-  group_by(path) |> 
-  write_dataset(path = pq_path_cost_paths, format = "parquet")
-
-# 2. List partitioned parquet files
-tibble(
-  files = list.files(pq_path_cost_paths, recursive = TRUE),
-  size_MB = file.size(file.path(pq_path_cost_paths, files)) / 1024^2
-)
-
-# 3. Use dplyr with arrow
-cost_paths_pq <- open_dataset(pq_path_cost_paths)
-query <- cost_paths_pq |> 
+convergence_episodes <- data$bm_rgap |> 
   filter(
-    memory_level %in% representative_memory_levels,
+    # Filter by the particular scenario
     seed == representative_seed, 
+    memory_level %in% representative_memory_levels,
   ) |> 
-  group_by(episode, path, memory_level, n_agents) |> 
+  select(-c(run_id, warm_up, seed)) |> 
+  mutate(
+    congestion_regime = make_congestion_regime(n_agents),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  select(-c(n_agents)) |> 
+  mutate(
+    below = rgap < rgap_threshold
+  ) |> 
+  group_by(congestion_regime, memory_level) |> 
+  # TRUE if all remaining episodes are below threshold
+  mutate(
+    remainder = map_lgl(
+      # Returns a vector with all the row numbers
+      row_number(),
+      \(x) all(below[x:n()])
+      )
+  ) |> 
+  filter(remainder) |> 
+  slice_head(n = 1) |> 
+  rename(
+    convergence_episode = episode
+  ) |> 
+  ungroup() |> 
+  select(-c(below, remainder))
+
+last_episodes <- data$bm_rgap |> 
+  filter(
+    # Filter by the particular scenario
+    seed == representative_seed, 
+    memory_level %in% representative_memory_levels,
+  ) |> 
+  select(-c(run_id, warm_up, seed)) |> 
+  mutate(
+    congestion_regime = make_congestion_regime(n_agents),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  select(-c(n_agents)) |> 
+  group_by(congestion_regime, memory_level) |> 
+  slice_tail(n = 1) |> 
+  select(-rgap) |> 
+  rename(last_episode = episode)
+```
+
+```{r}
+# Compute FSD (over the last X episodes after convergence)
+
+n_episodes <- 20
+
+# Check to make sure all the cases have X episodes after convergence
+has_x_episodes_after_convergence <- convergence_episodes |> 
+  left_join(last_episodes, by = c("congestion_regime", "memory_level")) |> 
+  mutate(exists_x_episodes_after_convergence = (last_episode - convergence_episode) > n_episodes)
+
+if (!all(has_x_episodes_after_convergence$exists_x_episodes_after_convergence)){
+  stop("FSD cannot be computed, because some scenario does not have x episodes 
+       after having converged to DUE")
+}
+
+FSD_df <- flow_paths_df |> 
+  arrange(path, episode) |> 
+  group_by(memory_level, congestion_regime, path) |>
+  slice_tail(n = n_episodes) |> 
   summarise(
-    flow = sum(count)
+    FSD = sd(flow)
+  ) |> 
+  ungroup() |> 
+  mutate(
+    memory_level = as.numeric(memory_level)
+  )
+
+FSD_df_summary <- FSD_df |> 
+  group_by(memory_level, congestion_regime) |> 
+  summarise(
+    mean_FSD = mean(FSD),
   ) |> 
   ungroup()
-
-flow_paths_df_query <- query |> collect()
-
 ```
+
+```{r}
+#| label: plot3_b
+
+p_mean_FSD <- ggplot(
+  data = FSD_df_summary,
+  mapping = aes(y = memory_level, x = mean_FSD, group = 1)
+) +
+  geom_point(size = 2.5) +
+  labs(
+    title="Flow variability",
+    y = "Memory",
+    x = "Mean FSD"
+    ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+  ) +
+  scale_y_reverse(
+    breaks = as.numeric(representative_memory_levels)
+  )
+
+p_route_flow + p_mean_FSD +
+  plot_layout(widths = c(5, 0.8)) +
+  plot_annotation(
+    title = "Behavioral convergence: Route flow stability"
+  )
+
+ggsave(here("r","RQ2","figures","plot3_route_flow_stability.png"), width = 12, height = 6)
+```
+
+
+
 
 
