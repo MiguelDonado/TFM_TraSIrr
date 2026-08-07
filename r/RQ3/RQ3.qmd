@@ -609,6 +609,7 @@ ggplot(
     plot.subtitle = element_text(size = 11),
     strip.text.y = element_text(angle = 0, size = 10)
 )
+
 ggsave(here("r","RQ3","figures","plot4_route_flow_stability.png"), width = 12, height = 6)
 ```
 

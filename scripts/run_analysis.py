@@ -183,12 +183,12 @@ def _prepare_rq4_data() -> None:
         "network_degraded",
         "degradation_start_episode",
         "degradation_end_episode",
+        "warm_up"
     ]
 
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
-        "bm_trips_info": "processed/trips_info.parquet",
         "bm_edgedata": "processed/edgedata.parquet"
     }
 

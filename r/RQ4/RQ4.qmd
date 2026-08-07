@@ -42,6 +42,7 @@ library(tidyverse)
 library(arrow)
 library(ggh4x)
 library(patchwork)
+library(xml2)
 ```
 
 ```{r}
@@ -57,7 +58,7 @@ theme_set(theme_thesis())
 
 # Builds the congestion_regime factor from whatever n_agents values are
 # present in the data, instead of hardcoding levels/labels per plot.
-congestion_regime_tiers <- c("Moderate", "High")
+congestion_regime_tiers <- c("High")
 
 make_congestion_regime <- function(n_agents) {
   levels_sorted <- sort(unique(n_agents))
@@ -72,7 +73,6 @@ make_congestion_regime <- function(n_agents) {
     labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
 }
 ```
-
 
 ```{r}
 #| label: data
@@ -90,12 +90,39 @@ data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |>
 ```
 
 ```{r}
+#| label: get_warm_up_period(exploration)
+
+# It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
+
+exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
+```
+
+```{r}
+#| label: breaks_plot1
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+breaks <- seq(0,max_episode, by = 75)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= (50)]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+```{r}
 #| label: data_plot_1_a
 
+congestion_to_analyze <- "2000"
 disruption_start <- as.numeric(unique(data$bm_rgap$degradation_start_episode))
 disruption_end <- as.numeric(unique(data$bm_rgap$degradation_end_episode))
 
 rgap_df <- data$bm_rgap |> 
+  filter(
+    n_agents == congestion_to_analyze,
+  ) |> 
   mutate(
     congestion_regime = make_congestion_regime(n_agents)
   ) |> 
@@ -105,7 +132,8 @@ rgap_df_summary <- rgap_df |>
   group_by(episode, congestion_regime) |> 
   summarise(
     median_rgap = median(rgap),
-    iqr_rgap = IQR(rgap)
+    q25_rgap    = quantile(rgap, 0.25),
+    q75_rgap    = quantile(rgap, 0.75)
   ) |> 
   ungroup()
 ```
@@ -113,7 +141,7 @@ rgap_df_summary <- rgap_df |>
 ```{r}
 #| label: plot_1_a
 
-p1_a <- ggplot(
+ggplot(
 ) +
   annotate(
     "rect",
@@ -121,8 +149,8 @@ p1_a <- ggplot(
     xmax = disruption_end,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08,
+    fill = "orange",
+    alpha = 0.25,
   ) +
   annotate(
     "text",
@@ -137,15 +165,15 @@ p1_a <- ggplot(
   geom_vline(
   xintercept = disruption_start,
   linetype = 2,
-  alpha = 0.4,
-  color = "red",
+  alpha = 0.7,
+  color = "orange",
   linewidth = 0.5
   ) +
   geom_vline(
   xintercept = disruption_end,
   linetype = 2,
-  alpha = 0.4,
-  color = "red",
+  alpha = 0.7,
+  color = "orange",
   linewidth = 0.5
   ) +
   geom_line(
@@ -154,139 +182,79 @@ p1_a <- ggplot(
   ) + 
   geom_ribbon(
     data = rgap_df_summary,
-    mapping = aes(x = episode, ymin = median_rgap - iqr_rgap, ymax = median_rgap + iqr_rgap),
+    mapping = aes(x = episode, ymin = q25_rgap, ymax = q75_rgap),
     alpha = 0.1
   ) +
-  facet_wrap(~congestion_regime) +
   theme(
     panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank()
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(angle = 0, hjust = 1, size = 9),
 ) +
   labs(
     x = "Episode",
-    y = "R-gap (%)"
-  )
-  
-```
-
-```{r}
-#| label: data_plot_1_b
-
-# Efficiently dealing with large dataframes
-
-# 1. Partition parquet file
-pq_path_trip_info <- here("r/RQ4/data/trips_info_partitioned")
-data$bm_trips_info |> 
-  group_by(seed) |> 
-  write_dataset(path = pq_path_trip_info, format = "parquet")
-
-# 2. List partitioned parquet files
-tibble(
-  files = list.files(pq_path_trip_info, recursive = TRUE),
-  size_MB = file.size(file.path(pq_path_trip_info, files)) / 1024^2
-)
-
-# 3. Use dplyr with arrow
-trips_info_pq <- open_dataset(pq_path_trip_info)
-query <- trips_info_pq |> 
-  mutate(
-    duration = as.numeric(duration)
-  ) |> 
-  group_by(episode, seed, n_agents) |> 
-  summarise(
-    mean_travel_time = mean(duration)
-  ) |> 
-  ungroup()
-
-mean_tt_df <- query |> collect() |> 
-  mutate(
-    congestion_regime = make_congestion_regime(n_agents)
-  ) |> 
-  select(-n_agents)
-
-mean_tt_df_summary <- mean_tt_df |> 
-  group_by(episode, congestion_regime) |> 
-  summarise(
-    median_mean_tt = median(mean_travel_time),
-    iqr_mean_tt = IQR(mean_travel_time)
-  ) |> 
-  ungroup()
-```
-
-```{r}
-#| label: plot_1_b
-
-p1_b <- ggplot(
-) +
+    y = "R-gap (%)",
+    title = "Adaptation to temporary network disruption",
+    subtitle = "Evolution before, during, and after the disruption. High congestion (2000)"
+  ) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   annotate(
     "rect",
-    xmin = disruption_start,
-    xmax = disruption_end,
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
     fill = "red",
-    alpha = 0.08,
-  ) +
-  annotate(
-    "text",
-    x = (disruption_start + disruption_end) / 2,
-    y = Inf,
-    label = "Disruption",
-    fontface = "bold",
-    colour = "firebrick",
-    vjust = 2.5,
-    size = 4
+    alpha = 0.08
   ) +
   geom_vline(
-  xintercept = disruption_start,
+  xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
   color = "red",
   linewidth = 0.5
   ) +
-  geom_vline(
-  xintercept = disruption_end,
-  linetype = 2,
-  alpha = 0.4,
-  color = "red",
-  linewidth = 0.5
+  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_hline(
+    yintercept = 5,
+    colour = "grey40",
+    linetype = "longdash",
+    linewidth = 0.5
   ) +
-  geom_line(
-    data = mean_tt_df_summary,
-    mapping = aes(x = episode, y = median_mean_tt),
-  ) + 
-  geom_ribbon(
-    data = mean_tt_df_summary,
-    mapping = aes(x = episode, ymin = median_mean_tt - iqr_mean_tt, ymax = median_mean_tt + iqr_mean_tt),
-    alpha = 0.1
-  ) +
-  facet_wrap(~congestion_regime) +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank()
-) +
-  labs(
-    x = "Episode",
-    y = "Mean Travel Time (s)"
-  )
-```
+  # Automatically chosen breaks and add one extra tick
+  scale_y_continuous(
+    breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5)))
+)
 
-```{r}
-#| label: plot_1
-
-p1_a / p1_b +
-  plot_annotation(
-    title = "Adaptation to temporary network disruption",
-    subtitle = "Evolution before, during, and after the disruption"
-  )
-
-ggsave(here("r","RQ4","figures","plot1_rgap_meantt_evolution.png"), width = 12, height = 6)
+ggsave(here("r","RQ4","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
+  
 ```
 
 ```{r}
 #| label: data_plot_2
 
-degraded_edges <- c("E10_15_NB", "E10_15_SB")
+# Infer the degraded edges (with their NB/SB/EB/WB direction suffixes)
+# straight from the network files instead of hardcoding them: an edge
+# counts as degraded if its lane speed differs between the baseline
+# network and the one config.network_degraded was swapped in with.
+network_degraded_path <- unique(data$bm_rgap$network_degraded)
+stopifnot(length(network_degraded_path) == 1)
+network_normal_path <- file.path(dirname(network_degraded_path), "Normal_Sioux_Falls.net.xml")
+
+get_lane_speeds <- function(net_xml_path) {
+  # Read the XML file and find all <lane> elements
+  lanes <- xml_find_all(read_xml(net_xml_path), "//lane")
+  
+  # Extract the edge ID by removing the lane suffix (_0, _1, etc.)
+  edge_id <- sub("_[0-9]+$", "", xml_attr(lanes, "id"))
+  
+  # Extract lane speeds, convert them to numeric,
+  # and use edge IDs as the names of the vector
+  set_names(as.numeric(xml_attr(lanes, "speed")), edge_id)
+}
+
+normal_speeds <- get_lane_speeds(network_normal_path)
+degraded_speeds <- get_lane_speeds(network_degraded_path)
+degraded_edges <- names(degraded_speeds)[degraded_speeds != normal_speeds[names(degraded_speeds)]]
 
 # Efficiently dealing with large dataframes
 
@@ -306,17 +274,120 @@ tibble(
 edgedata_pq <- open_dataset(pq_path_edgedata)
 query <- edgedata_pq |> 
   # Filter only by degraded edges
-  filter(edge %in% degraded_edges) 
-# |> 
-  # mutate(
-  #   entered = as.numeric(entered)
-  # ) |> 
-  # group_by(episode, seed, n_agents) |> 
-  # summarise(
-  #   flow_edge = sum(entered)
-  # ) |> 
-  # ungroup()
+  filter(
+    edge %in% degraded_edges,
+    n_agents == congestion_to_analyze
+  ) |> 
+  mutate(
+    entered = as.numeric(entered)
+  ) |> 
+  group_by(episode, edge, seed, n_agents) |> 
+  summarise(
+    flow_edge = sum(entered)
+  ) |> 
+  ungroup()
 
 flow_degraded_edges_df <- query |> collect()
 
+flow_degraded_edges_df_summary <- flow_degraded_edges_df |> 
+  group_by(episode, edge, n_agents) |> 
+  summarise(
+    median_flow = median(flow_edge),
+    q25_flow = quantile(flow_edge, 0.25),
+    q75_flow = quantile(flow_edge, 0.75)
+  )
 ```
+
+```{r}
+#| label: breaks_plot2
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+breaks <- seq(0,max_episode, by = 75)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= (50)]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+```{r}
+#| label: plot_2
+
+ggplot() +
+  geom_line(
+    data = flow_degraded_edges_df_summary,
+    mapping = aes(x = episode, y = median_flow),
+  ) + 
+  geom_ribbon(
+    data = flow_degraded_edges_df_summary,
+    mapping = aes(x = episode, ymin = q25_flow, ymax = q75_flow),
+    alpha = 0.1
+  ) +
+  facet_grid(edge~.) +
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
+  annotate(
+    "rect",
+    xmin = disruption_start,
+    xmax = disruption_end,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "orange",
+    alpha = 0.25,
+  ) +
+  annotate(
+    "text",
+    x = (disruption_start + disruption_end) / 2,
+    y = Inf,
+    label = "Disruption",
+    fontface = "bold",
+    colour = "firebrick",
+    vjust = 2.5,
+    size = 4
+  ) +
+  geom_vline(
+  xintercept = disruption_start,
+  linetype = 2,
+  alpha = 0.7,
+  color = "orange",
+  linewidth = 0.5
+  ) +
+  geom_vline(
+  xintercept = disruption_end,
+  linetype = 2,
+  alpha = 0.7,
+  color = "orange",
+  linewidth = 0.5
+  ) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 1, size = 9),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+  ) +
+  labs(
+    x = "Episode",
+    y = "Edge flow (vehicles)",
+    title = "Flow evolution on disrupted edges",
+    subtitle = "Evolution before, during, and after the disruption. High congestion (2000)"
+  )
+  
+```
+
