@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="kis_0rqcuDRiHH5XgQO_">
+    <mxGraphModel dx="770" dy="454" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="R-gap increased during disruption" vertex="1">
+          <mxGeometry height="40" width="120" x="320" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-3" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" target="BCUU03Ct2KNgZKFQGGL4-9" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="120" />
+              <mxPoint x="245" y="120" />
+            </Array>
+            <mxPoint x="380" y="80" as="sourcePoint" />
+            <mxPoint x="320" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-5" connectable="0" parent="BCUU03Ct2KNgZKFQGGL4-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Yes" vertex="1">
+          <mxGeometry relative="1" x="0.6898" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-4" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="120" />
+              <mxPoint x="500" y="120" />
+            </Array>
+            <mxPoint x="380" y="80" as="sourcePoint" />
+            <mxPoint x="500" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-8" connectable="0" parent="BCUU03Ct2KNgZKFQGGL4-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="No" vertex="1">
+          <mxGeometry relative="1" x="0.7224" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;" value="&lt;div&gt;1) Edge was being used before:&lt;/div&gt;&lt;div&gt;a) drivers deviate to other &quot;bad&quot; routes that&amp;nbsp;could not absorb the displaced demand while maintaining similar travel costs.&lt;/div&gt;&lt;div&gt;b) drivers had to continue using paths that went through the edge&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="150" x="170" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="BCUU03Ct2KNgZKFQGGL4-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;" value="&lt;div align=&quot;left&quot;&gt;1) Edge was not being used before disruption&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;2) Disruption was mild&lt;/div&gt;&lt;div align=&quot;left&quot;&gt;3) Edge was being used but drivers used other routes that absorbed the flow without substantially degrading network equilibrium (it suggests those other routes are good as well)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="170" x="440" y="160" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

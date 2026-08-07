@@ -189,7 +189,9 @@ def _prepare_rq4_data() -> None:
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
-        "bm_edgedata": "processed/edgedata.parquet"
+        "bm_edgedata": "processed/edgedata.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ4" / "data"
