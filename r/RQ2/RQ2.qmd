@@ -479,9 +479,6 @@ p_route_flow <- ggplot(
     color = "Route",
     y = "Route flow",
     x = "Episode",
-    subtitle = glue(
-      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
-    )
   ) +
   # Shaded region
   annotate(
@@ -642,7 +639,10 @@ p_mean_FSD <- ggplot(
 p_route_flow + p_mean_FSD +
   plot_layout(widths = c(5, 0.8)) +
   plot_annotation(
-    title = "Behavioral convergence: Route flow stability"
+    title = "Behavioral convergence: Route flow stability",
+    subtitle = glue(
+      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+    )
   )
 
 ggsave(here("r","RQ2","figures","plot3_route_flow_stability.png"), width = 12, height = 6)

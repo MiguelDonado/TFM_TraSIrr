@@ -44,6 +44,8 @@ renv::load()
 library(tidyverse)
 library(arrow)
 library(ggh4x)
+library(scales)
+library(glue)
 ```
 
 ```{r}
@@ -109,12 +111,20 @@ color_lines <- c(
 ) 
 ```
 
+```{r}
+#| label: get_warm_up_period(exploration)
+
+# It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
+
+exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
+```
+
 
 ```{r}
 #| label: data_plot1
 
-representative_learning_rate_levels <- c("0.9","0.6","0.2")
-representative_learning_rate_labels <- map_chr(representative_learning_rate_levels, \(x) paste0("l = ", x))
+representative_learning_rate_levels <- c("0.9","0.6","0.3")
+representative_learning_rate_labels <- map_chr(representative_learning_rate_levels, \(x) paste0("LR = ", x))
 
 # Not aggregating mean +/- SD across seeds here: seeds finish training at very
 # different episode counts (e.g. High regime: some stop by episode ~22, one
@@ -143,6 +153,22 @@ rgap_df <- data$bm_rgap |>
 ```
 
 ```{r}
+#| label: breaks_plot1
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step <- floor(max_episode / 30) * 10
+breaks <- seq(0, max_episode, by = step)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= (step/2.25)]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+
+```{r}
 #| label: plot1
 
 upper_limit_y_axis <- quantile(rgap_df$rgap, probs = c(0.95))
@@ -152,15 +178,40 @@ ggplot(
   mapping = aes(x = episode, y = rgap, group = seed_fct)
 ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
-  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
-  geom_hline(yintercept = 5, alpha = 0.6, linewidth = 0.7, color = "#B22222") +
   facet_grid(learning_rate_fct ~ congestion_regime) +
   labs(
     title = "R-gap evolution across episodes",
-    subtitle = "Representative learning trajectories for three learning rates and three random seeds (BM)",
+    subtitle = "Representative learning trajectories for three learning rates\n(three random seeds)",
     x = "Episode",
     y = "R-gap (%)"
   ) +
+  # Horizontal lines
+  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_hline(
+    yintercept = 5,
+    colour = "grey40",
+    linetype = "longdash",
+    linewidth = 0.5
+  )  +
+  # Shaded region
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
+  # Breaks X-axis
+  scale_x_continuous(breaks = breaks, labels = labels) +
 coord_cartesian(ylim=c(-5,upper_limit_y_axis))
 
 ggsave(here("r","RQ3","figures","plot1_rgap_evolution_l_seed.png"), width = 12, height = 6)
@@ -221,11 +272,14 @@ ggplot(
   labs(
     title = "Sensitivity of R-gap to learning rate",
     subtitle = "Final-episode R-gap for five random seeds (thin lines) \nand their median (thick line)",
-    x = "Learning_rate (l)",
+    x = "Learning rate",
     y = "R-gap (%)"
   ) + 
   scale_x_continuous(
-    breaks = unique(sensitivity_df$learning_rate)
+    breaks = unique(sensitivity_df_summary$learning_rate),
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9)
   )
 
 ggsave(here("r","RQ3","figures","plot2_sensitivity_analysis_learning.png"), width = 12, height = 6)
@@ -270,12 +324,14 @@ convergence_speed_df_summary <- convergence_speed_df |>
     median_convergence_episode = median(convergence_episode)
   ) |> 
   ungroup()
-  
-  
 ```
 
 ```{r}
 #| label: plot3 
+
+range_learning_rate <- range(as.numeric(unique(data$bm_rgap$learning_rate)))
+
+x_location <- ((range_learning_rate[1] + range_learning_rate[2]) / 2)
 
 ggplot(
   data = convergence_speed_df_summary,
@@ -297,18 +353,46 @@ ggplot(
     alpha = 0.6,
     colour = "grey60"
   ) +
-  facet_wrap(~congestion_regime, scales = "free_y") +
+  facet_wrap(~congestion_regime) +
   labs(
     title = "Sensitivity of convergence speed to learning rate",
-    subtitle = paste0("First episode after which the R-gap remains below ", rgap_threshold, "%"),
-    x = "Learning rate (l)",
-    y = "Convergence episode"
+    subtitle = glue("First episode after which the R-gap remains below {rgap_threshold}% for the remaining of training"),
+    x = "Learning rate",
+    y = "Episode of convergence"
   ) + 
   scale_x_continuous(
     breaks = unique(convergence_speed_df$learning_rate)
   ) +
+  scale_y_continuous(
+    limits = c(0,max_episode)
+  ) +
   theme(
-    axis.text.x = element_text(size = 12)
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9)
+  ) +
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = Inf,
+    ymin = -Inf,
+    ymax = exploration_phase_floor,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_hline(
+  yintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = x_location,
+    y = exploration_phase_floor / 2,
+    label = "pre-learning \nphase",
+    fontface = "bold",
+    colour = "firebrick",
+    size = 3.5
   )
 
 ggsave(here("r","RQ3","figures","plot3_convergence_speed_l.png"), width = 12, height = 6)
@@ -323,55 +407,211 @@ ggsave(here("r","RQ3","figures","plot3_convergence_speed_l.png"), width = 12, he
   
 - **Robustness across seeds**: All seeds show similar behavior.
 
+## Behavioral convergence
 ```{r}
-#| label: data_plot4
 
-plot4_learning_rate_levels <- c("0.2", "0.4", "0.6", "0.8", "0.99")
+#| label: data_plot_4_route_flow
+# Things to take into account:
+# 1. OD matrix is different across congestion_regimes (keeping everything else constant)
+# 2. OD matrix is different across seeds (keeping everything else constant)
+# 3. OD matrix is the same across learning rates (keeping everything else constant)
 
-# Single representative seed (reusing the first of plot1's representative_seeds)
-# instead of averaging across seeds - seeds finish training at different episode
-# counts, so a cross-seed mean would shrink in N towards the tail of each panel.
-plot4_seed <- representative_seeds[1]
+# When analyzing the impact of learning rate on the route flow evolution, we just want to analyze one OD from a FIXED OD MATRIX!!!
+###########################
+# Hence to choose our representative OD we have to pick:
+# #########################
+# 1. representative_seed
+representative_seed <- representative_seeds[1]
+# 2. representative_congestion
+representative_congestion <- 2000
+representative_congestion_label <- "High congestion (2000)"
+# 3. random_learning_rate
+set.seed(123)
+random_learning_rate <- sample(unique(data$demand_odt$learning_rate), size = 1)
 
-policy_change_df <- data$bm_policy_change |>
-  mutate(
-    learning_rate = as.numeric(learning_rate),
-    congestion_regime = make_congestion_regime(n_agents),
-  ) |>
-  select(-c(n_agents)) |>
+# To choose a representative OD, basically we are going to select an OD with a high number of available routes and a high demand. So we need two things:
+
+# 1. OD matrix (contains the demand on each OD for this scenario)
+OD_matrix <- data$demand_odt |> 
   filter(
-    seed == plot4_seed,
-    as.character(learning_rate) %in% plot4_learning_rate_levels
+    learning_rate == random_learning_rate,
+    seed == representative_seed, 
+    n_agents == representative_congestion
+  ) |> 
+  select(-c(run_id, warm_up, learning_rate)) |> 
+  group_by(origin, destination, seed, n_agents) |> 
+  summarise(demand = sum(count)) |> 
+  ungroup() |> 
+  rename(
+    dest = destination
+  )
+
+# 2. OD_routes (available routes for each OD)
+OD_routes <- data$od_routes |> 
+  filter(
+    learning_rate == random_learning_rate,
+    seed == representative_seed, 
+    n_agents == representative_congestion
+  ) |> 
+  select(-c(run_id, seed, learning_rate, n_agents, warm_up)) |> 
+  group_by(origin, dest) |> 
+  summarise(
+    n_routes = n_distinct(route_id)
+  ) |> 
+  ungroup()
+
+# JOIN: od_matrix + od_routes
+OD_info <- OD_matrix |> 
+  left_join(OD_routes, by = c("origin", "dest"))
+
+representative_OD <- OD_info |> 
+  arrange(desc(n_routes),desc(demand)) |> 
+  slice_head(n = 1) |> 
+  select(-c(seed, n_agents))
+```
+
+```{r}
+#| label: data_plot_4_route_flow_2
+
+# Now that we have the scenario (defined by the seed and congestion_regime) 
+# and we also have the representative OD whose paths we want to analyze, 
+# we need to do the following:
+
+# 1. Compute the flow on each route of the representative OD per episode
+# Efficiently dealing with large dataframes
+
+# 1. Partition parquet file
+pq_path_flow_paths <- here("r/RQ3/data/flow_paths_partitioned")
+data$flow_paths |> 
+  group_by(path) |> 
+  write_dataset(path = pq_path_flow_paths, format = "parquet")
+
+# 2. List partitioned parquet files
+tibble(
+  files = list.files(pq_path_flow_paths, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_flow_paths, files)) / 1024^2
+)
+
+# 3. Use dplyr with arrow
+flow_paths_pq <- open_dataset(pq_path_flow_paths)
+query <- flow_paths_pq |> 
+  filter(
+    # Filter by the particular scenario
+    seed == representative_seed, 
+    n_agents == representative_congestion,
+    learning_rate %in% representative_learning_rate_levels,
+    # Filter by the particular OD
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+  ) |> 
+  group_by(episode, path, learning_rate) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
+  ungroup()
+
+flow_paths_df_query <- query |> collect()
+
+# Check: The sum of flows across paths for the particular OD for one episode should be equal to the demand on that OD
+check_demand_od_df <- flow_paths_df_query |> 
+  group_by(episode, learning_rate) |> 
+  summarise(
+    demand = sum(flow)
+  ) |> ungroup()
+
+demand_od_sum_paths <- unique(check_demand_od_df$demand)
+demand_od <- representative_OD$demand
+
+if (demand_od != demand_od_sum_paths) {
+  stop("Something is wrong in the computation of path flows for the particular OD and scenario.")
+}
+```
+
+```{r}
+#| label: data_plot_4_part_3
+
+# Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
+
+# 1. Handling some things to convert path variable to factor
+path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
+path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
+
+flow_paths_df <- flow_paths_df_query |> 
+  mutate(
+    # Convert to factors
+    congestion_regime = representative_congestion_label,
+    learning_rate_fct = forcats::fct_rev(factor(
+      learning_rate, 
+      levels = representative_learning_rate_levels, 
+      labels = representative_learning_rate_labels)),
+    path = factor(
+      path, 
+      levels = path_levels,
+      labels = path_levels_labels
+    )
   )
 ```
 
 ```{r}
 #| label: plot4
 
-ggplot(
-  data = policy_change_df,
-  mapping = aes(
-    x = episode,
-    y = mean_policy_change,
-    color = fct_rev(factor(learning_rate))
-  )
-) +
-  geom_line(linewidth = 0.8) +
-  facet_wrap(~congestion_regime) +
-  scale_color_viridis_d(
-      option = "plasma",
-      direction = -1,
-      name = "Learning rate"
-  ) +
-  labs(
-    title = "Policy stabilization across learning rates",
-    subtitle = "Mean policy change per episode for a representative seed (BM)",
-    x = "Episode",
-    y = "Mean policy change"
-  )
+# This plots refers to a particular OD, for a particular seed and congestion regime, and facet for some representative learning rates 
 
-ggsave(here("r","RQ3","figures","plot4_policy_stabilization_learning_rate.png"), width = 12, height = 6)
+ggplot(
+  data = flow_paths_df, 
+  mapping = aes(x = episode, y = flow, group = path, color = path)
+) +
+  geom_line(linewidth = 0.7) +
+  facet_grid(learning_rate_fct ~ .) +
+  labs(
+    color = "Route",
+    y = "Route flow",
+    x = "Episode",
+    title = "Behavioral convergence: Route flow stability",
+    subtitle = glue(
+      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+    )
+  ) +
+  # Shaded region
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.06
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.4
+  ) +
+  annotate(
+    "text",
+    x = (exploration_phase_floor - 2) / 2,
+    y = Inf,
+    label = "pre-learning \nphase",
+    fontface = "bold",
+    colour = "firebrick",
+    vjust = 2.5,
+    size = 3.5
+  ) +
+  # Change color scale
+  scale_color_brewer(palette = "Dark2") +
+  # Tweak miscellaneous stuff
+  theme(
+    legend.title = element_text(size = 11),
+    legend.text  = element_text(size = 10),
+    legend.key.size = unit(0.6, "lines"),
+    plot.subtitle = element_text(size = 11),
+    strip.text.y = element_text(angle = 0, size = 10)
+)
+ggsave(here("r","RQ3","figures","plot4_route_flow_stability.png"), width = 12, height = 6)
 ```
 
-## Interpretation plot 4
-- It shows that increasing the learning rate results in larger initial policy adjustments but also earlier stabilization of agents policies.
+
+
+

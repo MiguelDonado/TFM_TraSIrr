@@ -122,7 +122,7 @@ def _prepare_rq2_data() -> None:
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
-        # "od_routes": "environment/od_routes.parquet",
+        "od_routes": "environment/od_routes.parquet",
         "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
         "cost_paths": "DUE/BM/costs_paths_odtp_k.parquet"
     }
@@ -146,12 +146,16 @@ def _prepare_rq3_data() -> None:
         "and tags.status != 'archived' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
-    params_to_attach = ["seed", "learning_rate", "n_agents"]
+    params_to_attach = ["seed", "learning_rate", "n_agents", "warm_up"]
 
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "bm_policy_change": "agent_state/policy_change_BM.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+        "cost_paths": "DUE/BM/costs_paths_odtp_k.parquet"
     }
 
     data_dir = BASE_DIR / "r" / "RQ3" / "data"
