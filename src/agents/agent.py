@@ -135,15 +135,26 @@ class BMAgent:
         self.expected_travel_time = float(np.average(times, weights=weights))
 
     def _compute_perceived_travel_times(self):
-        T = len(self.history)
-
         # Arrays
         numerator = np.zeros(self.n_routes)
         denominator = np.zeros(self.n_routes)
 
+        # Index (1-based) of each route's most recent occurrence. Weights are
+        # anchored per-route to this instead of to T: with a low gamma
+        # (e.g. memory_level=0.01), a route not chosen in ~150+ episodes has
+        # gamma**(T-j) underflow to 0.0 for every one of its entries when
+        # anchored to T, turning numerator/denominator into 0/0 = NaN.
+        # Anchoring to the route's own last visit keeps its top weight at
+        # gamma**0 = 1, so denominator is never zero. Numerator and
+        # denominator are both scaled by the same constant relative to the
+        # T-anchored formula, so the resulting ratio is unchanged.
+        last_seen = {}
+        for j, (r, _) in enumerate(self.history, 1):
+            last_seen[r] = j
+
         # Compute numerator and denominators formula PT
         for j, (r, tt) in enumerate(self.history, 1):
-            weight = self.gamma ** (T - j)
+            weight = self.gamma ** (last_seen[r] - j)
 
             numerator[r] += weight * tt
             denominator[r] += weight
