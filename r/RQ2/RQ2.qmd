@@ -377,6 +377,13 @@ representative_OD <- OD_info |>
 
 # 1. Partition parquet file
 pq_path_flow_paths <- here("r/RQ2/data/flow_paths_partitioned")
+
+if (dir.exists(pq_path_flow_paths)) {
+  unlink(pq_path_flow_paths, recursive = TRUE, force = TRUE)
+}
+
+dir.create(pq_path_flow_paths, recursive = TRUE)
+
 data$flow_paths |> 
   group_by(path) |> 
   write_dataset(path = pq_path_flow_paths, format = "parquet")

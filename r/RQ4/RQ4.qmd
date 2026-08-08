@@ -98,29 +98,20 @@ data <- parquet_files |>
 ```
 
 ```{r}
-#| label: representative_seeds_spaghetti_plots
-
-# Randomly select 3 seeds (seeded so the same 3 - and their colors - are
-# picked every time this re-renders)
-set.seed(123)
-representative_seeds <- sample(unique(data$bm_rgap$seed), size = 3)
-
-labels_seeds <- c("S1", "S2", "S3")
-
-color_lines <- c(
-  "1.0" = "#0072B2",  # blue
-  "0.6" = "#E69F00",  # orange
-  "0.2" = "#009E73"  # bluish green
-) 
-```
-
-```{r}
 #| label: get_warm_up_period(exploration)
 
 # It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
 
 exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
 ```
+
+```{r}
+#| label: representative_memory_levels
+
+representative_memory_levels <- c("1", "0.1")
+representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("Memory = ", x))
+```
+
 
 ```{r}
 #| label: breaks_plot1
@@ -151,10 +142,20 @@ rgap_df <- data$bm_rgap |>
   mutate(
     congestion_regime = make_congestion_regime(n_agents)
   ) |> 
-  select(-c(degradation_start_episode, degradation_end_episode, n_agents, network_degraded, run_id))
-
+  select(-c(degradation_start_episode, degradation_end_episode, n_agents, network_degraded, run_id)) |> 
+  filter(
+    memory_level %in% representative_memory_levels
+  ) |> 
+  mutate(
+    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
+  ) |> 
+  mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
+  select(-memory_level)
+ 
+# Median and quantiles across seeds (here I always run the same episodes, 
+# so i can compute summaries on seeds, instead of having to plot individual trajectories)
 rgap_df_summary <- rgap_df |> 
-  group_by(episode, congestion_regime) |> 
+  group_by(episode, congestion_regime, memory_level_fct) |> 
   summarise(
     median_rgap = median(rgap),
     q25_rgap    = quantile(rgap, 0.25),
@@ -248,7 +249,8 @@ ggplot(
   # Automatically chosen breaks and add one extra tick
   scale_y_continuous(
     breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5)))
-)
+) +
+  facet_grid(memory_level_fct ~ .)
 
 ggsave(here("r","RQ4","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
   
@@ -285,6 +287,15 @@ degraded_edges <- names(degraded_speeds)[degraded_speeds != normal_speeds[names(
 
 # 1. Partition parquet file
 pq_path_edgedata <- here("r/RQ4/data/edgedata_partitioned")
+
+# Make sure folder is empty before writing, so we have a clean slate,
+# and dont gets mixed with previous stuff
+if (dir.exists(pq_path_edgedata)) {
+  unlink(pq_path_edgedata, recursive = TRUE, force = TRUE)
+}
+
+dir.create(pq_path_edgedata, recursive = TRUE)
+
 data$bm_edgedata |> 
   group_by(seed) |> 
   write_dataset(path = pq_path_edgedata, format = "parquet")
@@ -301,21 +312,30 @@ query <- edgedata_pq |>
   # Filter only by degraded edges
   filter(
     edge %in% degraded_edges,
-    n_agents == congestion_to_analyze
+    n_agents == congestion_to_analyze,
+    memory_level %in% representative_memory_levels,
   ) |> 
   mutate(
     entered = as.numeric(entered)
   ) |> 
-  group_by(episode, edge, seed, n_agents) |> 
+  group_by(episode, edge, seed, n_agents, memory_level) |> 
   summarise(
     flow_edge = sum(entered)
   ) |> 
-  ungroup()
+  ungroup() 
 
-flow_degraded_edges_df <- query |> collect()
+flow_degraded_edges_df_tmp <- query |> collect()
+
+flow_degraded_edges_df <- flow_degraded_edges_df_tmp |> 
+  mutate(
+    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
+  ) |> 
+  mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
+  select(-memory_level)
+  
 
 flow_degraded_edges_df_summary <- flow_degraded_edges_df |> 
-  group_by(episode, edge, n_agents) |> 
+  group_by(episode, edge, n_agents, memory_level_fct) |> 
   summarise(
     median_flow = median(flow_edge),
     q25_flow = quantile(flow_edge, 0.25),
@@ -351,7 +371,7 @@ ggplot() +
     mapping = aes(x = episode, ymin = q25_flow, ymax = q75_flow),
     alpha = 0.1
   ) +
-  facet_grid(edge~.) +
+  facet_grid(memory_level_fct~edge) +
   annotate(
     "rect",
     xmin = -Inf,

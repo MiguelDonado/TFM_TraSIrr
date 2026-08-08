@@ -98,23 +98,6 @@ data <- parquet_files |>
 ```
 
 ```{r}
-#| label: representative_seeds_spaghetti_plots
-
-# Randomly select 3 seeds (seeded so the same 3 - and their colors - are
-# picked every time this re-renders)
-set.seed(123)
-representative_seeds <- sample(unique(data$bm_rgap$seed), size = 3)
-
-labels_seeds <- c("S1", "S2", "S3")
-
-color_lines <- c(
-  "1.0" = "#0072B2",  # blue
-  "0.6" = "#E69F00",  # orange
-  "0.2" = "#009E73"  # bluish green
-) 
-```
-
-```{r}
 #| label: get_warm_up_period(exploration)
 
 # It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
@@ -151,6 +134,13 @@ degraded_edges <- names(degraded_speeds)[degraded_speeds != normal_speeds[names(
 ```
 
 ```{r}
+#| label: representative_memory_levels
+
+representative_memory_levels <- c("1", "0.1")
+representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("Memory = ", x))
+```
+
+```{r}
 #| label: data_plot3
 
 # 1. Choose a representative OD pair:
@@ -166,10 +156,13 @@ degraded_edges <- names(degraded_speeds)[degraded_speeds != normal_speeds[names(
 # Hence to choose our representative OD we have to pick:
 # #########################
 # 1. representative_seed
-representative_seed <- representative_seeds[1]
+set.seed(123)
+representative_seed <- sample(data$bm_rgap.parquet$seed, size = 1)
 # 2. representative_congestion
 representative_congestion <- 2000
 representative_congestion_label <- "High congestion (2000)"
+# 3. Random memory level (OD matrix doesnt vary with the memory level)
+random_memory_level <- sample(unique(data$demand_odt$memory_level), size = 1)
 
 # We are gonna follow the criteria described above to choose a representative OD.
 # Hence we need three things:
@@ -177,9 +170,10 @@ representative_congestion_label <- "High congestion (2000)"
 OD_matrix <- data$demand_odt |> 
   filter(
     seed == representative_seed, 
-    n_agents == representative_congestion
+    n_agents == representative_congestion,
+    memory_level == random_memory_level,
   ) |> 
-  select(-c(run_id, warm_up)) |> 
+  select(-c(run_id, warm_up, memory_level)) |> 
   group_by(origin, destination, seed, n_agents) |> 
   summarise(demand = sum(count)) |> 
   ungroup() |> 
@@ -198,10 +192,11 @@ if (representative_congestion==2000){
 # 2. OD_routes (available routes for each OD)
 OD_routes <- data$od_routes |> 
   filter(
+    memory_level == random_memory_level,
     seed == representative_seed, 
     n_agents == representative_congestion
   ) |> 
-  select(-c(run_id, seed, n_agents, warm_up)) |> 
+  select(-c(run_id, seed, n_agents, warm_up, memory_level)) |> 
   group_by(origin, dest)
 
 OD_routes_summary <- OD_routes |> 
@@ -213,10 +208,11 @@ OD_routes_summary <- OD_routes |>
 # 3. OD_routes_disrupted (which routes are disrupted and which unaffected for all the ODs)
 OD_routes_disrupted <- data$od_routes |> 
   filter(
+    memory_level == random_memory_level,
     seed == representative_seed, 
     n_agents == representative_congestion
   ) |> 
-  select(-c(run_id, seed, n_agents, warm_up, network_degraded, degradation_start_episode, degradation_end_episode)) |> 
+  select(-c(run_id, seed, n_agents, warm_up, network_degraded, degradation_start_episode, degradation_end_episode, memory_level)) |> 
   group_by(origin, dest, route_id) |> 
   summarise(
     disrupted = any(edge %in% degraded_edges)
@@ -266,6 +262,15 @@ OD_routes_classified <- OD_routes |>
 
 # 1. Partition parquet file
 pq_path_flow_paths <- here("r/RQ4/data/flow_paths_partitioned")
+
+# Make sure folder is empty before writing, so we have a clean slate,
+# and dont gets mixed with previous stuff
+if (dir.exists(pq_path_flow_paths)) {
+  unlink(pq_path_flow_paths, recursive = TRUE, force = TRUE)
+}
+
+dir.create(pq_path_flow_paths, recursive = TRUE)
+
 data$flow_paths |> 
   group_by(path) |> 
   write_dataset(path = pq_path_flow_paths, format = "parquet")
@@ -281,13 +286,14 @@ flow_paths_pq <- open_dataset(pq_path_flow_paths)
 query <- flow_paths_pq |> 
   filter(
     # Filter by the particular scenario
+    memory_level %in% representative_memory_levels,
     seed == representative_seed, 
     n_agents == representative_congestion,
     # Filter by the particular OD
     origin == representative_OD$origin,
     destination == representative_OD$dest,
   ) |> 
-  group_by(episode, path) |> 
+  group_by(episode, path, memory_level) |> 
   summarise(
     flow = sum(count)
   ) |> 
@@ -297,7 +303,7 @@ flow_paths_df_query <- query |> collect()
 
 # Check: The sum of flows across paths for the particular OD for one episode should be equal to the demand on that OD
 check_demand_od_df <- flow_paths_df_query |> 
-  group_by(episode) |> 
+  group_by(episode, memory_level) |> 
   summarise(
     demand = sum(flow)
   ) |> ungroup()
@@ -319,7 +325,7 @@ if (demand_od != demand_od_sum_paths) {
 path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
 path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
 
-# b) Prepare df to add information to df regarding route is disrupted or unaffected
+# b) Prepare df to add information regarding route is disrupted or unaffected
 OD_routes_classified_transformed <- OD_routes_classified |> 
   select(-c(origin, dest)) |> 
   rename(path = route_id)
@@ -338,10 +344,15 @@ flow_paths_df <- flow_paths_df_query |>
     # 2. Compute flow in relative terms
   mutate(
     flow = flow / demand_od
-  )
+  ) |> 
+  mutate(
+    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
+  ) |> 
+  mutate(memory_level_fct = fct_rev(memory_level_fct))
+  
 
 # Check flow share is correct
-if(!all(flow_paths_df |> group_by(episode) |> summarise(total=sum(flow)) |> pull(total) == "1")){
+if(!all(flow_paths_df |> group_by(episode, memory_level_fct) |> summarise(total=sum(flow)) |> pull(total) == "1")){
   stop("There is some error with the relative flow computation")
 }
 ```
@@ -388,7 +399,7 @@ median_flow_paths_before <- flow_paths_df |>
     episode>=disruption_start - 10,
     episode<disruption_start
   ) |> 
-  group_by(path) |> 
+  group_by(path, memory_level) |> 
   summarise(median_flow_before = median(flow))
 
 median_flow_paths_during <- flow_paths_df |> 
@@ -396,25 +407,43 @@ median_flow_paths_during <- flow_paths_df |>
     episode>= disruption_end - 10,
     episode<disruption_end
   ) |> 
-  group_by(path) |> 
+  group_by(path, memory_level) |> 
   summarise(median_flow_during = median(flow))
 
-relevant_paths_plot3 <- median_flow_paths_before |> 
-  left_join(median_flow_paths_during, by = "path") |> 
+all_paths_memory_levels <- tidyr::crossing(
+  path = unique(flow_paths_df$path),
+  memory_level = representative_memory_levels
+)
+
+relevant_paths_plot3 <- all_paths_memory_levels |> 
+  left_join(median_flow_paths_before, by = c("path", "memory_level")) |> 
+  left_join(median_flow_paths_during, by = c("path", "memory_level")) |> 
   mutate(
+    median_flow_before = coalesce(median_flow_before, 0),
+    median_flow_during = coalesce(median_flow_during, 0),
     diff = abs(median_flow_during - median_flow_before)
   ) |> 
   mutate(
-    relevant = diff > 0.05
+    relevant = diff > 0.1
   ) |> 
   select(-c(median_flow_before, median_flow_during, diff))
 
 flow_paths_df_plot <- flow_paths_df |> 
-  left_join(relevant_paths_plot3, by = "path")
+  left_join(relevant_paths_plot3, by = c("path", "memory_level")) |> 
+  select(-memory_level)
 ```
 
 ```{r}
 #| label: plot3
+
+path_labels_relevant <- flow_paths_df_plot |> 
+  group_by(path, memory_level_fct) |> 
+  filter(episode == max(episode, na.rm = TRUE)) |> 
+  mutate(
+    path_type = if_else(disrupted, "Disrupted", "Unaffected")
+  ) |> 
+  filter(relevant)
+
 # This plots refers to a particular OD, for a particular seed and congestion regime
 upper_y_axisx <- ceiling(max(flow_paths_df$flow) * 100 %/% 10) / 10
 
@@ -425,19 +454,28 @@ ggplot(
 ) +
   # Lines
   geom_line(
-    mapping = aes(color = path, linewidth = relevant, linetype = disrupted)
+    mapping = aes(color = path, linewidth = relevant)
   ) +
   scale_linewidth_manual(
-    values = c("FALSE" = 0.3, "TRUE" = 0.9),
+    values = c("FALSE" = 0.2, "TRUE" = 0.9),
     guide = 'none'
   ) +
-  # 0 = blank, 1 = solid, 2 = dashed, 3 = dotted, 4 = dotdash, 5 = longdash, 6 = twodash
-  scale_linetype_manual(
-    values = c("FALSE" = 6, "TRUE" = 1),
-    name = "Path type",
-    labels = c(
-    `TRUE` = "Disrupted",
-    `FALSE` = "Unaffected")
+  # Path type labels
+  ggrepel::geom_text_repel(
+    data = path_labels_relevant,
+    mapping = aes(
+      x = episode,
+      y = flow,
+      label = path_type,
+      color = path
+    ),
+    size = 4,
+    show.legend = FALSE,
+    nudge_x = 10,
+    box.padding = 0.2,
+    point.padding = 1,
+    max.overlaps = Inf,
+    hjust = 1
   ) +
   # Pre-learning shaded region
   annotate(
@@ -510,7 +548,8 @@ ggplot(
     subtitle = glue(
       "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
   )
-)
+) +
+  facet_grid(memory_level_fct ~ .)
 
 ggsave(here("r","RQ4","figures","plot3_flow_share_evolution_paths.png"), width = 12, height = 6)
 

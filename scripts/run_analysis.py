@@ -183,7 +183,8 @@ def _prepare_rq4_data() -> None:
         "network_degraded",
         "degradation_start_episode",
         "degradation_end_episode",
-        "warm_up"
+        "warm_up",
+        "memory_level"
     ]
 
     artifacts = {

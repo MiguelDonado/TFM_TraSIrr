@@ -13,7 +13,7 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
 grid:
   learning:
     memory_level: 
-      - 0.01
+      - 0.1
       - 0.2
       - 0.4
       - 0.6
