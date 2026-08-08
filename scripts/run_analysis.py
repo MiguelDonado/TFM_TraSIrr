@@ -190,8 +190,10 @@ def _prepare_rq4_data() -> None:
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "bm_edgedata": "processed/edgedata.parquet",
+        # "od_routes": "DUE/duaIterate/od_routes.parquet",
         "od_routes": "environment/od_routes.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ4" / "data"
@@ -207,17 +209,23 @@ def _prepare_rq4_data() -> None:
         df.to_parquet(data_dir / f"{name}.parquet", index=False)
 
 def _render_analysis(research_question: str) -> None:
-    """Render the Quarto report for a research question."""
-    qmd_file = BASE_DIR / f"r/{research_question}/{research_question}.qmd"
+    """Render the Quarto report(s) for a research question."""
+    rq_dir = BASE_DIR / "r" / research_question
 
-    subprocess.run(
-        [
-            "/usr/lib/rstudio/resources/app/bin/quarto/bin/quarto",
-            "render",
-            str(qmd_file),
-        ],
-        check=True,
-    )
+    if research_question == "RQ4":
+        qmd_files = [rq_dir / "RQ4.qmd", rq_dir / "RQ4_part2.qmd"]
+    else:
+        qmd_files = [rq_dir / f"{research_question}.qmd"]
+
+    for qmd_file in qmd_files:
+        subprocess.run(
+            [
+                "/usr/lib/rstudio/resources/app/bin/quarto/bin/quarto",
+                "render",
+                str(qmd_file),
+            ],
+            check=True,
+        )
 
 
 if __name__ == "__main__":

@@ -84,9 +84,17 @@ data_dir <- here("r","RQ4","data")
 # 1) list.files(): returns a vector with the file paths
 # 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
 # 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
-data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |> 
-  (\(x) set_names(x, tools::file_path_sans_ext(basename(x))))() |> 
-  map(read_parquet)
+parquet_files <- c(
+  flow_paths = "bm_rgap.parquet",
+  dua_rgap = "dua_rgap.parquet",
+  bm_edgedata = "bm_edgedata.parquet",
+  od_routes = "od_routes.parquet",
+  demand_odt = "demand_odt.parquet"
+)
+
+data <- parquet_files |>
+  purrr::set_names() |>
+  purrr::map(\(f) arrow::read_parquet(file.path(data_dir, f)))
 ```
 
 ```{r}
@@ -410,76 +418,6 @@ ggplot() +
 ggsave(here("r","RQ4","figures","plot2_flow_disrupted_edges_evolution.png"), width = 12, height = 6)
 ```
 
-```{r}
-#| label: data_plot3
 
-# 1. Choose a representative OD pair:
-# (i) it has relatively high travel demand
-# (ii) it possesses several feasible alternative routes
-# (iii) at least one of its frequently used routes traverses the disrupted edge while alternative routes bypass it.
-
-# # Things to take into account:
-# 1. OD matrix is different across congestion_regimes (keeping everything else constant)
-# 2. OD matrix is different across seeds (keeping everything else constant)
-
-###########################
-# Hence to choose our representative OD we have to pick:
-# #########################
-# 1. representative_seed
-representative_seed <- representative_seeds[1]
-# 2. representative_congestion
-representative_congestion <- 2000
-representative_congestion_label <- "High congestion (2000)"
-
-# We are gonna follow the criteria described above to choose a representative OD.
-# Hence we need three things:
-# 1. OD matrix (contains the demand on each OD for this seed and congestion)
-OD_matrix <- data$demand_odt |> 
-  filter(
-    seed == representative_seed, 
-    n_agents == representative_congestion
-  ) |> 
-  select(-c(run_id, warm_up)) |> 
-  group_by(origin, destination, seed, n_agents) |> 
-  summarise(demand = sum(count)) |> 
-  ungroup() |> 
-  rename(
-    dest = destination
-  )
-
-# Check to ensure everything is ok
-if (representative_congestion==2000){
-  sum_demand <- sum(OD_matrix$demand)
-  if (sum_demand != 1847){
-    stop("Review the OD_matrix data wrangling")
-  }
-}
-
-# 2. OD_routes (available routes for each OD)
-OD_routes <- data$od_routes |> 
-  filter(
-    seed == representative_seed, 
-    n_agents == representative_congestion
-  ) |> 
-  select(-c(run_id, seed, n_agents, warm_up)) |> 
-  group_by(origin, dest) |> 
-  summarise(
-    n_routes = n_distinct(route_id)
-  ) |> 
-  ungroup() 
-
-# 3. OD_routes_disrupted (which routes are disrupted and which unaffected for all the ODs)
-OD_routes_disrupted <- data$od_routes |> 
-  filter(
-    seed == representative_seed, 
-    n_agents == representative_congestion
-  ) |> 
-  select(-c(run_id, seed, n_agents, warm_up, network_degraded, degradation_start_episode, degradation_end_episode)) |> 
-  group_by(origin, dest, route_id) |> 
-  summarise(
-    disrupted = any(edge %in% degraded_edges)
-  ) |> 
-  ungroup()
-```
 
 

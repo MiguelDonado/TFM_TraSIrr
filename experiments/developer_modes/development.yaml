@@ -2,7 +2,7 @@ configuration_name:
   config_name: development
 
 randomness:
-  seed: 42
+  seed: 23
 
 numerical_constants:
   epsilon: 1.0e-8
@@ -12,8 +12,8 @@ learning:
   memory_level: 1
 
 simulation:
-  warm_up_time: 60
   simulation_time: 360
+  warm_up_time: 60
   min_distance_factor: 0.8
   maxtries: 1000
 

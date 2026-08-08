@@ -2,7 +2,7 @@ configuration_name:
   config_name: production
 
 randomness:
-  seed: 1999
+  seed: 23
 
 numerical_constants:
   epsilon: 1.0e-8
