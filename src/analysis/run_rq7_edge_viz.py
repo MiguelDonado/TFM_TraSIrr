@@ -9,13 +9,12 @@ to an unrelated, more recent run by the time the report is rendered).
 
 Usage
 -----
-  python run_rq7_edge_viz.py --mode aggregated --metric density \
-      --algorithm BM --data-dir <dir>
+  python src/analysis/run_rq7_edge_viz.py --mode aggregated --metric density --algorithm BM
 
-  python run_rq7_edge_viz.py --mode interval --period 900 --metric entered \
-      --algorithm duaIterate --data-dir <dir>
+  python src/analysis/run_rq7_edge_viz.py --mode interval --period 900 --metric entered \
+      --algorithm duaIterate
 
---data-dir must contain the five files written by
+r/RQ7/data/ must already contain the five files written by
 scripts/run_analysis.py's _prepare_rq7_data():
   bm_edgedata.parquet, dua_edgedata.parquet, times_interval.parquet,
   routes_bm.rou.xml, routes_dua.rou.xml
@@ -33,7 +32,20 @@ from pathlib import Path
 
 import yaml
 
-RQ7_DESIGN = Path(__file__).resolve().parent.parent.parent / "experiments" / "rq7" / "design.yaml"
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+RQ7_DESIGN = BASE_DIR / "experiments" / "rq7" / "design.yaml"
+DATA_DIR = BASE_DIR / "r" / "RQ7" / "data"
+
+sys.path.insert(0, str(BASE_DIR / "src"))
+from analysis.sumo_edge_analysis import run_edge_visualization
+from config.paths import (
+    GUI_SETTINGS,
+    GUI_SETTINGS_AGGREGATED,
+    MEANDATA,
+    MEANDATA_AGGREGATED,
+    SUMO_CONF,
+    SUMO_CONF_AGGREGATED,
+)
 
 
 def _parse_args():
@@ -42,50 +54,43 @@ def _parse_args():
     parser.add_argument("--metric", choices=["entered", "density"], required=True)
     parser.add_argument("--algorithm", choices=["BM", "duaIterate"], required=True)
     parser.add_argument("--period", type=int, default=900)
-    parser.add_argument("--data-dir", type=Path, required=True)
     return parser.parse_args()
+
+
+def _simulation_end_time():
+    """
+    end_time = warm_up_time + simulation_time of the base config RQ7's
+    simulation run used, mirroring config.config's own end_time
+    computation (see src/config/config.py) without needing to import
+    config.config itself, which expects to be run as `main.py <config>`.
+    """
+    with open(RQ7_DESIGN) as f:
+        base_config_path = yaml.safe_load(f)["base_config"]
+    with open(base_config_path) as f:
+        simulation = yaml.safe_load(f)["simulation"]
+    return simulation["warm_up_time"] + simulation["simulation_time"]
 
 
 def main():
     args = _parse_args()
 
-    # config.config runs its own argparse.parse_args() on import (it expects
-    # a single positional config-file path), which would otherwise collide
-    # with the CLI args parsed above. Reset sys.argv to what it expects,
-    # using the same base_config RQ7's simulation run used, so config.end_time
-    # (needed for interval breakpoints) matches that run.
-    with open(RQ7_DESIGN) as f:
-        base_config = yaml.safe_load(f)["base_config"]
-    sys.argv = [sys.argv[0], base_config]
-
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from analysis.sumo_edge_analysis import run_edge_visualization
-    from config.paths import (
-        GUI_SETTINGS,
-        GUI_SETTINGS_AGGREGATED,
-        MEANDATA,
-        MEANDATA_AGGREGATED,
-        SUMO_CONF,
-        SUMO_CONF_AGGREGATED,
-    )
-
-    data_dir = args.data_dir
-    routes_file = data_dir / ("routes_bm.rou.xml" if args.algorithm == "BM" else "routes_dua.rou.xml")
+    routes_file = DATA_DIR / ("routes_bm.rou.xml" if args.algorithm == "BM" else "routes_dua.rou.xml")
 
     run_edge_visualization(
         generic_config=SUMO_CONF,
         config_visualization=SUMO_CONF_AGGREGATED,
         generic_gui_settings=GUI_SETTINGS,
         gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
-        edgedata_BM_file=data_dir / "bm_edgedata.parquet",
-        edgedata_duaIterate_file=data_dir / "dua_edgedata.parquet",
+        edgedata_BM_file=DATA_DIR / "bm_edgedata.parquet",
+        edgedata_duaIterate_file=DATA_DIR / "dua_edgedata.parquet",
         generic_meandata=MEANDATA,
         meandata_visualization=MEANDATA_AGGREGATED,
         routes_file=routes_file,
         metric=args.metric,
         period=args.period,
         aggregated=args.mode == "aggregated",
-        times_interval_file=data_dir / "times_interval.parquet",
+        simulation_end_time=_simulation_end_time(),
+        times_interval_file=DATA_DIR / "times_interval.parquet",
     )
 
 

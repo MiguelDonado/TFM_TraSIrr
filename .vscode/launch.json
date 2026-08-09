@@ -76,6 +76,15 @@
       "args": ["/home/miguel/6.Projects/Thesis/experiments/developer_modes/production.yaml"]
     },
     {
+      "name": "Debug run_rq7_edge_viz.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/analysis/run_rq7_edge_viz.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["--mode","aggregated","--metric","entered","--algorithm","BM"]
+    },
+    {
       "name": "Debug network_stats.py",
       "type": "debugpy",
       "request": "launch",

@@ -1,22 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!-- generated on 2026-05-25T10:12:21.104228+01:00 by Eclipse SUMO sumo 1.26.0
--->
-
-<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
-
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration>
     <input>
-        <net-file value="../../net/Popular/Sioux_Falls.net.xml"/>
-        <route-files value="../../routes/routes.rou.xml"/>
-        <additional-files value="meandata_aggregated.xml,aggregated.dat.add.xml"/>
+        <net-file value="/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"/>
+        <additional-files value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/meandata_aggregated.xml"/>
+        <route-files value="/home/miguel/6.Projects/Thesis/r/RQ7/data/routes_dua.rou.xml"/>
+        <gui-settings-file value="/home/miguel/6.Projects/Thesis/sumo/config/edge_visualization/gui_settings_aggregated.xml"/>
     </input>
-
-    <random_number>
+    <random>
         <seed value="42"/>
-    </random_number>
-
-    <gui_only>
-        <gui-settings-file value="gui_settings_aggregated.xml"/>
-    </gui_only>
-
-</sumoConfiguration>
+    </random>
+</configuration>

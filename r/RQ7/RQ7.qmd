@@ -29,6 +29,14 @@ the BM replay and the duaIterate replay below is a like-for-like spatial
 comparison. `aggregated` colors each edge once for the whole episode;
 `interval` recolors every 15 min (900 s).
 
+Things to consider when generating SUMO edge visualization:
+1. If aggregated set breakpoint, because is not done in code.
+2. Edit Visualization -> Show edge color value (only for selected). Background 
+black with alpha = 155, and fontcolor = white. Fontsize 70
+
+Because we are generating 1hour and 5 min. If we divide that in 4 intervals, we got
+each interval contains 975s.
+
 ```{r}
 #| label: setup
 
@@ -41,12 +49,11 @@ library(here)
 ```{r}
 #| label: config
 
-# Files here were downloaded from the single RQ7 MLflow run by
+# run_rq7_edge_viz.py always reads from r/RQ7/data/, populated by
 # `python scripts/run_analysis.py RQ7 --prepare-only` (or the full run) —
 # see scripts/run_analysis.py::_prepare_rq7_data. Using the downloaded
 # copies (not the live local data/ files) keeps this reproducible even
 # after later, unrelated simulation runs have overwritten the local files.
-data_dir <- here("r", "RQ7", "data")
 python_bin <- "/home/miguel/.venvs/thesis_master/bin/python3"
 script <- here("src", "analysis", "run_rq7_edge_viz.py")
 ```
@@ -57,9 +64,8 @@ script <- here("src", "analysis", "run_rq7_edge_viz.py")
 system2(python_bin, c(
   script,
   "--mode", "aggregated",
-  "--metric", "density",
-  "--algorithm", "BM",
-  "--data-dir", data_dir
+  "--metric", "entered",
+  "--algorithm", "BM"
 ))
 ```
 
@@ -69,9 +75,8 @@ system2(python_bin, c(
 system2(python_bin, c(
   script,
   "--mode", "aggregated",
-  "--metric", "density",
-  "--algorithm", "duaIterate",
-  "--data-dir", data_dir
+  "--metric", "entered",
+  "--algorithm", "duaIterate"
 ))
 ```
 
@@ -81,10 +86,9 @@ system2(python_bin, c(
 system2(python_bin, c(
   script,
   "--mode", "interval",
-  "--period", "900",
-  "--metric", "density",
-  "--algorithm", "BM",
-  "--data-dir", data_dir
+  "--period", "975",
+  "--metric", "entered",
+  "--algorithm", "BM"
 ))
 ```
 
@@ -94,10 +98,9 @@ system2(python_bin, c(
 system2(python_bin, c(
   script,
   "--mode", "interval",
-  "--period", "900",
-  "--metric", "density",
-  "--algorithm", "duaIterate",
-  "--data-dir", data_dir
+  "--period", "975",
+  "--metric", "entered",
+  "--algorithm", "duaIterate"
 ))
 ```
 

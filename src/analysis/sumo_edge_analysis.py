@@ -45,9 +45,6 @@ import numpy as np
 import pandas as pd
 from lxml import etree
 
-from config.config import config
-from config.paths import TIMES_INTERVAL
-
 # For RQ7: see run_rq7_edge_viz.py (CLI driver invoked from r/RQ7/RQ7.qmd)
 # for a working example of calling run_edge_visualization().
 
@@ -64,8 +61,9 @@ def run_edge_visualization(
     routes_file,
     metric,
     period,
+    simulation_end_time,
+    times_interval_file,
     aggregated=True,
-    times_interval_file=TIMES_INTERVAL,
 ):
     """
     The purpose of this function is to run the final episode of whatever algorithm,
@@ -90,6 +88,7 @@ def run_edge_visualization(
         edgedata_duaIterate_file=edgedata_duaIterate_file,
         metric=metric,
         period=period,
+        simulation_end_time=simulation_end_time,
         times_interval_file=times_interval_file,
     )
 
@@ -166,7 +165,8 @@ def create_gui_settings(
     edgedata_BM_file,
     aggregated,
     period,
-    times_interval_file=TIMES_INTERVAL,
+    simulation_end_time,
+    times_interval_file,
 ):
     """
     Basically:
@@ -203,7 +203,7 @@ def create_gui_settings(
     # 6. Set breakpoints
     if not aggregated:
         set_breakpoints_gui_settings(
-            gui_settings_visualization=gui_settings_visualization, period=period
+            gui_settings_visualization=gui_settings_visualization, period=period, simulation_end_time=simulation_end_time
         )
 
 
@@ -276,8 +276,8 @@ def get_max_value(
     edgedata_duaIterate_file,
     edgedata_BM_file,
     aggregated,
+    times_interval_file,
     period=900,
-    times_interval_file=TIMES_INTERVAL,
 ):
     """
     Get the max value of the metric, so the scale of colors can be set appropiately
@@ -304,7 +304,7 @@ def process_df(
     metric: str,
     aggregated: bool,
     period: int,
-    times_interval_file=TIMES_INTERVAL,
+    times_interval_file,
 ) -> float:
     # Dimension table
     times_interval = pd.read_parquet(times_interval_file)
@@ -389,6 +389,7 @@ def set_color_scale_gui_settings(gui_settings_visualization, list_color_threshol
 def set_breakpoints_gui_settings(
     gui_settings_visualization,
     period,
+    simulation_end_time
 ):
     # SUMO-GUI breakpoint fires 2 s before the interval boundary, otherwise the visualization is reseted and
     # colors cannot be visualized anymore
@@ -398,7 +399,7 @@ def set_breakpoints_gui_settings(
     breakpoints = list(
         range(
             period - BREAKPOINT_LEAD_S,
-            config.end_time + period - BREAKPOINT_LEAD_S,
+            simulation_end_time + period - BREAKPOINT_LEAD_S,
             period,
         )
     )
