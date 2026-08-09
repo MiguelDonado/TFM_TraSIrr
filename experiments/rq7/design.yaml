@@ -1,0 +1,33 @@
+# RQ7 — Spatial edge-flow comparison (BM vs duaIterate)
+#
+# What it answers:
+# Where on the network do Bush-Mosteller's converged route choices differ
+# from the duaIterate DUE benchmark, in terms of edge usage/density —
+# aggregated over the whole episode and at 15-min (900 s) intervals?
+#
+# How:
+# - This is a qualitative spatial case study (sumo-gui edge coloring via
+#   src/analysis/sumo_edge_analysis.py), not a statistical comparison
+#   across seeds, so the grid is a single combination — no seed/parameter
+#   sweep, no run_analysis.py entry needed. The launcher run just produces
+#   the two local edgedata files (BM: EDGEDATA_PARQUET, duaIterate:
+#   DUA_EXTRA.edgedata_processed) that sumo_edge_analysis.py reads
+#   directly afterwards.
+# - duaIterate_max_iterations is left at the production default (10)
+#   rather than the "1" used in RQ2-6. There, duaIterate is only a quick
+#   R-gap benchmark; here it is the visual reference BM is colored
+#   against, so it needs to be properly converged, not just a cheap
+#   baseline.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+grid:
+  randomness:
+    seed:
+      - 42
+  demand:
+    n_agents:
+      - 2000
+  due_convergence:
+    duaIterate_max_iterations:
+      - 10

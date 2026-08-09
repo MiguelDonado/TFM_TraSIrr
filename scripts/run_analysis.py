@@ -29,20 +29,27 @@ RQ2
 RQ3
 RQ4
 RQ5
+RQ7
 
 """
 
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+import mlflow
+from mlflow import MlflowClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from config.paths import BASE_DIR
 from mlflow_tracking.analysis import log_analysis_run_MLflow
 from mlflow_tracking.load_mlflow_results import load_artifact_across_runs
+from mlflow_tracking.utils import set_tracking_uri
 
 
 def run_analysis_rq():
@@ -79,6 +86,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq4_data()
     elif research_question == "RQ5":
         _prepare_rq5_data()
+    elif research_question == "RQ7":
+        _prepare_rq7_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -252,6 +261,57 @@ def _prepare_rq5_data() -> None:
             params_to_attach=params_to_attach,
         )
         df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq7_data() -> None:
+    """
+    Pull the edge-flow visualization inputs (BM/duaIterate edgedata,
+    times_interval, and both algorithms' last-episode/iteration routes)
+    from the single RQ7 simulation run and save them into r/RQ7/data/.
+
+    Unlike RQ1-5, RQ7's design.yaml is a single combination (a qualitative
+    sumo-gui case study, not a multi-seed statistical comparison), so this
+    downloads one run's artifacts directly instead of concatenating across
+    many runs with load_artifact_across_runs.
+    """
+    filter_string = (
+        "tags.research_question = 'RQ7' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+
+    set_tracking_uri()
+    runs = mlflow.search_runs(
+        experiment_names=experiment_names, filter_string=filter_string
+    )
+    if runs.empty:
+        raise ValueError(f"No runs found for filter: '{filter_string}'")
+    if len(runs) > 1:
+        raise ValueError(
+            f"Expected exactly one RQ7 run, found {len(runs)}. "
+            "RQ7's design.yaml should define a single combination — "
+            "archive the extra runs (tags.status = 'archived') before re-running."
+        )
+    run_id = runs.iloc[0]["run_id"]
+
+    artifacts = {
+        "bm_edgedata.parquet": "processed/edgedata.parquet",
+        "dua_edgedata.parquet": "DUE/duaIterate/edgedata/edgedata.parquet",
+        "times_interval.parquet": "environment/times_interval.parquet",
+        "routes_bm.rou.xml": "DUE/BM/routes_last_episode.rou.xml",
+        "routes_dua.rou.xml": "DUE/duaIterate/routes_last_iteration.rou.xml",
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ7" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    client = MlflowClient()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        for local_name, artifact_path in artifacts.items():
+            downloaded_path = client.download_artifacts(
+                run_id=run_id, path=artifact_path, dst_path=tmp_dir
+            )
+            shutil.copy2(downloaded_path, data_dir / local_name)
+
 
 def _render_analysis(research_question: str) -> None:
     """Render the Quarto report(s) for a research question."""

@@ -48,22 +48,8 @@ from lxml import etree
 from config.config import config
 from config.paths import TIMES_INTERVAL
 
-# routes = [ROUTES, ROUTES_duaIterate]
-# for route in routes:
-#     run_edge_visualization(
-#         aggregated=False,
-#         config_visualization=SUMO_CONF_AGGREGATED,
-#         generic_config=SUMO_CONF,
-#         generic_gui_settings=GUI_SETTINGS,
-#         gui_settings_visualization=GUI_SETTINGS_AGGREGATED,
-#         edgedata_BM_file=EDGEDATA_PARQUET,
-#         edgedata_duaIterate_file=EDGEDATA_duaIterate_PROCESSED,
-#         generic_meandata=MEANDATA,
-#         meandata_visualization=MEANDATA_AGGREGATED,
-#         routes_file=route,
-#         period=900,
-#         metric="density",
-#     )
+# For RQ7: see run_rq7_edge_viz.py (CLI driver invoked from r/RQ7/RQ7.qmd)
+# for a working example of calling run_edge_visualization().
 
 
 def run_edge_visualization(
@@ -79,6 +65,7 @@ def run_edge_visualization(
     metric,
     period,
     aggregated=True,
+    times_interval_file=TIMES_INTERVAL,
 ):
     """
     The purpose of this function is to run the final episode of whatever algorithm,
@@ -103,6 +90,7 @@ def run_edge_visualization(
         edgedata_duaIterate_file=edgedata_duaIterate_file,
         metric=metric,
         period=period,
+        times_interval_file=times_interval_file,
     )
 
     # 3. Create meandata file
@@ -178,6 +166,7 @@ def create_gui_settings(
     edgedata_BM_file,
     aggregated,
     period,
+    times_interval_file=TIMES_INTERVAL,
 ):
     """
     Basically:
@@ -195,6 +184,7 @@ def create_gui_settings(
         edgedata_duaIterate_file=edgedata_duaIterate_file,
         edgedata_BM_file=edgedata_BM_file,
         aggregated=aggregated,
+        times_interval_file=times_interval_file,
     )
 
     # 3. Compute the right threholds
@@ -282,7 +272,12 @@ def update_config(
 
 
 def get_max_value(
-    metric, edgedata_duaIterate_file, edgedata_BM_file, aggregated, period=900
+    metric,
+    edgedata_duaIterate_file,
+    edgedata_BM_file,
+    aggregated,
+    period=900,
+    times_interval_file=TIMES_INTERVAL,
 ):
     """
     Get the max value of the metric, so the scale of colors can be set appropiately
@@ -291,20 +286,28 @@ def get_max_value(
 
     # duaIterate
     df_due = pd.read_parquet(edgedata_duaIterate_file)
-    max_value_duaIterate = process_df(df_due, metric, aggregated, period)
+    max_value_duaIterate = process_df(
+        df_due, metric, aggregated, period, times_interval_file
+    )
 
     # BM last episode
     df_BM = pd.read_parquet(edgedata_BM_file)
     last_episode = df_BM["episode"].max()
     df_BM = df_BM[df_BM["episode"] == last_episode]
-    max_value_BM = process_df(df_BM, metric, aggregated, period)
+    max_value_BM = process_df(df_BM, metric, aggregated, period, times_interval_file)
 
     return max(max_value_duaIterate, max_value_BM)
 
 
-def process_df(df: pd.DataFrame, metric: str, aggregated: bool, period: int) -> float:
+def process_df(
+    df: pd.DataFrame,
+    metric: str,
+    aggregated: bool,
+    period: int,
+    times_interval_file=TIMES_INTERVAL,
+) -> float:
     # Dimension table
-    times_interval = pd.read_parquet(TIMES_INTERVAL)
+    times_interval = pd.read_parquet(times_interval_file)
     # Fact table
     df = df.copy()
     # Join

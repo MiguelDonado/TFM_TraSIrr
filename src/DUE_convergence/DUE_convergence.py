@@ -29,6 +29,8 @@ cause is the network/demand configuration, not the learning algorithm.
 
 """
 
+from shutil import copy2
+
 from config.config import config
 from config.paths import (
     ACTIONS,
@@ -37,6 +39,8 @@ from config.paths import (
     DUA_EXTRA,
     DUA_PATHS,
     EDGEDATA_PARQUET,
+    ROUTES,
+    ROUTES_LAST_EPISODE_BM,
     TRIPS_INFO_PARQUET,
     VEHROUTE_PARQUET,
     UNDESIRED_duaIterate_FILES,
@@ -138,6 +142,11 @@ def _check_due_convergence_BM(threshold_density):
         refined_rgap_by_od_path=BM_PATHS.refined_rgap_by_od,
     )
 
+    # Snapshot the last episode's routes (ROUTES is overwritten every
+    # episode) so it survives as an MLflow artifact for the sumo-gui
+    # edge-visualization replay (RQ7)
+    copy2(ROUTES, ROUTES_LAST_EPISODE_BM)
+
 
 def _check_due_convergence_duaIterate(scen, threshold_density):
     ########################
@@ -234,6 +243,11 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # Compute mean tt duaIterate
     compute_avg_tt_duaIterate()
+
+    # Snapshot the last iteration's routes so it survives as an MLflow
+    # artifact for the sumo-gui edge-visualization replay (RQ7), before
+    # its scratch folder is deleted below
+    copy2(routes_file, DUA_EXTRA.routes)
 
     ################
     # 15. Delete duaIterate folders

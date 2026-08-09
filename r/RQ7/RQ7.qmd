@@ -1,0 +1,107 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "09/aug/2026"
+format:
+  html:
+    self-contained: true
+execute:
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+**RQ7:** Where on the network do Bush-Mosteller's converged route choices
+differ from the duaIterate DUE benchmark, in terms of edge usage
+(`entered`) and congestion (`density`)?
+
+This is a qualitative spatial case study, not a statistical comparison
+across seeds — `experiments/rq7/design.yaml` runs a single production
+combination, and the visualization itself is an interactive `sumo-gui`
+edge-coloring replay rather than a static plot. Each chunk below launches
+one replay: it blocks until the `sumo-gui` window is closed, then the next
+chunk runs.
+
+BM and duaIterate are always colored on the *same* scale (computed from
+the max across both, see `sumo_edge_analysis.py`), so switching between
+the BM replay and the duaIterate replay below is a like-for-like spatial
+comparison. `aggregated` colors each edge once for the whole episode;
+`interval` recolors every 15 min (900 s).
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(here)
+```
+
+```{r}
+#| label: config
+
+# Files here were downloaded from the single RQ7 MLflow run by
+# `python scripts/run_analysis.py RQ7 --prepare-only` (or the full run) —
+# see scripts/run_analysis.py::_prepare_rq7_data. Using the downloaded
+# copies (not the live local data/ files) keeps this reproducible even
+# after later, unrelated simulation runs have overwritten the local files.
+data_dir <- here("r", "RQ7", "data")
+python_bin <- "/home/miguel/.venvs/thesis_master/bin/python3"
+script <- here("src", "analysis", "run_rq7_edge_viz.py")
+```
+
+```{r}
+#| label: aggregated_BM
+
+system2(python_bin, c(
+  script,
+  "--mode", "aggregated",
+  "--metric", "density",
+  "--algorithm", "BM",
+  "--data-dir", data_dir
+))
+```
+
+```{r}
+#| label: aggregated_duaIterate
+
+system2(python_bin, c(
+  script,
+  "--mode", "aggregated",
+  "--metric", "density",
+  "--algorithm", "duaIterate",
+  "--data-dir", data_dir
+))
+```
+
+```{r}
+#| label: interval_BM
+
+system2(python_bin, c(
+  script,
+  "--mode", "interval",
+  "--period", "900",
+  "--metric", "density",
+  "--algorithm", "BM",
+  "--data-dir", data_dir
+))
+```
+
+```{r}
+#| label: interval_duaIterate
+
+system2(python_bin, c(
+  script,
+  "--mode", "interval",
+  "--period", "900",
+  "--metric", "density",
+  "--algorithm", "duaIterate",
+  "--data-dir", data_dir
+))
+```
+
+<!--
+Swap "--metric density" for "--metric entered" in any of the chunks above
+to see edge usage (vehicle counts) instead of congestion.
+-->
