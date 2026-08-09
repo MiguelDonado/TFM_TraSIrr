@@ -28,6 +28,7 @@ RQ1
 RQ2
 RQ3
 RQ4
+RQ5
 
 """
 
@@ -76,6 +77,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq3_data()
     elif research_question == "RQ4":
         _prepare_rq4_data()
+    elif research_question == "RQ5":
+        _prepare_rq5_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -198,6 +201,47 @@ def _prepare_rq4_data() -> None:
     }
 
     data_dir = BASE_DIR / "r" / "RQ4" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq5_data() -> None:
+    """Pull R-gap artifacts from all RQ5 simulation runs and save combined parquets."""
+    filter_string = (
+        "tags.research_question = 'RQ5' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'development'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = [
+        "seed",
+        "n_agents",
+        "network_degraded",
+        "degradation_start_episode",
+        "degradation_end_episode",
+        "warm_up",
+        "memory_mean",
+        "heterogeneous_memory"
+    ]
+
+    artifacts = {
+        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+        "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
+        "bm_edgedata": "processed/edgedata.parquet",
+        # "od_routes": "DUE/duaIterate/od_routes.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+        "bm_results": "agent_state/BM_results.parquet"
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ5" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     for name, artifact_path in artifacts.items():

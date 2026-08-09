@@ -1,0 +1,72 @@
+# RQ5 (dev) — Heterogeneous vs. homogeneous memory levels across agents
+#
+# What it answers:
+# Does letting agents differ in how much they weight past experience (γ,
+# memory_level) — instead of the whole population sharing one value —
+# change behavior convergence compared to a homogeneous population with
+# the same mean γ?
+#
+# How:
+# - heterogeneous_memory is run both true and false in this same grid, so
+#   both conditions share every other setting (network, degradation,
+#   seed, n_agents) and are directly comparable within this one design,
+#   rather than pulling the homogeneous case from RQ2's design:
+#     - true:  each agent draws its own γ independently from Beta(a, b),
+#              reparametrized via mean/concentration:
+#                a = memory_mean * memory_concentration
+#                b = (1 - memory_mean) * memory_concentration
+#              memory_mean=0.7, memory_concentration=20 → Beta(14, 6):
+#              mean 0.7, ~95% of agents fall within [0.5, 0.9].
+#     - false: every agent shares config.memory_level=0.7 directly — the
+#              same value as memory_mean above, so the homogeneous run is
+#              centered on the same γ as the heterogeneous population.
+# - Each agent's sampled (or shared) γ is persisted per-row in BM_results
+#   (memory_level column), so it can be correlated against that agent's
+#   own behavior/convergence during analysis.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
+
+grid:
+  learning:
+    heterogeneous_memory: 
+      - true
+    memory_mean:
+      - 0.7
+    memory_concentration:
+      - 4
+    memory_level:
+      - 0.7
+  network_path:
+    network:
+      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/Sioux_Falls.net.xml"
+    network_normal:
+      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/templates/Normal_Sioux_Falls.net.xml"
+    network_degraded:
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-15_Sioux_Falls.net.xml"
+  stopping_rule:
+    max_episodes:
+      - 300
+    k_no_change:
+      - 5000
+    degradation_start_episode: 
+      - 101
+    degradation_end_episode:
+      - 201
+
+  randomness:
+    seed:
+      - 42
+      # - 5
+      # - 23
+      # - 1999
+      # - 8
+  demand:
+    n_agents:
+      - 155
+  
+  due_convergence: 
+    duaIterate_max_iterations: 
+      - 1

@@ -435,6 +435,11 @@ flow_paths_df_plot <- flow_paths_df |>
 
 ```{r}
 #| label: plot3
+# DISRUPTION: LABELS (only showed for the relevant paths, since the other are irrelevant)
+# PATH: COLOR
+# RELEVANT: LINEWIDTH 
+# (same path can be relevant for one memory level, and not relevant for another. 
+# Linewidths will be different across facets for same path. So is properly handle)
 
 path_labels_relevant <- flow_paths_df_plot |> 
   group_by(path, memory_level_fct) |> 

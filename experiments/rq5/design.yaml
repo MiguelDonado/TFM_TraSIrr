@@ -3,7 +3,7 @@
 # What it answers:
 # Does letting agents differ in how much they weight past experience (γ,
 # memory_level) — instead of the whole population sharing one value —
-# change route-choice equilibrium/convergence compared to the homogeneous
+# change behavior convergence compared to the homogeneous
 # baseline (RQ2)?
 #
 # How:
