@@ -293,16 +293,27 @@ def _prepare_rq7_data() -> None:
         )
     run_id = runs.iloc[0]["run_id"]
 
+    # Used in RQ7_part2 to build the geometry of the network and paths for the visualization 
+    network_stem = runs.iloc[0]["params.network"]
+
     artifacts = {
         "bm_edgedata.parquet": "processed/edgedata.parquet",
         "dua_edgedata.parquet": "DUE/duaIterate/edgedata/edgedata.parquet",
         "times_interval.parquet": "environment/times_interval.parquet",
         "routes_bm.rou.xml": "DUE/BM/routes_last_episode.rou.xml",
         "routes_dua.rou.xml": "DUE/duaIterate/routes_last_iteration.rou.xml",
+        # RQ7_part2 (OD/path-level route composition) inputs
+        "demand_odt.parquet": "DUE/generic/demand_odt.parquet",
+        "od_routes_bm.parquet": "environment/od_routes.parquet",
+        "od_routes_dua.parquet": "DUE/duaIterate/od_routes.parquet",
+        "flows_bm.parquet": "DUE/BM/flows_paths_odtp_k.parquet",
+        "flows_dua.parquet": "DUE/duaIterate/flows_paths_odtp_k.parquet"
     }
 
     data_dir = BASE_DIR / "r" / "RQ7" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
+
+    (data_dir / "network_stem.txt").write_text(network_stem)
 
     client = MlflowClient()
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -317,8 +328,8 @@ def _render_analysis(research_question: str) -> None:
     """Render the Quarto report(s) for a research question."""
     rq_dir = BASE_DIR / "r" / research_question
 
-    if research_question == "RQ4":
-        qmd_files = [rq_dir / "RQ4.qmd", rq_dir / "RQ4_part2.qmd"]
+    if research_question in ("RQ4","RQ7"):
+        qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd"]
     else:
         qmd_files = [rq_dir / f"{research_question}.qmd"]
 

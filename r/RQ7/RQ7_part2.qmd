@@ -1,0 +1,386 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "20/jun/2026"
+format:
+  html:
+    self-contained: true
+execute: 
+  warning: false
+  message: false
+editor_options: 
+  chunk_output_type: console
+---
+
+**RQ7:** Qualitative comparison of paths used by both algorithms for a representative OD. In particular this script carries out the OD/path-level comparison.
+  
+Convergence is measured via three R-gap variants computed by the `DUE_convergence`
+package: aggregated R-gap (overall convergence level), refined R-gap by departure
+interval (temporal heterogeneity), and OD-specific R-gap (spatial heterogeneity).
+BM is compared against `duaIterate` — SUMO's built-in DUE solver — as a sanity-check
+baseline.
+
+On this research question only the aggregated R-gap will be considered.
+
+For more details, check the research questions document.
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(tidyverse)
+library(arrow)
+library(ggh4x)
+library(patchwork)
+library(xml2)
+library(glue)
+```
+
+```{r}
+#| label: load_custom_functions
+
+library(here)
+
+# Load custom theme
+source(file = here("r","shared","theme.R"))
+
+# Make it global theme (every plot automatically uses it)
+theme_set(theme_thesis())
+
+# Builds the congestion_regime factor from whatever n_agents values are
+# present in the data, instead of hardcoding levels/labels per plot.
+congestion_regime_tiers <- c("High")
+
+make_congestion_regime <- function(n_agents) {
+  levels_sorted <- sort(unique(n_agents))
+  
+  if (length(congestion_regime_tiers) != length(levels_sorted)) {
+    stop("The number of congestion regime tiers must equal the number of unique agent counts.")
+  }
+  
+  factor(
+    n_agents, 
+    levels = levels_sorted,
+    labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
+}
+```
+
+```{r}
+#| label: data
+
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ7","data")
+
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+parquet_files <- c(
+  demand_odt = "demand_odt.parquet",
+  od_routes_bm = "od_routes_bm.parquet",
+  od_routes_dua = "od_routes_dua.parquet",
+  flows_bm = "flows_bm.parquet",
+  flows_dua = "flows_dua.parquet"
+)
+
+data <- parquet_files |>
+  purrr::set_names() |>
+  purrr::map(\(f) arrow::read_parquet(file.path(data_dir, f)))
+```
+
+```{r}
+#| label: representative_OD
+
+# 1. Choose a representative OD pair:
+# (i) it has relatively high travel demand
+# (ii) it possesses several feasible alternative routes
+
+# Things to take into account:
+# 1. OD matrix is different across congestion_regimes (keeping everything else constant)
+# 2. OD matrix is different across seeds (keeping everything else constant)
+
+# That is why the simulation for the RQ7 has only been done for a particular seed and congestion regime.
+
+# 1. OD matrix (contains demand on each OD for this particular scenario)
+OD_matrix <- data$demand_odt.parquet |> 
+  group_by(origin, destination) |> 
+  summarise(
+    demand = sum(count)
+  ) |> 
+  ungroup() |> 
+  rename(
+    dest = destination
+  )
+
+# Check to make sure OD matrix is correct
+if (!OD_matrix$demand |> sum() == "1847"){
+  stop("There is some error related to the OD matrix.")
+}
+
+# 2. OD_routes (available routes for each OD)
+OD_routes <- data$od_routes_bm.parquet |> 
+  group_by(origin, dest) |> 
+  summarise(
+    n_routes = n_distinct(route_id)
+  ) |> 
+  ungroup()
+
+representative_OD_df <- OD_matrix |> 
+  left_join(OD_routes, by = c("origin", "dest")) |> 
+  filter(n_routes > 1) |> 
+  arrange(desc(demand), desc(n_routes))
+
+representative_OD <- representative_OD_df |> 
+  slice_head(n = 1)
+```
+
+
+
+```{r}
+#| label: route_usage_BM
+
+path_levels_bm <- seq(0,representative_OD$n_routes-1)
+path_levels_bm_labels <- seq(1,representative_OD$n_routes)
+  
+flow_paths_bm_df <- data$flows_bm.parquet |> 
+  filter(
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+    episode == max(episode)
+  ) |> 
+  mutate(
+    path = factor(
+      path, 
+      levels = path_levels_bm,
+      labels = path_levels_bm_labels
+    ) 
+  ) |> 
+  group_by(path) |> 
+  summarise(
+    flow = sum(count)
+  )
+```
+
+```{r}
+#| label: route_usage_duaiterate
+
+paths_dua <- data$flows_dua.parquet |> 
+  filter(
+    origin == representative_OD$origin,
+    destination == representative_OD$dest
+  ) |> 
+  summarise(
+    n_paths = n_distinct(path)
+  ) |> 
+  pull(n_paths)
+
+path_levels_dua <- seq(0,paths_dua-1)
+path_levels_dua_labels <- seq(1,paths_dua)
+
+# Check duaiterate data structure is right
+recorded_episodes_dua <- data$flows_dua.parquet$episode |> n_distinct()
+if (recorded_episodes_dua > 1){
+  stop("There is some error related to 'data$flows_dua.parquet' file.")
+}
+
+flow_paths_dua_df <- data$flows_dua.parquet |> 
+  filter(
+    origin == representative_OD$origin,
+    destination == representative_OD$dest
+  ) |> 
+  mutate(
+    path = factor(
+      path, 
+      levels = path_levels_dua,
+      labels = path_levels_dua_labels
+    ) 
+  ) |> 
+  group_by(path) |>
+  summarise(
+    flow = sum(count)
+  )
+```
+
+```{r}
+#| label: network_edge_shapes
+
+# Non-internal <edge> elements each have exactly one <lane> child with a
+# "shape" attribute (a straight polyline "x1,y1 x2,y2 ..."), which is the
+# edge's physical geometry — reused both to draw route trajectories and as
+# the light-gray full-network backdrop that gives them spatial context.
+
+# Read XML of the network used for this run
+network_stem <- read_lines(here("r", "RQ7", "data", "network_stem.txt"))
+network_filename <- paste0(network_stem, ".xml")
+all_networks <- list.files(
+  here("sumo", "net"),
+  pattern = "\\.net\\.xml$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+network_matches <- all_networks[basename(all_networks) == network_filename]
+if (length(network_matches) != 1) {
+  stop(glue(
+    "Expected exactly one network file named '{network_filename}' under sumo/net/, ",
+    "found {length(network_matches)}."
+  ))
+}
+network_path <- network_matches
+
+# Function to parse the network XML edge shapes attributes.
+# In particular:
+# 1. SUMO shape attribute string has two points "x,y" separated by an space. 
+# Example: 
+# "107.20,-301.60 192.80,-301.60"
+#    x1     y1      x2      y2
+# 2. We wanna convert it to a df:
+# | x      | y       |
+# |--------|---------|
+# | 107.20 | -301.60 |
+# | 192.80 | -301.60 |
+
+########
+# Steps:
+########
+# 1. str_split(shape_str, " ")[[1]]: Splits on spaces. The [[1]] is because this function can accept more than one input string, and it returns a list with as much elements as input strings. So, with [[1]] we are saying that we want the results of separating by spaces the first (and only) string we passed as input.
+# Result: c("107.20,-301.60", "192.80,-301.60")
+
+# 2. str_split(","): Separate by comma
+# Result: list(c("107.20", "-301.60"), c("192.80", "-301.60"))
+
+# 3. map_chr(points,1): Walks the list and pulls out element 1 (x-string) from every point.
+# Result: c("107.20", "192.80")
+parse_shape <- function(shape_str) {
+  points <- str_split(shape_str, " ")[[1]] |> str_split(",")
+  tibble(
+    x = as.numeric(map_chr(points, 1)),
+    y = as.numeric(map_chr(points, 2))
+  )
+}
+
+# Find all relevant edges elements of the network
+network_edges <- xml_find_all(read_xml(network_path), "//edge[not(@function='internal')]")
+
+# We create a tibble with two columns:
+# 1. edge: (vectorized) For every edge it pulls out the id attribute giving one character vector — e.g. c("E10_11_EB", "E10_11_WB", ...)
+# 2. shape_str: 
+#   xml_find_first(): Find only first match. Basically for every edge, it pulls out the first lane child element. Because input were n edges, output is n lane elements as well.
+# Then it pulls out the shape of the lane.
+# So we end up with a tibble that contains the edges and its shapes,
+# and its well aligned (since both columns are build from the same set of edges "network_edges" on the same order, is guarantee they are correctly aligned)
+# Example:
+# ┌───────────┬─────────────────────────────────┐
+# │   edge    │            shape_str            │
+# ├───────────┼─────────────────────────────────┤
+# │ E10_11_EB │ "107.20,-301.60 192.80,-301.60" │
+# └───────────┴─────────────────────────────────┘
+
+# |> mutate(): Parses the shape of the edge as we saw before. Each cell is an entire small tibble containing the two points (x1,y1) and (x2,y2) for that edge
+# Example:
+# ┌───────────┬───────────────────────────────┬────────────────────────────────────────────────┐
+# │   edge    │           shape_str           │                     shape                      │
+# ├───────────┼───────────────────────────────┼────────────────────────────────────────────────┤
+# │ E10_11_EB │ "107.20,-301.60               │ tibble(x=c(107.20,192.80),                     │
+# │           │ 192.80,-301.60"               │ y=c(-301.60,-301.60))                          │
+# └───────────┴───────────────────────────────┴────────────────────────────────────────────────┘
+
+
+edge_shapes <- tibble(
+  edge = xml_attr(network_edges, "id"),
+  shape_str = xml_attr(xml_find_first(network_edges, "./lane[1]"), "shape")
+) |>
+  mutate(shape = map(shape_str, parse_shape)) |>
+  select(-shape_str)
+
+# We convert to long format
+# Example one edge-row with a 2-point shape becomes 2 rows
+# ┌───────────┬────────┬─────────┐
+# │   edge    │   x    │    y    │
+# ├───────────┼────────┼─────────┤
+# │ E10_11_EB │ 107.20 │ -301.60 │
+# ├───────────┼────────┼─────────┤
+# │ E10_11_EB │ 192.80 │ -301.60 │
+# └───────────┴────────┴─────────┘
+network_backdrop <- edge_shapes |>
+  unnest(shape)
+```
+
+```{r}
+#| label: route_geometry
+
+# Builds one ordered polyline per route by walking od_routes' edges in
+# step order and concatenating each edge's shape points; inner_join with
+# the flow table both attaches the linewidth aesthetic and drops candidate
+# routes nobody actually used (routes present in od_routes but not in the
+# converged flow table).
+build_route_geometry <- function(od_routes_df, flow_df) {
+  usage_df <- flow_df |>
+    mutate(route_id = as.integer(path) - 1) |>
+    select(route_id, flow)
+
+  od_routes_df |>
+    filter(
+      origin == representative_OD$origin,
+      dest == representative_OD$dest
+    ) |>
+    inner_join(usage_df, by = "route_id") |>
+    arrange(route_id, step) |>
+    left_join(edge_shapes, by = "edge") |>
+    unnest(shape) |>
+    select(route_id, flow, x, y)
+}
+
+route_geometry <- bind_rows(
+  BM = build_route_geometry(data$od_routes_bm.parquet, flow_paths_bm_df),
+  duaIterate = build_route_geometry(data$od_routes_dua.parquet, flow_paths_dua_df),
+  .id = "algorithm"
+) |>
+  mutate(
+    algorithm = factor(algorithm, levels = c("BM", "duaIterate")),
+    route_id = factor(route_id)
+  )
+```
+
+```{r}
+#| label: plot_route_composition
+
+ggplot() +
+  geom_path(
+    data = network_backdrop,
+    mapping = aes(x = x, y = y, group = edge),
+    color = "grey85",
+    linewidth = 0.3
+  ) +
+  geom_path(
+    data = route_geometry,
+    mapping = aes(
+      x = x, y = y,
+      group = interaction(algorithm, route_id),
+      color = route_id,
+      linewidth = flow
+    ),
+    lineend = "round"
+  ) +
+  facet_wrap(~algorithm) +
+  coord_equal() +
+  scale_color_brewer(palette = "Dark2") +
+  scale_linewidth(range = c(0.4, 3)) +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  labs(
+    color = "Route",
+    linewidth = "Flow (veh)",
+    title = "Path-level route composition for a representative OD",
+    subtitle = glue(
+      "OD pair: {representative_OD$origin} → {representative_OD$dest} | Demand: {representative_OD$demand}"
+    )
+  )
+
+ggsave(here("r","RQ7","figures","plot_route_composition.png"), width = 12, height = 6)
+```
