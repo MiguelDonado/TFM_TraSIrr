@@ -307,7 +307,7 @@ def _prepare_rq7_data() -> None:
         "od_routes_bm.parquet": "environment/od_routes.parquet",
         "od_routes_dua.parquet": "DUE/duaIterate/od_routes.parquet",
         "flows_bm.parquet": "DUE/BM/flows_paths_odtp_k.parquet",
-        "flows_dua.parquet": "DUE/duaIterate/flows_paths_odtp_k.parquet"
+        "flows_dua.parquet": "DUE/duaIterate/flows_paths_odtp_k.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ7" / "data"
@@ -328,7 +328,9 @@ def _render_analysis(research_question: str) -> None:
     """Render the Quarto report(s) for a research question."""
     rq_dir = BASE_DIR / "r" / research_question
 
-    if research_question in ("RQ4","RQ7"):
+    if research_question == "RQ7":
+        qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd", rq_dir / f"{research_question}_part3.qmd"]
+    elif research_question == "RQ4":
         qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd"]
     else:
         qmd_files = [rq_dir / f"{research_question}.qmd"]

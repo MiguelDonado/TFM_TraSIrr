@@ -1,0 +1,197 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "20/jun/2026"
+format:
+  html:
+    self-contained: true
+execute: 
+  warning: false
+  message: false
+editor_options: 
+  chunk_output_type: console
+---
+
+**RQ7:** Quantitative comparison of paths used by both algorithms.
+  
+Convergence is measured via three R-gap variants computed by the `DUE_convergence`
+package: aggregated R-gap (overall convergence level), refined R-gap by departure
+interval (temporal heterogeneity), and OD-specific R-gap (spatial heterogeneity).
+BM is compared against `duaIterate` — SUMO's built-in DUE solver — as a sanity-check
+baseline.
+
+On this research question only the aggregated R-gap will be considered.
+
+For more details, check the research questions document.
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(tidyverse)
+library(arrow)
+library(ggh4x)
+library(patchwork)
+library(xml2)
+library(glue)
+library(gt)
+```
+
+```{r}
+#| label: load_custom_functions
+
+library(here)
+
+# Load custom theme
+source(file = here("r","shared","theme.R"))
+
+# Make it global theme (every plot automatically uses it)
+theme_set(theme_thesis())
+
+# Builds the congestion_regime factor from whatever n_agents values are
+# present in the data, instead of hardcoding levels/labels per plot.
+congestion_regime_tiers <- c("High")
+
+make_congestion_regime <- function(n_agents) {
+  levels_sorted <- sort(unique(n_agents))
+  
+  if (length(congestion_regime_tiers) != length(levels_sorted)) {
+    stop("The number of congestion regime tiers must equal the number of unique agent counts.")
+  }
+  
+  factor(
+    n_agents, 
+    levels = levels_sorted,
+    labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
+}
+```
+
+```{r}
+#| label: data
+
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ7","data")
+
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+parquet_files <- c(
+  demand_odt = "demand_odt.parquet",
+  od_routes_bm = "od_routes_bm.parquet",
+  od_routes_dua = "od_routes_dua.parquet",
+  flows_bm = "flows_bm.parquet",
+  flows_dua = "flows_dua.parquet"
+)
+
+data <- parquet_files |>
+  purrr::set_names() |>
+  purrr::map(\(f) arrow::read_parquet(file.path(data_dir, f)))
+```
+
+```{r}
+#| label: Link_Flow_RMSE_part1_bm
+
+# route_id is only unique within an OD pair (routes are numbered 0..k-1 per
+# OD), so origin/dest must be carried through the join alongside route_id -
+# joining on route_id alone pools flow across unrelated OD pairs that happen
+# to share the same route number.
+bm_edges_routes <- data$od_routes_bm.parquet |>
+  distinct(origin, dest, route_id, edge)
+
+bm_flow_routes <- data$flows_bm.parquet |>
+  filter(
+    episode == max(episode)
+  ) |>
+  group_by(origin, destination, path) |>
+  summarise(
+    flow = sum(count),
+    .groups = "drop"
+  ) |>
+  rename(
+    dest = destination,
+    route_id = path
+  )
+bm_edges_flows <- bm_edges_routes |>
+  left_join(bm_flow_routes, by = c("origin", "dest", "route_id")) |>
+  mutate(
+    flow = coalesce(flow, 0)
+  ) |>
+  group_by(edge) |>
+  summarise(
+    flow = sum(flow)
+  )
+```
+
+```{r}
+#| label: Link_Flow_RMSE_part2_dua
+
+dua_edges_routes <- data$od_routes_dua.parquet |>
+  distinct(origin, dest, route_id, edge)
+
+dua_flow_routes <- data$flows_dua.parquet |>
+  group_by(origin, destination, path) |>
+  summarise(
+    flow = sum(count),
+    .groups = "drop"
+  ) |>
+  rename(
+    dest = destination,
+    route_id = path
+  )
+dua_edges_flows <- dua_edges_routes |>
+  left_join(dua_flow_routes, by = c("origin", "dest", "route_id")) |>
+  mutate(
+    flow = coalesce(flow, 0)
+  ) |>
+  group_by(edge) |>
+  summarise(
+    flow = sum(flow)
+  )
+```
+
+```{r}
+#| label: Link_flow_RMSE_joined_table
+
+edge_flows_table <- full_join(
+  bm_edges_flows,
+  dua_edges_flows,
+  by = "edge",
+  suffix = c("_BM", "_DUE")
+) |> 
+  mutate(
+    flow_BM = coalesce(flow_BM, 0),
+    flow_DUE = coalesce(flow_DUE, 0)
+  )
+
+M <- edge_flows_table$edge |> n_distinct()
+```
+
+```{r}
+#| label: Link_flow_RMSE_computation
+
+sum_squared_diffs <- edge_flows_table |> 
+  mutate(
+    diff = flow_BM - flow_DUE
+  ) |> 
+  mutate(
+    squared_diffs = diff ** 2
+  ) |> 
+  summarise(
+    sum_squared_diffs = sum(squared_diffs)
+  )
+
+numerator <- sqrt(sum_squared_diffs / M)
+denominator <-(edge_flows_table$flow_DUE |> sum()) / M
+link_flow_rmse <- numerator / denominator
+```
+
+```{r}
+#| label: Effective_n_routes
+```
+
+
+
+
