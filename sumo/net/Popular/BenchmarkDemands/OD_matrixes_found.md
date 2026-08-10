@@ -1,3 +1,0 @@
-- Mari Paz told me that for Sioux Falls, maybe instead of using randomTrips, she tought that there were some standard OD-matrixes that were already used in traffic research for this network (and maybe for benchmark would be nice to use the same OD matrix)
-- I search on internet and found two possible OD matrices for Sioux_Falls. 
-- Now the question, is should I use some of this standard OD matrices or my own demand calibration.

@@ -1,10 +1,9 @@
-Reasonable, clearly-documented deviations from the paper (engineering necessities, not errors):
-- A small epsilon is added to stimulus denominators to avoid divide-by-zero — this only pads the bound, doesn't break the paper's guaranteed |S| ≤ 1.
-- A warm-up gate (episode > warm_up and all routes visited once) delays learning until every route has been observed at least once, avoiding NaN in PT — the paper's simulation doesn't need this since it's not concerned with cold-start per-route data.
+## Weaknesses BM model
+1. **Question 1:** ¿If i only visited one route once, 20 days ago, then i will still remember perfectly the cost of the route that day? 
 
- The perceived travel times. I have a doubt, because if i only visited one route once, 20 days ago, then i will still remember perfectly the cost of the route that day. Thats correct?. The paper says the same?
+**Answer** Yes — that's correct, and it follows directly from eq. 6 in the paper.
 
-Yes — that's correct, and it follows directly from eq. 6 in the paper.
+### Example for a route with only one observation
 
 PT for route k is a weighted average, not a decaying quantity:
 
@@ -16,14 +15,9 @@ M_ik^t = ψ^(t−j₀)·T_{j₀} / ψ^(t−j₀) = T_{j₀}
 
 The decay weight appears in both numerator and denominator and cancels exactly — regardless of how large t − j₀ is, or what γ is (as long as γ > 0). So a route visited once 20 days ago is remembered with the exact travel time from that day, undiminished, forever (until visited again).
 
-This isn't decay of a memory's "strength" — γ only controls the relative weighting between multiple observations of the same route. With only one observation, there's nothing to weigh it against, so the average is just that one sample.
+**This isn't decay of a memory's "strength" — γ only controls the relative weighting between multiple observations of the same route.** With only one observation, there's nothing to weigh it against, so the average is just that one sample.
 
-The code (_compute_perceived_travel_times) reproduces this identically — numerator[r]/denominator[r] for a single-visit route reduces to that one tt value the same way. So implementation matches the paper faithfully here; this isn't a bug.
-Worth flagging as a modeling property rather than a fix: it means a route explored only once keeps a "crisp," never-fading PT based on a single (possibly lucky/unlucky) sample, while frequently-chosen routes get smoothed, multi-sample averages. That asymmetry is inherent to the paper's formula, not something the codebase introduced.
-
-Yes, exactly — with two or more observations to weigh against each other, γ becomes a real recency-decay parameter. The single-visit case is the degenerate exception, not the rule.
-
-Why it's different with ≥2 observations:
+### Example for a route with more than one observation:
 
 For PT with two visits to route k, at days j₁ < j₂:
 
@@ -35,29 +29,18 @@ M_ik^t = [γ^(j₂−j₁)·T_{j₁} + T_{j₂}] / [γ^(j₂−j₁) + 1]
 
 As γ → 0, the older observation T_{j₁} is washed out and PT ≈ T_{j₂} (only the latest visit matters). As γ → 1, both observations get equal weight (plain average, "perfect memory"). That's a real decay effect — the older sample's influence shrinks geometrically with both γ and the gap j₂ − j₁.
 
-Same logic for ET, which pools travel times across all routes chosen over time: with many terms in the sum, γ < 1 means travel times from further back contribute exponentially less to the current expectation. This matches the paper's own description (§3.2): "travelers weight recent travel time more than older ones... the smaller the ψ-value, the less the travel time of the past days influence travelers' current ET and PT," and ψ = 1 is explicitly the "ideal state" where "travelers remember all travel time they have experienced... the travel time of each day has the same effect."
 
-So the rule of thumb: γ only does work when there are multiple data points competing for weight. With one observation, normalization strips the decay out entirely (as you noted for the single-visit PT case); with several, it behaves as a proper exponential recency filter — which is exactly the paper's intent for both ET and PT.
+### Summary workings of BM model 
 
-- Well yeah, it washes out the older observation, but the most recent observation is never washed out, even with very low memory and if it happend 100 days ago.
-You've spotted something real and worth stating precisely: the current day t actually cancels out of the PT formula entirely. Watch what happens with an arbitrary number of visits to route k, at days j₁ < j₂ < ... < jₙ (jₙ = most recent visit):
-
-M_ik^t = Σᵢ γ^(t−jᵢ)·T_jᵢ / Σᵢ γ^(t−jᵢ)
-
-Factor γ^(t−jₙ) out of every term (numerator and denominator alike) and it cancels completely:
-
-M_ik^t = Σᵢ γ^(jₙ−jᵢ)·T_jᵢ / Σᵢ γ^(jₙ−jᵢ)
-
-t is gone. PT for route k depends only on the gaps between visits to that specific route, never on how far today is from the last visit. So:
+PT for route k depends only on the gaps between visits to that specific route, never on how far today is from the last visit. So:
 
 - The most recent visit (jₙ) always carries weight γ^0 = 1 — full weight, by construction, no matter whether jₙ was yesterday or 400 days ago.
 - Older visits to that route (j₁, j₂, ...) are discounted relative to jₙ, by γ^(jₙ−jᵢ) — that's the real decay you identified earlier.
 - But there's no term anywhere that discounts jₙ itself relative to "now." A route last driven 100 days ago, never revisited since, produces exactly the same PT today as it would have produced the day after that 100th-day visit.
 
-Same cancellation happens in the ET formula, for the same algebraic reason — but it's less visible there because ET pools travel time from every day regardless of route, so in practice the most recent term (day t−1) is always "yesterday," never stale.
+**So the precise characterization: γ in this model is a relative-recency weight among an action's own observation history, not a staleness/freshness decay tied to the current day. Nothing in the paper's formulation makes a memory less trusted just because it's old in absolute terms — only because newer memories of the same route exist to outweigh it. An infrequently-explored route keeps an undiminished, fully-confident PT based on whatever its last visit happened to show, indefinitely. That's a genuine structural property of eq. 6 (not an implementation quirk — the code inherits it faithfully), and it's arguably a real limitation of the model if you wanted "confidence in a memory" to erode with elapsed time rather than just with newer competing samples.**
 
-So the precise characterization: γ in this model is a relative-recency weight among an action's own observation history, not a staleness/freshness decay tied to the current day. Nothing in the paper's formulation makes a memory less trusted just because it's old in absolute terms — only because newer memories of the same route exist to outweigh it. An infrequently-explored route keeps an undiminished, fully-confident PT based on whatever its last visit happened to show, indefinitely. That's a genuine structural property of eq. 6 (not an implementation quirk — the code inherits it faithfully), and it's arguably a real limitation of the model if you wanted "confidence in a memory" to erode with elapsed time rather than just with newer competing samples.
-
+2. **Question 2:**
 Could you read /home/miguel/6.Projects/Thesis/data/agent_state/agent_debug_trace.json. How it is possible that with memory 0.001, still works the algorithm and is able to lower the mean travel time
 
   Ran 3 shell commands

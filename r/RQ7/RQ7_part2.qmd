@@ -36,6 +36,7 @@ library(ggh4x)
 library(patchwork)
 library(xml2)
 library(glue)
+library(gt)
 ```
 
 ```{r}
@@ -308,14 +309,68 @@ network_backdrop <- edge_shapes |>
 ```
 
 ```{r}
+#| label: create_path_signature
+
+# route_id is assigned independently by each algorithm's route-generation
+# process so "route_id == 0" in onealgorithm has no relationship to 
+# "route_id == 0" in the other.
+# Build a common identifier path_id from each route's actual ordered edge sequence (its
+# "signature") so the same physical path gets the same color in both
+# facets, regardless of what each algorithm happened to number it.
+bm_routes <- data$od_routes_bm.parquet |>
+  filter(
+    origin == representative_OD$origin,
+    dest == representative_OD$dest
+    ) |>
+  arrange(route_id, step) |>
+  group_by(route_id) |>
+  summarise(
+    path_signature = paste(edge, collapse = " -> ")
+  ) |>
+  ungroup()
+
+dua_routes <- data$od_routes_dua.parquet |>
+  filter(
+    origin == representative_OD$origin,
+    dest == representative_OD$dest
+    ) |>
+  arrange(route_id, step) |>
+  group_by(route_id) |>
+  summarise(
+    path_signature = paste(edge, collapse = " -> ")
+  ) |>
+  ungroup()
+
+# Common identifier
+all_paths <- bind_rows(
+  bm_routes,
+  dua_routes
+) |>
+  distinct(path_signature) |>
+  arrange(path_signature) |>
+  mutate(
+    path_id = paste0("P", row_number())
+  ) |>
+  ungroup()
+
+# Attach the shared path_id back onto each algorithm's (route_id -> signature)
+# lookup, so build_route_geometry() can map its own route_id to it.
+bm_routes  <- bm_routes  |> left_join(all_paths, by = "path_signature")
+dua_routes <- dua_routes |> left_join(all_paths, by = "path_signature")
+```
+
+```{r}
 #| label: route_geometry
 
 # Builds one ordered polyline per route by walking od_routes' edges in
 # step order and concatenating each edge's shape points; inner_join with
 # the flow table both attaches the linewidth aesthetic and drops candidate
 # routes nobody actually used (routes present in od_routes but not in the
-# converged flow table).
-build_route_geometry <- function(od_routes_df, flow_df) {
+# converged flow table). path_id_map supplies the algorithm's (route_id ->
+# path_id) lookup from create_path_signature, so the returned rows are
+# keyed by the cross-algorithm-comparable path_id, not the algorithm-local
+# route_id.
+build_route_geometry <- function(od_routes_df, flow_df, path_id_map) {
   usage_df <- flow_df |>
     mutate(route_id = as.integer(path) - 1) |>
     select(route_id, flow)
@@ -326,21 +381,154 @@ build_route_geometry <- function(od_routes_df, flow_df) {
       dest == representative_OD$dest
     ) |>
     inner_join(usage_df, by = "route_id") |>
+    left_join(path_id_map |> select(route_id, path_id), by = "route_id") |>
     arrange(route_id, step) |>
     left_join(edge_shapes, by = "edge") |>
     unnest(shape) |>
-    select(route_id, flow, x, y)
+    select(path_id, flow, edge, x, y)
 }
 
 route_geometry <- bind_rows(
-  BM = build_route_geometry(data$od_routes_bm.parquet, flow_paths_bm_df),
-  duaIterate = build_route_geometry(data$od_routes_dua.parquet, flow_paths_dua_df),
+  BM = build_route_geometry(data$od_routes_bm.parquet, flow_paths_bm_df, bm_routes),
+  duaIterate = build_route_geometry(data$od_routes_dua.parquet, flow_paths_dua_df, dua_routes),
   .id = "algorithm"
 ) |>
   mutate(
     algorithm = factor(algorithm, levels = c("BM", "duaIterate")),
-    route_id = factor(route_id)
+    path_id = factor(path_id, levels = all_paths$path_id)
   )
+
+relevant_routes_geometry <- route_geometry |>
+  filter(
+    flow > representative_OD$demand / 10
+  )
+
+```
+
+```{r}
+#| label: od_markers
+
+# Origin/destination labels are placed at the midpoint of the origin/dest
+# edge's shape (mean of its shape points — exact midpoint for the typical
+# 2-point straight edge) rather than at its start/end vertex, so the label
+# sits centered along the edge instead of right on top of a corner. Not
+# faceted by algorithm (same OD for both), so ggplot repeats it on both panels.
+roles_levels <- c("Origin", "Destination")
+roles_labels <- c("Origin edge", "Destination edge")
+
+od_markers <- bind_rows(
+  Origin = edge_shapes |>
+    filter(edge == representative_OD$origin) |>
+    unnest(shape) |>
+    summarise(x = mean(x), y = mean(y)),
+  Destination = edge_shapes |>
+    filter(edge == representative_OD$dest) |>
+    unnest(shape) |>
+    summarise(x = mean(x), y = mean(y)),
+  .id = "role"
+) |>
+  mutate(role = factor(role, levels = roles_levels, labels = roles_labels))
+```
+
+```{r}
+#| label: route_segments
+
+# geom_path can't show direction of travel, and without it a route that
+# doubles back (e.g. starts on a westbound edge before turning towards a
+# destination to the east) reads as an arbitrary detour. Turning each
+# route into (x, y) -> (xend, yend) segments lets us attach an arrowhead
+# to specific edges instead of the whole line.
+route_segments <- route_geometry |>
+  group_by(algorithm, path_id, edge) |>
+  mutate(xend = lead(x), yend = lead(y)) |>
+  ungroup() |>
+  filter(!is.na(xend))
+
+# Only the origin/destination edges get an arrowhead — enough to show
+# initial/final direction of travel (e.g. why a route detours west first)
+# without cluttering every intermediate edge along the route. Each row's
+# `edge` is the edge its *start* point belongs to, so filtering on it picks
+# out exactly that edge's own segment
+route_endpoint_segments <- route_segments |>
+  filter(edge %in% c(representative_OD$origin)) |> 
+  group_by(edge, algorithm) |> 
+  slice_head(n = 1)
+```
+
+```{r}
+#| label: path_share_table
+
+flows_bm_table <- data$flows_bm.parquet |> 
+  filter(
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+    episode == max(episode)
+  ) |> 
+  group_by(path) |>
+  summarise(
+    flow = sum(count)
+  ) |> 
+  rename(route_id = path) |> 
+  left_join(bm_routes, by = c("route_id")) |> 
+  select(path_id, flow)
+
+flows_dua_table <- data$flows_dua.parquet |> 
+  filter(
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+  ) |> 
+  group_by(path) |>
+  summarise(
+    flow = sum(count)
+  ) |> 
+  rename(route_id = path) |> 
+  left_join(dua_routes, by = c("route_id")) |> 
+  select(path_id, flow)
+
+comparison_table <- full_join(
+  flows_bm_table,
+  flows_dua_table,
+  by = "path_id",
+  suffix = c("_BM", "_DUE")
+) %>%
+  mutate(
+    flow_BM = coalesce(flow_BM, 0),
+    flow_DUE = coalesce(flow_DUE, 0),
+    share_BM = flow_BM / representative_OD$demand,
+    share_DUE = flow_DUE / representative_OD$demand
+  )
+
+comparison_final_table <- comparison_table |> 
+  select(path_id, share_BM, share_DUE) |> 
+  rename(
+    Path = path_id,
+    "BM share (%)" = share_BM,
+    "dueIterate share (%)" = share_DUE
+  )
+```
+
+```{r}
+#| label: table
+
+p_table_path_share <- comparison_final_table |>
+  gt() |>
+  tab_header(
+    title = "Path shares by algorithm"
+  ) |>
+  fmt_percent(
+    columns = c(`BM share (%)`, `dueIterate share (%)`),
+    decimals = 1
+  ) |>
+  tab_options(
+    table.width = pct(100),
+    data_row.padding = px(4),
+    heading.padding = px(4)
+  )
+
+gtsave(
+  p_table_path_share,
+  here("r","RQ7","figures","path_share_table.png")
+)
 ```
 
 ```{r}
@@ -357,30 +545,66 @@ ggplot() +
     data = route_geometry,
     mapping = aes(
       x = x, y = y,
-      group = interaction(algorithm, route_id),
-      color = route_id,
+      group = interaction(algorithm, path_id),
+      color = path_id,
       linewidth = flow
     ),
     lineend = "round"
   ) +
+  geom_segment(
+    data = route_endpoint_segments,
+    mapping = aes(
+      x = x, y = y, xend = xend, yend = yend,
+    ),
+    lineend = "round",
+    arrow = arrow(length = unit(0.20, "cm"), type = "closed")
+  ) +
+  ggrepel::geom_label_repel(
+    data = od_markers,
+    mapping = aes(x = x, y = y, label = role),
+    
+    # label appearance
+    size = 3,
+    fontface = "bold",
+    label.size = NA,
+    fill = alpha("white", 0.8),
+    
+    # repel behavior
+    box.padding = 1,
+    nudge_x = 0.4,
+
+      # connector
+    min.segment.length = 0,
+    segment.size = 0.3,
+    segment.color = "grey40",
+    
+    # reproducibility
+    seed = 1,
+  )  +
   facet_wrap(~algorithm) +
+  # Preserve network aspect ratio
   coord_equal() +
-  scale_color_brewer(palette = "Dark2") +
-  scale_linewidth(range = c(0.4, 3)) +
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     axis.title = element_blank(),
-    panel.grid = element_blank()
+    panel.grid = element_blank(),
+  ) +
+  scale_color_brewer(palette = "Dark2", name = "Path") +
+  scale_linewidth(
+    guide = 'none',
+    range = c(0.5, 2.5)
   ) +
   labs(
     color = "Route",
     linewidth = "Flow (veh)",
     title = "Path-level route composition for a representative OD",
     subtitle = glue(
-      "OD pair: {representative_OD$origin} → {representative_OD$dest} | Demand: {representative_OD$demand}"
+      "OD pair: {representative_OD$origin} → {representative_OD$dest} | Demand: {representative_OD$demand} veh"
     )
   )
 
 ggsave(here("r","RQ7","figures","plot_route_composition.png"), width = 12, height = 6)
 ```
+
+
