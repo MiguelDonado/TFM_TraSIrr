@@ -1,0 +1,48 @@
+# RQ8 — Quantitative path/link-flow comparison across memory levels
+#
+# What it answers:
+# At the network level how close is Bush-Mosteller's converged solution
+# to duaIterate DUE benchmark (link-flow RMSE). And how that comparison evolves
+# when BM algorithm uses different memory levels.
+#
+# How:
+# - Split out of RQ7 (which stays a single-combination qualitative case
+#   study at the base-config default memory_level=1) so this quantitative
+#   sweep can vary memory_level and replicate across seeds without
+#   affecting RQ7's qualitative artifacts.
+# - n_agents is fixed at 2000 (the "High" congestion regime), matching
+#   RQ7's single regime rather than sweeping congestion too — keeps the
+#   grid to a memory-level x seed comparison only.
+# - duaIterate_max_iterations=10 (production default), here duaIterate is 
+#   the reference agains which BM is compared, so it needs to be properly
+#   converged.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+grid:
+  learning:
+    memory_level:
+      - 1.00
+      - 0.90
+      - 0.80
+      - 0.70
+      - 0.60
+      - 0.50
+      - 0.40
+      - 0.30
+      - 0.20
+      - 0.10
+      - 0.01
+  randomness:
+    seed:
+      - 42
+      - 5
+      - 23
+      - 1999
+      - 8
+  demand:
+    n_agents:
+      - 2000
+  due_convergence:
+    duaIterate_max_iterations:
+      - 10

@@ -188,9 +188,7 @@ denominator <-(edge_flows_table$flow_DUE |> sum()) / M
 link_flow_rmse <- numerator / denominator
 ```
 
-```{r}
-#| label: Effective_n_routes
-```
+
 
 
 

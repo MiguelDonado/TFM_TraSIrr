@@ -1,0 +1,230 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "11/aug/2026"
+format:
+  html:
+    self-contained: true
+execute:
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+**RQ8:** Quantitative comparison of link flows produced by Bush-Mosteller vs
+`duaIterate`, across memory levels.
+
+Split out of RQ7 (which stays a single-combination qualitative case study at
+the base-config default `memory_level=1`) so this sweep can vary
+`memory_level` and replicate across seeds without touching RQ7's qualitative
+artifacts — see `experiments/rq8/design.yaml`.
+
+For more details, check the research questions document.
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(tidyverse)
+library(arrow)
+library(ggh4x)
+library(patchwork)
+library(xml2)
+library(glue)
+library(gt)
+```
+
+```{r}
+#| label: load_custom_functions
+
+library(here)
+
+# Load custom theme
+source(file = here("r","shared","theme.R"))
+
+# Make it global theme (every plot automatically uses it)
+theme_set(theme_thesis())
+
+# Builds the congestion_regime factor from whatever n_agents values are
+# present in the data, instead of hardcoding levels/labels per plot.
+congestion_regime_tiers <- c("High")
+
+make_congestion_regime <- function(n_agents) {
+  levels_sorted <- sort(unique(n_agents))
+  
+  if (length(congestion_regime_tiers) != length(levels_sorted)) {
+    stop("The number of congestion regime tiers must equal the number of unique agent counts.")
+  }
+  
+  factor(
+    n_agents, 
+    levels = levels_sorted,
+    labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
+}
+```
+
+```{r}
+#| label: data
+
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ8","data")
+
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+parquet_files <- c(
+  od_routes_bm = "od_routes_bm.parquet",
+  od_routes_dua = "od_routes_dua.parquet",
+  flows_bm = "flows_bm.parquet",
+  flows_dua = "flows_dua.parquet"
+)
+
+data <- parquet_files |>
+  purrr::set_names() |>
+  purrr::map(\(f) arrow::read_parquet(file.path(data_dir, f)))
+```
+
+```{r}
+#| label: representative_memory_levels
+
+representative_memory_levels <- c("1.0", "0.5" ,"0.01")
+```
+
+```{r}
+#| label: Link_Flow_RMSE_bm
+
+# route_id is only unique within an OD pair (routes are numbered 0..k-1 per
+# OD), so origin/dest must be carried through the join alongside route_id -
+# joining on route_id alone pools flow across unrelated OD pairs that happen
+# to share the same route number. 
+# seed/memory_level identify the run the data came from
+bm_edges_routes <- data$od_routes_bm.parquet |>
+  distinct(seed, memory_level, origin, dest, route_id, edge)
+
+bm_flow_routes <- data$flows_bm.parquet |>
+  group_by(seed, memory_level) |>
+  filter(episode == max(episode)) |>
+  ungroup() |>
+  group_by(seed, memory_level, origin, destination, path) |>
+  summarise(flow = sum(count), .groups = "drop") |>
+  rename(dest = destination, route_id = path)
+
+bm_edges_flows <- bm_edges_routes |>
+  left_join(
+    bm_flow_routes,
+    by = c("seed", "memory_level", "origin", "dest", "route_id")
+  ) |>
+  mutate(flow = coalesce(flow, 0)) |>
+  group_by(seed, memory_level, edge) |>
+  summarise(flow = sum(flow), .groups = "drop")
+```
+
+```{r}
+#| label: Link_Flow_RMSE_dua
+
+# duaIterate doesn't depend on BM's memory_level (only on seed), so every
+# memory_level within a seed logged an identical copy of the DUA routes/
+# flows. distinct()/group_by() below drop the memory_level column before
+# aggregating, collapsing those duplicates into one DUA reference per seed.
+dua_edges_routes <- data$od_routes_dua.parquet |>
+  distinct(seed, origin, dest, route_id, edge)
+
+dua_flow_routes <- data$flows_dua.parquet |>
+  distinct(seed, origin, destination, path, count) |>
+  group_by(seed, origin, destination, path) |>
+  summarise(flow = sum(count), .groups = "drop") |>
+  rename(dest = destination, route_id = path)
+
+dua_edges_flows <- dua_edges_routes |>
+  left_join(dua_flow_routes, by = c("seed", "origin", "dest", "route_id")) |>
+  mutate(flow = coalesce(flow, 0)) |>
+  group_by(seed, edge) |>
+  summarise(flow = sum(flow), .groups = "drop")
+```
+
+```{r}
+#| label: Link_Flow_RMSE_computation
+
+# dua_edges_flows has no memory_level column, so each seed's single DUA row
+# per edge is broadcast against every memory_level's BM row for that same
+# (seed, edge) — the correct shared reference for the whole sweep.
+edge_flows_table <- full_join(
+  bm_edges_flows,
+  dua_edges_flows,
+  by = c("seed", "edge"),
+  suffix = c("_BM", "_DUE")
+) |>
+  mutate(
+    flow_BM = coalesce(flow_BM, 0),
+    flow_DUE = coalesce(flow_DUE, 0)
+  )
+
+link_flow_rmse_df <- edge_flows_table |>
+  mutate(squared_diff = (flow_BM - flow_DUE) ** 2) |>
+  group_by(seed, memory_level) |>
+  summarise(
+    M = n_distinct(edge),
+    sum_squared_diff = sum(squared_diff),
+    sum_flow_DUE = sum(flow_DUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    numerator = sqrt(sum_squared_diff / M),
+    denominator = sum_flow_DUE / M,
+    link_flow_rmse = numerator / denominator
+  ) |> 
+  mutate(
+    memory_level_fct = factor(memory_level, levels = representative_memory_levels) 
+  ) |> 
+  mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
+  select(c(seed, link_flow_rmse, memory_level_fct))
+```
+
+```{r}
+#| label: Link_Flow_RMSE_summary
+
+link_flow_rmse_summary <- link_flow_rmse_df |>
+  group_by(memory_level_fct) |>
+  summarise(median_rmse = median(link_flow_rmse), .groups = "drop")
+```
+
+```{r}
+#| label: plot_rmse_vs_memory
+
+ggplot(
+  data = link_flow_rmse_summary,
+  mapping = aes(x = memory_level_fct, y = median_rmse)
+) +
+  geom_point() +
+  geom_line(linewidth = 1.4) +
+  geom_line(
+    data = link_flow_rmse_df,
+    mapping = aes(x = memory_level_fct, y = link_flow_rmse, group = seed),
+    linewidth = 0.45,
+    alpha = 0.6,
+    colour = "grey40"
+  ) +
+  labs(
+    title = "Sensitivity of link-flow RMSE to memory level",
+    subtitle = "Per-seed link-flow NRMSE against duaIterate (thin lines) \nand their median (thick line)",
+    x = "Memory level",
+    y = "Link-flow RMSE (normalized)"
+  )
+  
+
+ggsave(here("r","RQ8","figures","plot_rmse_vs_memory.png"), width = 12, height = 6)
+ 
+
+
+
+
+
+
+
+
+  
+```

@@ -30,6 +30,7 @@ RQ3
 RQ4
 RQ5
 RQ7
+RQ8
 
 """
 
@@ -88,6 +89,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq5_data()
     elif research_question == "RQ7":
         _prepare_rq7_data()
+    elif research_question == "RQ8":
+        _prepare_rq8_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -324,13 +327,48 @@ def _prepare_rq7_data() -> None:
             shutil.copy2(downloaded_path, data_dir / local_name)
 
 
+def _prepare_rq8_data() -> None:
+    """
+    Pull BM and duaIterate route/flow artifacts from every RQ8 run  
+    and save combined parquets into r/RQ8/data/.
+
+    duaIterate's routes/flows don't depend on BM's memory_level (only on
+    seed), so the "od_routes_dua"/"flows_dua" artifacts end up with one
+    duplicate copy per memory_level within each seed — harmless, in 
+    R they will be dedupe
+    """
+    filter_string = (
+        "tags.research_question = 'RQ8' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "memory_level"]
+
+    artifacts = {
+        "od_routes_bm": "environment/od_routes.parquet",
+        "flows_bm": "DUE/BM/flows_paths_odtp_k.parquet",
+        "od_routes_dua": "DUE/duaIterate/od_routes.parquet",
+        "flows_dua": "DUE/duaIterate/flows_paths_odtp_k.parquet",
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ8" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+
 def _render_analysis(research_question: str) -> None:
     """Render the Quarto report(s) for a research question."""
     rq_dir = BASE_DIR / "r" / research_question
 
-    if research_question == "RQ7":
-        qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd", rq_dir / f"{research_question}_part3.qmd"]
-    elif research_question == "RQ4":
+    if research_question in ("RQ4", "RQ7"):
         qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd"]
     else:
         qmd_files = [rq_dir / f"{research_question}.qmd"]
