@@ -27,7 +27,7 @@ grid:
       - 42
       - 5
       - 23
-      - 1999
+      - 7
       - 8
   demand:
     n_agents:

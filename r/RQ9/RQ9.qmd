@@ -1,0 +1,250 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "20/jun/2026"
+format:
+  html:
+    self-contained: true
+execute: 
+  warning: false
+  message: false
+editor_options: 
+  chunk_output_type: console
+---
+
+**RQ9:** Analyze how the memory level of agents affects route-choice concentration and diversity in the BM model.
+
+Convergence is measured via three R-gap variants computed by the `DUE_convergence`
+package: aggregated R-gap (overall convergence level), refined R-gap by departure
+interval (temporal heterogeneity), and OD-specific R-gap (spatial heterogeneity).
+BM is compared against `duaIterate` — SUMO's built-in DUE solver — as a sanity-check
+baseline.
+
+On this research question only the aggregated R-gap will be considered.
+
+**The plots to answer this question will be:**
+
+1. Boxplot of route-choice diversity across memory levels (one seed)
+2. Sensitivity analysis across seeds
+
+For more details, check the research questions document.
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(tidyverse)
+library(arrow)
+library(ggh4x)
+library(glue)
+library(ggtext)
+library(patchwork)
+```
+
+```{r}
+#| label: load_custom_functions
+
+library(here)
+
+# Load custom theme
+source(file = here("r","shared","theme.R"))
+
+# Make it global theme (every plot automatically uses it)
+theme_set(theme_thesis())
+
+# Builds the congestion_regime factor from whatever n_agents values are
+# present in the data, instead of hardcoding levels/labels per plot.
+congestion_regime_tiers <- c("Near free-flow", "Moderate congestion", "High congestion")
+
+make_congestion_regime <- function(n_agents) {
+  levels_sorted <- sort(unique(n_agents))
+  
+  if (length(congestion_regime_tiers) != length(levels_sorted)) {
+    stop("The number of congestion regime tiers must equal the number of unique agent counts.")
+  }
+  
+  factor(
+    n_agents, 
+    levels = levels_sorted,
+    labels = paste0(congestion_regime_tiers, " (", levels_sorted, ")"))
+}
+```
+
+```{r}
+#| label: data
+
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ9","data")
+
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |> 
+  (\(x) set_names(x, tools::file_path_sans_ext(basename(x))))() |> 
+  map(read_parquet)
+```
+
+
+
+```{r}
+#| label: od_routes
+
+# Data structure that stores for each seed, the ODs and their routes
+seed_od_routes <- data$od_routes |> 
+  select(-run_id) |> 
+  filter(n_agents=='2000') |> 
+  select(-n_agents) |> 
+  group_by(seed, origin, dest, route_id) |> 
+  slice_head(n = 1) |> 
+  ungroup() |> 
+  select(seed, origin, dest, route_id)
+
+# Check to make sure all ODs across all different seeds have at least 2 routes
+n_OD_with_1_route <- seed_od_routes |> 
+  group_by(seed, origin, dest) |> 
+  summarise(
+    n = n()
+  ) |>
+  ungroup() |> 
+  filter(n == 1) |> 
+  nrow()
+
+if (n_OD_with_1_route>0){
+  stop("Some OD pair of some seed has only one route in their route set.")
+}
+```
+
+```{r}
+#| label: flow_od_routes
+
+flow_routes <- data$flow_paths |> 
+  filter(n_agents == '2000') |> 
+  select(-run_id, -n_agents) |> 
+  group_by(seed, memory_level) |> 
+  filter(
+    episode == max(episode)
+  ) |> 
+  ungroup() |> 
+  group_by(
+    origin, destination, path, seed, memory_level
+  ) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
+  rename(
+    route_id = path
+  ) |> 
+  ungroup() |> 
+  mutate(
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  select(seed, memory_level, origin, destination, route_id, flow)
+```
+
+```{r}
+#| label: demand_per_od
+
+demand_per_od <- flow_routes |> 
+  filter(
+    memory_level == min(memory_level)
+  ) |> 
+  select(-memory_level) |> 
+  group_by(origin, destination, seed) |> 
+  summarise(
+    demand = sum(flow)
+  ) |> 
+  select(seed, origin, destination, demand) |> 
+  ungroup()
+```
+
+```{r}
+#| label: n_alternatives_per_OD
+
+n_alternatives <- seed_od_routes |> 
+  group_by(seed, origin, dest) |> 
+  summarise(
+    n_alternatives = n()
+  ) |> 
+  rename(
+    destination = dest
+  ) |> 
+  ungroup()
+```
+
+
+```{r}
+#| label: path_share
+
+path_share <- flow_routes |> 
+  left_join(demand_per_od, by = c("seed", "origin", "destination")) |> 
+  mutate(
+    share = flow / demand
+  )
+```
+
+```{r}
+#| label: n_eff_routes
+
+df_n_eff_routes <- path_share |> 
+  mutate(
+    log_share = log(share)
+  ) |> 
+  mutate(
+    term_i = share * log_share
+  ) |> 
+  group_by(
+    seed, memory_level, origin, destination
+  ) |> 
+  summarise(
+    entropy = -sum(term_i),
+    check = sum(share)
+  ) |> 
+  mutate(
+    n_eff_routes = exp(entropy)
+  ) |> 
+  left_join(
+    n_alternatives, by = c("seed", "origin", "destination")
+  ) |> 
+  mutate(
+    normalized_n_eff_routes = (n_eff_routes - 1) / (n_alternatives - 1)
+  ) |> 
+  ungroup() 
+```
+
+```{r}
+#| label: plot1
+
+# We only take into account one seed
+random_seed <- 8
+df_plot_1 <- df_n_eff_routes |> filter(seed == random_seed)
+
+ggplot(
+  data = df_plot_1,
+  mapping = aes(
+    x = factor(memory_level),
+    y = normalized_n_eff_routes
+  )
+) +
+  geom_boxplot() +
+  ggbeeswarm::geom_quasirandom(
+  width = 0.125,
+  alpha = 0.5,
+  size = 0.8
+  ) +
+  labs(
+    x = "Memory level",
+    y = "Normalized nº effective routes",
+    title = "Route-choice diversity",
+    subtitle = glue("Normalized effective number of routes across OD pairs \nSeed = {random_seed} | High congestion (2000 veh)")
+  )
+
+ggsave(here("r","RQ9","figures","plot1_boxplot_n_eff_route.png"))
+```
+
+
+
+
+

@@ -1,12 +1,12 @@
 """
-Bulk-restores MLflow simulation runs by setting tags.status from "archived" to
-"active" for a given research question.
+Bulk-restores MLflow simulation runs by removing the tags.status = "archived"
+tag for a given research question.
 
-Runs tagged status = "active" are the ones included in analysis (see
-run_analysis.py). This script reverses archive_runs.py, bringing archived
-runs for a research question back into the active set. Doing this one run
-at a time in the MLflow UI is tedious for a full grid (e.g. 15+ runs), so
-this script does it in bulk.
+Runs without a status tag (or with status != "archived") are the ones
+included in analysis (see run_analysis.py). This script reverses
+archive_runs.py, bringing archived runs for a research question back into
+the active set. Doing this one run at a time in the MLflow UI is tedious for
+a full grid (e.g. 15+ runs), so this script does it in bulk.
 
 Usage:
   python scripts/restore_runs.py <research_question>            dry run (default)
@@ -63,7 +63,7 @@ def restore_runs():
 
     client = MlflowClient()
     for run_id in runs["run_id"]:
-        client.set_tag(run_id, "status", "active")
+        client.delete_tag(run_id, "status")
 
     print(f"\nRestored {len(runs)} run(s) for {research_question}.")
 

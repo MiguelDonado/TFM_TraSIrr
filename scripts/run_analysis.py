@@ -31,6 +31,7 @@ RQ4
 RQ5
 RQ7
 RQ8
+RQ9
 
 """
 
@@ -91,6 +92,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq7_data()
     elif research_question == "RQ8":
         _prepare_rq8_data()
+    elif research_question == "RQ9":
+        _prepare_rq9_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -352,6 +355,35 @@ def _prepare_rq8_data() -> None:
     }
 
     data_dir = BASE_DIR / "r" / "RQ8" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq9_data() -> None:
+    '''
+    It uses the same runs that were performed for RQ2.
+    '''
+    filter_string = (
+        "tags.research_question = 'RQ2' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "memory_level", "n_agents"]
+
+    artifacts = {
+        "demand_odt": "DUE/generic/demand_odt.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ9" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     for name, artifact_path in artifacts.items():
