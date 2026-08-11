@@ -1,0 +1,10 @@
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+grid:
+  randomness:
+    seed:
+      - 23
+  demand:
+    n_agents:
+      - 2000
+      
