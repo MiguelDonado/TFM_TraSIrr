@@ -5,6 +5,7 @@ grid:
     memory_level:
       - 1.00
       - 0.10
+      - 0.01
   randomness:
     seed:
       - 23

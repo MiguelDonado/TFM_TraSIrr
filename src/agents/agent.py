@@ -301,6 +301,8 @@ class BMAgent:
             "expected_travel_time": float(self.expected_travel_time),
             "perceived_travel_times": self.perceived_travel_times.tolist(),
             "stimulus": float(self.stimulus),
+            "chosen": int(self.history[-1][0]),
+            "chosen_tt": int(self.history[-1][1])
         }
 
     def update(self, chosen, reward, warm_up, episode):

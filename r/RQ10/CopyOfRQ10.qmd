@@ -30,7 +30,6 @@ library(xml2)
 library(glue)
 library(gt)
 library(jsonlite)
-library(ggtext)
 ```
 
 ```{r}
@@ -76,10 +75,7 @@ agent_id_info <- data$agents_od |>
     id == agent_id
   ) |> 
   select(id, origin, destination, departure_time) |> 
-  slice_head(n = 1) |> 
-  mutate(
-    id_fmt = str_replace(id,"agent_","")
-  )
+  slice_head(n = 1)
 ```
 
 ```{r}
@@ -340,62 +336,12 @@ agent_debug_trace_df <- data$agent_debug_trace |>
 ```
 
 ```{r}
-#| label: sidebar_plot
-
-# Sidebar plot showing all 3 candidate routes since plot_agent_learning()
-# only draws the chosen route per episode panel.
-routes_guide_plot <- ggplot() +
-    geom_path(
-      data = network_backdrop,
-      mapping = aes(x = x, y = y, group = edge),
-      color = "grey85",
-      linewidth = 0.3
-    ) +
-    geom_path(
-      data = route_geometry,
-      mapping = aes(
-        x = x, y = y, color = route_id
-      ),
-      lineend = "round"
-    ) +
-    scale_colour_manual(
-      values = c(
-        P1 = "#262626",
-        P2 = "#525252",
-        P3 = "#787878"
-      )
-    ) +
-    # Preserve network aspect ratio
-    coord_equal() +
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title = element_blank(),
-      panel.grid = element_blank(),
-      legend.position = "none",
-      plot.title = element_text(size = 10),  
-      panel.border = element_blank(),
-      strip.text = element_text(
-        size = 11,
-        face = "bold"
-      )
-    ) +
-    facet_wrap(~route_id, ncol = 1) +
-    labs(title = "\t\tAvailable routes")
-
-routes_guide_small <- 
-  plot_spacer() /
-  routes_guide_plot /
-  plot_spacer() +
-  plot_layout(
-    heights = c(0.10, 0.8, 0.10)
-  )
-```
-
-```{r}
-#| label: main_plot
+#| label: plot_agent_learning_function
 
 # Builds the faceted "agent learning across representative episodes" figure
+# plus the sidebar figure with the annotations (for one memory_level)
+# (route_geometry, path_levels, ...) don't vary by memory_level for a given OD 
+# — only the BM learning dynamics (agent_debug_trace_df) do 
 
 plot_agent_learning <- function(memory_level_arg, representative_episodes) {
   
@@ -403,70 +349,66 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
   # 1. Annotations plot
   #####################
   
-  # Drops the leading "0" off a 2-decimal probability (0.33 -> .33), and
-  # collapses the two whole-number cases (0.00 -> 0, 1.00 -> 1) instead of
-  # leaving a bare ".00" — handled before the generic strip so it doesn't
-  # get double-stripped into "".
-  fmt_p <- function(x) {
-    s <- sprintf("%.2f", x)
-    case_when(
-      s == "0.00" ~ "0",
-      s == "1.00" ~ "1",
-      .default = sub("^0", "", s)
-    )
-  }
-
   # Per (episode, route) state for just the representative episodes: the
   # deviation driving the stimulus (ET - PT), forced to NA pre-warm-up since
-  # ET/PT are both placeholder zeros. PT itself is only meaningful once
-  # learning has started, so pre-warm-up rows show "PT=-" instead of "PT=0s".
+  # ET/PT are both placeholder zeros 
   episode_state <- agent_debug_trace_df |>
     filter(
       memory_level == memory_level_arg,
       episode %in% representative_episodes
     ) |>
     mutate(
-      is_warmup = episode <= exploration_phase_floor,
-      # Pre-header — chosen_tt is the real SUMO travel time the agent
-      # actually received that episode (the RL "reward"), unlike ET/PT/
-      # stimulus it's a genuine value every episode, warm-up included.
-
-      # Header
-      ET_label = if_else(is_warmup, "ET=—", glue("ET={round(ET, 1)}s")),
-      stimulus_label = if_else(is_warmup, "Stim=—", glue("Stim={round(stimulus, 2)}")),
-      header = glue("{ET_label} {stimulus_label}"),
-      # Route block
       route_id = factor(path, levels = path_levels_labels),
-      PT_label = if_else(is_warmup, "—", glue("{round(PT)}s")),
-      route_line = glue("{route_id} {fmt_p(p_start)}→{fmt_p(p)} {PT_label}"),
-      # Bolded via markdown (rendered by ggtext::geom_richtext below) instead
-      # of a trailing "*" — the chosen route should read as visually distinct
-      # at a glance, not just flagged with a small extra character.
-      route_line = if_else(is_chosen, glue("**{route_line}**"), route_line)
+      deviation = if_else(ET == 0, NA_real_, ET - PT),
+      route_line = glue(
+        "{route_id}: p = {sprintf('%.2f', p_start)} -> {sprintf('%.2f', p)}  PT = {sprintf('%5.1f', PT)} s{if_else(is_chosen, ' *', '')}"
+      )
     )
-
-  # One compact monospace label per representative episode, anchored at the
-  # bottom-left corner of each facet panel. "Episode N" isn't repeated here
-  # since facet_wrap's strip title already shows it.
+  
+  # One formatted monospace label per representative episode (episode / ET /
+  # stimulus header, then one line per route with p_start -> p, PT, and a
+  # "*" marking the chosen route), anchored at the network's bottom-left
+  # corner. Header split across two lines so long stimulus values (e.g.
+  # -0.04) don't push the label past the panel's right edge and get clipped.
   episode_annotations <- episode_state |>
     arrange(episode, route_id) |>
     group_by(episode) |>
     summarise(
-      header = unique(header),
-      chosen_route = route_id[is_chosen],
-      chosen_tt = unique(chosen_tt),
-      routes_block = paste(route_line, collapse = "<br>"),
+      routes_block = paste(route_line, collapse = "\n"),
+      ET = unique(ET),
+      stimulus = unique(stimulus),
       .groups = "drop"
     ) |>
     mutate(
-      pre_header = glue("**Chosen: {chosen_route}** TT={chosen_tt}s"),
-      # geom_richtext renders markdown, where a bare "\n" is a soft break
-      # (collapsed to a space) — "<br>" is needed for an actual line break.
-      label = paste(pre_header, header, routes_block, sep = "<br>"),
-      x = min(network_backdrop$x) + 0.02 * diff(range(network_backdrop$x)),
-      y = min(network_backdrop$y) + 0.03 * diff(range(network_backdrop$y))
-    )
-
+      header = glue("Episode {episode}\nET = {round(ET, 1)} s   Stimulus = {round(stimulus, 2)}"),
+      label = paste(header, routes_block, sep = "\n"),
+      y = seq(1, 0.05, length.out = n())
+    ) 
+  
+  annotation_plot <- ggplot(
+    episode_annotations,
+    aes(x = 0, y = y, label = label)
+  ) +
+    geom_label(
+      hjust = 0,
+      vjust = 1,
+      size = 2.8,
+      family = "mono",
+      label.size = 0.2,
+      fill = "white"
+    ) +
+    scale_x_continuous(
+      limits = c(0, 1),
+      expand = c(0, 0)
+    ) +
+    scale_y_continuous(
+      limits = c(0, 1),
+      expand = c(0, 0)
+    ) +
+    theme_void()
+  
+  return(annotation_plot)
+  
   #####################
   # 2. Network plot
   #####################
@@ -493,8 +435,12 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       by = c("episode", "route_id")
     ) |> 
     filter(is_chosen)
+
+
   
-  main_plot <- ggplot() +
+  
+
+  ggplot() +
     geom_path(
       data = network_backdrop,
       mapping = aes(x = x, y = y, group = edge),
@@ -522,14 +468,14 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       mapping = aes(x = x, y = y, label = role),
 
       # label appearance
-      size = 2.5,
+      size = 3,
       fontface = "bold",
       label.size = NA,
       fill = alpha("white", 0.8),
 
       # repel behavior
-      box.padding = 0.5,
-      nudge_x = -1,
+      box.padding = 1,
+      nudge_x = 0.4,
 
         # connector
       min.segment.length = 0,
@@ -539,15 +485,45 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       # reproducibility
       seed = 1,
     ) +
-    ggtext::geom_richtext(
-      data = episode_annotations,
-      mapping = aes(x = x, y = y, label = label),
-      hjust = 0,
-      vjust = 0,
-      size = 3.1,
-      family = "mono",
-      label.size = NA,
-      fill = alpha("white", 0.85)
+    # Preserve network aspect ratio
+    coord_equal() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank(),
+    ) +
+    facet_wrap(~episode, ncol = 3, labeller = labeller(episode = \(x) paste("Episode", x))) +
+    labs(title = glue("Memory level = {memory_level_arg}"))
+    
+  
+}
+
+```
+
+```{r}
+#| label: plot_routes_guide
+
+ggplot() +
+    geom_path(
+      data = network_backdrop,
+      mapping = aes(x = x, y = y, group = edge),
+      color = "grey85",
+      linewidth = 0.3
+    ) +
+    geom_path(
+      data = route_geometry,
+      mapping = aes(
+        x = x, y = y, color = route_id
+      ),
+      lineend = "round"
+    ) +
+    scale_colour_manual(
+      values = c(
+        P1 = "#262626",
+        P2 = "#525252",
+        P3 = "#787878"
+      )
     ) +
     # Preserve network aspect ratio
     coord_equal() +
@@ -556,34 +532,9 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       axis.ticks = element_blank(),
       axis.title = element_blank(),
       panel.grid = element_blank(),
-      strip.text = element_text(
-        size = 11,
-        face = "bold"
-      )
+      legend.position = "none"
     ) +
-    facet_wrap(~episode, ncol = 3, labeller = labeller(episode = \(x) paste("Episode", x)))
-  
-  # routes_guide_plot is static (candidate routes don't vary by
-  # memory_level/episode — see plot_routes_guide chunk), so it's stacked
-  # below the episode grid via patchwork rather than rebuilt per call: it
-  # shows what P1/P2/P3 physically look like, since each episode panel above
-  # only draws the one route actually chosen that episode.
-  main_plot + plot_spacer() + routes_guide_small +
-    plot_layout(widths = c(4.5, -0.8, 1)) +
-    plot_annotation(
-      title = "Evolution of Route Choice During Learning",
-      subtitle = glue(
-        "Agent {agent_id_info$id_fmt} | Departure time: {agent_id_info$departure_time}s | Memory level = {memory_level_arg}"
-      )
-    )
-}
-```
-
-```{r}
-#| label: representative_episodes
-representative_episodes_mem_1 <- c(1, 25, 26, 27, 34, 50)
-representative_episodes_mem_0.1 <- c(1, 25, 26, 27, 59, 61)
-representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
+    facet_wrap(~route_id)
 ```
 
 
