@@ -57,10 +57,6 @@ data_dir <- here("r","RQ10","data")
 data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |> 
   (\(x) set_names(x, tools::file_path_sans_ext(basename(x))))() |> 
   map(read_parquet)
-
-# Import the agent debug trace json and append to data list
-agent_debug_trace_path <- here("r", "RQ10", "data", "agent_debug_trace.json")
-data$agent_debug_trace <- fromJSON(agent_debug_trace_path)
 ```
 
 ```{r}
@@ -68,7 +64,7 @@ data$agent_debug_trace <- fromJSON(agent_debug_trace_path)
 
 # It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
 
-exploration_phase_floor <- as.numeric(read_lines(here("r", "RQ10", "data", "warm_up.txt")))
+exploration_phase_floor <- as.numeric(unique(data$agents_od$warm_up))
 ```
 
 ```{r}
@@ -77,7 +73,9 @@ agent_id <- data$agent_debug_trace$id |> unique()
 agent_id_info <- data$agents_od |> 
   filter(
     id == agent_id
-  )
+  ) |> 
+  select(id, origin, destination, departure_time) |> 
+  slice_head(n = 1)
 ```
 
 ```{r}
@@ -89,7 +87,7 @@ agent_id_info <- data$agents_od |>
 # the light-gray full-network backdrop that gives them spatial context.
 
 # Read XML of the network used for this run
-network_stem <- read_lines(here("r", "RQ7", "data", "network_stem.txt"))
+network_stem <- data$agents_od$network |> unique()
 network_filename <- paste0(network_stem, ".xml")
 all_networks <- list.files(
   here("sumo", "net"),
@@ -188,10 +186,15 @@ network_backdrop <- edge_shapes |>
 ```{r}
 #| label: agent_routes
 routes_agent <- data$od_routes_bm |> 
+  mutate(
+    memory_level = as.numeric(memory_level)
+  ) |> 
   filter(
     origin == agent_id_info$origin,
-    dest == agent_id_info$destination
-  )
+    dest == agent_id_info$destination,
+    memory_level == min(memory_level)
+  ) |> 
+  select(-c(warm_up, network, run_id, memory_level))
 ```
 
 ```{r}
@@ -217,7 +220,16 @@ build_route_geometry <- function(od_routes_df) {
     select(route_id, edge, x, y)
 }
 
-route_geometry <- build_route_geometry(data$od_routes_bm) |> 
+route_geometry <- build_route_geometry(
+  data$od_routes_bm |> 
+  mutate(
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  filter(
+    memory_level == min(memory_level)
+  ) |> 
+  select(-c(run_id, memory_level, network, warm_up))
+  ) |> 
   mutate(
     route_id = factor(route_id, levels = path_levels, labels = path_levels_labels)
   )
@@ -336,6 +348,10 @@ ggplot() +
   scale_color_brewer(palette = "Dark2", name = "Path")
 ```
 
+```{r}
+chosen_od_tmp <- data$od_routes_bm |> group_by(origin, dest) |> summarise(n = n_distinct(route_id)) |> filter(n == 3)
+agents_candidates <- data$agents_od |> filter(origin == chosen_od_tmp$origin, destination == chosen_od_tmp$dest)
+```
 
 
 

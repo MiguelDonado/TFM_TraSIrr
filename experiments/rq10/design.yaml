@@ -1,6 +1,10 @@
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:
+  learning:
+    memory_level:
+      - 1.00
+      - 0.10
   randomness:
     seed:
       - 23

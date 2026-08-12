@@ -397,64 +397,39 @@ def _prepare_rq9_data() -> None:
         df.to_parquet(data_dir / f"{name}.parquet", index=False)
 
 def _prepare_rq10_data() -> None:
-    """
+    '''
     Pull the information about the network, and routes, as well as 
-    the debug trace for an agent from the single RQ10 simulation run and save
+    the debug trace for an agent from the RQ10 simulation run and save
     them into r/RQ10/data/
-
-    Unlike RQ1-5, RQ10's design.yaml is a single combination (a qualitative
-    sumo-gui case study, not a multi-seed statistical comparison), so this
-    downloads one run's artifacts directly instead of concatenating across
-    many runs with load_artifact_across_runs.
-    """
+    '''
     filter_string = (
         "tags.research_question = 'RQ10' and tags.run_type = 'simulation' "
         "and tags.status != 'archived' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
-
-    set_tracking_uri()
-    runs = mlflow.search_runs(
-        experiment_names=experiment_names, filter_string=filter_string
-    )
-    if runs.empty:
-        raise ValueError(f"No runs found for filter: '{filter_string}'")
-    if len(runs) > 1:
-        raise ValueError(
-            f"Expected exactly one RQ10 run, found {len(runs)}. "
-            "RQ10's design.yaml should define a single combination — "
-            "archive the extra runs (tags.status = 'archived') before re-running."
-        )
-    run_id = runs.iloc[0]["run_id"]
-
-    # Used in RQ7_part2 to build the geometry of the network and paths for the visualization 
-    network_stem = runs.iloc[0]["params.network"]
-    warm_up = runs.iloc[0]["params.warm_up"]
+    params_to_attach = ["memory_level", "network", "warm_up"]
 
     artifacts = {
         # Contains the json file that tracks all the learning process
-        # for one particular agent 
-        "agent_debug_trace.json": "agent_state/agent_debug_trace.json",
+        # for one particular agent
+        "agent_debug_trace": "agent_state/agent_debug_trace.json",
         # Contains to which OD is assigned that agent
-        "agents_od.parquet": "environment/agents_od.parquet",
+        "agents_od": "environment/agents_od.parquet",
         # Contains the routes for each OD
-        "od_routes_bm.parquet": "environment/od_routes.parquet",
+        "od_routes_bm": "environment/od_routes.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ10" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    (data_dir / "network_stem.txt").write_text(network_stem)
-    (data_dir / "warm_up.txt").write_text(warm_up)
-
-    client = MlflowClient()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        for local_name, artifact_path in artifacts.items():
-            downloaded_path = client.download_artifacts(
-                run_id=run_id, path=artifact_path, dst_path=tmp_dir
-            )
-            shutil.copy2(downloaded_path, data_dir / local_name)
-
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
 
 def _render_analysis(research_question: str) -> None:
     """Render the Quarto report(s) for a research question."""

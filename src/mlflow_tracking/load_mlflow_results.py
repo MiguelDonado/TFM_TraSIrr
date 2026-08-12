@@ -91,8 +91,11 @@ def load_artifact_across_runs(
                 dst_path=tmp_dir,
             )
 
-            # Read file
-            df = pd.read_parquet(local_path)
+            # Read file (artifact may be a parquet or a json file)
+            if local_path.endswith(".json"):
+                df = pd.read_json(local_path)
+            else:
+                df = pd.read_parquet(local_path)
 
             # Add run_id column
             df["run_id"] = run_id
