@@ -83,18 +83,41 @@
 
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
+# Why memory_level is fixed at 1.00 (not swept) here:
+# memory_level (gamma) and reliability_sensitivity (theta) both independently
+# affect R-gap/convergence. Sweeping theta at a reduced gamma would mix the
+# theta effect with the gamma effect, making it impossible to
+# attribute an R-gap change cleanly to risk-sensitivity. Keeping gamma at its
+# production default (1.00) isolates theta as the only varying hyperparameter,
+# matching how every other RQ sweep in this repo holds every axis fixed
+# except the one under study
+#
+# The memory x theta interaction implied by this RQ's own motivation (the
+# model should distinguish a route that WAS risky from one that IS risky,
+# which only shows up with gamma<1's recency weighting) is a real, separate
+# follow-up question — not covered by this grid, which is scoped to the 4
+# theta-only plots (risk scatter, R-gap vs theta, flow share vs theta, flow
+# evolution).
+
 grid:
   learning:
     memory_level:
       - 1.00
-      # - 0.10
-      # - 0.01
     reliability_sensitivity:
+      # - 0.00
+      - 5.00
       - 10.00
   randomness:
     seed:
+      - 42
+      - 5
       - 23
+      - 1999
+      - 8
   demand:
     n_agents:
       - 2000
+  due_convergence: 
+    duaIterate_max_iterations: 
+      - 1
   

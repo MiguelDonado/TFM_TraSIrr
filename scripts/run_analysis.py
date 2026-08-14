@@ -34,7 +34,6 @@ RQ8
 RQ9
 RQ10
 RQ11
-
 """
 
 import os
@@ -423,6 +422,38 @@ def _prepare_rq10_data() -> None:
     }
 
     data_dir = BASE_DIR / "r" / "RQ10" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq11_data() -> None:
+    '''
+    Pull the needed information and save them into r/RQ11/data/
+    '''
+    filter_string = (
+        "tags.research_question = 'RQ11' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "warm_up", "reliability_sensitivity"]
+
+    artifacts = {
+        "bm_results": "agent_state/BM_results.parquet",
+        "agents_od": "environment/agents_od.parquet",
+        "flows_bm": "DUE/BM/flows_paths_odtp_k.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet"
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ11" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     for name, artifact_path in artifacts.items():
