@@ -450,7 +450,9 @@ def _prepare_rq11_data() -> None:
         "flows_bm": "DUE/BM/flows_paths_odtp_k.parquet",
         "od_routes": "environment/od_routes.parquet",
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
-        "demand_odt": "DUE/generic/demand_odt.parquet"
+        "demand_odt": "DUE/generic/demand_odt.parquet",
+        "actions": "agent_state/actions.parquet",
+        "rewards": "agent_state/rewards.parquet"
     }
 
     data_dir = BASE_DIR / "r" / "RQ11" / "data"

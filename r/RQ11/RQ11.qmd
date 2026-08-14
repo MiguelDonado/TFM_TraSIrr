@@ -1,0 +1,186 @@
+---
+title: "Report"
+author: "Miguel Angel Donado Fernandez"
+date: "20/jun/2026"
+format:
+  html:
+    self-contained: true
+execute: 
+  warning: false
+  message: false
+editor_options: 
+  chunk_output_type: console
+---
+
+**RQ11:** Analyze how incorporating travel-time variability
+  (variance) into the perceived route cost affects route-choice
+  behavior, learning dynamics, and convergence properties of BM
+  model
+
+Convergence is measured via three R-gap variants computed by the `DUE_convergence`
+package: aggregated R-gap (overall convergence level), refined R-gap by departure
+interval (temporal heterogeneity), and OD-specific R-gap (spatial heterogeneity).
+BM is compared against `duaIterate` — SUMO's built-in DUE solver — as a sanity-check
+baseline.
+
+On this research question only the aggregated R-gap will be considered.
+
+**The plots to answer this question will be:**
+
+1. Risk scatter (mechanism plot)
+2. R-gap evolution across $\theta$
+3. Final route flow share vs $\theta$
+4. Flow evolution over episodes
+
+For more details, check the research questions document.
+
+```{r}
+#| label: setup
+
+# To make sure r virtual environment is loaded when executing this script from python
+library(renv)
+renv::load()
+library(tidyverse)
+library(arrow)
+library(ggh4x)
+library(glue)
+library(ggtext)
+library(patchwork)
+```
+
+```{r}
+#| label: load_custom_functions
+
+library(here)
+
+# Load custom theme
+source(file = here("r","shared","theme.R"))
+
+# Make it global theme (every plot automatically uses it)
+theme_set(theme_thesis())
+```
+
+
+```{r}
+#| label: data
+
+# This function helps us to create reliable file paths
+data_dir <- here("r","RQ11","data")
+
+# Dynamic data import
+# 1) list.files(): returns a vector with the file paths
+# 2) set_names(): transforms it into a named vector, with names equal to the filename without extension. This functions are vectorized, thats why it works
+# 3) map(): maps the function to every parquet file. It returns a list, where each element is a df
+data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |> 
+  (\(x) set_names(x, tools::file_path_sans_ext(basename(x))))() |> 
+  map(read_parquet)
+```
+
+```{r}
+#| label: random_seed
+# Randomly select 1 seed 
+set.seed(123)
+random_seed <- sample(unique(data$bm_rgap$seed), size = 1)
+```
+
+```{r}
+#| label: get_warm_up_period(exploration)
+
+# It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
+
+exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
+```
+
+```{r}
+#| label: representative_OD
+
+# Choose an OD whose shortest route is not the most stable (hence, there exist alternative routes that are longer but more stable).
+# Is gonna be chosen taking into account equally weighted means (without memory mechanism) and with theta=0 (under normal drivers scenario). 
+# We do it this way because we merely wanna inspect the network/demand structure to choose our OD and isolate it from the effect of other variables
+
+# We wamt that the shortest route is at least 5 seconds faster than the most stable route
+# (this way we could see a difference in the r-gap when implemented risk sensitivity model)
+min_mean_tt_diff <- 5
+
+rewards_df <- data$rewards |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    seed == random_seed,
+    reliability_sensitivity == 0
+  ) |> 
+  select(-c(run_id, seed, warm_up, reliability_sensitivity))
+actions_df <- data$actions |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    random_seed == 0,
+    seed == random_seed
+  ) |> 
+  select(-c(run_id, seed, warm_up, reliability_sensitivity))
+
+agents_od_df <- data$agents_od |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    seed == random_seed,
+    reliability_sensitivity == 0
+  ) |> 
+  select(-c(post_warm_up, run_id, seed, warm_up, reliability_sensitivity, departure_time)) |> 
+  rename(agent_id = id)
+
+representative_od_df <- rewards_df |> 
+  left_join(actions_df, by = c("episode", "agent_id")) |> 
+  left_join(agents_od_df, by = "agent_id")
+
+representative_od_df_summary <- representative_od_df |> 
+  group_by(origin, destination, action) |> 
+  summarise(
+    mean_tt = mean(reward),
+    sd_tt = sd(reward),
+    count = n()
+  ) |> 
+  ungroup() |> 
+  filter(
+    count > 15
+  )
+
+representative_od_decision_df <- representative_od_df_summary |> 
+  group_by(
+    origin, destination
+  ) |> 
+  mutate(
+    is_shortest = mean_tt == min(mean_tt),
+    is_stablest = sd_tt == min(sd_tt),
+    candidate_od = is_shortest != is_stablest
+  ) |> 
+  filter(
+    candidate_od
+  )
+
+representative_od <- representative_od_decision_df |> 
+  summarise(
+    diff = abs(mean_tt[1] - mean_tt[2]) > min_mean_tt_diff
+  ) |> 
+  filter(diff) |> 
+  arrange(desc(diff)) |> 
+  slice_head(n = 1) |> 
+  select(origin, destination)
+  
+
+representative_od_routes <- representative_od_df_summary |> 
+  filter(
+    origin == representative_od$origin,
+    destination == representative_od$destination
+  ) |> 
+  arrange(mean_tt)
+```
+
+```{r}
+
+```
+
+

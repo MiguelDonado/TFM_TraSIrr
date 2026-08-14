@@ -581,6 +581,11 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
 
 ```{r}
 #| label: representative_episodes
+
+# All relevant episodes:
+# memoria 1: 1, 25, 26, 27, 28, 34, 50
+# memoria 0.1: 1, 25, 26, 27, 59, 61, 141
+# memoria 0.01: 1, 25, 26, 27, 29, 24, 40, 41, 42, 44
 representative_episodes_mem_1 <- c(1, 25, 26, 27, 34, 50)
 representative_episodes_mem_0.1 <- c(1, 25, 26, 27, 59, 61)
 representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
