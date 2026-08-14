@@ -111,12 +111,13 @@ rewards_df <- data$rewards |>
     reliability_sensitivity == 0
   ) |> 
   select(-c(run_id, seed, warm_up, reliability_sensitivity))
+
 actions_df <- data$actions |> 
   mutate(
     reliability_sensitivity = as.numeric(reliability_sensitivity)
   ) |> 
   filter(
-    random_seed == 0,
+    reliability_sensitivity == 0,
     seed == random_seed
   ) |> 
   select(-c(run_id, seed, warm_up, reliability_sensitivity))
@@ -170,7 +171,6 @@ representative_od <- representative_od_decision_df |>
   slice_head(n = 1) |> 
   select(origin, destination)
   
-
 representative_od_routes <- representative_od_df_summary |> 
   filter(
     origin == representative_od$origin,
@@ -180,7 +180,111 @@ representative_od_routes <- representative_od_df_summary |>
 ```
 
 ```{r}
+#| label: data_plot1_points
+agents_representative_od_df <- agents_od_df |> 
+  filter(
+    origin == representative_od$origin,
+    destination == representative_od$destination
+  ) 
+agent <- agents_representative_od_df[ceiling(nrow(agents_representative_od_df) / 2), ]
 
+# The points in the plot 1, will represent the beliefs of an agent about 
+# the mean_tt and sd of its routes. 
+# We just need one agent, because that way we can easily illustrate 
+# the mechanisms and how an agent perception about routes would change by 
+# considering different thetas we just need to use one agent.
+# It is an agent belonging to the representative OD that we are gonna talk
+# about in the following plots
+# We want the agent to be in the middle of the simulation horizon
+
+agent_last_episode_info <- data$bm_results |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    reliability_sensitivity == 0,
+    seed == random_seed
+  ) |> 
+  select(-c(run_id, seed, warm_up, reliability_sensitivity)) |> 
+  filter(
+    agent_id == agent$agent_id,
+    episode == max(episode)
+  ) |> 
+  select(
+    episode, route_id, PT, sigma_r
+  )
+```
+
+```{r}
+#| label: theta_values
+
+theta_values <- as.numeric(data$demand_odt$reliability_sensitivity |> unique())
+```
+
+```{r}
+#| label: data_plot1_lines
+
+# Intuition about the plot:
+# 1) I wanna see which route is the best for each theta value.
+# 2) Draw the contour lines for each theta value. In particular, draw the
+# contour corresponding to the minimum (best) route cost. This shows which
+# other combinations of values result in the same cost as the best route.
+
+# map_dfr: runs the function once for each value in theta_values, and stacks the three results into one dataframe
+
+iso_cost_lines_tmp <- map_dfr(theta_values, function(theta){
+  # Choose route with the minimum generalized cost
+  best <- agent_last_episode_info |> 
+    mutate(
+      cost = PT + theta * sigma_r
+    ) |> 
+    slice_min(cost, n = 1)
+  
+  # Line when we do not take into account the variability.
+  # Basically the contour line is vertical because variability does not matter for the generalized cost
+  if (theta == 0){
+    tibble(theta, type = "vertical", xintercept = best$PT)
+  } else{
+    # (σ_r = -PT_r/θ + cost/θ, i.e. slope -1/θ, intercept cost/θ)
+    tibble(theta, type = "line", slope = -1 / theta, intercept = best$cost / theta)
+  }
+})
+
+iso_cost_lines <- iso_cost_lines_tmp |> mutate(
+  theta = factor(theta)
+)
+```
+
+
+
+```{r}
+#| label: plot_1
+ggplot(
+  data = agent_last_episode_info, 
+  mapping = aes(x = PT, y = sigma_r)
+) +
+  geom_point(size = 3) +
+  geom_vline(
+    data = filter(iso_cost_lines, type == "vertical"),
+    mapping = aes(
+      xintercept = xintercept, 
+      color = theta),
+      linetype = "dashed"
+  ) +
+  geom_abline(
+    data = filter(iso_cost_lines, type == "line"),
+    mapping = aes(
+      slope = slope, 
+      intercept = intercept, 
+      color = theta), 
+    linetype = "dashed"
+  ) +
+  ggrepel::geom_text_repel(aes(label = route_id)) +
+  labs(
+    x = "Perceived travel time", 
+    y = "Perceived std. dev.", 
+    color = expression(theta)
+  )
 ```
 
 
