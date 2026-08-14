@@ -9,7 +9,7 @@ numerical_constants:
 
 learning:
   learning_rate: 0.3
-  memory_level: 1
+  memory_level: 0.01
 
 simulation:
   simulation_time: 3600
@@ -34,13 +34,13 @@ stopping_rule:
   k_no_change: 3
 
 demand:
-  n_agents: 2000
+  n_agents: 2100
 
 interval_time:
   fixed_time_min: 0.5  # minutes
 
 randomtrips:
-  max_size_od_space: 10
+  max_size_od_space: 30
   fringe_factor: 5
 
 due_convergence: 

@@ -1,0 +1,3 @@
+- [] Define somewhere in the thesis the edge nomenclature
+- [] Mencionar en las figuras que parámetros he usado (memory level, learning rate)
+- [] Cite or incorpore my own Thompson Sampling project.

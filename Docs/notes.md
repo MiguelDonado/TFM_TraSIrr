@@ -59,6 +59,7 @@ If when using a network that is very big, I have some scalability issue when wri
 
 
 ## Pending
+- Pasar a limpio lo de la Sioux Falls y los problemas con la network y la demanda.
 
 - Another of my research questions has to do with a temporal link degradation. And study if the algorithm is able to recover the equilibirum it reached before the degradation of the link, when the link has been restore the normal state. I was thinking that the best way to implement it, is make one of the links much slower by reducing the max limit speed. To do so I would create a copy of the network and modify one of the links speed. Additional to that I think I would have to do the next things:
   1. Increase the max episodes

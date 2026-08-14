@@ -24,11 +24,11 @@ Config hyperparameter groups
                         (RQ5: per-agent γ ~ Beta(mean·conc, (1-mean)·conc)
                         instead of one shared config.memory_level, off by
                         default)
-  Nonlinear stimulus  — nonlinear_stimulus, stimulus_tau
-                        (RQ6: hard-threshold/dead-zone transform of the
-                        stimulus signal — f(S) = sign(S)·(max(0,|S|-τ)/(1-τ))²
-                        — applied before it drives the probability update,
-                        off by default)
+  Reliability sensitivity — reliability_sensitivity (RQ11: θ ≥ 0, risk-loads
+                        both the aspiration ET and each route's PT_r by
+                        θ·σ, where σ is a γ-weighted travel-time std dev.
+                        θ=0 recovers the original model exactly, off by
+                        default)
   Custom demand       — custom_od_pairs (toy networks / manual OD control):
                         hand-picked OD pairs, agent split, and exact
                         alternative routes, bypassing randomTrips and the
@@ -175,8 +175,7 @@ class Config:
     heterogeneous_memory: bool = False
     memory_mean: float = 0
     memory_concentration: float = 0
-    nonlinear_stimulus: bool = False
-    stimulus_tau: float = 0.0
+    reliability_sensitivity: float = 0.0
 
     #####################
     # Custom demand (toy networks / manual OD control)

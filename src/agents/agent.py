@@ -23,10 +23,19 @@ ET          — Expected Travel Time: what the agent expects the trip to
                travel times across all routes
 PT_r        — Perceived Travel Time for route r: γ-weighted average
                of past travel times on route r specifically
+σ_ET        — γ-weighted standard deviation of ALL past travel times
+               (same population as ET, excludes today). Represents how
+               variable the trip from A to B has been in general,
+               regardless of route.
+σ_r         — γ-weighted standard deviation of route r's travel times
+               (same population/weights as PT_r, includes today).
+               Reduces to 0 when a route has only 1 observation.
+AC          — Aspiration Cost (RQ11): ET risk-loaded by σ_ET. Equals
+               ET exactly when reliability_sensitivity = 0.
+PC_r        — Perceived Cost of route r (RQ11): PT_r risk-loaded by
+               σ_r. Equals PT_r exactly when reliability_sensitivity = 0.
 stimulus    — normalised signal in [-1, 1] measuring how much better
-               or worse the chosen route was relative to ET.
-                Under RQ6, the raw stimulus is passed through the threshold
-                function before driving the update
+               or worse the chosen route was relative to AC.
 
 Formulas
 --------
@@ -40,7 +49,20 @@ PT_r =  Σ_{j: route_j=r} γ^(T-j) · tt_j  /  Σ_{j: route_j=r} γ^(T-j)
          (includes episode T — PT is updated with today's observation
           before computing the stimulus)
 
-stimulus = (ET - PT_chosen) / normalisation
+RQ11 reliability sensitivity (reliability_sensitivity, θ ≥ 0, per agent)
+--------------------------------------------------------------------------
+σ_ET² = Σ_{j=1}^{T-1} γ^(T-1-j) · (tt_j - ET)²  /  Σ γ^(T-1-j)
+σ_r²  = Σ_{j: route_j=r} γ^(T-j) · (tt_j - PT_r)²  /  Σ_{j: route_j=r} γ^(T-j)
+
+AC    = ET   + θ · σ_ET
+PC_r  = PT_r + θ · σ_r
+
+θ must load both AC and PC_r (not just PC_r). Loading both keeps the 
+comparison symmetric:
+A route only looks risky relative to what the agent is used to overall.
+θ=0 recovers the original ET/PT_r model exactly (PC_r=PT_r, AC=ET).
+
+stimulus = (AC - PC_chosen) / normalisation
            > 0  →  chosen route was cheaper than expected  →  reinforce
            < 0  →  chosen route was more expensive         →  penalise
 
@@ -73,15 +95,14 @@ class BMAgent:
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, nonlinear_stimulus, stimulus_tau):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
         self.beta = beta  # Learning rate
         self.gamma = gamma  # Memory decay
         self.epsilon = epsilon
-        self.nonlinear_stimulus = nonlinear_stimulus
-        self.stimulus_tau = stimulus_tau
+        self.reliability_sensitivity = reliability_sensitivity  # theta (RQ11)
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
         # Whether this agent departs after the SUMO network warm-up window
@@ -96,11 +117,17 @@ class BMAgent:
         # List of tuples (route, reward). Ex: [(0, 12), (2,15)]
         self.history = []
 
-        # (vector) Stores perceived costs of all routes at time t
+        # (vector) Stores perceived travel times of all routes at time t
         self.perceived_travel_times = np.zeros(self.n_routes)  # PT in BM paper notation
 
         # (scalar) Expected travel time
         self.expected_travel_time = 0  # ET in BM paper notation
+
+        # RQ11: reliability-sensitive perceived cost / aspiration
+        self.route_travel_time_std = np.zeros(self.n_routes)  # sigma_r
+        self.travel_time_std = 0.0  # sigma_ET
+        self.perceived_costs = np.zeros(self.n_routes)  # PC_r
+        self.aspiration_cost = 0.0  # AC
 
         # (scalar) Stimulus
         self.stimulus = 0
@@ -134,6 +161,24 @@ class BMAgent:
 
         self.expected_travel_time = float(np.average(times, weights=weights))
 
+    def _compute_travel_time_std(self):
+        """
+        sigma_ET: gamma-weighted standard deviation of all past travel
+        times (same population/weights as ET, excludes today). Deviations
+        are measured against self.expected_travel_time, which must already
+        be computed (data dependency: the mean has to exist before spread
+        around it can be measured).
+        """
+        times = [tt for _, tt in self.history[:-1]]
+
+        weights = [self.gamma**i for i in range(len(times))]
+        weights = weights[::-1]
+
+        mean = self.expected_travel_time
+        variance = np.average([(tt - mean) ** 2 for tt in times], weights=weights)
+
+        self.travel_time_std = float(np.sqrt(variance))
+
     def _compute_perceived_travel_times(self):
         # Arrays
         numerator = np.zeros(self.n_routes)
@@ -162,29 +207,62 @@ class BMAgent:
         # Compute PT all routes
         self.perceived_travel_times = numerator / denominator
 
+    def _compute_route_travel_time_std(self):
+        """
+        sigma_r: gamma-weighted standard deviation of route r's travel
+        times (same population/weights as PT_r, includes today). Deviations
+        are measured against self.perceived_travel_times, which must
+        already be computed. Reduces to 0 when a route has only 1
+        observation.
+        """
+        last_seen = {}
+        for j, (r, _) in enumerate(self.history, 1):
+            last_seen[r] = j
+
+        numerator = np.zeros(self.n_routes)
+        denominator = np.zeros(self.n_routes)
+
+        for j, (r, tt) in enumerate(self.history, 1):
+            weight = self.gamma ** (last_seen[r] - j)
+            numerator[r] += weight * (tt - self.perceived_travel_times[r]) ** 2
+            denominator[r] += weight
+
+        self.route_travel_time_std = np.sqrt(numerator / denominator)
+
+    def _compute_perceived_costs(self):
+        """
+        PC_r = PT_r + theta * sigma_r  (risk-adjusted perceived route cost)
+        AC   = ET   + theta * sigma_ET (risk-adjusted aspiration)
+
+        theta = reliability_sensitivity = 0 recovers PC_r = PT_r, AC = ET
+        exactly.
+        """
+        self.perceived_costs = self.perceived_travel_times + self.reliability_sensitivity * self.route_travel_time_std
+        self.aspiration_cost = self.expected_travel_time + self.reliability_sensitivity * self.travel_time_std
+
     def _compute_stimulus(self, chosen):
         """
-        stimulus = (ET 3- PT_chosen) / normalisation, where normalisation is:
-        diff >= 0:  max(ET - PT_r) over all routes  (biggest possible benefit)
-        diff <  0:  |min(ET - PT_r)| over all routes (biggest possible loss)
+        stimulus = (AC - PC_chosen) / normalisation, where normalisation is:
+        diff >= 0:  max(AC - PC_r) over all routes  (biggest possible benefit)
+        diff <  0:  |min(AC - PC_r)| over all routes (biggest possible loss)
 
-        Normalising by the best/worst achievable deviation — not by ET itself —
+        Normalising by the best/worst achievable deviation — not by AC itself —
         keeps stimulus in [-1, 1] and scales the signal relative to the full
         spread of route qualities on that episode.
         """
 
-        expected_tt = self.expected_travel_time
-        perceived_tt = self.perceived_travel_times
+        aspiration_cost = self.aspiration_cost
+        perceived_costs = self.perceived_costs
 
-        chosen_perceived_tt = perceived_tt[chosen]
+        chosen_perceived_cost = perceived_costs[chosen]
 
-        diff = expected_tt - chosen_perceived_tt
+        diff = aspiration_cost - chosen_perceived_cost
 
         if diff >= 0:
-            biggest_benefit = max(expected_tt - perceived_tt) + self.epsilon
+            biggest_benefit = max(aspiration_cost - perceived_costs) + self.epsilon
             stimulus = diff / biggest_benefit
         else:
-            biggest_loss = abs(min(expected_tt - perceived_tt)) + self.epsilon
+            biggest_loss = abs(min(aspiration_cost - perceived_costs)) + self.epsilon
             stimulus = diff / biggest_loss
 
         # Make sure stimulus is between [-1,1]
@@ -193,23 +271,6 @@ class BMAgent:
             raise ValueError("Stimulus must be between -1 and 1.")
 
         return stimulus
-
-    def _apply_stimulus_threshold(self, stimulus):
-        """
-        RQ6 nonlinear reinforcement: hard-threshold (dead-zone) transform of
-        the raw stimulus, applied before it drives the propensity update.
-
-        f(S) = sign(S) · ( max(0, |S| - τ) / (1 - τ) )²
-
-        |S| <= τ  →  f(S) = 0          small deviations are ignored entirely
-        |S| = 1   →  f(S) = sign(S)    renormalised back to the full [-1, 1] range
-        Quadratic ramp in between: suppresses reactions just above τ more than
-        reactions near |S| = 1, i.e. weak sensitivity near threshold, strong
-        sensitivity to severe deviations.
-        """
-        tau = self.stimulus_tau
-        magnitude = max(0.0, abs(stimulus) - tau) / (1 - tau + self.epsilon)
-        return float(np.sign(stimulus) * magnitude**2)
 
     def _update_probabilities(self, chosen, stimulus):
         # Copy so a failed validation below never leaves self.p corrupted
@@ -300,6 +361,10 @@ class BMAgent:
             "p": self.p.tolist(),
             "expected_travel_time": float(self.expected_travel_time),
             "perceived_travel_times": self.perceived_travel_times.tolist(),
+            "travel_time_std": float(self.travel_time_std),
+            "route_travel_time_std": self.route_travel_time_std.tolist(),
+            "aspiration_cost": float(self.aspiration_cost),
+            "perceived_costs": self.perceived_costs.tolist(),
             "stimulus": float(self.stimulus),
             "chosen": int(self.history[-1][0]),
             "chosen_tt": int(self.history[-1][1])
@@ -318,10 +383,10 @@ class BMAgent:
         ):
             self._compute_expected_travel_time()
             self._compute_perceived_travel_times()
+            self._compute_travel_time_std()
+            self._compute_route_travel_time_std()
+            self._compute_perceived_costs()
 
             self.stimulus = self._compute_stimulus(chosen)
-
-            if self.nonlinear_stimulus:
-                self.stimulus = self._apply_stimulus_threshold(self.stimulus)
 
             self._update_probabilities(chosen, self.stimulus)

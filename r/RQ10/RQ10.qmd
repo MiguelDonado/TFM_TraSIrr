@@ -595,6 +595,8 @@ representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
 # genuine regime switch to a different route mid-run, and final lock-in.
 # Tune freely per memory_level — pass a different episode vector per call.
 plot_agent_learning(memory_level_arg = 1, representative_episodes = c(1, 25, 26, 27, 34, 50))
+
+ggsave(here("r","RQ10","figures","plot1_agent_learning_mem1.png"))
 ```
 
 ```{r}

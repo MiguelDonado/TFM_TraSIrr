@@ -1,0 +1,100 @@
+# RQ11 — Risk-averse agents
+#
+# What it answers:
+# Evaluate routes not only based on mean travel time, but also incorporate
+# the variability of the route as well.
+#
+# Mathematical concepts:
+# - We prefer to use standard deviation because it is in seconds as well,
+#   the same units as travel time.
+# - Memory is also taken into account: the model, when using realistic
+#   memory levels, should be able to distinguish a route that was risky in
+#   the past but isn't anymore from a route that has recently become risky.
+# - The risk term is introduced both in ET and PT. A route is only
+#   considered risky if it has more variability than the baseline
+#   variability of traveling from A to B.
+# - It is introduced as a sum rather than a weight, for several reasons:
+#     1. If we applied a weight over the mean to make room for the risk
+#        term, we would be corrupting the mean travel-time term — and we
+#        want to keep an honest mean.
+#     2. In extreme cases, the sum stays logical while a weight doesn't.
+#        E.g. with weight=1 on risk, mean travel time would not be taken
+#        into account at all — and in a case where two routes have the
+#        same variability but different mean tt, the model should still be
+#        able to choose one of the routes. With a weight, it would be
+#        indifferent.
+#     3. Theta in the sum has a clear meaning: it is the extra seconds of
+#        perceived cost the agent is willing to add per extra second of
+#        unpredictability.
+#     4. The sum means the same thing regardless of which scenario you are
+#        in. A weight of 0.3 doesn't tell you anything about how risk
+#        averse the agent is — it is relative to the magnitude of PT_r in
+#        that context.
+# - Motivation to introduce variability on ET as well: the agent already
+#   forms a route-agnostic estimate of the mean travel time of a trip from
+#   A to B. It should equally form a route-agnostic estimate of how
+#   variable that trip usually is.
+#
+##################
+# Formulas of this risk-sensitive route-choice model:
+##################
+# AC   = ET   + theta_i * sigma_ET  (risk-adjusted aspiration)
+# PC_r = PT_r + theta_i * sigma_r   (risk-adjusted perceived route cost)
+#
+# Explanation of new terms:
+# - sigma_r (includes today): gamma-weighted std. dev. of route travel
+#   times for a particular route. Reduces to 0 when a route has only 1
+#   observation.
+# - sigma_ET (excludes today): gamma-weighted std. dev. of all route
+#   travel times.
+# - theta_i: reliability sensitivity parameter, one per agent. Takes
+#   values >= 0. Theta = 0 recovers the original model exactly.
+# - diff (stimulus numerator) = AC - PC_r
+#                              = (ET - PT_r) + theta_i * (sigma_ET - sigma_r)
+#   The risk term only pushes the stimulus when a route's variability
+#   differs from what the agent is used to on average.
+#
+##########
+# Computation of sigma_ET and sigma_r:
+##########
+# Variance should measure spread around whatever value the agent treats as
+# its expectation (and that's already ET and PT_r). For this particular
+# case: how spread out are this route's outcomes relative to what I
+# currently believe the route is like. We use the same weighted mean we
+# already had:
+#
+# - Route variance (sigma_r squared) (includes today): weighted mean of
+#   (tt_j - PT_r)**2
+#   Route std. dev.: square root of the route variance.
+# - Aggregate variance (all routes pooled, excludes today): weighted mean
+#   of (tt_j - ET)**2
+#
+# A single current value, PT_r or ET, is computed once for today's
+# episode. Every deviation term in the variance-formula sum (today's
+# observation and all past ones) is measured against that same single
+# current value.
+#
+# Why this can't be included directly in the same formula as the mean:
+# because of a data dependency. To compute sigma_r or sigma_ET, you first
+# need PT_r/ET.
+#   Pass 1: compute the mean first.
+#   Pass 2: compute deviations from that specific mean.
+#   Pass 3: combine PT_r + theta * sigma_r into PC_r.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+grid:
+  learning:
+    memory_level:
+      - 1.00
+      # - 0.10
+      # - 0.01
+    reliability_sensitivity:
+      - 10.00
+  randomness:
+    seed:
+      - 23
+  demand:
+    n_agents:
+      - 2000
+  

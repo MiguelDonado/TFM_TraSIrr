@@ -33,6 +33,7 @@ RQ7
 RQ8
 RQ9
 RQ10
+RQ11
 
 """
 
@@ -97,6 +98,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq9_data()
     elif research_question == "RQ10":
         _prepare_rq10_data()
+    elif research_question == "RQ11":
+        _prepare_rq11_data()
 
 
 def _prepare_rq1_data() -> None:
