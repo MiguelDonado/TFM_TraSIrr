@@ -243,10 +243,10 @@ iso_cost_lines_tmp <- map_dfr(theta_values, function(theta){
   # Line when we do not take into account the variability.
   # Basically the contour line is vertical because variability does not matter for the generalized cost
   if (theta == 0){
-    tibble(theta, type = "vertical", xintercept = best$PT, route_id = best$route_id, cost = best$cost)
+    tibble(theta, type = "vertical", xintercept = best$PT, route_id = best$route_id)
   } else{
     # (σ_r = -PT_r/θ + cost/θ, i.e. slope -1/θ, intercept cost/θ)
-    tibble(theta, type = "line", slope = -1 / theta, intercept = best$cost / theta, route_id = best$route_id, cost = best$cost)
+    tibble(theta, type = "line", slope = -1 / theta, intercept = best$cost / theta, route_id = best$route_id)
   }
 })
 
@@ -268,7 +268,7 @@ agent_last_episode_info_plot <- agent_last_episode_info |>
   select(-route_id)
 
 # 2. Choose only iso cost lines that have different minimum cost routes
-iso_cost_lines_plot_tmp <- iso_cost_lines |> 
+iso_cost_lines_plot <- iso_cost_lines |> 
   mutate(
     theta_num = as.numeric(theta)
   ) |> 
@@ -284,18 +284,6 @@ min_cost_routes <- iso_cost_lines_plot$route_id
 min_cost_routes_df <- agent_last_episode_info |> 
   filter(
     route_id %in% min_cost_routes
-  )
-
-# 4. Label the iso cost lines
-iso_cost_lines_plot <- iso_cost_lines_plot_tmp |> 
-  left_join(min_cost_routes_df, by = "route_id") |> 
-  mutate(
-    theta_num = as.numeric(theta)
-  ) |> 
-  mutate(
-    x = ifelse(type == "vertical", xintercept, (cost - theta_num * sigma_r)),
-    y = ifelse(type == "vertical", max(agent_last_episode_info_plot$sigma_r), 0),
-    label = glue("\u03b8 = {theta}, C = {cost} s")
   )
 ```
 
@@ -314,12 +302,13 @@ ggplot(
     mapping = aes(x = PT, y = sigma_r),
     size = 4, 
     shape = "circle open", 
+    color="black"
   ) +
   geom_vline(
     data = filter(iso_cost_lines_plot, type == "vertical"),
     mapping = aes(
       xintercept = xintercept, 
-      ),
+      color = theta),
       linetype = "dashed"
   ) +
   geom_abline(
@@ -327,7 +316,7 @@ ggplot(
     mapping = aes(
       slope = slope, 
       intercept = intercept, 
-      ), 
+      color = theta), 
     linetype = "dashed"
   ) +
   ggrepel::geom_text_repel(
@@ -339,31 +328,15 @@ ggplot(
     max.overlaps = Inf,
     seed = 123,
   ) +
-  ggrepel::geom_text_repel(
-    data = iso_cost_lines_plot,
-    mapping = aes(
-      x = x,
-      y = y,
-      label = label
-    ),
-    size = 4,
-    box.padding = 1,
-    point.padding = 0.3,
-    force = 1,
-    max.overlaps = Inf,
-    seed = 123,
-    nudge_x = 2,
-    fontface = "bold",
-    segment.alpha = 0.5,
-    segment.size = 0.3,
-  ) +
   labs(
     title = "Risk sensitivity changes the minimum-cost route",
-    subtitle = "One representative agent; highlighted points show \nthe minimum-cost route. Dashed lines indicate equal perceived cost.",
+    subtitle = "Routes available to one representative agent.\nPoints show mean perceived travel time and standard deviation.
+Contour lines show equal perceived cost for different θ values.",
   x = expression("Perceived travel time " * PT[r] * " (s)"),
   y = expression("Perceived travel time variability " * sigma[r] * " (s)"),
+    color = expression(theta)
   )
-
 ```
+
 
 
