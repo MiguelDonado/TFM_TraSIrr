@@ -30,10 +30,17 @@ PT_r        — Perceived Travel Time for route r: γ-weighted average
 σ_r         — γ-weighted standard deviation of route r's travel times
                (same population/weights as PT_r, includes today).
                Reduces to 0 when a route has only 1 observation.
-AC          — Aspiration Cost (RQ11): ET risk-loaded by σ_ET. Equals
-               ET exactly when reliability_sensitivity = 0.
-PC_r        — Perceived Cost of route r (RQ11): PT_r risk-loaded by
-               σ_r. Equals PT_r exactly when reliability_sensitivity = 0.
+AC          — Aspiration Cost (RQ11/RQ12): ET risk-loaded by σ_ET and
+               waiting-time-loaded by AWT. Equals ET exactly when
+               reliability_sensitivity = waiting_time_sensitivity = 0.
+PC_r        — Perceived Cost of route r (RQ11/RQ12): PT_r risk-loaded by
+               σ_r and waiting-time-loaded by WT_r. Equals PT_r exactly
+               when reliability_sensitivity = waiting_time_sensitivity = 0.
+WT_r        — γ-weighted average of route r's waitingTime (SUMO's
+               per-trip seconds spent stopped/crawling below 0.1 m/s),
+               same population/weights as PT_r (includes today).
+AWT         — γ-weighted average of ALL past waitingTime, all routes
+               (same weights as ET, excludes today).
 stimulus    — normalised signal in [-1, 1] measuring how much better
                or worse the chosen route was relative to AC.
 
@@ -57,10 +64,24 @@ RQ11 reliability sensitivity (reliability_sensitivity, θ ≥ 0, per agent)
 AC    = ET   + θ · σ_ET
 PC_r  = PT_r + θ · σ_r
 
-θ must load both AC and PC_r (not just PC_r). Loading both keeps the 
+θ must load both AC and PC_r (not just PC_r). Loading both keeps the
 comparison symmetric:
 A route only looks risky relative to what the agent is used to overall.
 θ=0 recovers the original ET/PT_r model exactly (PC_r=PT_r, AC=ET).
+
+RQ12 waiting-time sensitivity (waiting_time_sensitivity, φ ≥ 0, per agent)
+--------------------------------------------------------------------------
+WT_r = Σ_{j: route_j=r} γ^(T-j) · wt_j  /  Σ_{j: route_j=r} γ^(T-j)
+AWT  = Σ_{j=1}^{T-1} γ^(T-1-j) · wt_j  /  Σ γ^(T-1-j)
+
+AC    = ET   + θ · σ_ET + φ · AWT
+PC_r  = PT_r + θ · σ_r  + φ · WT_r
+
+Same reasoning as θ: φ must load both AC and PC_r symmetrically.
+φ is dimensionless — "extra perceived seconds of
+cost per second the driver expects to spend waiting" on top of what
+waiting already contributes to PT_r/ET (waitingTime is part of duration).
+φ=0 recovers the θ-only model exactly 
 
 stimulus = (AC - PC_chosen) / normalisation
            > 0  →  chosen route was cheaper than expected  →  reinforce
@@ -83,7 +104,7 @@ Agent lifecycle
 ---------------
   __init__       uniform probability vector p, empty history
   select_action  sample route index from p
-  update         append (route, tt) to history, then (if past warm-up)
+  update         append (route, tt, wt) to history, then (if past warm-up)
                  recompute ET → PT → stimulus → update p
 """
 
@@ -95,7 +116,7 @@ class BMAgent:
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
@@ -103,6 +124,7 @@ class BMAgent:
         self.gamma = gamma  # Memory decay
         self.epsilon = epsilon
         self.reliability_sensitivity = reliability_sensitivity  # theta (RQ11)
+        self.waiting_time_sensitivity = waiting_time_sensitivity  # phi (RQ12)
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
         # Whether this agent departs after the SUMO network warm-up window
@@ -114,7 +136,7 @@ class BMAgent:
         self.p = np.ones(self.n_routes) / self.n_routes
 
         # Memory
-        # List of tuples (route, reward). Ex: [(0, 12), (2,15)]
+        # List of tuples (route, reward, waiting_time). Ex: [(0, 12, 3), (2, 15, 0)]
         self.history = []
 
         # (vector) Stores perceived travel times of all routes at time t
@@ -126,6 +148,11 @@ class BMAgent:
         # RQ11: reliability-sensitive perceived cost / aspiration
         self.route_travel_time_std = np.zeros(self.n_routes)  # sigma_r
         self.travel_time_std = 0.0  # sigma_ET
+
+        # RQ12: waiting-time-sensitive perceived cost / aspiration
+        self.perceived_waiting_times = np.zeros(self.n_routes)  # WT_r
+        self.expected_waiting_time = 0.0  # AWT
+
         self.perceived_costs = np.zeros(self.n_routes)  # PC_r
         self.aspiration_cost = 0.0  # AC
 
@@ -151,7 +178,7 @@ class BMAgent:
         during day t
         """
         # Old to new
-        times = [tt for _, tt in self.history[:-1]]
+        times = [tt for _, tt, _ in self.history[:-1]]
 
         # New to old
         weights = [self.gamma**i for i in range(len(times))]
@@ -161,6 +188,19 @@ class BMAgent:
 
         self.expected_travel_time = float(np.average(times, weights=weights))
 
+    def _compute_expected_waiting_time(self):
+        """
+        AWT: gamma-weighted average of all past waitingTime (same
+        population/weights as ET, excludes today). Structural copy of
+        _compute_expected_travel_time, averaging waiting_time instead of tt.
+        """
+        times = [wt for _, _, wt in self.history[:-1]]
+
+        weights = [self.gamma**i for i in range(len(times))]
+        weights = weights[::-1]
+
+        self.expected_waiting_time = float(np.average(times, weights=weights))
+
     def _compute_travel_time_std(self):
         """
         sigma_ET: gamma-weighted standard deviation of all past travel
@@ -169,7 +209,7 @@ class BMAgent:
         be computed (data dependency: the mean has to exist before spread
         around it can be measured).
         """
-        times = [tt for _, tt in self.history[:-1]]
+        times = [tt for _, tt, _ in self.history[:-1]]
 
         weights = [self.gamma**i for i in range(len(times))]
         weights = weights[::-1]
@@ -194,11 +234,11 @@ class BMAgent:
         # denominator are both scaled by the same constant relative to the
         # T-anchored formula, so the resulting ratio is unchanged.
         last_seen = {}
-        for j, (r, _) in enumerate(self.history, 1):
+        for j, (r, _, _) in enumerate(self.history, 1):
             last_seen[r] = j
 
         # Compute numerator and denominators formula PT
-        for j, (r, tt) in enumerate(self.history, 1):
+        for j, (r, tt, _) in enumerate(self.history, 1):
             weight = self.gamma ** (last_seen[r] - j)
 
             numerator[r] += weight * tt
@@ -206,6 +246,28 @@ class BMAgent:
 
         # Compute PT all routes
         self.perceived_travel_times = numerator / denominator
+
+    def _compute_perceived_waiting_times(self):
+        """
+        WT_r: gamma-weighted average of route r's waitingTime (same
+        population/weights as PT_r, includes today). Structural copy of
+        _compute_perceived_travel_times, accumulating waiting_time instead
+        of tt.
+        """
+        numerator = np.zeros(self.n_routes)
+        denominator = np.zeros(self.n_routes)
+
+        last_seen = {}
+        for j, (r, _, _) in enumerate(self.history, 1):
+            last_seen[r] = j
+
+        for j, (r, _, wt) in enumerate(self.history, 1):
+            weight = self.gamma ** (last_seen[r] - j)
+
+            numerator[r] += weight * wt
+            denominator[r] += weight
+
+        self.perceived_waiting_times = numerator / denominator
 
     def _compute_route_travel_time_std(self):
         """
@@ -216,13 +278,13 @@ class BMAgent:
         observation.
         """
         last_seen = {}
-        for j, (r, _) in enumerate(self.history, 1):
+        for j, (r, _, _) in enumerate(self.history, 1):
             last_seen[r] = j
 
         numerator = np.zeros(self.n_routes)
         denominator = np.zeros(self.n_routes)
 
-        for j, (r, tt) in enumerate(self.history, 1):
+        for j, (r, tt, _) in enumerate(self.history, 1):
             weight = self.gamma ** (last_seen[r] - j)
             numerator[r] += weight * (tt - self.perceived_travel_times[r]) ** 2
             denominator[r] += weight
@@ -231,14 +293,22 @@ class BMAgent:
 
     def _compute_perceived_costs(self):
         """
-        PC_r = PT_r + theta * sigma_r  (risk-adjusted perceived route cost)
-        AC   = ET   + theta * sigma_ET (risk-adjusted aspiration)
+        PC_r = PT_r + theta*sigma_r + phi*WT_r  (risk/waiting-adjusted perceived route cost)
+        AC   = ET   + theta*sigma_ET + phi*AWT  (risk/waiting-adjusted aspiration)
 
-        theta = reliability_sensitivity = 0 recovers PC_r = PT_r, AC = ET
-        exactly.
+        theta = reliability_sensitivity = 0 and phi = waiting_time_sensitivity = 0
+        recovers PC_r = PT_r, AC = ET exactly.
         """
-        self.perceived_costs = self.perceived_travel_times + self.reliability_sensitivity * self.route_travel_time_std
-        self.aspiration_cost = self.expected_travel_time + self.reliability_sensitivity * self.travel_time_std
+        self.perceived_costs = (
+            self.perceived_travel_times
+            + self.reliability_sensitivity * self.route_travel_time_std
+            + self.waiting_time_sensitivity * self.perceived_waiting_times
+        )
+        self.aspiration_cost = (
+            self.expected_travel_time
+            + self.reliability_sensitivity * self.travel_time_std
+            + self.waiting_time_sensitivity * self.expected_waiting_time
+        )
 
     def _compute_stimulus(self, chosen):
         """
@@ -343,8 +413,8 @@ class BMAgent:
                     p[k] = p[k] * scale
         return p
 
-    def _update_history(self, chosen, reward):
-        info = (chosen, reward)
+    def _update_history(self, chosen, reward, waiting_time):
+        info = (chosen, reward, waiting_time)
         self.history.append(info)
 
     def snapshot(self):
@@ -357,12 +427,14 @@ class BMAgent:
         """
         return {
             "id": self.id,
-            "history": [[int(route), float(tt)] for route, tt in self.history],
+            "history": [[int(route), float(tt), float(wt)] for route, tt, wt in self.history],
             "p": self.p.tolist(),
             "expected_travel_time": float(self.expected_travel_time),
             "perceived_travel_times": self.perceived_travel_times.tolist(),
             "travel_time_std": float(self.travel_time_std),
             "route_travel_time_std": self.route_travel_time_std.tolist(),
+            "expected_waiting_time": float(self.expected_waiting_time),
+            "perceived_waiting_times": self.perceived_waiting_times.tolist(),
             "aspiration_cost": float(self.aspiration_cost),
             "perceived_costs": self.perceived_costs.tolist(),
             "stimulus": float(self.stimulus),
@@ -370,8 +442,8 @@ class BMAgent:
             "chosen_tt": int(self.history[-1][1])
         }
 
-    def update(self, chosen, reward, warm_up, episode):
-        self._update_history(chosen, reward)
+    def update(self, chosen, reward, waiting_time, warm_up, episode):
+        self._update_history(chosen, reward, waiting_time)
 
         # Before learning starts, two conditions must be satisfied:
         # 1. A minimum number of episodes must have elapsed
@@ -379,12 +451,14 @@ class BMAgent:
         # The following conditional checks it:
         if (
             episode > warm_up
-            and len({route for route, _ in self.history}) == self.n_routes
+            and len({route for route, _, _ in self.history}) == self.n_routes
         ):
             self._compute_expected_travel_time()
             self._compute_perceived_travel_times()
             self._compute_travel_time_std()
             self._compute_route_travel_time_std()
+            self._compute_expected_waiting_time()
+            self._compute_perceived_waiting_times()
             self._compute_perceived_costs()
 
             self.stimulus = self._compute_stimulus(chosen)

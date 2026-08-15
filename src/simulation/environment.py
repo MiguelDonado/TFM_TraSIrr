@@ -11,6 +11,10 @@ Responsibilities
 3. get_rewards          — parses tripinfo.xml after each episode and
                           returns travel times associated with each
                           agent id.
+4. get_waiting_times    — parses tripinfo.xml after each episode and
+                          returns waitingTime (seconds stopped/crawling
+                          below 0.1 m/s) associated with each agent id,
+                          used by RQ12's waiting-time-averse route choice.
 
 No-TraCI design
 ---------------
@@ -117,3 +121,17 @@ class Environment:
             travel_times[veh_id] = duration
 
         return travel_times
+
+    def get_waiting_times(self):
+        waiting_times = {}
+
+        tree = ET.parse(TRIPS_INFO_XML)
+        root = tree.getroot()
+
+        for trip in root.findall("tripinfo"):
+            veh_id = trip.attrib["id"]
+            waiting_time = float(trip.attrib["waitingTime"])
+
+            waiting_times[veh_id] = waiting_time
+
+        return waiting_times

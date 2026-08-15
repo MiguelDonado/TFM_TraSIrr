@@ -90,6 +90,7 @@ def _run_training_loop(
         # 3. GET REWARDS
         # -----------------------------
         rewards = env.get_rewards()
+        waiting_times = env.get_waiting_times()
 
         # -----------------------------
         # 4. UPDATE AGENTS
@@ -106,6 +107,7 @@ def _run_training_loop(
             agents=agents,
             episode=episode,
             rewards=rewards,
+            waiting_times=waiting_times,
             warm_up=config.warm_up,
         )
 

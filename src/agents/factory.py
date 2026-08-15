@@ -29,6 +29,12 @@ config.reliability_sensitivity (θ) is passed through to every agent
 unchanged — homogeneous across the fleet for this first pass, unlike
 heterogeneous_memory above. θ=0 (the default) recovers the original
 BMAgent model exactly.
+
+RQ12 waiting-time sensitivity
+-------------------------
+config.waiting_time_sensitivity (φ) is passed through to every agent
+unchanged — homogeneous across the fleet for this first pass. φ=0 (the
+default) recovers the pre-RQ12 model exactly.
 """
 
 import numpy as np
@@ -80,6 +86,7 @@ def initialize_agents(scen, seed=None):
             departure_time=departure_time,
             post_warm_up=post_warm_up,
             reliability_sensitivity=config.reliability_sensitivity,
+            waiting_time_sensitivity=config.waiting_time_sensitivity,
         )
     return agents
 
@@ -89,9 +96,10 @@ def select_actions(agents):
     return actions
 
 
-def update_agents(agents, actions, rewards, warm_up, episode):
+def update_agents(agents, actions, rewards, waiting_times, warm_up, episode):
     for agent_id, agent in agents.items():
         chosen_route = actions[agent_id]
         reward = rewards[agent_id]
+        waiting_time = waiting_times[agent_id]
 
-        agent.update(chosen_route, reward, warm_up, episode)
+        agent.update(chosen_route, reward, waiting_time, warm_up, episode)

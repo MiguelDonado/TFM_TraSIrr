@@ -24,6 +24,7 @@ BM_results   — agent internal state (ET, PT, stimulus, p, memory_level) per
                from config.memory_level.
                RQ11 adds sigma_ET, AC (constant across an agent's rows, like
                ET/memory_level), and sigma_r, PC (per route, like PT).
+               RQ12 adds AWT (constant, like ET) and WT (per route, like PT).
 
 Post-warm-up filtering
 -----------------------
@@ -209,11 +210,13 @@ def _prepare_bm_data(episode, agents):
                     "memory_level": memory_level,
                     "ET": agent.expected_travel_time,
                     "sigma_ET": agent.travel_time_std,
+                    "AWT": agent.expected_waiting_time,
                     "AC": agent.aspiration_cost,
                     "stimulus": agent.stimulus,
                     "route_id": route_id,
                     "PT": float(agent.perceived_travel_times[route_id]),
                     "sigma_r": float(agent.route_travel_time_std[route_id]),
+                    "WT": float(agent.perceived_waiting_times[route_id]),
                     "PC": float(agent.perceived_costs[route_id]),
                     "p": float(agent.p[route_id]),
                 }

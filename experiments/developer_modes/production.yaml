@@ -2,14 +2,14 @@ configuration_name:
   config_name: production
 
 randomness:
-  seed: 23
+  seed: 42
 
 numerical_constants:
   epsilon: 1.0e-8
 
 learning:
   learning_rate: 0.3
-  memory_level: 0.01
+  memory_level: 1
 
 simulation:
   simulation_time: 3600
@@ -34,13 +34,13 @@ stopping_rule:
   k_no_change: 3
 
 demand:
-  n_agents: 2100
+  n_agents: 2000
 
 interval_time:
   fixed_time_min: 0.5  # minutes
 
 randomtrips:
-  max_size_od_space: 30
+  max_size_od_space: 10
   fringe_factor: 5
 
 due_convergence: 

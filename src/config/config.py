@@ -29,6 +29,13 @@ Config hyperparameter groups
                         θ·σ, where σ is a γ-weighted travel-time std dev.
                         θ=0 recovers the original model exactly, off by
                         default)
+  Waiting-time sensitivity — waiting_time_sensitivity (RQ12: φ ≥ 0, loads
+                        both the aspiration ET and each route's PT_r by
+                        φ·WT, where WT is a γ-weighted average of SUMO's
+                        per-trip waitingTime (seconds stopped/crawling
+                        below 0.1 m/s), same anchoring/weights as PT_r/ET.
+                        φ=0 recovers the pre-RQ12 model exactly, off by
+                        default)
   Custom demand       — custom_od_pairs (toy networks / manual OD control):
                         hand-picked OD pairs, agent split, and exact
                         alternative routes, bypassing randomTrips and the
@@ -176,6 +183,7 @@ class Config:
     memory_mean: float = 0
     memory_concentration: float = 0
     reliability_sensitivity: float = 0.0
+    waiting_time_sensitivity: float = 0.0
 
     #####################
     # Custom demand (toy networks / manual OD control)

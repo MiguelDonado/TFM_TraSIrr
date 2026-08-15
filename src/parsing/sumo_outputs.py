@@ -8,7 +8,7 @@ Function              Source file          Key columns returned
 --------------------  -------------------  ----------------------------
 parse_aggregated_data statistics.xml       episode-level scalar metrics
 parse_vehroute        vehroute.xml         vehicle_id, edge, exit_times
-parse_trips_info      tripsinfo.xml        vehicle_id, duration, time_loss
+parse_trips_info      tripsinfo.xml        vehicle_id, duration, time_loss, waiting_time
 parse_fcd             fcd-export.xml       vehicle_id, timestep, x, y
 parse_edgedata        edgedata.xml         edge, interval, density, entered
 
@@ -78,12 +78,13 @@ def parse_trips_info(episode, trips_info_path):
         parser, config_parser["metrics"]["tripsinfo"]
     )
 
-    for vid, arrival, duration, length, time_loss in zip(
+    for vid, arrival, duration, length, time_loss, waiting_time in zip(
         data_dict["vehicles"],
         data_dict["arrivals"],
         data_dict["durations"],
         data_dict["route_lengths"],
         data_dict["time_losses"],
+        data_dict["waiting_times"],
     ):
         data.append(
             {
@@ -93,6 +94,7 @@ def parse_trips_info(episode, trips_info_path):
                 "duration": duration,
                 "length": length,
                 "time_loss": time_loss,
+                "waiting_time": waiting_time,
             }
         )
     return data

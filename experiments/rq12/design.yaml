@@ -1,0 +1,138 @@
+# RQ12 — Waiting-time-averse agents
+#
+# What it answers:
+# Evaluate routes not only based on mean travel time, but also incorporate
+# how much of that time is spent fully stopped/crawling, rather than
+# moving. Two routes with the same mean travel time are not perceived the
+# same by a driver if one of them requires spending a lot more of that
+# time stopped.
+#
+# Where this came from:
+# The topic was initially framed as "stop-and-go aversion". Taken
+# literally, that phenomenon refers to drivers repeatedly decelerating and
+# accelerating, going quite slowly — as often happens in cities — without
+# necessarily coming to a complete stop. SUMO's tripinfo output offers
+# several metrics that could plausibly capture this:
+#
+#   Attribute      Captures
+#   timeLoss       total delay vs. ideal speed — any slowdown, continuous or not
+#   waitingTime    total time spent fully stopped (<=0.1 m/s)
+#   waitingCount   number of separate stop events — the actual stop-and-go transitions
+#
+# The teachers decided to experiment with a population averse to the
+# waitingTime metric specifically (not waitingCount, and not timeLoss —
+# timeLoss correlates ~0.94 with waitingTime on this network, so it would
+# be nearly redundant with the term below rather than adding a distinct
+# signal). Motivation: neuroscience research points to how difficult
+# humans find it to remain stopped while doing nothing: for drivers averse
+# to this, spending a lot of a trip fully stopped makes that route feel
+# worse than an equally long route spent moving. The model should capture
+# this trait.
+#
+# Mathematical concepts:
+# - waitingTime is measured in seconds, the same unit as travel time, so
+#   it can be summed directly into a perceived-cost term without any
+#   unit conversion (same reasoning RQ11 used for standard deviation).
+# - Memory is taken into account the same way as elsewhere in the model:
+#   a route that used to require a lot of waiting but doesn't anymore
+#   should be distinguished from one that has recently started to.
+# - The waiting-time term is introduced in both ET and PT (i.e. both AC
+#   and PC_r), for the same reason as RQ11's risk term: a route is only
+#   considered bad on waiting if it makes you wait more than the baseline
+#   for traveling from A to B, not in absolute terms.
+# - It is introduced as a sum rather than a weight, for the same reasons
+#   as RQ11's theta:
+#     1. Weighting over the mean would corrupt the mean travel-time term,
+#        and we want to keep an honest mean.
+#     2. The sum stays logical in extreme cases; a weight doesn't (e.g.
+#        weight=1 on waiting would make mean travel time irrelevant even
+#        when two routes have identical waiting but different mean tt).
+#     3. Phi in the sum has a clear, portable meaning: extra seconds of
+#        perceived cost the agent is willing to add per extra second it
+#        expects to spend waiting on that route.
+#     4. That meaning doesn't depend on context. A weight of 0.3 doesn't
+#        tell you anything on its own — it's only meaningful relative to
+#        the magnitude of PT_r in that particular scenario.
+#
+##################
+# Formulas of this waiting-time-averse route-choice model:
+##################
+# AC   = ET   + theta_i * sigma_ET + phi_i * AWT   (aspiration)
+# PC_r = PT_r + theta_i * sigma_r  + phi_i * WT_r  (perceived route cost)
+#
+# (the theta*sigma terms are RQ11's risk-aversion terms; RQ12 composes
+# with RQ11 rather than replacing it — phi = 0 recovers the RQ11-only
+# model exactly, and theta = phi = 0 recovers the original model exactly)
+#
+# Explanation of new terms:
+# - WT_j: waitingTime observed on episode j.
+# - WT_r (includes today): gamma-weighted average of past waitingTime on
+#   route r. Computed the same way, with the same anchoring/weights, as
+#   PT_r.
+# - AWT (excludes today): gamma-weighted average of past waitingTime
+#   across all routes. Computed the same way as ET.
+# - phi_i >= 0: stop-aversion price, one per agent (homogeneous across
+#   agents for this first pass — same starting point RQ11 used for
+#   theta). Extra perceived seconds of cost per second the driver expects
+#   to spend waiting on a route. Phi = 0 recovers the pre-RQ12 model
+#   exactly.
+#
+# A note on double-counting, and why it's intentional:
+# waitingTime is already part of duration, so it's already implicitly
+# baked into PT_r/ET before phi ever gets applied. Phi = 1 therefore means
+# every expected second of waiting is counted twice: once implicitly
+# (inside PT_r/ET) and once explicitly (via phi*WT_r / phi*AWT). This is
+# deliberate, not a bug — it's exactly what "waiting-averse" means: the
+# same second of wall-clock time is perceived as more costly than a second
+# spent moving. 
+#
+# Sanity-checking phi's magnitude:
+# because every term is in seconds, phi can be sanity-checked directly
+# against the network's mean trip duration (roughly 70-100s on this
+# network/demand): phi=1 means one second of waiting is worth exactly one
+# extra second of perceived cost (on top of the second already counted in
+# PT_r) — noticeable but modest against a ~70-100s trip. Larger phi values
+# should be read relative to that scale, e.g. phi=10 would make waiting
+# roughly an order of magnitude more punishing than ordinary travel time,
+# a deliberately dominant effect for mechanism-testing rather than a
+# realistic calibration.
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+# Why memory_level is fixed at 1.00 (not swept) here:
+# memory_level (gamma) and waiting_time_sensitivity (phi) both independently
+# affect R-gap/convergence. Sweeping phi at a reduced gamma would mix the
+# phi effect with the gamma effect, making it impossible to
+# attribute an R-gap change cleanly to risk-sensitivity. Keeping gamma at its
+# production default (1.00) isolates phi as the only varying hyperparameter,
+# matching how every other RQ sweep in this repo holds every axis fixed
+# except the one under study
+#
+# The memory x phi interaction implied by this RQ's own motivation (the
+# model should distinguish a route that HAD large waiting time from one that HAS large waiting time,
+# which only shows up with gamma<1's recency weighting) is a real, separate
+# follow-up question — not covered by this grid
+
+grid:
+  learning:
+    memory_level:
+      - 1.00
+    waiting_time_sensitivity:
+      - 0.00
+      - 1.00
+      - 5.00
+      - 10.00
+  randomness:
+    seed:
+      - 23
+      - 42
+      - 5
+      - 1999
+      - 8
+  demand:
+    n_agents:
+      - 2000
+  due_convergence: 
+    duaIterate_max_iterations: 
+      - 1
+  
