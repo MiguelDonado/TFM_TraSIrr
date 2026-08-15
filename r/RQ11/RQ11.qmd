@@ -186,7 +186,6 @@ agents_representative_od_df <- agents_od_df |>
     origin == representative_od$origin,
     destination == representative_od$destination
   ) 
-agent <- agents_representative_od_df[ceiling(nrow(agents_representative_od_df) / 2), ]
 
 # The points in the plot 1, will represent the beliefs of an agent about 
 # the mean_tt and sd of its routes. 
@@ -197,21 +196,29 @@ agent <- agents_representative_od_df[ceiling(nrow(agents_representative_od_df) /
 # about in the following plots
 # We want the agent to be in the middle of the simulation horizon
 
-agent_last_episode_info <- data$bm_results |> 
+agents_last_episode_info <- data$bm_results |> 
   mutate(
     reliability_sensitivity = as.numeric(reliability_sensitivity)
   ) |> 
   filter(
     reliability_sensitivity == 0,
-    seed == random_seed
+    seed == random_seed,
+    agent_id %in% agents_representative_od_df$agent_id
   ) |> 
   select(-c(run_id, seed, warm_up, reliability_sensitivity)) |> 
+  group_by(agent_id) |> 
   filter(
-    agent_id == agent$agent_id,
     episode == max(episode)
   ) |> 
   select(
-    episode, route_id, PT, sigma_r
+    episode, agent_id, route_id, PT, sigma_r
+  )
+
+# The representative agent has been selected by inspecting at agents_last_episode_info and looking for an agent whose perceptions coincide with the typical perceptions, so that it is aligned with what we see in plot 4 qualitative. Is not any trick, is just that on plot 1 we show individual level, and plot 4 it shows aggreagte level, and individual level and aggreagte doesnt have to coincide, but to make plots easier to understand, if they can coincide it eases to tell the story
+representative_agent <- "agent_174"
+agent_last_episode_info <- agents_last_episode_info |> 
+  filter(
+    agent_id == representative_agent
   )
 ```
 
@@ -280,7 +287,7 @@ iso_cost_lines_plot_tmp <- iso_cost_lines |>
   select(-c(plot, theta_num))
 
 # 3. Highlight min_cost routes
-min_cost_routes <- iso_cost_lines_plot$route_id 
+min_cost_routes <- iso_cost_lines_plot_tmp$route_id 
 min_cost_routes_df <- agent_last_episode_info |> 
   filter(
     route_id %in% min_cost_routes
@@ -295,12 +302,10 @@ iso_cost_lines_plot <- iso_cost_lines_plot_tmp |>
   mutate(
     x = ifelse(type == "vertical", xintercept, (cost - theta_num * sigma_r)),
     y = ifelse(type == "vertical", max(agent_last_episode_info_plot$sigma_r), 0),
+    cost = round(cost, 0),
     label = glue("\u03b8 = {theta}, C = {cost} s")
   )
 ```
-
-
-
 
 ```{r}
 #| label: plot_1
@@ -480,8 +485,337 @@ ggplot(
   }
 )
 
-ggsave(here("r","RQ11","figures","plot_2_convergence_plot.png"), width = 12, height = 6)
+ggsave(here("r","RQ11","figures","plot2_convergence_plot.png"), width = 12, height = 6)
 ```
+
+```{r}
+#| label: data_plot4_qualitative
+
+# Things to take into account:
+# 1. OD matrix is different across seeds (keeping everything else constant)
+# 2. OD matrix is the same across risk sensitivities (keeping everything else constant)
+
+# When analyzing the impact of risk sensitivity on the route flow evolution, we just want to analyze one OD from a FIXED OD MATRIX!!!
+###########################
+# We already choose our representative OD before
+# #########################
+# 1. representative_seed
+representative_seed <- random_seed
+# 2. representative_risk_sensitivities
+representative_reliability_sensitivity_levels
+# 3. representative_od
+representative_OD <- data$demand_odt |> filter(
+  seed == representative_seed,
+  origin == representative_od$origin,
+  destination == representative_od$destination
+) |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    reliability_sensitivity == min(reliability_sensitivity)
+  ) |> 
+  select(-c(run_id, seed, warm_up, reliability_sensitivity)) |> 
+  group_by(origin, destination) |> 
+  summarise(
+    demand = sum(count)
+  ) |> 
+  ungroup() |> 
+  rename(
+    dest = destination
+  )
+```
+
+```{r}
+#| label: data2_plot4_qualitative
+
+# Now that we have the scenario (defined by the seed) 
+# and we also have the representative OD whose paths we want to analyze, 
+# we need to do the following:
+
+# 1. Compute the flow on each route of the representative OD per episode
+# Efficiently dealing with large dataframes
+
+# 1. Partition parquet file
+pq_path_flow_paths <- here("r/RQ11/data/flow_paths_partitioned")
+
+if (dir.exists(pq_path_flow_paths)) {
+  unlink(pq_path_flow_paths, recursive = TRUE, force = TRUE)
+}
+
+dir.create(pq_path_flow_paths, recursive = TRUE)
+
+data$flow_paths |> 
+  group_by(path) |> 
+  write_dataset(path = pq_path_flow_paths, format = "parquet")
+
+# 2. List partitioned parquet files
+tibble(
+  files = list.files(pq_path_flow_paths, recursive = TRUE),
+  size_MB = file.size(file.path(pq_path_flow_paths, files)) / 1024^2
+)
+
+# 3. Use dplyr with arrow
+flow_paths_pq <- open_dataset(pq_path_flow_paths)
+query <- flow_paths_pq |> 
+  mutate(
+    reliability_sensitivity = as.numeric(reliability_sensitivity)
+  ) |> 
+  filter(
+    # Filter by the particular scenario
+    seed == representative_seed, 
+    reliability_sensitivity %in% representative_reliability_sensitivity_levels,
+    # Filter by the particular OD
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+  ) |> 
+  group_by(episode, path, reliability_sensitivity) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
+  ungroup()
+
+flow_paths_df_query <- query |> collect()
+
+# Check: The sum of flows across paths for the particular OD for one episode should be equal to the demand on that OD
+check_demand_od_df <- flow_paths_df_query |> 
+  group_by(episode, reliability_sensitivity) |> 
+  summarise(
+    demand = sum(flow)
+  ) |> ungroup()
+
+demand_od_sum_paths <- unique(check_demand_od_df$demand)
+demand_od <- representative_OD$demand
+
+if (demand_od != demand_od_sum_paths) {
+  stop("Something is wrong in the computation of path flows for the particular OD and scenario.")
+}
+```
+
+```{r}
+#| label: data_plot_4_part_3
+
+# Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
+
+# 1. Handling some things to convert path variable to factor
+path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
+path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
+
+# 2. Facet labels
+facet_levels <- representative_reliability_sensitivity_levels
+facet_labels = map_chr(
+  facet_levels, 
+  \(theta) ifelse(
+    theta == 0, 
+    glue("Risk-insensitive (\u03b8 = {theta})"), 
+    glue("Risk-sensitive (\u03b8 = {theta})"))
+)
+
+flow_paths_df <- flow_paths_df_query |> 
+  mutate(
+    # Convert to factors
+    reliability_sensitivity_fct = factor(
+      reliability_sensitivity, 
+      levels = facet_levels, 
+      labels = facet_labels),
+    path = factor(
+      path, 
+      levels = path_levels,
+      labels = path_levels_labels
+    ),
+    share = flow / representative_OD$demand
+  ) 
+```
+
+```{r}
+#| label: breaks_plot4
+#| eval: False
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step_plot4 <- floor(max_episode / 50) * 10
+breaks_plot4 <- seq(0, max_episode, by = step_plot4)
+
+# Remove breaks that are within step of the learning start
+breaks_plot4 <- breaks[abs(breaks - exploration_phase_floor) >= step_plot4 / 2]
+# Add the learning start break
+breaks_plot4 <- sort(c(breaks_plot4, exploration_phase_floor))
+labels_plot4 <- as.character(breaks_plot4)
+labels_plot4[breaks_plot4==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+```{r}
+#|label: sibedar_latex_table
+
+# Based on median (more robust to outliers than mean)
+typical_perceptions <- agents_last_episode_info |> 
+  group_by(route_id) |> 
+  summarise(
+    median_PT = median(PT),
+    median_sigma = median(sigma_r)
+  ) |> 
+  mutate(
+  path_id = factor(route_id, levels = path_levels, labels = path_levels_labels)
+  ) |> 
+  select(-route_id) |> 
+  ungroup()
+
+share_paths_df_last_episode <- flow_paths_df |> 
+  group_by(reliability_sensitivity) |> 
+  filter(
+    episode == max(episode)
+  ) |> 
+  rename(
+    path_id = path
+  ) |> 
+  select(path_id, share, reliability_sensitivity) |> 
+  arrange(reliability_sensitivity, path_id) |> 
+  ungroup() |> 
+  mutate(share = round(share, 2))
+
+share_paths_wide <- share_paths_df_last_episode |> 
+  pivot_wider(
+    names_from = reliability_sensitivity,
+    values_from = share,
+    values_fill = 0
+  )
+
+latex_quantitative_table <- typical_perceptions |> 
+  left_join(
+  share_paths_wide,
+  by = "path_id"
+) 
+```
+
+```{r}
+#|label: Highlight_relevant_routes
+relevant_routes <- latex_quantitative_table |> 
+  mutate(
+    is_shortest = median_PT == min(median_PT),
+    is_stablest = median_sigma == min(median_sigma),
+    relevant = is_shortest != is_stablest
+  ) |> 
+  filter(relevant) |> 
+  select(path_id) |> 
+  as.numeric()
+
+flow_paths_df_plot <- flow_paths_df |> 
+  mutate(
+    relevant = path %in% relevant_routes
+  )
+
+relevant_labels <- flow_paths_df_plot |>
+  filter(relevant) |>
+  group_by(reliability_sensitivity_fct, path) |>
+  slice_max(episode, n = 1, with_ties = FALSE) |>
+  ungroup()
+```
+
+
+```{r}
+#| label: plot4
+
+# This plots refers to a particular OD, for a particular seed, and facet for some representative reliability sensitivities 
+
+ggplot(
+  data = flow_paths_df_plot, 
+  mapping = aes(x = episode, y = share, group = path, color = path)
+) +
+  geom_line(
+    mapping = aes(linewidth = relevant, alpha = relevant)
+  ) +
+   scale_linewidth_manual(
+    values = c(
+      "TRUE" = 1.3,
+      "FALSE" = 0.5
+    )
+  ) + 
+  scale_alpha_manual(
+    values = c(
+      "TRUE" = 1,
+      "FALSE" = 0.5
+    )
+  ) + 
+  facet_grid(reliability_sensitivity_fct ~ .) +
+  labs(
+    color = "Route",
+    y = "Route flow",
+    x = "Episode",
+  ) +
+  # Shaded region
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.06
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.4
+  ) +
+  annotate(
+    "text",
+    x = (exploration_phase_floor - 2) / 2,
+    y = Inf,
+    label = "pre-learning \nphase",
+    fontface = "bold",
+    colour = "firebrick",
+    vjust = 2.5,
+    size = 3.5
+  ) +
+  # Change color scale
+  scale_color_brewer(palette = "Dark2", name = "Path") +
+  # Tweak miscellaneous stuff
+  theme(
+    legend.title = element_text(size = 11),
+    legend.text  = element_text(size = 10),
+    legend.key.size = unit(0.6, "lines"),
+    plot.subtitle = element_text(size = 11),
+    strip.text.y = element_text(angle = 0, size = 10)
+) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  guides(alpha = "none", linewidth = "none", color = "none") +
+  labs(
+    y = "Route share (%)"
+  ) +
+  ggrepel::geom_text_repel(
+  data = relevant_labels,
+  aes(
+    x = episode,
+    y = share,
+    label = paste0("Path ", path),
+    color = path
+  ),
+  inherit.aes = FALSE,
+  direction = "y",
+  hjust = 0,
+  nudge_x = 2,
+  size = 3.8,
+  fontface = "bold",
+  box.padding = 0.6,
+  point.padding = 0.2,
+  segment.alpha = 0.4,
+  segment.size = 0.3,
+  seed = 123
+) +
+  labs(
+    title = "Risk sensitivity changes route-choice patterns",
+    subtitle = "Route-share trajectories for a representative OD under two levels of risk sensitivity."
+  )
+
+ggsave(here("r","RQ11","figures","plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
+```
+
+
+
+
+
 
 
 

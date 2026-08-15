@@ -447,7 +447,7 @@ def _prepare_rq11_data() -> None:
     artifacts = {
         "bm_results": "agent_state/BM_results.parquet",
         "agents_od": "environment/agents_od.parquet",
-        "flows_bm": "DUE/BM/flows_paths_odtp_k.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
         "od_routes": "environment/od_routes.parquet",
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
