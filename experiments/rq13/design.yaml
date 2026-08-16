@@ -1,0 +1,137 @@
+# RQ13 — Nonlinear stimulus
+#
+# Neuroscience research shows that humans a lot of times don't show linear
+# reactions. For example, you may run 30 miles and don't feel tired, but
+# after mile 30, each extra mile is really hard and makes you super tired.
+# In that case, humans are not reacting linearly — every extra mile from
+# the beginning doesn't make us feel more tired the same way.
+#
+# The same idea applies to drivers and travel times. If the route takes 1s
+# more than expected you don't even notice. If it takes 10 sec, 1 min, you
+# still don't notice. If it takes 10 min longer than expected, you react
+# strongly, aggressively reducing the probability of taking that route
+# next time. So if we want our drivers to be as realistic as possible,
+# they should react nonlinearly. Right now that's not the case — and it's
+# not only that they react to small things, it's that in some cases the
+# reaction to those small things is very aggressive. So when applying the
+# nonlinearity, we want to ensure our drivers do not react to very small
+# things, avoiding both problems at once.
+#
+# What it answers:
+# Does replacing the linear stimulus formula with one that ignores small
+# perceived-cost differences, and reacts more strongly to large ones,
+# produce more realistic traffic behavior?
+#
+##################
+# The problem with the current (linear) model — worked example
+##################
+# Let's assume two routes and AC = 100 (using AC/PC_r — RQ11/RQ12's
+# risk/waiting-loaded terms — rather than the raw ET/PT_r; see why below):
+#
+# a) Case A: chosen route is 1 second better (PC_chosen = 99), the other
+#    route is worse (PC_other = 105).
+#    diff_chosen = 100 - 99 = 1
+#    biggest_benefit = max(100-99, 100-105) = max(1, -5) = 1
+#    stimulus = 1 / 1 = 1  (max possible value)
+#
+# b) Case B: chosen route is 80 seconds better (PC_chosen = 20), the other
+#    route is worse (PC_other = 105).
+#    diff_chosen = 100 - 20 = 80
+#    biggest_benefit = 80
+#    stimulus = 80 / 80 = 1  (identical to Case A)
+#
+# We want that our model is able to distinguish both cases. 
+# It should not react to small deviations like in case A
+#
+# The max/min normalization collapses each route's raw margin into "how
+# good was this relative to today's best/worst alternative." A route
+# that's barely better than expected, but happens to be the only positive
+# option that day, gets the same stimulus as a route that's spectacularly
+# better.
+#
+##################
+# Mathematical formulation of the nonlinearity
+##################
+# The nonlinearity must be applied first, to each route's raw margin, and
+# only THEN normalize. In particular:
+#
+# 1. For each route r:
+#    x_r = (AC - PC_r) / AC          (relative margin, dimensionless)
+#    g_r = nonlinearity(x_r) = deadzone(x_r, tau)
+# 2. diff_chosen   = g_chosen
+# 3. normalization = max(g_r)  if diff_chosen >= 0   (biggest benefit)
+#                   = min(g_r) if diff_chosen <  0   (biggest loss)
+# 4. stimulus       = diff_chosen / normalization
+#
+# Why AC/PC_r and not ET/PT_r: using the RQ11/RQ12-loaded terms means
+# RQ13 composes with theta and phi the same way phi already composes with
+# theta, instead of silently ignoring their contribution whenever theta
+# or phi is nonzero.
+#
+# Why the threshold is a percentage, not a fixed number of seconds:
+# it's better to define the threshold in percentage terms than in
+# absolute terms. In reality I'd say humans don't react until at least 5
+# minutes of difference from the average. But on this network trips last
+# about 80 seconds, so a fixed 5-minute threshold would mean drivers never
+# reacting at all on this network — nonsensical. Re-expressed as a
+# percentage instead (e.g. "react after ~20% of expected cost"), the same
+# underlying threshold generalizes across networks with very different
+# typical trip lengths, instead of a fixed tau = 15s that wouldn't.
+#
+# So tau is expressed as a fraction of AC, not a fixed number of seconds.
+#
+##################
+# How the example above looks under the new model (tau = 0.20)
+##################
+# a) x_chosen = (100-99)/100 = 0.01   (1%)
+#    x_other  = (100-105)/100 = -0.05 (-5%)
+#    Both magnitudes (0.01 and 0.05) are below the 20% threshold, so both
+#    collapse to 0: g_chosen = 0, g_other = 0,
+#    stimulus = 0 / (max(0,0) + epsilon) = 0
+#
+# b) x_chosen = 0.80, x_other = -0.05 (still inside the dead zone)
+#    g_chosen = ((0.80-0.20)/0.80)^2 = 0.5625
+#    g_other  = 0
+#    stimulus = 0.5625 / 0.5625 = 1
+#
+# The two cases are now clearly distinguishable: Case A -> stimulus = 0
+# (no reaction), Case B -> stimulus = 1 (full reaction) — instead of both
+# giving stimulus = 1 under the linear model. That's the actual point of
+# the extension.
+#
+# The nonlinearity function applied here is the same one used in RQ6.
+#
+# A more concrete example of where the nonlinearity actually bites.
+# ET = 100, tau = 0.2:
+# - chosen is 25% better (x_chosen = 0.25), best alternative is 50%
+#   better (x_best = 0.5, some other route)
+# - linear model:    stimulus = 25 / 50 = 0.5
+# - nonlinear model: g(0.25) = ((0.25-0.2)/0.8)^2 = 0.0039
+#                     g(0.50) = ((0.5-0.2)/0.8)^2  = 0.1406
+#                     stimulus = 0.0039 / 0.1406 = 0.028
+# A modest win, where someone else won bigger, gets compressed from 0.5
+# down to 0.03.
+#
+# What this adjusted model captures: per-route deviation is nonlinear now
+# — a route that's marginally better (say 5%, under tau=20%) gets zero
+# reinforcement pull, and a route that's ambiguously (not dramatically)
+# better (25%, just past tau) gets heavily discounted relative to a route
+# that's dramatically better (50%).
+#
+# What it doesn't capture: whenever the chosen route is the best (or
+# worst) route that day, stimulus is always exactly +-1, whether it won
+# by 21% or by 95%. Whether or not it's realistic depends on how we interpret 
+# the stimulus that drives the update. The BM stimulus isn't literally 
+# "surprise magnitude," it's closer to relative regret: how close to optimal 
+# was my choice today. Whether the margin
+# was 21% or 95%, both translate to the same answer to that question —
+# fully optimal — so the stimulus is the same either way. Under that
+# reading, a driver who picked the best route arguably should get full
+# reinforcement regardless of margin size.
+#
+# base_config / grid: pending — still waiting on my teacher's answer on
+# whether the RQ6 dead-zone above is the right functional form, or
+# something else (e.g. an asymmetric gain/loss curve) fits the intended
+# behavior better. Once decided, config.py needs a parameter name (tau,
+# or whatever the chosen function's shape parameter ends up being called)
+# before this section can be filled in.
