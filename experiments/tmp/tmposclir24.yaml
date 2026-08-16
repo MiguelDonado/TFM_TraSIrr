@@ -27,7 +27,7 @@ network_path:
 numerical_constants:
   epsilon: 1.0e-08
 randomness:
-  seed: 23
+  seed: 8
 randomtrips:
   fringe_factor: 5
   max_size_od_space: 10

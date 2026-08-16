@@ -8,8 +8,8 @@
 # time stopped.
 #
 # Where this came from:
-# The topic was initially framed as "stop-and-go aversion". Taken
-# literally, that phenomenon refers to drivers repeatedly decelerating and
+# The topic was initially framed as "stop-and-go aversion". If I understood 
+# correctly, that phenomenon refers to drivers repeatedly decelerating and
 # accelerating, going quite slowly — as often happens in cities — without
 # necessarily coming to a complete stop. SUMO's tripinfo output offers
 # several metrics that could plausibly capture this:
@@ -118,15 +118,15 @@ grid:
     memory_level:
       - 1.00
     waiting_time_sensitivity:
-      - 0.00
-      - 1.00
-      - 5.00
+      # - 0.00
+      # - 1.00
+      # - 5.00
       - 10.00
   randomness:
     seed:
-      - 23
-      - 42
-      - 5
+      # - 23
+      # - 42
+      # - 5
       - 1999
       - 8
   demand:

@@ -29,8 +29,13 @@ On this research question only the aggregated R-gap will be considered.
 
 1. Risk scatter (mechanism plot)
 2. R-gap evolution across $\theta$
-3. Final route flow share vs $\theta$
-4. Flow evolution over episodes
+3. Flow evolution over episodes + quantitative table
+
+This research question plots have the following structure. The first plot is a mechanism figure, illustrating the implications of the proposed mathematical formulation for route choice. It focuses on a single representative agent and shows how the introduction of the new behavioral component changes the perceived cost of alternative routes. The representative agent is selected so that its route-perceptions are aligned with the population-level aggregated metrics. In this sense, the agent is intended to approximate a typical individual within the population (so that when looking at the third figure, it is more easy to interpret the results).
+The second plot is a convergence figure.
+The third component consists of a qualitative route-share figure accompanied by a quantitative table. The qualitative figure shows the evolution of route shares over episodes for a particular OD pair, where route shares are aggregated across all agents using that OD. It therefore represents population-level route-choice behavior. The accompanying table provides quantitative information on the route characteristics and the resulting redistribution of route shares under the different model formulations.
+
+It is important to distinguish the interpretation of the first and third figures. The behavior of the representative individual agent in the mechanism figure does not have why to coincide exactly with the population-level behavior shown in the route-share figure. That's why we choose an individual whose perceptions are aligned with the population, to ease the interpretation and narrative of the plots.
 
 For more details, check the research questions document.
 
@@ -164,10 +169,10 @@ representative_od_decision_df <- representative_od_df_summary |>
 
 representative_od <- representative_od_decision_df |> 
   summarise(
-    diff = abs(mean_tt[1] - mean_tt[2]) > min_mean_tt_diff
+    diff = abs(mean_tt[1] - mean_tt[2]) 
   ) |> 
-  filter(diff) |> 
   arrange(desc(diff)) |> 
+  filter(diff > min_mean_tt_diff) |> 
   slice_head(n = 1) |> 
   select(origin, destination)
   
@@ -194,8 +199,6 @@ agents_representative_od_df <- agents_od_df |>
 # considering different thetas we just need to use one agent.
 # It is an agent belonging to the representative OD that we are gonna talk
 # about in the following plots
-# We want the agent to be in the middle of the simulation horizon
-
 agents_last_episode_info <- data$bm_results |> 
   mutate(
     reliability_sensitivity = as.numeric(reliability_sensitivity)
@@ -214,7 +217,7 @@ agents_last_episode_info <- data$bm_results |>
     episode, agent_id, route_id, PT, sigma_r
   )
 
-# The representative agent has been selected by inspecting at agents_last_episode_info and looking for an agent whose perceptions coincide with the typical perceptions, so that it is aligned with what we see in plot 4 qualitative. Is not any trick, is just that on plot 1 we show individual level, and plot 4 it shows aggreagte level, and individual level and aggreagte doesnt have to coincide, but to make plots easier to understand, if they can coincide it eases to tell the story
+# The representative agent has been selected by inspecting at agents_last_episode_info and looking for an agent whose perceptions coincide with the typical perceptions, so that it is aligned with what we see in plot 3 qualitative. Is not any trick, is just that on plot 1 we show individual level, and plot 3 it shows aggregate level, and individual level and aggregate doesnt have to coincide, but to make plots easier to understand, if they can coincide it makes easier to tell the story
 representative_agent <- "agent_174"
 agent_last_episode_info <- agents_last_episode_info |> 
   filter(
