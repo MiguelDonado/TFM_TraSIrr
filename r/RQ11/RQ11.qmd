@@ -489,7 +489,7 @@ ggsave(here("r","RQ11","figures","plot2_convergence_plot.png"), width = 12, heig
 ```
 
 ```{r}
-#| label: data_plot4_qualitative
+#| label: data_plot3_qualitative
 
 # Things to take into account:
 # 1. OD matrix is different across seeds (keeping everything else constant)
@@ -527,7 +527,7 @@ representative_OD <- data$demand_odt |> filter(
 ```
 
 ```{r}
-#| label: data2_plot4_qualitative
+#| label: data2_plot3_qualitative
 
 # Now that we have the scenario (defined by the seed) 
 # and we also have the representative OD whose paths we want to analyze, 
@@ -593,7 +593,7 @@ if (demand_od != demand_od_sum_paths) {
 ```
 
 ```{r}
-#| label: data_plot_4_part_3
+#| label: data_plot_3_part_3
 
 # Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
 
@@ -628,7 +628,7 @@ flow_paths_df <- flow_paths_df_query |>
 ```
 
 ```{r}
-#| label: breaks_plot4
+#| label: breaks_plot3
 #| eval: False
 
 # Choose x-axis ticks
@@ -696,7 +696,7 @@ relevant_routes <- latex_quantitative_table |>
     relevant = is_shortest != is_stablest
   ) |> 
   filter(relevant) |> 
-  select(path_id) |> 
+  pull(path_id) |> 
   as.numeric()
 
 flow_paths_df_plot <- flow_paths_df |> 
