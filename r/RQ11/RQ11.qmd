@@ -415,9 +415,6 @@ rgap_df <- data$bm_rgap |>
              levels = representative_reliability_sensitivity_levels,
              labels = representative_reliability_sensitivity_levels_labels
       )
-  ) |> 
-  mutate(
-    reliability_sentivity_fct = reliability_sentivity_fct
   )
 ```
 
