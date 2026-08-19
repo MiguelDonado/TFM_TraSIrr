@@ -707,8 +707,369 @@ representative_od_decision_df |>
   select(origin, destination, route_id, mean_tt, distance_to_min)
 ```
 
+#####
+APPENDIX
+#####
+
+```{r}
+#| label: plot2_linear
+
+representative_stimulus_tau_levels <- 0
+representative_stimulus_tau_levels_labels <- "Classic BM - Linear"
+```
+
+```{r}
+#| label: data_plot2
+
+rgap_df <- data$bm_rgap |> 
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  filter(
+    stimulus_tau %in% representative_stimulus_tau_levels,
+    memory_level %in% representative_memory_levels,
+  ) |> 
+  select(-c(run_id, warm_up)) |> 
+  mutate(
+    stimulus_tau_fct = 
+      factor(stimulus_tau,
+             levels = representative_stimulus_tau_levels,
+             labels = representative_stimulus_tau_levels_labels
+      ),
+    memory_level_fct = fct_rev(factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels))
+  ) |> 
+  select(-c(stimulus_tau, memory_level))
+
+# Median and quantiles across seeds (here I always run the same episodes, 
+# so i can compute summaries on seeds, instead of having to plot individual trajectories)
+rgap_df_summary <- rgap_df |> 
+  group_by(episode, stimulus_tau_fct, memory_level_fct) |> 
+  summarise(
+    median_rgap = median(rgap),
+    q25_rgap    = quantile(rgap, 0.25),
+    q75_rgap    = quantile(rgap, 0.75)
+  ) |> 
+  ungroup()
+```
+
+```{r}
+#| label: breaks_plot2
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step <- floor(max_episode / 30) * 10
+breaks <- seq(0, max_episode, by = step)
+
+# Remove breaks that are within step of the learning start
+breaks <- breaks[abs(breaks - exploration_phase_floor) >= (step/2.25)]
+# Add the learning start break
+breaks <- sort(c(breaks, exploration_phase_floor))
+labels <- as.character(breaks)
+labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
+
+```{r}
+#| label: plot_2
+
+ggplot(
+) +
+  geom_line(
+    data = rgap_df_summary,
+    mapping = aes(x = episode, y = median_rgap),
+  ) + 
+  geom_ribbon(
+    data = rgap_df_summary,
+    mapping = aes(x = episode, ymin = q25_rgap, ymax = q75_rgap),
+    alpha = 0.1
+  ) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+    strip.text = element_text(size = 10)
+) +
+  labs(
+    x = "Episode",
+    y = "R-gap (%)",
+    title = "R-gap evolution - Classical Linear BM",
+    subtitle = "Median R-gap across seeds; ribbons show variability"
+  ) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.08
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.5
+  ) +
+  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_hline(
+    yintercept = 5,
+    colour = "grey40",
+    linetype = "longdash",
+    linewidth = 0.5
+  ) +
+  # Automatically chosen breaks and add one extra tick
+  scale_y_continuous(
+    breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5)))
+) +
+  facet_grid(memory_level_fct ~ stimulus_tau_fct)
+
+ggsave(here("r","RQ13","figures","appendix_plot2_rgap_evolution.png"), width = 12, height = 6)
+```
+
+# PLOT 3
+
+```{r}
+#| label: data_plot3_qualitative
+# Things to take into account:
+# 1. OD matrix is different across seeds (keeping everything else constant)
+# 2. OD matrix is the same across stimulus tau values (keeping everything else constant)
+# 3. OD matrix is the same across memory levels (keeping everything else constant)
+
+# When analyzing the impact of stimulus tau on the route flow evolution, we just want to analyze one OD from a FIXED OD MATRIX!!!
+###########################
+# We already choose our representative OD before
+# #########################
+# 1. representative_seed
+representative_seed <- random_seed
+# 2. representative_stimulus_tau
+representative_stimulus_tau_levels
+# 3. representative_od
+representative_OD <- data$demand_odt |> filter(
+  seed == representative_seed,
+  origin == representative_od$origin,
+  destination == representative_od$destination
+) |> 
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  filter(
+    stimulus_tau == min(representative_stimulus_tau_levels),
+    memory_level == min(representative_memory_levels),
+  ) |> 
+  select(-c(run_id, seed, warm_up, stimulus_tau, memory_level)) |> 
+  group_by(origin, destination) |> 
+  summarise(
+    demand = sum(count)
+  ) |> 
+  ungroup() |> 
+  rename(
+    dest = destination
+  )
+```
+
+```{r}
+#| label: data2_plot3_qualitative
+
+# Now that we have the scenario (defined by the seed) 
+# and we also have the representative OD whose paths we want to analyze, 
+# we need to do the following:
+
+# 1. Compute the flow on each route of the representative OD per episode
+# Efficiently dealing with large dataframes
+
+# 3. Use dplyr with arrow
+flow_paths_pq <- open_dataset(pq_path_flow_paths)
+query <- flow_paths_pq |> 
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  filter(
+    # Filter by the particular scenario
+    seed == representative_seed, 
+    stimulus_tau %in% representative_stimulus_tau_levels,
+    memory_level %in% representative_memory_levels,
+    
+    # Filter by the particular OD
+    origin == representative_OD$origin,
+    destination == representative_OD$dest,
+  ) |> 
+  group_by(
+    episode, path, stimulus_tau, memory_level
+  ) |> 
+  summarise(
+    flow = sum(count)
+  ) |> 
+  ungroup()
+
+flow_paths_df_query <- query |> collect()
+
+# Check: The sum of flows across paths for the particular OD for one episode should be equal to the demand on that OD
+check_demand_od_df <- flow_paths_df_query |> 
+  group_by(episode, stimulus_tau, memory_level) |> 
+  summarise(
+    demand = sum(flow)
+  ) |> ungroup()
+
+demand_od_sum_paths <- unique(check_demand_od_df$demand)
+demand_od <- representative_OD$demand
+
+if (demand_od != demand_od_sum_paths) {
+  stop("Something is wrong in the computation of path flows for the particular OD and scenario.")
+}
+```
+
+```{r}
+#| label: data_plot_3_part_3
+
+# Now we still have to manipulate a bit the flow paths on the particular OD and scenario, so that is properly visualized in the plot
+
+# 1. Handling some things to convert path variable to factor
+path_levels <- as.character(sort(unique(flow_paths_df_query$path)))
+path_levels_labels <- as.character(sort(unique(flow_paths_df_query$path + 1)))
+
+flow_paths_df <- flow_paths_df_query |> 
+  mutate(
+    # Convert to factors
+    stimulus_tau_fct = factor(
+      stimulus_tau,
+      levels = representative_stimulus_tau_levels,
+      labels = representative_stimulus_tau_levels_labels
+    ),
+    memory_level_fct = factor(
+      memory_level,
+      levels = representative_memory_levels,
+      labels = representative_memory_levels_labels
+    ),
+    path = factor(
+      path, 
+      levels = path_levels,
+      labels = path_levels_labels
+    ),
+    share = flow / representative_OD$demand,
+    memory_level_fct = fct_rev(memory_level_fct)
+  ) 
+```
+
+```{r}
+#| label: breaks_plot3
+#| eval: False
+
+# Choose x-axis ticks
+max_episode <- max(data$bm_rgap$episode)
+step_plot4 <- floor(max_episode / 50) * 10
+breaks_plot4 <- seq(0, max_episode, by = step_plot4)
+
+# Remove breaks that are within step of the learning start
+breaks_plot4 <- breaks[abs(breaks - exploration_phase_floor) >= step_plot4 / 2]
+# Add the learning start break
+breaks_plot4 <- sort(c(breaks_plot4, exploration_phase_floor))
+labels_plot4 <- as.character(breaks_plot4)
+labels_plot4[breaks_plot4==exploration_phase_floor] <- paste0("Learning\nstarts (", exploration_phase_floor, ")")
+```
 
 
+```{r}
+#| label: sidebar_table_n_eff
+
+# Median effective number of routes (n_eff = exp(entropy of p)) per agent
+# on the representative OD, at the final episode, for each (tau, memory)
+# combo — annotated per facet on plot3 below. Restated here from bm_results
+# (already exported: p per agent/episode/route), not a new data pull.
+bm_results_df <- data$bm_results |>
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |>
+  filter(
+    episode == max(episode),
+    seed == representative_seed,
+    stimulus_tau %in% representative_stimulus_tau_levels,
+    memory_level %in% representative_memory_levels,
+    agent_id %in% agents_representative_od$agent_id
+  )
+
+n_eff_routes_df <- bm_results_df |>
+  select(agent_id, memory_level, stimulus_tau, route_id, p) |>
+  mutate(
+    term_i = ifelse(p > 0, p * log(p), 0)
+  ) |>
+  group_by(agent_id, memory_level, stimulus_tau) |>
+  summarise(
+    entropy = -sum(term_i),
+    .groups = "drop"
+  ) |>
+  mutate(
+    n_eff_routes = exp(entropy)
+  )
+
+n_eff_annotation_df <- n_eff_routes_df |>
+  group_by(memory_level, stimulus_tau) |>
+  summarise(
+    mean_n_eff = mean(n_eff_routes),
+    .groups = "drop"
+  ) 
+```
+
+```{r}
+#| label: plot3
+
+# This plots refers to a particular OD, for a particular seed, and facet for stimulus_tau and memory_levels
+# Uniform, equal-weight color treatment (same 5-color legend, unchanged across every panel) is the right choice here specifically because the plot's job is to show a hierarchy dissolving, not to guide attention within a hierarchy that's assumed stable throughout.
+
+ggplot(
+  data = flow_paths_df,
+  mapping = aes(x = episode, y = share, group = path, color = path)
+) +
+  geom_line() +
+  facet_grid(. ~ memory_level_fct) +
+  labs(
+    color = "Route",
+    y = "Route flow",
+    x = "Episode",
+  ) +
+  # Shaded region
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "red",
+    alpha = 0.06
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = "red",
+  linewidth = 0.4
+  ) +
+  # Change color scale
+  scale_color_brewer(palette = "Dark2", name = "Path") +
+  # Tweak miscellaneous stuff
+  theme(
+    legend.text  = element_text(size = 10),
+    legend.key.size = unit(0.6, "lines"),
+    plot.subtitle = element_text(size = 11),
+    strip.text.y = element_text(angle = 0, size = 11),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
+  labs(
+    y = "Route share (%)",
+    title = "Route flow evolution - Classical Linear BM",
+    subtitle = "Route share over episodes for a representative OD across memory levels"
+  ) 
+
+ggsave(here("r","RQ13","figures","appendix_plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
+```
 
 
 
