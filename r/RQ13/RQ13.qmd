@@ -366,7 +366,6 @@ agents_od_df <- data$agents_od |>
   ) |> 
   select(-c(run_id, seed, warm_up, stimulus_tau, memory_level, post_warm_up, departure_time)) |> 
   rename(agent_id = id)
-  
 
 representative_od_df <- rewards_df |> 
   left_join(actions_df, by = c("episode", "agent_id")) |>
@@ -417,6 +416,12 @@ representative_od_routes <- representative_od_df_summary |>
     destination == representative_od$destination
   ) |> 
   arrange(mean_tt)
+
+agents_representative_od <- agents_od_df |> 
+  filter(
+    origin == representative_od$origin,
+    destination == representative_od$destination
+  )
 ```
 
 ```{r}
@@ -640,9 +645,8 @@ ggplot(
 ggsave(here("r","RQ13","figures","plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
 ```
 
-
 ```{r}
-#| label: quick_check
+#| label: quantitative_table
 
 representative_od_decision_df |> 
   filter(
@@ -652,7 +656,53 @@ representative_od_decision_df |>
 
 ```
 
+```{r}
+#| label: 4th_plot
+bm_results_df <- data$bm_results |> 
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |> 
+  filter(
+    # Last episode
+    episode == max(episode),
+    # Filter by the particular scenario
+    seed == representative_seed, 
+    stimulus_tau %in% representative_stimulus_tau_levels,
+    memory_level %in% representative_memory_levels,
+    agent_id %in% agents_representative_od$agent_id
+  )
 
+bm_results_df_clean <- bm_results_df |> 
+  select(c(agent_id, memory_level, stimulus_tau, route_id, p))
+
+n_eff_routes_df <- bm_results_df_clean |> 
+  mutate(
+    log_p = log(p)
+  ) |> 
+  mutate(
+    term_i = p * log_p
+  ) |> 
+  group_by(
+    agent_id, memory_level, stimulus_tau
+  ) |> 
+  summarise(
+    entropy = -sum(term_i),
+    check = sum(p)
+  ) |> 
+  mutate(
+    n_eff_routes = exp(entropy)
+  )
+
+n_eff_routes_plot <- n_eff_routes_df |> 
+  select(agent_id, memory_level, stimulus_tau, n_eff_routes) |> 
+  group_by(memory_level, stimulus_tau) |> 
+  summarise(
+    median_n_eff = median(n_eff_routes),
+    mean_n_eff = mean(n_eff_routes)
+  ) |> 
+  ungroup()
+```
 
 
 

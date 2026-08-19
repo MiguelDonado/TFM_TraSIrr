@@ -520,6 +520,7 @@ def _prepare_rq13_data() -> None:
     params_to_attach = ["seed", "warm_up", "stimulus_tau", "memory_level"]
 
     artifacts = {
+        "bm_results": "agent_state/BM_results.parquet",
         "agents_od": "environment/agents_od.parquet",
         "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
         "od_routes": "environment/od_routes.parquet",
