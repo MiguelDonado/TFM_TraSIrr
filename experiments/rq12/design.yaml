@@ -118,15 +118,15 @@ grid:
     memory_level:
       - 1.00
     waiting_time_sensitivity:
-      # - 0.00
-      # - 1.00
-      # - 5.00
+      - 0.00
+      - 1.00
+      - 5.00
       - 10.00
   randomness:
     seed:
-      # - 23
-      # - 42
-      # - 5
+      - 23
+      - 42
+      - 5
       - 1999
       - 8
   demand:

@@ -217,14 +217,5 @@ ggplot(
   
 
 ggsave(here("r","RQ8","figures","plot_rmse_vs_memory.png"), width = 12, height = 6)
- 
 
-
-
-
-
-
-
-
-  
 ```

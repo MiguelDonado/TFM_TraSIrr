@@ -119,8 +119,9 @@
 # that's dramatically better (50%).
 #
 # What it doesn't capture: whenever the chosen route is the best (or
-# worst) route that day, stimulus is always exactly +-1, whether it won
-# by 21% or by 95%. Whether or not it's realistic depends on how we interpret 
+# worst, and is above the threshold) route that day, stimulus is always
+# exactly +-1, whether it won by 21% or by 95%. 
+# Whether or not it's realistic depends on how we interpret 
 # the stimulus that drives the update. The BM stimulus isn't literally 
 # "surprise magnitude," it's closer to relative regret: how close to optimal 
 # was my choice today. Whether the margin
@@ -135,3 +136,87 @@
 # behavior better. Once decided, config.py needs a parameter name (tau,
 # or whatever the chosen function's shape parameter ends up being called)
 # before this section can be filled in.
+
+# RQ13 nonlinear stimulus (nonlinear_stimulus, bool; stimulus_tau, τ ∈ [0,1))
+# --------------------------------------------------------------------------
+# Humans don't react linearly to deviations from expectation: a route a few
+# seconds worse than expected goes unnoticed, one several minutes worse
+# triggers a strong reaction. The linear model above has no such dead zone
+# — every deviation, however tiny, drives a proportional probability
+# update. RQ13 fixes this by applying a dead-zone + quadratic-ramp
+# transform to each route's raw relative margin, BEFORE max/min
+# normalisation:
+
+# x_r = (AC - PC_r) / AC                    (relative margin, dimensionless)
+# g_r = sign(x_r) · ( max(0, |x_r| - τ) / (1 - τ + ε) )²
+
+# |x_r| <= τ  →  g_r = 0          margins within τ of AC are ignored entirely
+# |x_r| = 1   →  g_r = sign(x_r)  renormalised back to the full [-1, 1] range
+
+# stimulus = g_chosen / normalisation, where normalisation is max(g_r) (if
+# g_chosen >= 0) or |min(g_r)| (if g_chosen < 0) — i.e. the same max/min
+# normalisation as the linear model, just applied to the g-transformed
+# margins instead of the raw ones. τ is expressed as a fraction of AC (not
+# a fixed number of seconds) so the same threshold generalises across
+# networks with different typical trip lengths.
+
+# x_r uses AC/PC_r (not raw ET/PT_r) so RQ13 composes with RQ11's θ and
+# RQ12's φ, instead of silently ignoring their contribution whenever either
+# is nonzero.
+
+# nonlinear_stimulus=False (the default) recovers the pre-RQ13 model
+# exactly — note this is NOT the same as stimulus_tau=0, since g(x)=x² at
+# τ=0 is still not the identity function.
+
+# stimulus = (AC - PC_chosen) / normalisation
+#            > 0  →  chosen route was cheaper than expected  →  reinforce
+#            < 0  →  chosen route was more expensive         →  penalise
+
+base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+
+# Why memory_level IS swept here, unlike RQ11/RQ12 (which fix it at 1.00
+# to isolate their own sensitivity parameter):
+# tau filters day-to-day noise in the perceived margin x_r. Under
+# memory_level=1 (full memory), PT_r/AC are running averages over an
+# agent's entire history — after enough episodes a single noisy day barely
+# moves them, so the noise tau is supposed to filter has already been
+# smoothed away by the memory mechanism itself before tau ever sees it.
+# Under a low memory_level, PT_r/AC stay sensitive to recent (noisy)
+# travel times throughout the run, so tau has real day-to-day wobble to
+# act on continuously. Sweeping both isolates the interaction directly:
+# memory_level=1.00 is expected to show little/no difference across tau
+# (nothing left to filter), memory_level=0.10 is expected to show the
+# actual mechanism — small tau still reacting to noise (argmax keeps
+# flipping between near-tied routes), large tau freezing flow shares once
+# routes fall inside the dead zone.
+grid:
+  learning:
+    nonlinear_stimulus:
+      # - True
+      - False
+    stimulus_tau:
+      - 0
+      # - 0.05
+      # - 0.20
+      # - 0.40
+    memory_level:
+      - 1.00
+      # - 0.60
+      # - 0.10
+  stopping_rule:
+    k_no_change:
+      - 5000
+  randomness:
+    seed:
+      - 23
+      # - 42
+      # - 5
+      # - 1999
+      # - 8
+  demand:
+    n_agents:
+      - 2000
+  due_convergence: 
+    duaIterate_max_iterations: 
+      - 1
+  

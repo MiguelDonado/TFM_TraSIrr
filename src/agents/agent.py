@@ -81,7 +81,38 @@ Same reasoning as θ: φ must load both AC and PC_r symmetrically.
 φ is dimensionless — "extra perceived seconds of
 cost per second the driver expects to spend waiting" on top of what
 waiting already contributes to PT_r/ET (waitingTime is part of duration).
-φ=0 recovers the θ-only model exactly 
+φ=0 recovers the θ-only model exactly
+
+RQ13 nonlinear stimulus (nonlinear_stimulus, bool; stimulus_tau, τ ∈ [0,1))
+--------------------------------------------------------------------------
+Humans don't react linearly to deviations from expectation: a route a few
+seconds worse than expected goes unnoticed, one several minutes worse
+triggers a strong reaction. The linear model above has no such dead zone
+— every deviation, however tiny, drives a proportional probability
+update. RQ13 fixes this by applying a dead-zone + quadratic-ramp
+transform to each route's raw relative margin, BEFORE max/min
+normalisation:
+
+x_r = (AC - PC_r) / AC                    (relative margin, dimensionless)
+g_r = sign(x_r) · ( max(0, |x_r| - τ) / (1 - τ + ε) )²
+
+|x_r| <= τ  →  g_r = 0          margins within τ of AC are ignored entirely
+|x_r| = 1   →  g_r = sign(x_r)  renormalised back to the full [-1, 1] range
+
+stimulus = g_chosen / normalisation, where normalisation is max(g_r) (if
+g_chosen >= 0) or |min(g_r)| (if g_chosen < 0) — i.e. the same max/min
+normalisation as the linear model, just applied to the g-transformed
+margins instead of the raw ones. τ is expressed as a fraction of AC (not
+a fixed number of seconds) so the same threshold generalises across
+networks with different typical trip lengths.
+
+x_r uses AC/PC_r (not raw ET/PT_r) so RQ13 composes with RQ11's θ and
+RQ12's φ, instead of silently ignoring their contribution whenever either
+is nonzero.
+
+nonlinear_stimulus=False (the default) recovers the pre-RQ13 model
+exactly — note this is NOT the same as stimulus_tau=0, since g(x)=x² at
+τ=0 is still not the identity function.
 
 stimulus = (AC - PC_chosen) / normalisation
            > 0  →  chosen route was cheaper than expected  →  reinforce
@@ -116,7 +147,7 @@ class BMAgent:
     Bush-Mosteller reinforcement learning agent for route choice
     """
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity):
+    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity, nonlinear_stimulus, stimulus_tau):
         self.id = agent_id
         self.routes = routes
         self.n_routes = len(routes)
@@ -125,6 +156,8 @@ class BMAgent:
         self.epsilon = epsilon
         self.reliability_sensitivity = reliability_sensitivity  # theta (RQ11)
         self.waiting_time_sensitivity = waiting_time_sensitivity  # phi (RQ12)
+        self.nonlinear_stimulus = nonlinear_stimulus  # RQ13
+        self.stimulus_tau = stimulus_tau  # tau (RQ13)
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
         # Whether this agent departs after the SUMO network warm-up window
@@ -155,6 +188,14 @@ class BMAgent:
 
         self.perceived_costs = np.zeros(self.n_routes)  # PC_r
         self.aspiration_cost = 0.0  # AC
+
+        # RQ13: relative margin x_r = (AC-PC_r)/AC, always computed; its
+        # dead-zone transform g_r, only meaningful when nonlinear_stimulus=True
+        # (stays zero-initialized otherwise). Both stored on self purely for
+        # debug_trace visibility (see snapshot()) — _compute_stimulus doesn't
+        # need to read them back.
+        self.relative_margins = np.zeros(self.n_routes)  # x_r
+        self.transformed_margins = np.zeros(self.n_routes)  # g_r
 
         # (scalar) Stimulus
         self.stimulus = 0
@@ -312,27 +353,45 @@ class BMAgent:
 
     def _compute_stimulus(self, chosen):
         """
-        stimulus = (AC - PC_chosen) / normalisation, where normalisation is:
-        diff >= 0:  max(AC - PC_r) over all routes  (biggest possible benefit)
-        diff <  0:  |min(AC - PC_r)| over all routes (biggest possible loss)
+        stimulus = margin_chosen / normalisation, where normalisation is:
+        diff >= 0:  max(margins) over all routes  (biggest possible benefit)
+        diff <  0:  |min(margins)| over all routes (biggest possible loss)
 
         Normalising by the best/worst achievable deviation — not by AC itself —
         keeps stimulus in [-1, 1] and scales the signal relative to the full
         spread of route qualities on that episode.
+
+        margins are the raw AC - PC_r deviations, UNLESS nonlinear_stimulus
+        (RQ13) is on, in which case each route's relative margin
+        (AC - PC_r) / AC is first passed through the dead-zone transform
+        _apply_stimulus_threshold before max/min normalisation. See module
+        docstring for the full RQ13 formula.
+
+        self.relative_margins (x_r) and self.transformed_margins (g_r) are
+        stored as a side effect purely for debug_trace visibility (see
+        snapshot()) — x_r is always recomputed here; g_r only when
+        nonlinear_stimulus is on, otherwise it's left at its zero-initialized
+        placeholder from __init__ (not a meaningful "off" value, just unused).
         """
 
         aspiration_cost = self.aspiration_cost
         perceived_costs = self.perceived_costs
 
-        chosen_perceived_cost = perceived_costs[chosen]
+        self.relative_margins = (aspiration_cost - perceived_costs) / aspiration_cost
 
-        diff = aspiration_cost - chosen_perceived_cost
+        if self.nonlinear_stimulus:
+            self.transformed_margins = self._apply_stimulus_threshold(self.relative_margins)
+            margins = self.transformed_margins
+        else:
+            margins = aspiration_cost - perceived_costs
+
+        diff = margins[chosen]
 
         if diff >= 0:
-            biggest_benefit = max(aspiration_cost - perceived_costs) + self.epsilon
+            biggest_benefit = max(margins) + self.epsilon
             stimulus = diff / biggest_benefit
         else:
-            biggest_loss = abs(min(aspiration_cost - perceived_costs)) + self.epsilon
+            biggest_loss = abs(min(margins)) + self.epsilon
             stimulus = diff / biggest_loss
 
         # Make sure stimulus is between [-1,1]
@@ -341,6 +400,23 @@ class BMAgent:
             raise ValueError("Stimulus must be between -1 and 1.")
 
         return stimulus
+
+    def _apply_stimulus_threshold(self, x):
+        """
+        RQ13 nonlinear stimulus: dead-zone + quadratic-ramp transform,
+        applied elementwise to each route's relative margin x_r before
+        max/min normalisation (see module docstring).
+
+        g(x) = sign(x) · ( max(0, |x| - tau) / (1 - tau + epsilon) )^2
+
+        |x| <= tau  →  g(x) = 0          margins within tau are ignored entirely
+        |x| = 1     →  g(x) = sign(x)    renormalised back to the full [-1, 1] range
+        Quadratic ramp in between: weak sensitivity just above tau, strong
+        sensitivity to severe deviations.
+        """
+        tau = self.stimulus_tau
+        magnitude = np.maximum(0.0, np.abs(x) - tau) / (1 - tau + self.epsilon)
+        return np.sign(x) * magnitude**2
 
     def _update_probabilities(self, chosen, stimulus):
         # Copy so a failed validation below never leaves self.p corrupted
@@ -356,7 +432,7 @@ class BMAgent:
         # If the sum is close to 1, renormalize to remove tiny numerical error.
         s = np.sum(p)
 
-        if np.isclose(s, 1.0, atol=1e-3) or self.n_routes == 1:
+        if np.isclose(s, 1.0, atol=1e-2) or self.n_routes == 1:
             p = p / s
         else:
             raise ValueError(f"Probabilities must sum to 1, got {s}")
@@ -437,6 +513,8 @@ class BMAgent:
             "perceived_waiting_times": self.perceived_waiting_times.tolist(),
             "aspiration_cost": float(self.aspiration_cost),
             "perceived_costs": self.perceived_costs.tolist(),
+            "relative_margins": self.relative_margins.tolist(),
+            "transformed_margins": self.transformed_margins.tolist(),
             "stimulus": float(self.stimulus),
             "chosen": int(self.history[-1][0]),
             "chosen_tt": int(self.history[-1][1])

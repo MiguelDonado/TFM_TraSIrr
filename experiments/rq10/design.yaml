@@ -1,11 +1,14 @@
+# This RQ10 is not a research question per se. It represents the runs that were used to generate 
+# the qualitative plot that shows the learning process of an agent.
+
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:
   learning:
     memory_level:
       - 1.00
-      # - 0.10
-      # - 0.01
+      - 0.10
+      - 0.01
   randomness:
     seed:
       - 23

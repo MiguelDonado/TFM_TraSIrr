@@ -1,0 +1,45 @@
+configuration_name:
+  config_name: production
+demand:
+  n_agents: 2000
+duarouter:
+  max_attempts: 25
+  n_routes_per_OD: 8
+  n_threads: 7
+  random_factor: 50
+  routing_algorithm: CH
+due_convergence:
+  duaIterate_max_iterations: 1
+  duaIterate_step_length: 0.1
+  threshold_density: 40
+interval_time:
+  fixed_time_min: 0.5
+learning:
+  learning_rate: 0.3
+  memory_level: 0.5
+mode_and_flags:
+  last_episode_gui_BM: false
+  last_episode_gui_duaIterate: false
+  research_question: RQ4
+network_path:
+  network: /home/miguel/6.Projects/Thesis/experiments/rq4/net/Sioux_Falls.net.xml
+  network_degraded: /home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml
+  network_normal: /home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml
+numerical_constants:
+  epsilon: 1.0e-08
+randomness:
+  seed: 8
+randomtrips:
+  fringe_factor: 5
+  max_size_od_space: 10
+simulation:
+  maxtries: 1000
+  min_distance_factor: 0.8
+  simulation_time: 3600
+  warm_up_time: 300
+stopping_rule:
+  degradation_end_episode: 301
+  degradation_start_episode: 151
+  k_no_change: 5000
+  max_episodes: 450
+  tolerance_stopping_rule: 0.01

@@ -1,2 +1,8 @@
+# RQ9: Analyze how the memory level of agents affects route-choice concentration and diversity in the BM model.
 # It uses the same runs that were performed for RQ2. 
 # So, it is not necessary to perform any extra runs for this research question.
+
+# It is not included with RQ2 because they answer different questions off the same data: 
+#  RQ2 asks "does low memory prevent the system from reaching DUE" — its outcome is R-gap 
+# (a convergence metric). RQ9 asks "how does memory affect route-choice diversity/concentration" 
+# — its outcome is route flow-share distribution

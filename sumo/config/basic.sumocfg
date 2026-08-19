@@ -14,7 +14,7 @@
     <fcd-output.attributes value="x,y"/>
   </report>
   <random>
-    <seed value="8"/>
+    <seed value="23"/>
   </random>
   <device>
     <device.fcd.probability value="0.2"/>

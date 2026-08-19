@@ -35,6 +35,12 @@ RQ12 waiting-time sensitivity
 config.waiting_time_sensitivity (φ) is passed through to every agent
 unchanged — homogeneous across the fleet for this first pass. φ=0 (the
 default) recovers the pre-RQ12 model exactly.
+
+RQ13 nonlinear stimulus
+-------------------------
+config.nonlinear_stimulus (bool) and config.stimulus_tau are passed
+through to every agent unchanged. nonlinear_stimulus=False (the default)
+recovers the pre-RQ13 model exactly, regardless of stimulus_tau.
 """
 
 import numpy as np
@@ -87,6 +93,8 @@ def initialize_agents(scen, seed=None):
             post_warm_up=post_warm_up,
             reliability_sensitivity=config.reliability_sensitivity,
             waiting_time_sensitivity=config.waiting_time_sensitivity,
+            nonlinear_stimulus=config.nonlinear_stimulus,
+            stimulus_tau=config.stimulus_tau,
         )
     return agents
 

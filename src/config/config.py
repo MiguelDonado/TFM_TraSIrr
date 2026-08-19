@@ -36,6 +36,17 @@ Config hyperparameter groups
                         below 0.1 m/s), same anchoring/weights as PT_r/ET.
                         φ=0 recovers the pre-RQ12 model exactly, off by
                         default)
+  Nonlinear stimulus  — nonlinear_stimulus (RQ13: bool, off by default).
+                        When true, each route's relative margin
+                        (AC-PC_r)/AC is passed through a dead-zone +
+                        quadratic-ramp transform (shape parameter
+                        stimulus_tau, a fraction of AC) before max/min
+                        normalisation, so margins within tau of AC
+                        contribute zero stimulus. Unlike theta/phi above,
+                        tau=0 does NOT recover the linear model (the
+                        transform itself, not just its threshold, changes
+                        the shape) — nonlinear_stimulus=False is the only
+                        way to recover the pre-RQ13 model exactly.
   Custom demand       — custom_od_pairs (toy networks / manual OD control):
                         hand-picked OD pairs, agent split, and exact
                         alternative routes, bypassing randomTrips and the
@@ -54,6 +65,12 @@ YAML locations
   Development  — experiments/developer_modes/
   Production   — experiments/tmp/  (populated by scripts/launcher.py
                  during batch runs)
+
+Files aclaration
+-----------------                 
+1. ROUTES: File used by BM algorithm. It contains the trips and routes (actions) of agents
+2. TRIPS_TDSP: File that contains the grid of combinations (time_interval, od) used by TDSP for both methods.
+3. DuaIteratePaths.trips: File used by DuaIterate. It only contains the trips but not the routes.
 """
 
 import argparse
@@ -184,6 +201,8 @@ class Config:
     memory_concentration: float = 0
     reliability_sensitivity: float = 0.0
     waiting_time_sensitivity: float = 0.0
+    nonlinear_stimulus: bool = False
+    stimulus_tau: float = 0.0
 
     #####################
     # Custom demand (toy networks / manual OD control)

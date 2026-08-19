@@ -35,6 +35,7 @@ RQ9
 RQ10
 RQ11
 RQ12
+RQ13
 """
 
 import os
@@ -102,6 +103,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq11_data()
     elif research_question == "RQ12":
         _prepare_rq12_data()
+    elif research_question == "RQ13":
+        _prepare_rq13_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -494,6 +497,39 @@ def _prepare_rq12_data() -> None:
     }
 
     data_dir = BASE_DIR / "r" / "RQ12" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq13_data() -> None:
+    '''
+    Pull the needed information and save them into r/RQ13/data/
+    '''
+    filter_string = (
+        "tags.research_question = 'RQ13' and tags.run_type = 'simulation' "
+        "and tags.status != 'archived' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "warm_up", "stimulus_tau", "memory_level"]
+
+    artifacts = {
+        "agents_od": "environment/agents_od.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+        "od_routes": "environment/od_routes.parquet",
+        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+        "demand_odt": "DUE/generic/demand_odt.parquet",
+        "actions": "agent_state/actions.parquet",
+        "rewards": "agent_state/rewards.parquet",
+    }
+
+    data_dir = BASE_DIR / "r" / "RQ13" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     for name, artifact_path in artifacts.items():

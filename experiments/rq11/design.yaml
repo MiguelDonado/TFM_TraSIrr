@@ -104,9 +104,9 @@ grid:
     memory_level:
       - 1.00
     reliability_sensitivity:
-      # - 0.00
-      # - 5.00
-      # - 10.00
+      - 0.00
+      - 5.00
+      - 10.00
   randomness:
     seed:
       - 42
