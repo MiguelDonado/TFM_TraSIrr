@@ -519,13 +519,19 @@ def _prepare_rq13_data() -> None:
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "warm_up", "stimulus_tau", "memory_level"]
 
-    artifacts = {
+    # Artifact indexed by episode: only the last training episode of each
+    # run is needed, so drop the rest before concatenating across runs to
+    # keep the merge from blowing up memory.
+    artifacts_last_episode_only = {
         "bm_results": "agent_state/BM_results.parquet",
+    }
+    # Artifacts that are already per-run (no episode dimension)
+    artifacts_full = {
         "agents_od": "environment/agents_od.parquet",
-        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
         "od_routes": "environment/od_routes.parquet",
-        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
+        "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+        "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "actions": "agent_state/actions.parquet",
         "rewards": "agent_state/rewards.parquet",
     }
@@ -533,7 +539,17 @@ def _prepare_rq13_data() -> None:
     data_dir = BASE_DIR / "r" / "RQ13" / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    for name, artifact_path in artifacts.items():
+    for name, artifact_path in artifacts_last_episode_only.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+            last_episode_only=True,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+    for name, artifact_path in artifacts_full.items():
         df = load_artifact_across_runs(
             artifact_path=artifact_path,
             filter_string=filter_string,

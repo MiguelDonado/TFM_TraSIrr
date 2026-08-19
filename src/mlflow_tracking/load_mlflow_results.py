@@ -38,6 +38,8 @@ def load_artifact_across_runs(
     filter_string: str,
     experiment_names: list[str],
     params_to_attach: list[str],
+    last_episode_only: bool = False,
+    episode_col: str = "episode",
 ) -> pd.DataFrame:
     """
     Download one artifact file from every matching MLflow run and return
@@ -55,6 +57,15 @@ def load_artifact_across_runs(
         Experiment to search
     params_to_attach: list[str]
         Which logged params to add as columns to the returned DataFrame.
+    last_episode_only : bool
+        If True, keep only the rows of each run's artifact whose
+        `episode_col` equals that run's max episode, before concatenating.
+        Use this for per-episode artifacts (BM_results, actions, rewards,
+        rgap, ...) to avoid materializing every training episode of every
+        run in memory. Has no effect on artifacts without `episode_col`.
+    episode_col : str
+        Column name identifying the episode, used only when
+        `last_episode_only` is True.
 
     Returns
     -----------
@@ -96,6 +107,9 @@ def load_artifact_across_runs(
                 df = pd.read_json(local_path)
             else:
                 df = pd.read_parquet(local_path)
+
+            if last_episode_only:
+                df = df[df[episode_col] == df[episode_col].max()]
 
             # Add run_id column
             df["run_id"] = run_id

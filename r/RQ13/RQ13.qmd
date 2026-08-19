@@ -45,6 +45,7 @@ library(glue)
 library(ggtext)
 library(patchwork)
 library(ggrepel)
+library(forcats)
 ```
 
 ```{r}
@@ -92,13 +93,14 @@ tau_values <- data$bm_rgap |>
     stimulus_tau = as.numeric(stimulus_tau)
   ) |> 
   filter(
-    stimulus_tau != 0.1
+    !(stimulus_tau %in% c(0,0.1))
   ) |> 
+  arrange(stimulus_tau) |> 
   select(stimulus_tau) |> 
   pull(stimulus_tau) |> 
   unique()
 
-tau_labels <- glue("τ = {tau_values}")
+tau_labels <- glue("τ = {sprintf('%.2f',tau_values)}")
 ```
 
 ```{r}
@@ -273,6 +275,9 @@ ggplot(
   theme(
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
+    strip.text = element_text(size = 10)
 ) +
   labs(
     x = "Episode",
@@ -313,10 +318,14 @@ ggplot(
 ggsave(here("r","RQ13","figures","plot2_rgap_evolution.png"), width = 12, height = 6)
 ```
 
+########
+# PLOT 3
+########
+
 ```{r}
 #| label: random_seed
 # Randomly select 1 seed 
-set.seed(123)
+set.seed(23)
 random_seed <- sample(unique(data$bm_rgap$seed), size = 1)
 ```
 
@@ -562,7 +571,8 @@ flow_paths_df <- flow_paths_df_query |>
       levels = path_levels,
       labels = path_levels_labels
     ),
-    share = flow / representative_OD$demand
+    share = flow / representative_OD$demand,
+    memory_level_fct = fct_rev(memory_level_fct)
   ) 
 ```
 
@@ -585,16 +595,59 @@ labels_plot4[breaks_plot4==exploration_phase_floor] <- paste0("Learning\nstarts 
 
 
 ```{r}
+#| label: sidebar_table_n_eff
+
+# Median effective number of routes (n_eff = exp(entropy of p)) per agent
+# on the representative OD, at the final episode, for each (tau, memory)
+# combo — annotated per facet on plot3 below. Restated here from bm_results
+# (already exported: p per agent/episode/route), not a new data pull.
+bm_results_df <- data$bm_results |>
+  mutate(
+    stimulus_tau = as.numeric(stimulus_tau),
+    memory_level = as.numeric(memory_level)
+  ) |>
+  filter(
+    episode == max(episode),
+    seed == representative_seed,
+    stimulus_tau %in% representative_stimulus_tau_levels,
+    memory_level %in% representative_memory_levels,
+    agent_id %in% agents_representative_od$agent_id
+  )
+
+n_eff_routes_df <- bm_results_df |>
+  select(agent_id, memory_level, stimulus_tau, route_id, p) |>
+  mutate(
+    term_i = ifelse(p > 0, p * log(p), 0)
+  ) |>
+  group_by(agent_id, memory_level, stimulus_tau) |>
+  summarise(
+    entropy = -sum(term_i),
+    .groups = "drop"
+  ) |>
+  mutate(
+    n_eff_routes = exp(entropy)
+  )
+
+n_eff_annotation_df <- n_eff_routes_df |>
+  group_by(memory_level, stimulus_tau) |>
+  summarise(
+    mean_n_eff = mean(n_eff_routes),
+    .groups = "drop"
+  ) 
+```
+
+```{r}
 #| label: plot3
 
-# This plots refers to a particular OD, for a particular seed, and facet for stimulus_tau and memory_levels 
+# This plots refers to a particular OD, for a particular seed, and facet for stimulus_tau and memory_levels
+# Uniform, equal-weight color treatment (same 5-color legend, unchanged across every panel) is the right choice here specifically because the plot's job is to show a hierarchy dissolving, not to guide attention within a hierarchy that's assumed stable throughout.
 
 ggplot(
-  data = flow_paths_df, 
+  data = flow_paths_df,
   mapping = aes(x = episode, y = share, group = path, color = path)
 ) +
-  geom_line() + 
-  facet_grid(stimulus_tau ~ memory_level) +
+  geom_line() +
+  facet_grid(stimulus_tau_fct ~ memory_level_fct) +
   labs(
     color = "Route",
     y = "Route flow",
@@ -617,93 +670,42 @@ ggplot(
   color = "red",
   linewidth = 0.4
   ) +
-  annotate(
-    "text",
-    x = (exploration_phase_floor - 2) / 2,
-    y = Inf,
-    label = "pre-learning \nphase",
-    fontface = "bold",
-    colour = "firebrick",
-    vjust = 2.5,
-    size = 3.5
-  ) +
   # Change color scale
   scale_color_brewer(palette = "Dark2", name = "Path") +
   # Tweak miscellaneous stuff
   theme(
-    legend.title = element_text(size = 11),
     legend.text  = element_text(size = 10),
     legend.key.size = unit(0.6, "lines"),
     plot.subtitle = element_text(size = 11),
-    strip.text.y = element_text(angle = 0, size = 10)
+    strip.text.y = element_text(angle = 0, size = 11),
+    axis.text.x = element_text(size = 9),
+    axis.text.y = element_text(size = 9),
 ) +
   scale_y_continuous(labels = scales::percent_format()) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   labs(
-    y = "Route share (%)"
+    y = "Route share (%)",
+    title = "As τ grows, agents become less sensitive to small route differences",
+    subtitle = "Route share over episodes for a representative OD, faceted by τ and memory level"
   ) 
 
 ggsave(here("r","RQ13","figures","plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
 ```
 
 ```{r}
-#| label: quantitative_table
+#| label: sidebar_latex_table
 
+# QUANTITATIVE TABLE
 representative_od_decision_df |> 
   filter(
     origin == representative_od$origin,
     destination == representative_od$destination
-  )
-
+  ) |> 
+  mutate(
+    route_id = action + 1
+  ) |> 
+  select(origin, destination, route_id, mean_tt, distance_to_min)
 ```
-
-```{r}
-#| label: 4th_plot
-bm_results_df <- data$bm_results |> 
-  mutate(
-    stimulus_tau = as.numeric(stimulus_tau),
-    memory_level = as.numeric(memory_level)
-  ) |> 
-  filter(
-    # Last episode
-    episode == max(episode),
-    # Filter by the particular scenario
-    seed == representative_seed, 
-    stimulus_tau %in% representative_stimulus_tau_levels,
-    memory_level %in% representative_memory_levels,
-    agent_id %in% agents_representative_od$agent_id
-  )
-
-bm_results_df_clean <- bm_results_df |> 
-  select(c(agent_id, memory_level, stimulus_tau, route_id, p))
-
-n_eff_routes_df <- bm_results_df_clean |> 
-  mutate(
-    log_p = log(p)
-  ) |> 
-  mutate(
-    term_i = p * log_p
-  ) |> 
-  group_by(
-    agent_id, memory_level, stimulus_tau
-  ) |> 
-  summarise(
-    entropy = -sum(term_i),
-    check = sum(p)
-  ) |> 
-  mutate(
-    n_eff_routes = exp(entropy)
-  )
-
-n_eff_routes_plot <- n_eff_routes_df |> 
-  select(agent_id, memory_level, stimulus_tau, n_eff_routes) |> 
-  group_by(memory_level, stimulus_tau) |> 
-  summarise(
-    median_n_eff = median(n_eff_routes),
-    mean_n_eff = mean(n_eff_routes)
-  ) |> 
-  ungroup()
-```
-
 
 
 
