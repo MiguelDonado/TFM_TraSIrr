@@ -288,6 +288,7 @@ TRIPS_INFO_FREE_FLOW = CONGESTION_SIM_DIR / "ff_tripsinfo.xml"
 # Sensitivity
 # ============================================================
 SENSITIVITY_PLOTS_DIR = BASE_DIR / "src/tools/sensitivity/output"
+SENSITIVITY_RESULTS_DIR = BASE_DIR / "src/tools/sensitivity/results"
 
 # ============================================================
 # SUMO raw outputs

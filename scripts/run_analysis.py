@@ -534,6 +534,7 @@ def _prepare_rq13_data() -> None:
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "actions": "agent_state/actions.parquet",
         "rewards": "agent_state/rewards.parquet",
+        # "bm_results": "agent_state/BM_results.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ13" / "data"

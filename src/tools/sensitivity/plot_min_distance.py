@@ -95,7 +95,11 @@ def main():
     plt.figure()
 
     # 3. Draw a boxplot
-    plt.boxplot(all_fftts, tick_labels=labels)
+    plt.boxplot(
+        all_fftts,
+        tick_labels=labels,
+        medianprops=dict(color="0.3", linewidth=1.25)
+    )
 
     # 4. Find largest travel time across all boxplots
     # This value will be used as the vertical position for the annotations
@@ -104,7 +108,7 @@ def main():
 
     # 5. Annotate number of distinct OD found (config sets as max 10 ods)
     for i, n in enumerate(counts, start=1):
-        plt.text(i, y, f"n={n}", ha="center", fontsize=9)
+        plt.text(i, y, f"n={n}", ha="center", fontsize=6)
 
     # 6. Improve visualization
     plt.xlabel("α (minimum distance = α × network diagonal)")

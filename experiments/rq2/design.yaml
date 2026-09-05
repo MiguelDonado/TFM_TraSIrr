@@ -6,6 +6,8 @@
 # - With lower memory, recent travel times dominate, and the agent forgets historical information
 
 
+
+
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:

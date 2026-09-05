@@ -986,7 +986,7 @@ bm_results_df <- data$bm_results |>
     memory_level = as.numeric(memory_level)
   ) |>
   filter(
-    episode == max(episode),
+    # episode == max(episode),
     seed == representative_seed,
     stimulus_tau %in% representative_stimulus_tau_levels,
     memory_level %in% representative_memory_levels,

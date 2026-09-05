@@ -1,4 +1,8 @@
 # RQ11 — Risk-averse agents
+
+# Analyze how incorporating travel-time variability
+#   (variance) into the perceived route cost affects route-choice
+#   behavior, learning dynamics, and convergence properties of BM model
 #
 # What it answers:
 # Evaluate routes not only based on mean travel time, but also incorporate

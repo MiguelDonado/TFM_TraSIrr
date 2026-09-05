@@ -18,15 +18,35 @@ choose the max_od_space that produces a high initial R-gap and a lower
 final R-gap, without excessively increasing the number of episodes
 required for convergence.
 
-Final decision: 
+Final decision: 10
 
-Run with: python src/tools/sensitivity/plot_max_od_space.py <config.yaml>
+###########################
+Usage:
+###########################
 
-Parameter dependencies: Independent hyperparameter
+Run the sensitivity analysis and generate the plot:
+python src/tools/sensitivity/plot_max_od_space.py <config.yaml>
+
+Generate the plot using previously saved results:
+python src/tools/sensitivity/plot_max_od_space.py <config.yaml> --plot-only
+
+The --plot-only option reads the results stored in
+SENSITIVITY_RESULTS_DIR/max_od_space.csv and generates the plot without
+running the training simulations.
+
+Parameter dependencies: May depend on the traffic demand and network topology, 
+as these determine how vehicles are distributed and the extent to which they 
+compete for shared network resources.
 """
 
 import subprocess
 import sys
+
+PLOT_ONLY = "--plot-only" in sys.argv
+
+if PLOT_ONLY:
+    sys.argv.remove("--plot-only")
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -36,7 +56,7 @@ from matplotlib.ticker import PercentFormatter
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
+from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
 from utils.generate_agents import demand_from_count
 from utils.run_training_BM import run_full_training_BM
 
@@ -45,6 +65,24 @@ def main():
     # 0. Set-up
     DEMANDS = [2000]
     MAX_OD_SPACE_LIST = list(range(5,55,5))
+
+    # Plot only from stored results
+    if PLOT_ONLY:
+        results = pd.read_csv(
+            SENSITIVITY_RESULTS_DIR / "max_od_space.csv"
+        )
+
+        _make_plot(
+            max_od_space = results["max_od_space"].tolist(),
+            first_rgaps = results["first_r_gap"].tolist(),
+            last_rgaps = results["final_r_gap"].tolist(),
+            episodes = results["episodes_to_convergence"].tolist(),
+            demand = DEMANDS[0],
+        )
+
+        return 
+
+    # Run sensitivity analysis
 
     for demand in DEMANDS:
         print("##########")
@@ -85,6 +123,14 @@ def main():
             episodes_to_converge.append(last_episode)
             first_rgaps.append(first_rgap)
 
+        save_results(
+            max_od_space=MAX_OD_SPACE_LIST,
+            first_rgaps=first_rgaps,
+            last_rgaps=last_rgaps,
+            episodes=episodes_to_converge,
+            demand = demand
+        )
+
         _make_plot(
             max_od_space=MAX_OD_SPACE_LIST,
             first_rgaps=first_rgaps,
@@ -96,7 +142,24 @@ def main():
     # Play sound to signal end of script
     subprocess.run(["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"])
 
+def save_results(max_od_space, first_rgaps, last_rgaps, episodes, demand):
+    results = pd.DataFrame({
+        "max_od_space": max_od_space,
+        "first_r_gap": first_rgaps,
+        "final_r_gap": last_rgaps,
+        "episodes_to_convergence": episodes,
+        "demand": demand,
+    })
+
+    results.to_csv(
+        SENSITIVITY_RESULTS_DIR / f"max_od_space.csv",
+        index=False,
+    )
+
 def _make_plot(max_od_space, first_rgaps, last_rgaps, episodes, demand):
+
+    fontsize = 8
+
     # 1. Manage path
     network_name = Path(config.network).stem
     plot_prefix = "max_OD_space_"
@@ -106,38 +169,41 @@ def _make_plot(max_od_space, first_rgaps, last_rgaps, episodes, demand):
     # Convert to categorical
     x = range(len(max_od_space))
 
+    # Colors
+    color_first = "#404040"     # dark gray
+    color_final = "#808080"     # medium gray
+    color_episodes = "#B0B0B0"  # light gray
+
     # 2. Left y-axis: R-gap (first and final episode)
     line1 = ax1.plot(
         x,
         first_rgaps,
-        color="tab:blue",
+        color=color_first,
         marker="^",
         linewidth=2,
         linestyle=":",
         label="First-episode R-gap",
     )
     line2 = ax1.plot(
-        x, last_rgaps, color="tab:blue", marker="o", linewidth=2, label="Final R-gap"
+        x, last_rgaps, color=color_final, marker="o", linewidth=2, label="Final R-gap"
     )
-    ax1.set_xlabel("Maximum number of OD pairs")
+    ax1.set_xlabel("Maximum number of OD pairs", fontsize=fontsize)
     ax1.set_xticks(x)
     ax1.set_xticklabels(max_od_space)
-    ax1.set_ylabel("R-gap", color="tab:blue")
-    ax1.tick_params(axis="y", colors="tab:blue")
+    ax1.set_ylabel("R-gap", fontsize=fontsize)
 
     # 3. Right y-axis: Episodes until convergence
     ax2 = ax1.twinx()
     line3 = ax2.plot(
         x,
         episodes,
-        color="tab:orange",
+        color=color_episodes,
         marker="s",
         linewidth=2,
         linestyle="--",
         label="Episodes to convergence",
     )
-    ax2.set_ylabel("Episodes until convergence", color="tab:orange")
-    ax2.tick_params(axis="y", colors="tab:orange")
+    ax2.set_ylabel("Episodes until convergence", fontsize=fontsize)
 
     # 4. Improve visualization
     lines = line1 + line2 + line3
@@ -147,10 +213,15 @@ def _make_plot(max_od_space, first_rgaps, last_rgaps, episodes, demand):
         lines,
         labels,
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.15),
+        bbox_to_anchor=(0.5, -0.2),
         ncol=2,
         frameon=False,
+        fontsize = 6
     )
+
+    ax1.tick_params(axis="both", labelsize=7)
+    ax2.tick_params(axis="y", labelsize=7)
+
     plt.title(f"Effect of the Maximum number of OD pairs (demand = {demand})")
     ax1.grid(True, alpha=0.25)
     ax1.yaxis.set_major_formatter(PercentFormatter())

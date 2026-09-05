@@ -1,3 +1,8 @@
+# Analyze whether a Multi-Agent reinforcement learning
+# approach, like Bush-Mosteller, is capable of converging towards a
+# Dynamic User Equilibrium (DUE) state within a microscopic traffic
+# simulation environmnet
+
 base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:

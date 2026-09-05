@@ -131,15 +131,13 @@ def main():
         all_n_ods_with_k_routes,
         marker="o",
         linewidth=2,
+        color="black",
     )
 
     # 4. Improve visualization
     plt.xlabel("Random factor")
-    plt.ylabel(f"OD pairs with all {config.n_routes_per_OD} alternative routes found")
-    plt.title(
-        "Effect of random factor on alternative route generation "
-        f"(total OD pairs = {len(unique_ods)})"
-    )
+    plt.ylabel(f"OD pairs with {config.n_routes_per_OD} routes")
+    plt.title(f"Alternative routes vs. random factor (total OD pairs={len(unique_ods)})")
     plt.xticks(x, random_factors)
     plt.grid(axis="y", alpha=0.3)
 
@@ -168,6 +166,7 @@ def main():
         all_avg_tt_ratios,
         marker="o",
         linewidth=2,
+        color="black",
     )
 
     # 4. Improve visualization

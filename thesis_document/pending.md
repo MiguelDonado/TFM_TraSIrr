@@ -1,3 +1,37 @@
+- [] Check the captions make the figures self contained
+- [] Explicitly mention that there are several concepts of convergence, from the marl point of view when agents stop updating its policies, and from the traffic sense when it reaches DUE.
+- [] I could also say that a contribution was a new heuristic to search for a set of paths for an OD pair, usually they did k-shortest path.
+- [] Mention I used MLflow
+- [] Mention which sumo version im using.
+- [] Add explanation of why R-gap can be negative
+- [] Decirles de quedar la semana que viene. Darles varios dias para leer la thesis
+- [] Add Molano last paper LLM to literature review
+- [] Add the traffic assignment map that i did in DRAWIO. It is in downloads
+- [] Put evaluation paragraph comparing RL approach vs Classic approach in literature review
+- [] Explain properly the difference between classic traffic assignment and MARL approach. One uses flow update algorithms such as MSA that try to solve and update flows to get to an equilibrium, whereas MARL just update policies of agents based on past experiences and stopped when some number of iterations or when policies converge, but it does not try to solve any equilibrium, instead equilibrium may emerge naturally. It individually update route choice, whereas in classic assignment it updates aggregate flows to get to equilibrium instead of individually.
+
+- [] Explain all the extensions gotchas that I wrote in code comments, but on the latex. I think some of those detail explanations of why I used some formulas may be useful.
+- [] Mention that the nonlinear extension captures the intuition of the 4th assumption of BM framework, and the waiting time averse and risk averse captures the intuition of the 3th assumption of BM framework.
+- [] Mention that thesis is modelling the morning and evening peak periods related to work-related commutes.
+- [] I can even talk from my own experience, with rodalies in BCN and buses. I prefer to take a bus even if its a bit longer but more reliable.
+- [] Explain route choice can be day-to-day or within 
+- [] Acabar de leer todas las cosas que ponga en las referencias  
+- [] Añadir lineas best case scenario y worst case scenario 
+- [] En las graficas usar pocos colores 
+- [] En las graficas de los flow solo marcar los disrupted con la label (los otros se entienden por contraposicion que no estan disrupted). Las mas relevantes mas gordas las que no importa en gris
+- [] Llamarlo warm-up instead of pre-learning
+- [] Solucionar que al hacer lo de las referencias solo aparezca el numero
+- [] Lo del 90 percentil no quedo claro. Coger el worst case
+
+- [] Add to dedicatory "And to David Goggins, Kobe Bryant, and the other role models who helped me change my inner dialogue. As Goggins said, “Never pick the easy road.”
+- [] Revisar formulas paper 
+
+- [] Traffic dynamics can be modeled in continuous time, implying that travelers update their decision in real time. However, such an assumption is generally unrealistic, since individuals do not continuously replan their routes while traveling. Instead, it is more appropriate to adopt a discrete time framework, in which travelers make decisions at specific intervals. The way time is discretized depends on the moments at which drivers are assumed to make routing decisions. In some approaches, travelers revise their route choices between consecutive days based on previous travel experiences, leading to so-called day-to-day models. In other approaches, decisions are updated dynamically at road intersections during the trip, resulting in junction-level models. Since the objective is to model the behavior and decision-making processes of drivers, the problem can be naturally formulated as a sequential decision-making problem, for which reinforcement learning provides a suitable framework.
+
+- [] Include a summary figure that places what im doing in all the traffic assignment and bounded rationality structure that i explained in background and in traffic modelling and simulation
+- [] Be explicit and mention that Im using a classical RL algorithm, not a modern RL like Q-learning...
+- [] This BRUE formulation has been helpful in explaining observed changes in network flows after a disruption. For instance, assume that a link is removed from the network due to a disaster of some sort, and that flows adjust towards a new equilibrium in the network without the affected link. When the link is restored, flows will adjust again. If the principle of user equilibrium is true, the flows will move back to exactly the same values as before. However, in practice there has been some “stickiness” observed, and not all drivers will return to the same routes they were initially on. The BRUE framework provides a logical explanation for this: when the network is disrupted, certain drivers were forced to choose new paths. When the network is restored, they will only switch back to their original paths if the travel time savings are sufficiently large. Otherwise, they will remain on their new paths.
+- [] Lo de que el DTA se computa teniendo en cuenta los experienced travel time instead of the instantaneous travel time (Book: Transportation Network Analysis) ponerlo en la thesis, puesto que me resulto muy intuitivo y aclaratorio. Pag 28/701
 - [] Ver si el modelo mas irracional llega a DUE. Sino llegara entonces seria muy relevante, porque daria a indicar
   que DUE no es para nada realista.
 - [] Memoria corta. Recomendacion 60 paginas y anexos.

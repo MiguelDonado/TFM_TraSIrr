@@ -125,6 +125,8 @@ def main():
 
 def _make_plot(times, demand_curves, warm_up_candidates):
 
+    grays = ["#CCCCCC", "#999999", "#666666", "#333333"]
+
     # 1. Manage path
     network_name = Path(config.network).stem
     plot_prefix = "warm_up_"
@@ -134,11 +136,12 @@ def _make_plot(times, demand_curves, warm_up_candidates):
     fig, ax = plt.subplots()
 
     # 3. One curve per demand
-    for demand, vehicle_counts in demand_curves.items():
+    for (demand, vehicle_counts), gray in zip(demand_curves.items(), grays):
         ax.plot(
             times / 60,
             vehicle_counts,
             linewidth=1.5,
+            color = gray,
             label=f"Demand = {demand}",
         )
 

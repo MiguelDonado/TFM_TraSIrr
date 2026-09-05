@@ -105,6 +105,9 @@ def main():
 
 def _make_plot(thresholds, first_rgaps, last_rgaps, demand):
 
+    color_first = "#404040"   # dark gray
+    color_final = "#909090"   # medium gray
+
     # 1. Manage path
     network_name = Path(config.network).stem
     plot_prefix = "threshold_density_"
@@ -116,8 +119,8 @@ def _make_plot(thresholds, first_rgaps, last_rgaps, demand):
     # 3. Draw lines
     # Convert to categorical
     x = range(len(thresholds))
-    plt.plot(x, first_rgaps, marker="o", linewidth=2, label="First episode R-gap")
-    plt.plot(x, last_rgaps, marker="o", linewidth=2, label="Final R-gap")
+    plt.plot(x, first_rgaps, marker="o", linewidth=2, label="First episode R-gap", color = color_first)
+    plt.plot(x, last_rgaps, marker="o", linewidth=2, label="Final R-gap", color = color_final)
 
     # 4. Improve visualization
     plt.xlabel("threshold_density (vehicles/km/lane)")
