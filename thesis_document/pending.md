@@ -1,3 +1,6 @@
+- [] Mention that I used AI
+- [] Well mention that the dependencies between the hyperparameters are somewhat circular, because all the hyyperparameters were evaluated using a demand of 2000, so it is not totally accurate say that i set this congestion regime hyperparameter almost at the end.
+- [] Specify that the congestion regimes have to be executed once at the beginning before anything else is done, to get the necessary demand to achieve each level. Becausse now is not completely automatic since it doesnt calibrate the demand automatically.
 - [] Mention somewhere, not only in the appendix that we are simulating 1 hour.
 - [] Check the captions make the figures self contained
 - [] Explicitly mention that there are several concepts of convergence, from the marl point of view when agents stop updating its policies, and from the traffic sense when it reaches DUE.

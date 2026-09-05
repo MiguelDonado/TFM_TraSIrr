@@ -22,6 +22,13 @@ empty network, so that the measured duration reflects actual vehicle dynamics
 length/max_speed estimate, which systematically underestimates the true
 free-flow time and results in an overestimation of the congestion metric.
 
+The free-flow travel time of a trip is measured on the *shortest path* for its OD pair
+(duarouter under free-flow edge weights, one route per OD), not on some other route. The
+agents in the congested episode also follow that same shortest path: SUMO reuses the
+duarouter route file (ROUTES_CONGESTION_SIM) and does no rerouting, so numerator and
+denominator share the same route geometry. The congestion metric therefore isolates the
+congestion delay accumulated on a fixed route, with no route-choice component.
+
 Used by the sensitivity tools under src/tools/sensitivity/ (e.g.
 plot_congestion_metric.py) to measure congestion at a given demand level.
 Agents are generated externally (via utils.generate_agents) and passed in.
