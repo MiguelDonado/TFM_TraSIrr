@@ -214,7 +214,7 @@ def _make_plot(max_od_space, first_rgaps, last_rgaps, episodes, demand):
         labels,
         loc="upper center",
         bbox_to_anchor=(0.5, -0.2),
-        ncol=2,
+        ncol=3,
         frameon=False,
         fontsize = 6
     )

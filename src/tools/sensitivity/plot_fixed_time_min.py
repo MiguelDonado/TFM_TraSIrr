@@ -47,7 +47,19 @@ prefer the one that generates fewer missing values.
 Final decision:
 30 seconds (0.5 minutes).
 
-Run with: python src/tools/sensitivity/plot_fixed_time_min.py <config.yaml>
+###########################
+Usage:
+###########################
+Run the sensitivity analysis and generate the plot:
+python src/tools/sensitivity/plot_fixed_time_min.py <config.yaml>
+
+Generate the plot using previously saved results:
+python src/tools/sensitivity/plot_fixed_time_min.py <config.yaml> --plot-only
+
+The --plot-only option reads the results stored in
+SENSITIVITY_RESULTS_DIR/fixed_time_min_rgap.csv and
+SENSITIVITY_RESULTS_DIR/fixed_time_min_missingness.csv and generates the
+plots without running the training simulations.
 
 Parameter dependencies: fixed_time_min interacts with network size (more
 edges → more potential missing cells) and traffic demand (higher demand →
@@ -57,6 +69,12 @@ vehicles in the network).
 
 import os
 import sys
+
+PLOT_ONLY = "--plot-only" in sys.argv
+
+if PLOT_ONLY:
+    sys.argv.remove("--plot-only")
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -68,24 +86,62 @@ from matplotlib.ticker import PercentFormatter
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
+from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
 from utils.generate_agents import demand_from_count
 from utils.run_training_BM import run_full_training_BM
 
+# Broad range of intervals (minutes)
 FIXED_TIME_MIN_CANDIDATES = [
-    5 / 60,  # 5 s
-    10 / 60,  # 10 s
-    15 / 60,  # 15 s
-    30 / 60,  # 30 s
+    0.5, 1, 5, 15, 30, 60 
 ]
-DEMANDS = [1000, 1500, 1750, 2000]
+
+# Small intervals (minutes)
+# FIXED_TIME_MIN_CANDIDATES = [
+#     5 / 60,  # 5 s
+#     10 / 60,  # 10 s
+#     15 / 60,  # 15 s
+#     30 / 60,  # 30 s
+# ]
+DEMANDS = [1300, 1550, 2000]
 
 
 def main():
 
+    # Plot only from stored results
+    if PLOT_ONLY:
+        rgap_df = pd.read_csv(SENSITIVITY_RESULTS_DIR / "fixed_time_min_rgap.csv")
+        missingness_df = pd.read_csv(
+            SENSITIVITY_RESULTS_DIR / "fixed_time_min_missingness.csv"
+        )
+
+        for demand in DEMANDS:
+            demand_rgap_df = rgap_df[rgap_df["demand"] == demand]
+            # Create an RGAP curve (episode → rgap) for each fixed time
+            rgap_curves = {
+                fixed_time_min: group.set_index("episode")["rgap"]
+                for fixed_time_min, group in demand_rgap_df.groupby("fixed_time_min")
+            }
+
+            demand_missingness_df = missingness_df[
+                missingness_df["demand"] == demand
+            ]
+            # Map each fixed time to its missingness proportion
+            missingness_props = dict(
+                zip(
+                    demand_missingness_df["fixed_time_min"],
+                    demand_missingness_df["missingness"],
+                )
+            )
+
+            _make_plot(rgap_curves, missingness_props, demand)
+
+        return
+
     # 0. For each demand check r-gap and missingess for different time intervals
     total = len(DEMANDS) * len(FIXED_TIME_MIN_CANDIDATES)
     i = 0
+    rgap_rows = []
+    missingness_rows = []
     for demand in DEMANDS:
 
         # 1. Calibrate demand (nº agents)
@@ -102,9 +158,13 @@ def main():
         # candidate rather than reused from a single shared run.
         for fixed_time_min in FIXED_TIME_MIN_CANDIDATES:
 
+            # Rounded label used for storage/plotting only; the unrounded value
+            # below still drives the exact time_interval in seconds.
+            fixed_time_min_label = round(fixed_time_min, 2)
+
             # 3b. Log (progress and current combination)
             i += 1
-            print(f"\n--- [{i}/{total}] demand={demand} fixed_time_min={fixed_time_min} ---\n")
+            print(f"\n--- [{i}/{total}] demand={demand} fixed_time_min={fixed_time_min_label} ---\n")
 
             # 4. Update the time interval globally so all downstream functions use it
             # We also convert it to seconds
@@ -118,17 +178,46 @@ def main():
             )
 
             # 6. Record full R-gap convergence curve
-            rgap_curves[fixed_time_min] = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+            rgap_series = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+            rgap_curves[fixed_time_min_label] = rgap_series
 
             # 7. Record aggregate missingness proportion
-            missingness_props[fixed_time_min] = _parse_missingness_proportion(
-                BM_PATHS.missingness_report
+            missingness = _parse_missingness_proportion(BM_PATHS.missingness_report)
+            missingness_props[fixed_time_min_label] = missingness
+
+            # 8. Stash rows for the combined results files
+            rgap_rows.extend(
+                {
+                    "demand": demand,
+                    "fixed_time_min": fixed_time_min_label,
+                    "episode": episode,
+                    "rgap": rgap,
+                }
+                for episode, rgap in rgap_series.items()
+            )
+            missingness_rows.append(
+                {
+                    "demand": demand,
+                    "fixed_time_min": fixed_time_min_label,
+                    "missingness": missingness,
+                }
             )
 
         # 9. Make plot for some demand value
         _make_plot(rgap_curves, missingness_props, demand)
 
+    save_results(rgap_rows, missingness_rows)
+
     os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
+
+
+def save_results(rgap_rows, missingness_rows):
+    pd.DataFrame(rgap_rows).to_csv(
+        SENSITIVITY_RESULTS_DIR / "fixed_time_min_rgap.csv", index=False
+    )
+    pd.DataFrame(missingness_rows).to_csv(
+        SENSITIVITY_RESULTS_DIR / "fixed_time_min_missingness.csv", index=False
+    )
 
 
 def _parse_missingness_proportion(report_file):
@@ -145,49 +234,81 @@ def _make_plot(rgap_curves, missingness_props, demand):
     plot_prefix = "fixed_time_min_"
     path = SENSITIVITY_PLOTS_DIR / f"{plot_prefix}{demand}_{network_name}.png"
 
-    # 2. Create figure with two side-by-side subplots (left subplot bigger)
-    fig, (ax1, ax2) = plt.subplots(1, 2, gridspec_kw={"width_ratios": [2, 1]})
+    # Local font-size bump: this figure packs two subplots side by side, so the
+    # shared thesis_style.mplstyle defaults read too small once placed in LaTeX.
+    with plt.rc_context({
+        "font.size": 14,
+        "axes.titlesize": 14,
+        "axes.labelsize": 14,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
+        "legend.fontsize": 13,
+        "legend.title_fontsize": 13,
+    }):
 
-    # 3. Left subplot: R-gap convergence curves (one per candidate)
-    # R-gap is stored as a percentage (e.g. 20.0 means 20 %)
-    for fixed_time_min, rgap_series in rgap_curves.items():
-        ax1.plot(
-            rgap_series.index,
-            rgap_series.values,
-            linewidth=1.5,
-            label=f"{fixed_time_min} min",
+        # 2. Create figure with two side-by-side subplots (left subplot bigger)
+        #   fig, (ax1, ax2) = plt.subplots(1, 2, gridspec_kw={"width_ratios": [2, 1]})
+
+        fig, (ax1, ax2) = plt.subplots(
+            1, 2,
+            figsize=(10, 5),
+            gridspec_kw={"width_ratios": [2.5, 1], "wspace": 0.25},
         )
 
-    # 4. Improve visualization
-    ax1.set_xlabel("Episode")
-    ax1.set_ylabel("R-gap")
-    ax1.set_title(f"R-gap convergence by time interval (demand = {demand})")
-    ax1.yaxis.set_major_formatter(PercentFormatter())
-    ax1.legend(title="Time interval")
-    ax1.grid(axis="y", alpha=0.3)
+        # 3. Left subplot: R-gap convergence curves (one per candidate)
+        # R-gap is stored as a percentage (e.g. 20.0 means 20 %)
+        
+        # 4 colors
+        # rgap_colors = ["#cccccf", "#9999a1", "#66666e", "#000000"]
 
-    # 5. Right subplot: aggregate missingness per candidate
-    # Missingness is stored as a fraction in [0, 1]
-    candidates = list(missingness_props.keys())
-    props = list(missingness_props.values())
-    x = range(len(candidates))
-    ax2.plot(x, props, marker="o", linewidth=2, color="C1")
+        # 6 colors
+        rgap_colors = [
+            "#d9d9d9",
+            "#999999",
+            "#4d4d4d",
+            "#000000",
+        ]
+        
+        for color, (fixed_time_min, rgap_series) in zip(rgap_colors, rgap_curves.items()):
+            ax1.plot(
+                rgap_series.index,
+                rgap_series.values,
+                linewidth=1.5,
+                color=color,
+                label=f"{fixed_time_min} min",
+            )
 
-    # 6. Improve visualization
-    ax2.set_xlabel("Time interval (minutes)")
-    ax2.set_ylabel("Missing cells")
-    ax2.set_title(f"Missingness of avg link travel time table (demand = {demand})")
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(candidates)
-    ax2.yaxis.set_major_formatter(PercentFormatter(xmax=1))
-    ax2.grid(axis="y", alpha=0.3)
+        # 4. Improve visualization
+        ax1.set_xlabel("Episode")
+        ax1.set_ylabel("R-gap")
+        ax1.set_title(f"R-gap convergence by time interval (demand = {demand})")
+        ax1.yaxis.set_major_formatter(PercentFormatter())
+        ax1.legend(title="Time interval")
+        ax1.grid(axis="y", alpha=0.3)
 
-    # 7. Automatically adjust spacing
-    plt.tight_layout()
+        # 5. Right subplot: aggregate missingness per candidate
+        # Missingness is stored as a fraction in [0, 1]
+        candidates = list(missingness_props.keys())
+        props = list(missingness_props.values())
+        x = range(len(candidates))
+        ax2.plot(x, props, marker="o", linewidth=2, color="#353535")
 
-    # 8. Save
-    plt.savefig(path)
-    plt.close(fig)
+        # 6. Improve visualization
+        ax2.set_xlabel("Time interval (minutes)")
+        ax2.set_ylabel("Missing cells")
+        ax2.set_title(f"Missingness of avg link travel time table")
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(candidates)
+        ax2.yaxis.set_major_formatter(PercentFormatter(xmax=1))
+        ax2.grid(axis="y", alpha=0.3)
+
+        # 7. Automatically adjust spacing
+        plt.tight_layout(pad=0.5)
+        plt.subplots_adjust(left=0.06, right=0.99, wspace=0.20)
+
+        # 8. Save
+        plt.savefig(path)
+        plt.close(fig)
 
 
 if __name__ == "__main__":

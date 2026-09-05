@@ -1,3 +1,4 @@
+- [] Mention somewhere, not only in the appendix that we are simulating 1 hour.
 - [] Check the captions make the figures self contained
 - [] Explicitly mention that there are several concepts of convergence, from the marl point of view when agents stop updating its policies, and from the traffic sense when it reaches DUE.
 - [] I could also say that a contribution was a new heuristic to search for a set of paths for an OD pair, usually they did k-shortest path.

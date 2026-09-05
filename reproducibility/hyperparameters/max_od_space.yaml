@@ -1,0 +1,53 @@
+configuration_name:
+  config_name: production
+
+randomness:
+  seed: 42
+
+numerical_constants:
+  epsilon: 1.0e-8
+
+learning:
+  learning_rate: 0.3
+  memory_level: 1
+
+simulation:
+  simulation_time: 3600
+  warm_up_time: 300
+  min_distance_factor: 0.8
+  maxtries: 1000
+
+network_path:
+  # network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
+  network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+
+duarouter:
+  routing_algorithm: "CH"
+  random_factor: 50
+  max_attempts: 25
+  n_threads: 7
+  n_routes_per_OD: 8
+
+stopping_rule:
+  max_episodes: 150
+  tolerance_stopping_rule: 0.01
+  k_no_change: 3
+
+demand:
+  n_agents: 2000
+
+interval_time:
+  fixed_time_min: 0.5  # minutes
+
+randomtrips:
+  max_size_od_space: 10
+  fringe_factor: 5
+
+due_convergence: 
+  threshold_density: 40
+  duaIterate_max_iterations: 1
+  duaIterate_step_length: 0.1
+
+mode_and_flags:
+  last_episode_gui_BM: false
+  last_episode_gui_duaIterate: false
