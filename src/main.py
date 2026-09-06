@@ -32,7 +32,7 @@ from experiment import run_final_simulation
 from mlflow_tracking.simulation import log_simulation_mlflow
 from mlflow_tracking.utils import set_up_mlflow
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import run_full_training_BM
+from utils.run_training_BM import orchestrate_training
 
 
 def main():
@@ -51,7 +51,7 @@ def main():
         # 1. TRAINING (scenario, environment, agents, training loop,
         #    save output, DUE convergence)
         # -----------------------------
-        run_full_training_BM(
+        orchestrate_training(
             agents=agents, unique_ods=unique_ods, due=True, duaIterate=True
         )
 

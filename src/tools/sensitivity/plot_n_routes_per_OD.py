@@ -79,7 +79,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from config.config import config
 from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import run_full_training_BM
+from utils.run_training_BM import orchestrate_training
 
 
 def main():
@@ -125,7 +125,7 @@ def main():
             print(f"# N routes per OD: {n}")
             print("##########")
 
-            run_full_training_BM(
+            orchestrate_training(
                 agents=calibrated_agents, unique_ods=unique_ods, k=n
             )
 

@@ -46,10 +46,10 @@ previous run on this config ended (including a crash mid-degradation).
 Custom OD pairs (config.custom_od_pairs)
 ------------------------------------------
 When config.custom_od_pairs is non-empty (toy networks / manual OD control),
-generate_od_for_agents skips randomTrips entirely and samples agents
+generate_ods skips randomTrips entirely and samples agents
 directly from the hand-picked (origin, destination, count) list — see
-generate_od_for_agents_custom. count is a weight, not an exact allocation:
-sample_od_space normalizes the counts across pairs and draws n_agents total
+generate_ods_custom. count is a weight, not an exact allocation:
+sample_ods normalizes the counts across pairs and draws n_agents total
 from that distribution, the same way it would from randomTrips-derived
 counts — it does not guarantee exactly `count` agents land on that pair.
 The exact alternative routes for each pair (also given in
@@ -104,7 +104,7 @@ def generate_agents(
     n_agents = n_agents_warmup + n_agents_post_warmup
 
     agents = []
-    od_pairs, unique_ods = generate_od_for_agents(
+    od_pairs, unique_ods = generate_ods(
         n_agents, n_agents_post_warmup, rng, min_distance_factor
     )
     departure_times = generate_departure_times(
@@ -127,34 +127,34 @@ def generate_agents(
     return agents, unique_ods
 
 
-def generate_od_for_agents(
+def generate_ods(
     n_agents, n_agents_post_warmup, rng, min_distance_factor
 ):
 
     if config.custom_od_pairs:
-        return generate_od_for_agents_custom(n_agents, rng)
+        return generate_ods_custom(n_agents, rng)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
         # Generate random ods for agents
-        generate_random_trips_agents(
+        generate_random_trips(
             n_agents_post_warmup, trips_file, min_distance_factor, config.seed
         )
         # OD space
-        od_space = parse_od_agents(trips_file)
+        od_space = parse_ods(trips_file)
         # Restricted/bounded OD space
         restricted_od_space_counter = restrict_od_space(
             od_space, config.max_size_od_space, n_agents_post_warmup
         )
         # Sample ods for all the agents from the restricted OD space
-        od_pairs, unique_ods = sample_od_space(
+        od_pairs, unique_ods = sample_ods(
             restricted_od_space_counter,
             n_agents,
             rng,
         )
     return (od_pairs, unique_ods)
 
-def generate_od_for_agents_custom(n_agents, rng):
+def generate_ods_custom(n_agents, rng):
     """
     Build the OD pool directly from config.custom_od_pairs instead of
     sampling from randomTrips output. No route-diversity screen: the caller
@@ -165,9 +165,9 @@ def generate_od_for_agents_custom(n_agents, rng):
         ((pair["origin"], pair["destination"]), pair["count"])
         for pair in config.custom_od_pairs
     ]
-    return sample_od_space(od_space_counter, n_agents, rng)
+    return sample_ods(od_space_counter, n_agents, rng)
 
-def generate_random_trips_agents(
+def generate_random_trips(
     n_agents_post_warmup, output_file, min_distance_factor, seed
 ):
     """
@@ -229,7 +229,7 @@ def generate_random_trips_agents(
     subprocess.run(cmd, check=True)
 
 
-def parse_od_agents(trips_file):
+def parse_ods(trips_file):
     tree = etree.parse(trips_file)
     origins = tree.xpath("//trip/@from")
     destinations = tree.xpath("//trip/@to")
@@ -265,7 +265,7 @@ def restrict_od_space(od_list, k, n_agents_post_warmup):
     return most_common
 
 
-def sample_od_space(od_space_counter, n_agents, rng):
+def sample_ods(od_space_counter, n_agents, rng):
     """
     Sample from a OD space counter object. That is [((A,B),3),((A,C),2)]
     It will receive the reduced OD space counter object
@@ -313,17 +313,17 @@ def build_od_space(n_agents_post_warmup, min_distance_factor=None, seed=None):
     seed = seed if seed is not None else config.seed
     with tempfile.TemporaryDirectory() as tmpdir:
         trips_file = os.path.join(tmpdir, "trips.xml")
-        generate_random_trips_agents(
+        generate_random_trips(
             n_agents_post_warmup, trips_file, min_distance_factor, seed
         )
-        od_space = parse_od_agents(trips_file)
+        od_space = parse_ods(trips_file)
         return restrict_od_space(
             od_space, config.max_size_od_space, n_agents_post_warmup
         )
 
 
 def generate_agents_from_od_space(od_space_counter, n_agents, rng):
-    od_pairs, unique_ods = sample_od_space(od_space_counter, n_agents, rng)
+    od_pairs, unique_ods = sample_ods(od_space_counter, n_agents, rng)
     # No warm-up/post-warm-up split here: this path feeds CongestionSimulator
     # only, which never reads post_warm_up, so departure times are sampled
     # uniformly across the full simulation window.

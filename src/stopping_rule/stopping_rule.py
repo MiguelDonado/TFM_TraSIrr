@@ -52,7 +52,7 @@ from config.config import config
 ##########
 
 
-def check_convergence(policies_history, episode, no_change_count):
+def check_marl_convergence(policies_history, episode, no_change_count):
 
     # Get the mean policy change across post-warm-up agents
     mean_policy_change = _compute_mean_policy_change(policies_history, episode)

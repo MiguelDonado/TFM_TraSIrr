@@ -1,7 +1,7 @@
 """
 Entry points for running Bush-Mosteller agent training and single episodes.
 
-run_full_training_BM() drives the full multi-episode training loop and
+orchestrate_training() drives the full multi-episode training loop and
 optionally checks DUE convergence afterwards. run_single_episode_BM() runs
 one episode with fixed actions, useful for debugging outside training.
 
@@ -27,11 +27,11 @@ import pandas as pd
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
 from config.paths import AGENT_DEBUG_TRACE, POLICY_CHANGE_BM
-from DUE_convergence.DUE_convergence import run_due_convergence_checks
+from DUE_convergence.DUE_convergence import check_due_state_convergence
 from experiment import accumulate_results, prepare_data, save_processed_data
 from simulation.environment import Environment
 from simulation.scenario import Scenario
-from stopping_rule.stopping_rule import check_convergence, create_policies_dict
+from stopping_rule.stopping_rule import check_marl_convergence, create_policies_dict
 
 # Debug: dump this agent's full state (history, p, ET, PT, stimulus) after
 # every episode to AGENT_DEBUG_TRACE, viewable in VS Code as a folding JSON
@@ -125,7 +125,7 @@ def _run_training_loop(
         # -----------------------------
         # 6. STOPPING RULE
         # -----------------------------
-        should_stop, no_change_count, mean_policy_change = check_convergence(
+        should_stop, no_change_count, mean_policy_change = check_marl_convergence(
             policies_history=policies_history,
             episode=episode,
             no_change_count=no_change_count,
@@ -145,7 +145,7 @@ def _run_training_loop(
     return results, policy_change_history
 
 
-def run_full_training_BM(
+def orchestrate_training(
     agents, unique_ods, k=None, due=True, duaIterate=False
 ):
 
@@ -184,7 +184,7 @@ def run_full_training_BM(
     # 6. CHECK DUE convergence
     # -----------------------------
     if due:
-        run_due_convergence_checks(
+        check_due_state_convergence(
             scen=scen,
             duaIterate=duaIterate,
         )

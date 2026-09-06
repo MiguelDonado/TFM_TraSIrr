@@ -213,7 +213,7 @@ class Config:
     #   origin, destination — edge IDs in config.network
     #   count                — number of agents sampled onto this OD pair
     #                         (raw counts, not normalized — same convention
-    #                         as an OD matrix; sample_od_space normalizes
+    #                         as an OD matrix; sample_ods normalizes
     #                         internally to draw the total agent count)
     #   routes              — list of alternative routes for this OD pair, each
     #                         a list of edge IDs from origin to destination

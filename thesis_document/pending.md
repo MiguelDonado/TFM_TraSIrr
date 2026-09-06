@@ -1,3 +1,6 @@
+- [] Explicitly mention that im only analyzing the post-warm up agents
+- [] All the hyperparameter sensitivity analysis use the same production.yaml file. Paste it somewhere in Github for reproducibility and say it on the thesis they can visit that link if they want more detail. I create the folder reproducibility, but all the files are the same, they are equal to production.yaml
+- [] 
 - [] Mention that I used AI
 - [] Well mention that the dependencies between the hyperparameters are somewhat circular, because all the hyyperparameters were evaluated using a demand of 2000, so it is not totally accurate say that i set this congestion regime hyperparameter almost at the end.
 - [] Specify that the congestion regimes have to be executed once at the beginning before anything else is done, to get the necessary demand to achieve each level. Becausse now is not completely automatic since it doesnt calibrate the demand automatically.

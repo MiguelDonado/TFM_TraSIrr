@@ -1,8 +1,8 @@
 <additional>
 	<edgeData
-		id='density_3600s'
+		id='density_30s'
 		file='/home/miguel/6.Projects/Thesis/data/raw/edgedata.xml'
-		period='3600'
+		period='30'
 		excludeEmpty='true'
 		writeAttributes='entered density'/>
 </additional>

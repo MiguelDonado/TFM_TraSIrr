@@ -58,9 +58,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
 from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
-from DUE_convergence.DUE_convergence import run_due_convergence_checks
+from DUE_convergence.DUE_convergence import check_due_state_convergence
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import run_full_training_BM
+from utils.run_training_BM import orchestrate_training
 
 THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 30, 40, 50]
 # THRESHOLD_DENSITIES = [0, 2]
@@ -75,7 +75,7 @@ def main():
     calibrated_agents, unique_ods = demand_from_count(DEMAND)
 
     # 2. Compute BM r-gap table for given threshold_density
-    run_full_training_BM(
+    orchestrate_training(
         agents=calibrated_agents, unique_ods=unique_ods, due=False
     )
 
@@ -89,7 +89,7 @@ def main():
         print(f"# threshold_density: {threshold}")
 
         # 5. Compute R-gap BM-algorithm
-        run_due_convergence_checks(
+        check_due_state_convergence(
             duaIterate=False,
             threshold_density=threshold,
         )

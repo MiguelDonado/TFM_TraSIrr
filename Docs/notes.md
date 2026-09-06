@@ -1,6 +1,4 @@
 ## Pending
-- Implement research question non linearity 
-- Pendiente correr otro dia RQ3
 - SUMO docker
 
 

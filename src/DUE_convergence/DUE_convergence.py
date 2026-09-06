@@ -1,7 +1,7 @@
 """
 Orchestrates DUE convergence checks for BM and duaIterate.
 
-Entry point: run_due_convergence_checks(), called once at the end of
+Entry point: check_due_state_convergence(), called once at the end of
 the training loop in main.py.
 
 Shared prerequisites (generated first)
@@ -72,7 +72,7 @@ from .rgap import (
 from .tdsp import run_tdsp_pipeline
 
 
-def run_due_convergence_checks(
+def check_due_state_convergence(
     duaIterate=True, scen=None, threshold_density=None
 ):
     threshold_density = (
