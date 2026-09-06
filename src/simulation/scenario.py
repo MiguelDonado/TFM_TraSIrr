@@ -91,7 +91,7 @@ class Scenario:
             seeds, k=k, random_factor=random_factor
         )
         self._save_scenario_data()
-        self.conf = self._generate_conf()
+        self.conf = self._create_sumo_config()
 
     def compute_k_routes(
         self,
@@ -175,7 +175,7 @@ class Scenario:
                 if route not in routes_per_od[i] and len(routes_per_od[i]) < k:
                     routes_per_od[i].append(route)
 
-    def _generate_conf(self):
+    def _create_sumo_config(self):
         """
         Create SUMO Config file
         """

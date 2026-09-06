@@ -79,7 +79,7 @@ from dataclasses import dataclass, field
 import yaml
 
 
-def load_config(path):
+def load_experiment_config(path):
     with open(path) as f:
         data = yaml.safe_load(f)
 
@@ -191,7 +191,7 @@ class Config:
     last_episode_gui_duaIterate: bool
     config_name: str
     research_question: str = ""
-    episodes_gui: set[int] = field(default_factory=lambda: {})
+    episodes_gui: set[int] = field(default_factory=lambda: {1})
     network_normal: str = ""
     network_degraded: str = ""
     degradation_start_episode: int = 0
@@ -219,7 +219,7 @@ class Config:
     #                         a list of edge IDs from origin to destination
     custom_od_pairs: list = field(default_factory=list)
 
-    # Example (in a YAML section, any section name works — load_config flattens
+    # Example (in a YAML section, any section name works — load_experiment_config flattens
     # them all before constructing Config):
     
     # custom_demand:
@@ -264,4 +264,4 @@ if args.config is None:
     parser.error("the following argument is required: config")
 
 # 3. Initialize config object
-config = load_config(args.config)
+config = load_experiment_config(args.config)

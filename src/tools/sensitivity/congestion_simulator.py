@@ -55,9 +55,9 @@ class CongestionSimulator:
         self.agents = agents
 
         self.od_min_paths_ff_tt = compute_od_free_flow_tt(self.network, agents)
-        self._generate_conf()
+        self._create_sumo_config()
 
-    def _generate_conf(self):
+    def _create_sumo_config(self):
         """
         Create SUMO Config file
         """

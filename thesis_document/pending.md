@@ -1,3 +1,8 @@
+- [] Somewhere mention the launcher files i used to execute the experiments...
+- [] Explain meaning simulation, episode, time interval, simulation horizon...
+- [] Mention the simulation is intended to simulate 1 peak hour of communting travelers.
+- [] All the additional design choices and things relative to the research questions that are somewhat outside the main rpogram, i should explain them on each research question, all the code changes introduced because of that research question.
+- [] Include the map of traffic assignment
 - [] Explicitly mention that im only analyzing the post-warm up agents
 - [] All the hyperparameter sensitivity analysis use the same production.yaml file. Paste it somewhere in Github for reproducibility and say it on the thesis they can visit that link if they want more detail. I create the folder reproducibility, but all the files are the same, they are equal to production.yaml
 - [] 
