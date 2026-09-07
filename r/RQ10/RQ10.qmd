@@ -381,7 +381,7 @@ routes_guide_plot <- ggplot() +
       )
     ) +
     facet_wrap(~route_id, ncol = 1) +
-    labs(title = "\t\tAvailable routes")
+    labs(title = "      Available routes")
 
 routes_guide_small <- 
   plot_spacer() /
@@ -463,8 +463,8 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       # geom_richtext renders markdown, where a bare "\n" is a soft break
       # (collapsed to a space) — "<br>" is needed for an actual line break.
       label = paste(pre_header, header, routes_block, sep = "<br>"),
-      x = min(network_backdrop$x) + 0.02 * diff(range(network_backdrop$x)),
-      y = min(network_backdrop$y) + 0.03 * diff(range(network_backdrop$y))
+      x = min(network_backdrop$x) - 53,
+      y = min(network_backdrop$y) - 23
     )
 
   #####################
@@ -546,11 +546,22 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
       vjust = 0,
       size = 3.1,
       family = "mono",
-      label.size = NA,
-      fill = alpha("white", 0.85)
+      label.size = 0.25,
+      label.color = "grey70",
+      fill = alpha("white", 0.90),
+      label.r = unit(0.08, "lines"),
+      label.padding = unit(0.15, "lines")
     ) +
+      # label.size = NA,
+      # fill = alpha("white", 0.85)
+    # ) +
     # Preserve network aspect ratio
-    coord_equal() +
+    coord_equal(
+      xlim = c(min(network_backdrop$x) - 35,
+               max(network_backdrop$x) + 35),
+      ylim = c(min(network_backdrop$y) + 5,
+               max(network_backdrop$y) - 5)
+    ) +
     theme(
       axis.text = element_blank(),
       axis.ticks = element_blank(),
@@ -569,7 +580,7 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
   # shows what P1/P2/P3 physically look like, since each episode panel above
   # only draws the one route actually chosen that episode.
   main_plot + plot_spacer() + routes_guide_small +
-    plot_layout(widths = c(4.5, -0.8, 1)) +
+    plot_layout(widths = c(5, -0.2, 1)) +
     plot_annotation(
       title = "Evolution of Route Choice During Learning",
       subtitle = glue(
@@ -586,8 +597,8 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
 # memoria 1: 1, 25, 26, 27, 28, 34, 50
 # memoria 0.1: 1, 25, 26, 27, 59, 61, 141
 # memoria 0.01: 1, 25, 26, 27, 29, 24, 40, 41, 42, 44
-representative_episodes_mem_1 <- c(1, 25, 26, 27, 34, 50)
-representative_episodes_mem_0.1 <- c(1, 25, 26, 27, 59, 61)
+representative_episodes_mem_1 <- c(1, 25, 26, 27, 28, 34)
+representative_episodes_mem_0.1 <- c(1, 25, 27, 59, 61, 141)
 representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
 ```
 
@@ -599,7 +610,7 @@ representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
 # exploration, end of warm_up, early convergence toward one route, then a
 # genuine regime switch to a different route mid-run, and final lock-in.
 # Tune freely per memory_level — pass a different episode vector per call.
-plot_agent_learning(memory_level_arg = 1, representative_episodes = c(1, 25, 26, 27, 34, 50))
+plot_agent_learning(memory_level_arg = 1, representative_episodes = representative_episodes_mem_1)
 
 ggsave(here("r","RQ10","figures","plot1_agent_learning_mem1.png"))
 ```
@@ -607,8 +618,6 @@ ggsave(here("r","RQ10","figures","plot1_agent_learning_mem1.png"))
 ```{r}
 #| label: plot_memory_0.1
 
-plot_agent_learning(memory_level = 0.1, representative_episodes = c(1, 25, 26, 27, 34, 50))
+plot_agent_learning(memory_level = 0.1, representative_episodes = representative_episodes_mem_0.1)
+ggsave(here("r","RQ10","figures","plot1_agent_learning_mem0_1.png"))
 ```
-
-
-

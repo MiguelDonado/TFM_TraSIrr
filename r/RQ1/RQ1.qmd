@@ -99,9 +99,9 @@ representative_seeds <- sample(unique(data$bm_rgap$seed), size = 3)
 labels_seeds <- c("S1", "S2", "S3")
 
 color_lines <- c(
-  "S1" = "#0072B2",  # blue
-  "S2" = "#E69F00",  # orange
-  "S3" = "#009E73"   # bluish green
+  "S1" = "#bcb8b1",  
+  "S2" = "#4A4844", 
+  "S3" = "#11110F"   
   )  
 ```
 
@@ -142,6 +142,10 @@ plot1_annotation <- rgap_df |>
 ```{r}
 #| label: plot1
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 ggplot(
   data = rgap_df,
   mapping = aes(x = episode, y = rgap, color = seed_fct, group = seed_fct)
@@ -152,25 +156,31 @@ ggplot(
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.5
   ) +
   annotate(
     "text",
     x = (exploration_phase_floor - 2) / 2,
     y = Inf,
-    label = "pre-learning \nphase",
+    label = "warm-up \nphase",
     fontface = "bold",
-    colour = "firebrick",
+    colour = color,
     vjust = 2.5,
-    size = 3.5
+    size = 4
+  ) +
+  geom_hline(
+    yintercept = 5,
+    colour = "grey40",
+    linetype = "longdash",
+    linewidth = 0.5
   ) +
   geom_line() +
   geom_point(data = plot1_annotation, size = 1.25) +
@@ -190,29 +200,17 @@ ggplot(
       scale_x_continuous(breaks = scales::breaks_width(10))
     )
   ) +
-  scale_y_continuous(breaks = scales::breaks_width(5))
+  scale_y_continuous(breaks = scales::breaks_width(5)) +
+  theme(
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank()
+  )
 
 ggsave(here("r","RQ1","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
 ```
-
-## Interpretation plot 1: (R-gap evolution across episodes)
-It should be noted, that the first episodes (for this particular case the first 24 episodes) 
-are a warm-up in which the agents only explore and do not learn. 
-Learning phase begins at episode 25.
-- **Convergence speed:**
-  - Under Near free flow (1300), all seeds converge quickly (around episodes 30-40)
-  - Under Moderate (1550), convergence is slightly slower.
-  - Under High (2000), convergence is slower, around episodes 40-50, and much noisier (it has pretty large spikes)
-- **Stability:**
-  - Post-convergence stability: The trajectories show post-convergence stability nicely (once it converges to DUE, it remains in DUE for the rest of episodes).
-  - Convergence dynamics (rate of convergence once convergence begins): In the free-flow case it reaches DUE almost immediately. Moderate proceeds more gradually. High congestion also proceeds more gradually, and it has more fluctuations before settling.
-- **Robustness across seeds**
-  - Free-flow: Almost identical trajectories.
-  - Moderate: Pretty similar, but they show more variability. (the learning trajectories).
-  - High congestion: The scenario in which the trajectories show the biggest differences. One of the seeds have large spikes.
-  So the simulation is not very sensitive to the seed, in either the near-free flow or moderate scenario, but it shows more sensitivity to the sensitivity on the high congestion scenario.
-- **Effect of congestion**:
-  - It can be easily seen that higher congestion makes the problem harder, resulting in higher initial r-gaps, slower convergence, and more variability across seeds.
 
 ```{r}
 #| label: data_plot2
@@ -301,46 +299,21 @@ ggplot(
     fill = "Refined\nR-gap (%)"
   ) + 
   geom_vline(xintercept = exploration_phase_floor, colour = "black", linewidth = 1.2)   +
-  geom_vline(xintercept = exploration_phase_floor, colour = "white", linewidth = 0.5,  linetype = "dotdash")
+  geom_vline(xintercept = exploration_phase_floor, colour = "white", linewidth = 0.5,  linetype = "dotdash") +
+  theme(
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank()
+  )
 
 ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, height = 10)
 ```
 
-## Interpretation plot 2:
-It should be noted, that the first episodes (for this particular case the first 24 episodes) 
-are a warm-up in which the agents only explore and do not learn. 
-Learning phase begins at episode 25.
-**Which intervals converge first?**
-Initially we could expect to see a strong diagonal pattern, indicating that later intervals take longer to converge, and that early intervals are the first ones to converge. 
-But, that is not the case with our plot, suggesting that most intervals improve at roughly the same time.
-That is the case for the 3 congestion regimes.
-
-**Effect of congestion regimes**
-It can be seen that higher congestion makes the problem harder, resulting in intervals with higher r-gap, represented with brighter bands.
-
-**Some intervals become unstable after initially converging?**
-In the moderate case, we can see on the seed 3, that some intervals become unstable after initially converging.
-In the high congestion case, it happens more times. For example, a few intervals on the seed 2 and on the seed 3 become unstable after converging. On the seed 1, it is harder to visualize, but there are also some intervals that become unstable after converging.
-
-**Late intervals consistently have large errors?**
-It can be easily visualized on the plot, that is not our case.
-
-**All intervals converge to the same r-gap?**
-In order to answer this question, we have to look at the colors of the band for the last episodes.
-
-In the near-free flow case most intervals achieve a very low r-gap, and hence it can be said that all intervals converge to the same r-gap.
-
-In the moderate case, most intervals achieve a very low r-gap. Except for the seed 3, where some intervals remain with higher r-gaps.
-
-In the high congestion case the r-gap of the final episode shows greater variability among intervals.
-
-The greater the congestion, the greater the variability of the final r-gap among intervals.
-
-
-
-
 ```{r}
 #| label: data_plot3
+#| eval: false
 
 # Plot3: worst-case (90th percentile) OD-specific r-gap, one value per
 # algorithm x seed, computed across that seed's own final episode. 
@@ -355,17 +328,18 @@ rgap_od_seed_summary <- rgap_od_df |>
   group_by(algorithm, congestion_regime, n_agents, seed) |>
   filter(episode == max(episode)) |>
   summarise(
-    p90_rgap = quantile(rgap, 0.9),
+    worst_case_rgap = max(rgap, na.rm = TRUE),
     .groups = "drop"
   )
 ```
 
 ```{r}
 #| label: plot3
+#| eval: false
 
 ggplot(
   data = rgap_od_seed_summary,
-  mapping = aes(x = algorithm, y = p90_rgap, fill = algorithm)
+  mapping = aes(x = algorithm, y = worst_case_rgap, fill = algorithm)
 ) +
   geom_boxplot(outlier.shape = NA, width = 0.5, linewidth = 0.6, alpha = 0.6) +
   geom_jitter(width = 0.1, height = 0, size = 2.5, shape = 21, color = "black") +
@@ -373,13 +347,13 @@ ggplot(
   guides(fill = "none") +
   facet_wrap(~congestion_regime) +
   labs(
-    title = "90th-percentile OD-specific R-gap",
-    subtitle = "90th percentile of the OD-specific R-gap across the \n10 active OD pairs within each seed (final episode)",
+    title = "Worst-case OD-specific R-gap",
+    subtitle = "Worst-case of the OD-specific R-gap across the \n10 active OD pairs within each seed (final episode)",
     x = "Algorithm",
-    y = "90th percentile R-gap (%)"
+    y = "Worst-case R-gap (%)"
   )
 
-ggsave(here("r","RQ1","figures","plot3_od_rgap_worstcase.png"))
+# ggsave(here("r","RQ1","figures","plot3_od_rgap_worstcase.png"))
 ```
 
 ## Interpretation plot 3:
@@ -451,25 +425,34 @@ ggplot(
   ggbeeswarm::geom_quasirandom(
   width = 0.15,
   alpha = 0.3,
-  size = 0.6
+  size = 0.6,
   ) +
   geom_hline(yintercept = 0, alpha = 0.75, linewidth = 0.7, color = "#7D7D7D") +
   facet_grid(~ congestion_regime) +
   labs(
     x = NULL,
     y = "OD-specific R-gap (%)",
-    title = "Distribution of Final OD-specific R-gap",
+    title = "Final OD-specific R-gap by Algorithm",
     subtitle = "Representative random seed; distributions computed from the final episodes."
   ) +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(face = "bold")
+    axis.text.x = element_text(face = "bold"),
+    strip.text = element_text(
+      size = 11,
+      face = "bold"
+    )
+  ) +
+  scale_fill_manual(
+    values = c(
+      "BM" = "#9999a1",
+      "duaIterate" = "#e6e6e9"
+    )
   ) +
   scale_y_continuous(breaks = scales::breaks_width(10))
 
 ggsave(here("r","RQ1","figures","plot4_distribution_final_od_r_gap.png"))
 ```
-
 
 <!-- The file refined_rgap_by_od is not needed to be analyzed. A plot using this file would not add anything new. -->
 

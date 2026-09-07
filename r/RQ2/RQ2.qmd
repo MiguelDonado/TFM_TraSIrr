@@ -171,6 +171,10 @@ labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", explorat
 ```{r}
 #| label: plot1
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 upper_limit_y_axis <- quantile(rgap_df$rgap, probs = c(0.95))
 
 ggplot(
@@ -183,14 +187,14 @@ ggplot(
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.5
   ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
@@ -316,7 +320,7 @@ is not included. When there is no sensitivity, it's enough with the first plot. 
 # Hence to choose our representative OD we have to pick:
 # #########################
 # 1. representative_seed
-representative_seed <- representative_seeds[1]
+representative_seed <- representative_seeds[2]
 # 2. representative_congestion
 representative_congestion <- 2000
 representative_congestion_label <- "High congestion (2000)"
@@ -361,7 +365,7 @@ OD_info <- OD_matrix |>
 
 representative_OD <- OD_info |> 
   arrange(desc(n_routes),desc(demand)) |> 
-  slice_head(n = 1) |> 
+  slice(9) |> 
   select(-c(seed, n_agents))
 ```
 
@@ -474,13 +478,16 @@ labels_plot3[breaks_plot3==exploration_phase_floor] <- paste0("Learning\nstarts 
 ```{r}
 #| label: plot3
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 # This plots refers to a particular OD, for a particular seed and congestion regime, and facet for some representative memory_levels. 
 
-p_route_flow <- ggplot(
+ggplot(
   data = flow_paths_df, 
   mapping = aes(x = episode, y = flow, group = path, color = path)
 ) +
-  geom_line(linewidth = 0.7) +
   facet_grid(memory_level_fct ~ .) +
   labs(
     color = "Route",
@@ -494,36 +501,54 @@ p_route_flow <- ggplot(
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.06
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.4
   ) +
   annotate(
     "text",
     x = (exploration_phase_floor - 2) / 2,
     y = Inf,
-    label = "pre-learning \nphase",
+    label = "warm-up \nphase",
     fontface = "bold",
-    colour = "firebrick",
+    colour = color,
     vjust = 2.5,
-    size = 3.5
+    size = 4
   ) +
+  geom_line(linewidth = 0.7) +
   # Change color scale
-  scale_color_brewer(palette = "Dark2") +
+  scale_color_manual(
+    values = c(
+      "#000000",
+      "#6B6D68",
+      "#d2d4c8"
+    )
+  ) +
   # Tweak miscellaneous stuff
   theme(
     legend.title = element_text(size = 11),
     legend.text  = element_text(size = 10),
-    legend.key.size = unit(0.6, "lines"),
     plot.subtitle = element_text(size = 11),
-    strip.text.y = element_text(angle = 0, size = 10)
-) 
+    strip.text.y = element_text(angle = 0, size = 10),
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+  ) +
+  labs(
+    title = "Behavioral convergence: Route flow stability",
+    subtitle = glue(
+      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+    )
+  )
+
+ggsave(here("r","RQ2","figures","plot3_route_flow_stability.png"), width = 12, height = 6)
 ```
 
 
@@ -623,7 +648,7 @@ FSD_df_summary <- FSD_df |>
 ```{r}
 #| label: plot3_b
 
-p_mean_FSD <- ggplot(
+ggplot(
   data = FSD_df_summary,
   mapping = aes(y = memory_level, x = mean_FSD, group = 1)
 ) +
@@ -642,17 +667,6 @@ p_mean_FSD <- ggplot(
   scale_y_reverse(
     breaks = as.numeric(representative_memory_levels)
   )
-
-p_route_flow + p_mean_FSD +
-  plot_layout(widths = c(5, 0.8)) +
-  plot_annotation(
-    title = "Behavioral convergence: Route flow stability",
-    subtitle = glue(
-      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
-    )
-  )
-
-ggsave(here("r","RQ2","figures","plot3_route_flow_stability.png"), width = 12, height = 6)
 ```
 
 
