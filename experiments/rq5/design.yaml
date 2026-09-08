@@ -21,12 +21,19 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 grid:
   learning:
-    heterogeneous_memory: 
-      - true
+    # true:  each agent draws its own γ from Beta(mean, concentration).
+    # false: homogeneous baseline — every agent shares config.memory_level
+    #        below, set to the same value as memory_mean so both arms are
+    #        centered on the same γ and are directly comparable.
+    heterogeneous_memory:
+      # - true
+      - false
     memory_mean:
       - 0.7
     memory_concentration:
       - 20
+    memory_level:
+      - 0.7
   randomness:
     seed:
       - 42

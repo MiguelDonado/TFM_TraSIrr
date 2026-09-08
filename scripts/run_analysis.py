@@ -241,15 +241,12 @@ def _prepare_rq5_data() -> None:
     """Pull R-gap artifacts from all RQ5 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ5' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'development'"
+        "and tags.status != 'archived' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = [
         "seed",
         "n_agents",
-        "network_degraded",
-        "degradation_start_episode",
-        "degradation_end_episode",
         "warm_up",
         "memory_mean",
         "heterogeneous_memory"
@@ -258,11 +255,12 @@ def _prepare_rq5_data() -> None:
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
-        "bm_edgedata": "processed/edgedata.parquet",
-        "od_routes": "environment/od_routes.parquet",
         "demand_odt": "DUE/generic/demand_odt.parquet",
+        "od_routes": "environment/od_routes.parquet",
         "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+        "cost_paths": "DUE/BM/costs_paths_odtp_k.parquet",
         "bm_results": "agent_state/BM_results.parquet"
+        # "bm_edgedata": "processed/edgedata.parquet",
     }
 
     data_dir = BASE_DIR / "r" / "RQ5" / "data"
