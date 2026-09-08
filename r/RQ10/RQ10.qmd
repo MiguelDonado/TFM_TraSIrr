@@ -595,13 +595,18 @@ plot_agent_learning <- function(memory_level_arg, representative_episodes) {
 
 # All relevant episodes:
 # memoria 1: 1, 25, 26, 27, 28, 34, 50
-# memoria 0.1: 1, 25, 26, 27, 59, 61, 141
+# memoria 0.1: 1, 25, 26, 27, 46, 58, 59, 61, 135, 141
 # memoria 0.01: 1, 25, 26, 27, 29, 24, 40, 41, 42, 44
 representative_episodes_mem_1 <- c(1, 25, 26, 27, 28, 34)
-representative_episodes_mem_0.1 <- c(1, 25, 27, 59, 61, 141)
+representative_episodes_mem_0.1 <- c(25, 27, 46, 59, 61, 135)
 representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
 ```
 
+# VERY IMPORTANT GOTCHA
+ggsave() inherits the size of the RStudio Plot pane. 
+So if we simply do ggsave(filename), then ggsave() uses the current graphics device
+dimensions. 
+Is better to explicitly set the dimensions
 
 ```{r}
 #| label: plot_memory_1
@@ -612,12 +617,24 @@ representative_episodes_mem_0.01 <- c(1, 25, 26, 27, 34, 40)
 # Tune freely per memory_level — pass a different episode vector per call.
 plot_agent_learning(memory_level_arg = 1, representative_episodes = representative_episodes_mem_1)
 
-ggsave(here("r","RQ10","figures","plot1_agent_learning_mem1.png"))
+ggsave(
+  here("r","RQ10","figures","plot1_agent_learning_mem1.png"),
+  width = 10.7,
+  height = 9.12,
+  units = "in",
+  dpi = 300
+  )
 ```
 
 ```{r}
 #| label: plot_memory_0.1
 
 plot_agent_learning(memory_level = 0.1, representative_episodes = representative_episodes_mem_0.1)
-ggsave(here("r","RQ10","figures","plot1_agent_learning_mem0_1.png"))
+ggsave(
+  here("r","RQ10","figures","plot1_agent_learning_mem0_1.png"),
+  width = 10.7,
+  height = 9.12,
+  units = "in",
+  dpi = 300
+  )
 ```
