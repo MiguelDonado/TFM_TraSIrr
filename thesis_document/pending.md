@@ -1,3 +1,8 @@
+- [] Why I have chosen R-gap 5% threshold to qualify convergence to DUE. Ask Mari Paz which one to use and say that is kind of arbitrary. 
+- [] **Where do I establish the DUE convergence threshold, at 5 or 2.5?. On the averse extensions mention that be more accurate and careful when saying that averse population of drivers do not converge to DUE, because in some cases it goes slightly beyond the line.**
+- [] Mention in the averse extensions that introducing them is relevant when the shortest route is not the stablest or the one with least waiting time, otherwise does not matter if drivers averse or not they will choose the same route.
+- [] Maybe on the research questions of averse drivers i should reference again the section bounded rationality or the papers that support the introduction of those more realistic aspects of human behavior.
+- [] I dont know if in the formulation I presented all together. I believe so, then I should somehow in the averse extensions mention, that is studying one at a time, and keeping the sensitivity to 0 of the other averse extension.
 - [] Compute the route flow variability quantitative metric
 - [] Make sure that the insights that I have in /home/miguel/6.Projects/Thesis/Docs/research/4.BuildingRelevantNetwork/0.Network_demand_considerations.md are included in the thesis
 - In the RQ2, the first plot, maybe its enough with just analyzing the high congestion case, the most interesting.

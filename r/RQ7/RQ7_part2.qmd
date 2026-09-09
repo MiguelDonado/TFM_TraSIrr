@@ -36,7 +36,9 @@ library(ggh4x)
 library(patchwork)
 library(xml2)
 library(glue)
+library(gridExtra)
 library(gt)
+Sys.setenv(CHROMOTE_CHROME = "/snap/bin/chromium")
 ```
 
 ```{r}
@@ -134,10 +136,8 @@ representative_OD_df <- OD_matrix |>
   arrange(desc(demand), desc(n_routes))
 
 representative_OD <- representative_OD_df |> 
-  slice_head(n = 1)
+  slice(3)
 ```
-
-
 
 ```{r}
 #| label: route_usage_BM
@@ -397,12 +397,6 @@ route_geometry <- bind_rows(
     algorithm = factor(algorithm, levels = c("BM", "duaIterate")),
     path_id = factor(path_id, levels = all_paths$path_id)
   )
-
-relevant_routes_geometry <- route_geometry |>
-  filter(
-    flow > representative_OD$demand / 10
-  )
-
 ```
 
 ```{r}
@@ -525,10 +519,60 @@ p_table_path_share <- comparison_final_table |>
     heading.padding = px(4)
   )
 
-gtsave(
-  p_table_path_share,
-  here("r","RQ7","figures","path_share_table.png")
+write.table(p_table_path_share, file=here("r", "RQ7", "figures", "path_share_table.txt"))
+```
+
+```{r}
+#| label: filter_relevant_routes
+demand <- representative_OD$demand
+
+top_routes <- route_geometry |> 
+  distinct(algorithm, path_id, flow) |> 
+  group_by(algorithm) |> 
+  slice_max(flow, n = 3, with_ties = FALSE) |> 
+  ungroup()
+
+relevant_route_geometry <- route_geometry |> 
+  semi_join(
+    top_routes,
+    by = c("algorithm", "path_id", "flow")
+  ) 
+
+relevant_route_geometry <- relevant_route_geometry |> arrange((flow)) |> group_by(algorithm, path_id) |> mutate( x = x + 1.5 * cur_group_id())
+
+grayscale_palettes <- list(
+  `3` = c(
+    "#000000",
+    "#84a98c",
+    "#B8B8B8"
+  ),
+
+  `4` = c(
+    "#354f52",
+    "#52796f",
+    "#84a98c",
+    "#cad2c5"
+  ),
+
+  `5` = c(
+    "#121212",
+    "#3D3D3D",
+    "#666666",
+    "#909090",
+    "#B8B8B8"
+  ),
+
+  `6` = c(
+    "#101010",
+    "#343434",
+    "#585858",
+    "#7C7C7C",
+    "#A0A0A0",
+    "#C0C0C0"
+  )
 )
+
+n_paths <- dplyr::n_distinct(top_routes$path_id)
 ```
 
 ```{r}
@@ -542,7 +586,7 @@ ggplot() +
     linewidth = 0.3
   ) +
   geom_path(
-    data = route_geometry,
+    data = relevant_route_geometry,
     mapping = aes(
       x = x, y = y,
       group = interaction(algorithm, path_id),
@@ -582,6 +626,9 @@ ggplot() +
     seed = 1,
   )  +
   facet_wrap(~algorithm) +
+  scale_color_manual(
+    values = grayscale_palettes[[as.character(n_paths)]]
+  ) +
   # Preserve network aspect ratio
   coord_equal() +
   theme(
@@ -590,21 +637,20 @@ ggplot() +
     axis.title = element_blank(),
     panel.grid = element_blank(),
   ) +
-  scale_color_brewer(palette = "Dark2", name = "Path") +
   scale_linewidth(
     guide = 'none',
-    range = c(0.5, 2.5)
+    range = c(0.8, 2.5)
   ) +
   labs(
     color = "Route",
     linewidth = "Flow (veh)",
     title = "Path-level route composition for a representative OD",
     subtitle = glue(
-      "OD pair: {representative_OD$origin} → {representative_OD$dest} | Demand: {representative_OD$demand} veh"
+      "Top 3 highest-flow paths per algorithm\nOD pair: {representative_OD$origin} → {representative_OD$dest} | Demand: {representative_OD$demand} veh"
     )
   )
 
-ggsave(here("r","RQ7","figures","plot_route_composition.png"), width = 12, height = 6)
+ggsave(here("r","RQ7","figures","plot_route_composition.png"), width = 12, height = 6, units = "in", dpi = 300)
 ```
 
 

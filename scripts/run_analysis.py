@@ -480,7 +480,7 @@ def _prepare_rq12_data() -> None:
         "and tags.status != 'archived' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
-    params_to_attach = ["seed", "warm_up", "waiting_time_sensitivity"]
+    params_to_attach = ["seed", "warm_up", "waiting_time_sensitivity", "network"]
 
     artifacts = {
         "bm_results": "agent_state/BM_results.parquet",

@@ -189,7 +189,7 @@ link_flow_rmse_df <- edge_flows_table |>
 
 link_flow_rmse_summary <- link_flow_rmse_df |>
   group_by(memory_level_fct) |>
-  summarise(median_rmse = median(link_flow_rmse), .groups = "drop")
+  summarise(mean_rmse = mean(link_flow_rmse), .groups = "drop")
 ```
 
 ```{r}

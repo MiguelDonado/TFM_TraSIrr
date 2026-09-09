@@ -48,6 +48,7 @@ renv::load()
 library(tidyverse)
 library(arrow)
 library(ggh4x)
+library(xml2)
 library(glue)
 library(ggtext)
 library(patchwork)
@@ -86,7 +87,6 @@ data <- list.files(data_dir, pattern="\\.parquet$", full.names = TRUE) |>
 # Randomly select 1 seed 
 set.seed(23)
 random_seed <- sample(unique(data$bm_rgap$seed), size = 1)
-
 ```
 
 ```{r}
@@ -385,7 +385,9 @@ ggplot(
     point.padding = 0.3,
     force = 1,
     max.overlaps = Inf,
-    seed = 123,
+    seed = 1,
+    nudge_x = -1,
+    nudge_y = 1
   ) +
   ggrepel::geom_text_repel(
     data = iso_cost_lines_plot,
@@ -425,7 +427,7 @@ labels_seeds <- c("S1", "S2", "S3")
 ```{r}
 #| label: data_plot2
 
-representative_waiting_time_sensitivity_levels <- c(0, 10)
+representative_waiting_time_sensitivity_levels <- c(0, 5, 10)
 representative_waiting_time_sensitivity_levels_labels <- map_chr(
   representative_waiting_time_sensitivity_levels,
   \(x) paste0("\u03c6 = ", x)
@@ -478,6 +480,10 @@ labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", explorat
 ```{r}
 #| label: plot2
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 upper_limit_y_axis <- quantile(rgap_df$rgap, probs = c(0.99))
 
 ggplot(
@@ -490,14 +496,14 @@ ggplot(
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.5
   ) +
   geom_line(alpha = 0.6, linewidth = 0.4) +
@@ -511,13 +517,14 @@ ggplot(
   facet_grid(waiting_time_sensitivity_fct ~ .) +
   labs(
     title = "Waiting-time sensitivity affects R-gap convergence",
-    subtitle = glue("Representative learning trajectories for \u03c6 = {representative_waiting_time_sensitivity_levels[1]} and \u03c6 = {representative_waiting_time_sensitivity_levels[2]} across different seeds"),
+    subtitle = glue("Representative learning trajectories for various waiting-time sensitivities across different seeds"),
     x = "Episode",
     y = "R-gap (%)"
   ) +
   coord_cartesian(ylim=c(-5,upper_limit_y_axis)) +
   theme(
     axis.title.x = element_text(margin = margin(t = 1)),
+    axis.text.y = element_text(size = 11)
   ) +
   scale_x_continuous(breaks = breaks, labels = labels) +
   scale_y_continuous(
@@ -726,6 +733,8 @@ latex_quantitative_table <- typical_perceptions |>
   share_paths_wide,
   by = "path_id"
 ) 
+
+write.table(latex_quantitative_table, file=here("r", "RQ12", "figures", "quantitative_table.txt"))
 ```
 
 ```{r}
@@ -750,30 +759,73 @@ relevant_labels <- flow_paths_df_plot |>
   group_by(waiting_time_sensitivity_fct, path) |>
   slice_max(episode, n = 1, with_ties = FALSE) |>
   ungroup()
+
+# Colour assignment: black + #696969 for the two relevant routes, the
+# remaining greyscale shades for the non-relevant background routes.
+plot4_palette <- c(
+  "#000000", "#111111", "#232323", "#343434",
+  "#464646", "#575757", "#696969", "#7a7a7a"
+)
+
+all_path_labels <- levels(flow_paths_df_plot$path)
+relevant_path_labels <- as.character(sort(relevant_routes))
+nonrelevant_path_labels <- setdiff(all_path_labels, relevant_path_labels)
+
+route_colors <- setNames(character(length(all_path_labels)), all_path_labels)
+route_colors[relevant_path_labels[1]] <- "#000000"
+route_colors[relevant_path_labels[2]] <- "#696969"
+remaining_colors <- setdiff(plot4_palette, c("#000000", "#696969"))
+route_colors[nonrelevant_path_labels] <- remaining_colors[seq_along(nonrelevant_path_labels)]
 ```
 
 ```{r}
 #| label: plot3
 
-# This plots refers to a particular OD, for a particular seed, and facet for some representative waiting-time sensitivities 
-
+# This plots refers to a particular OD, for a particular seed, and facet for some representative waiting-time sensitivities
 ggplot(
   data = flow_paths_df_plot, 
   mapping = aes(x = episode, y = share, group = path, color = path)
 ) +
+  # Shaded region
+  annotate(
+    "rect",
+    xmin = -Inf,
+    xmax = exploration_phase_floor,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = fill,
+    alpha = alpha
+  ) +
+  geom_vline(
+  xintercept = exploration_phase_floor,
+  linetype = 2,
+  alpha = 0.4,
+  color = color,
+  linewidth = 0.4
+  ) +
+  annotate(
+    "text",
+    x = (exploration_phase_floor - 2) / 2,
+    y = Inf,
+    label = "warm-up \nphase",
+    fontface = "bold",
+    colour = color,
+    vjust = 2.5,
+    size = 3.5
+  ) +
   geom_line(
     mapping = aes(linewidth = relevant, alpha = relevant)
   ) +
    scale_linewidth_manual(
     values = c(
       "TRUE" = 1.3,
-      "FALSE" = 0.5
+      "FALSE" = 0.4
     )
   ) + 
   scale_alpha_manual(
     values = c(
       "TRUE" = 1,
-      "FALSE" = 0.5
+      "FALSE" = 0.4
     )
   ) + 
   facet_grid(waiting_time_sensitivity_fct ~ .) +
@@ -782,42 +834,20 @@ ggplot(
     y = "Route flow",
     x = "Episode",
   ) +
-  # Shaded region
-  annotate(
-    "rect",
-    xmin = -Inf,
-    xmax = exploration_phase_floor,
-    ymin = -Inf,
-    ymax = Inf,
-    fill = "red",
-    alpha = 0.06
-  ) +
-  geom_vline(
-  xintercept = exploration_phase_floor,
-  linetype = 2,
-  alpha = 0.4,
-  color = "red",
-  linewidth = 0.4
-  ) +
-  annotate(
-    "text",
-    x = (exploration_phase_floor - 2) / 2,
-    y = Inf,
-    label = "pre-learning \nphase",
-    fontface = "bold",
-    colour = "firebrick",
-    vjust = 2.5,
-    size = 3.5
-  ) +
   # Change color scale
-  scale_color_brewer(palette = "Dark2", name = "Path") +
+  scale_color_manual(values = route_colors, name = "Path") +
   # Tweak miscellaneous stuff
   theme(
     legend.title = element_text(size = 11),
     legend.text  = element_text(size = 10),
     legend.key.size = unit(0.6, "lines"),
     plot.subtitle = element_text(size = 11),
-    strip.text.y = element_text(angle = 0, size = 10)
+    strip.text.y = element_text(angle = 0, size = 10),
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank()
 ) +
   scale_y_continuous(labels = scales::percent_format()) +
   guides(alpha = "none", linewidth = "none", color = "none") +
@@ -840,8 +870,8 @@ ggplot(
   fontface = "bold",
   box.padding = 0.6,
   point.padding = 0.2,
-  segment.alpha = 0.4,
-  segment.size = 0.3,
+  segment.color = NA,
+  min.segment.length = Inf,
   seed = 123
 ) +
   labs(
@@ -850,6 +880,311 @@ ggplot(
   )
 
 ggsave(here("r","RQ12","figures","plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
+```
+
+
+# PLOT RELEVANT ROUTES SHAPES
+
+```{r}
+#| label: network_edge_shapes
+
+# Non-internal <edge> elements each have exactly one <lane> child with a
+# "shape" attribute (a straight polyline "x1,y1 x2,y2 ..."), which is the
+# edge's physical geometry — reused both to draw route trajectories and as
+# the light-gray full-network backdrop that gives them spatial context.
+
+# Read XML of the network used for this run
+network_stem <- data$agents_od$network |> unique()
+network_filename <- paste0(network_stem, ".xml")
+all_networks <- list.files(
+  here("sumo", "net"),
+  pattern = "\\.net\\.xml$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+network_matches <- all_networks[basename(all_networks) == network_filename]
+if (length(network_matches) != 1) {
+  stop(glue(
+    "Expected exactly one network file named '{network_filename}' under sumo/net/, ",
+    "found {length(network_matches)}."
+  ))
+}
+network_path <- network_matches
+
+# Function to parse the network XML edge shapes attributes.
+# In particular:
+# 1. SUMO shape attribute string has two points "x,y" separated by an space. 
+# Example: 
+# "107.20,-301.60 192.80,-301.60"
+#    x1     y1      x2      y2
+# 2. We wanna convert it to a df:
+# | x      | y       |
+# |--------|---------|
+# | 107.20 | -301.60 |
+# | 192.80 | -301.60 |
+
+########
+# Steps:
+########
+# 1. str_split(shape_str, " ")[[1]]: Splits on spaces. The [[1]] is because this function can accept more than one input string, and it returns a list with as much elements as input strings. So, with [[1]] we are saying that we want the results of separating by spaces the first (and only) string we passed as input.
+# Result: c("107.20,-301.60", "192.80,-301.60")
+
+# 2. str_split(","): Separate by comma
+# Result: list(c("107.20", "-301.60"), c("192.80", "-301.60"))
+
+# 3. map_chr(points,1): Walks the list and pulls out element 1 (x-string) from every point.
+# Result: c("107.20", "192.80")
+parse_shape <- function(shape_str) {
+  points <- str_split(shape_str, " ")[[1]] |> str_split(",")
+  tibble(
+    x = as.numeric(map_chr(points, 1)),
+    y = as.numeric(map_chr(points, 2))
+  )
+}
+
+# Find all relevant edges elements of the network
+network_edges <- xml_find_all(read_xml(network_path), "//edge[not(@function='internal')]")
+
+# We create a tibble with two columns:
+# 1. edge: (vectorized) For every edge it pulls out the id attribute giving one character vector — e.g. c("E10_11_EB", "E10_11_WB", ...)
+# 2. shape_str: 
+#   xml_find_first(): Find only first match. Basically for every edge, it pulls out the first lane child element. Because input were n edges, output is n lane elements as well.
+# Then it pulls out the shape of the lane.
+# So we end up with a tibble that contains the edges and its shapes,
+# and its well aligned (since both columns are build from the same set of edges "network_edges" on the same order, is guarantee they are correctly aligned)
+# Example:
+# ┌───────────┬─────────────────────────────────┐
+# │   edge    │            shape_str            │
+# ├───────────┼─────────────────────────────────┤
+# │ E10_11_EB │ "107.20,-301.60 192.80,-301.60" │
+# └───────────┴─────────────────────────────────┘
+
+# |> mutate(): Parses the shape of the edge as we saw before. Each cell is an entire small tibble containing the two points (x1,y1) and (x2,y2) for that edge
+# Example:
+# ┌───────────┬───────────────────────────────┬────────────────────────────────────────────────┐
+# │   edge    │           shape_str           │                     shape                      │
+# ├───────────┼───────────────────────────────┼────────────────────────────────────────────────┤
+# │ E10_11_EB │ "107.20,-301.60               │ tibble(x=c(107.20,192.80),                     │
+# │           │ 192.80,-301.60"               │ y=c(-301.60,-301.60))                          │
+# └───────────┴───────────────────────────────┴────────────────────────────────────────────────┘
+
+
+edge_shapes <- tibble(
+  edge = xml_attr(network_edges, "id"),
+  shape_str = xml_attr(xml_find_first(network_edges, "./lane[1]"), "shape")
+) |>
+  mutate(shape = map(shape_str, parse_shape)) |>
+  select(-shape_str)
+
+# We convert to long format
+# Example one edge-row with a 2-point shape becomes 2 rows
+# ┌───────────┬────────┬─────────┐
+# │   edge    │   x    │    y    │
+# ├───────────┼────────┼─────────┤
+# │ E10_11_EB │ 107.20 │ -301.60 │
+# ├───────────┼────────┼─────────┤
+# │ E10_11_EB │ 192.80 │ -301.60 │
+# └───────────┴────────┴─────────┘
+network_backdrop <- edge_shapes |>
+  unnest(shape)
+```
+
+```{r}
+#| label: OD_routes
+
+filter_relevant_routes <- relevant_routes-1
+
+routes_agent <- data$od_routes |> 
+  mutate(
+    waiting_time_sensitivity = as.numeric(waiting_time_sensitivity)
+  ) |> 
+  filter(
+    origin == representative_od$origin,
+    dest == representative_od$destination,
+    waiting_time_sensitivity == min(waiting_time_sensitivity),
+    route_id %in% filter_relevant_routes
+  ) |> 
+  select(-c(warm_up, network, run_id, waiting_time_sensitivity))
+```
+
+```{r}
+#| label: paths_factor
+path_levels <- routes_agent$route_id |> unique()
+path_levels_labels <- map_chr(path_levels, \(x) paste0("Path ", x+1))
+```
+
+```{r}
+#| label: route_geometry
+
+# Builds one ordered polyline per route by walking od_routes' edges in
+# step order and concatenating each edge's shape points
+build_route_geometry <- function(od_routes_df) {
+  od_routes_df |>
+    filter(
+      origin == representative_od$origin,
+      dest == representative_od$destination
+    ) |> 
+    arrange(route_id, step) |>
+    left_join(edge_shapes, by = "edge") |>
+    unnest(shape) |>
+    select(route_id, edge, x, y)
+}
+
+route_geometry <- build_route_geometry(
+  data$od_routes |> 
+  mutate(
+    waiting_time_sensitivity = as.numeric(waiting_time_sensitivity)
+  ) |> 
+  filter(
+    waiting_time_sensitivity == min(waiting_time_sensitivity),
+    route_id %in% filter_relevant_routes
+  ) |> 
+  select(-c(run_id, waiting_time_sensitivity, network, warm_up))
+  ) |> 
+  mutate(
+    route_id = factor(route_id, levels = path_levels, labels = path_levels_labels)
+  )
+```
+
+```{r}
+#\ label: ManuallyModifyP2_shape
+route_geometry <- route_geometry |>
+  mutate(
+    y = if_else(
+      route_id == "Path 2" & row_number() > n() - 4,
+      y + 3,
+      y
+    )
+  )
+```
+
+```{r}
+#| label: od_markers
+
+# Origin/destination labels are placed at the midpoint of the origin/dest
+# edge's shape (mean of its shape points — exact midpoint for the typical
+# 2-point straight edge) rather than at its start/end vertex, so the label
+# sits centered along the edge instead of right on top of a corner. Not
+# faceted by algorithm (same OD for both), so ggplot repeats it on both panels.
+roles_levels <- c("Origin", "Destination")
+roles_labels <- c("Origin edge", "Destination edge")
+
+od_markers <- bind_rows(
+  Origin = edge_shapes |>
+    filter(edge == representative_od$origin) |>
+    unnest(shape) |>
+    summarise(x = mean(x), y = mean(y)),
+  Destination = edge_shapes |>
+    filter(edge == representative_od$destination) |>
+    unnest(shape) |>
+    summarise(x = mean(x), y = mean(y)),
+  .id = "role"
+) |>
+  mutate(role = factor(role, levels = roles_levels, labels = roles_labels))
+```
+
+```{r}
+#| label: route_segments
+
+# geom_path can't show direction of travel, and without it a route that
+# doubles back (e.g. starts on a westbound edge before turning towards a
+# destination to the east) reads as an arbitrary detour. Turning each
+# route into (x, y) -> (xend, yend) segments lets us attach an arrowhead
+# to specific edges instead of the whole line.
+route_segments <- route_geometry |>
+  group_by(route_id, edge) |>
+  mutate(xend = lead(x), yend = lead(y)) |>
+  ungroup() |>
+  filter(!is.na(xend))
+
+# Only the origin/destination edges get an arrowhead — enough to show
+# initial/final direction of travel (e.g. why a route detours west first)
+# without cluttering every intermediate edge along the route. Each row's
+# `edge` is the edge its *start* point belongs to, so filtering on it picks
+# out exactly that edge's own segment
+route_endpoint_segments <- route_segments |>
+  filter(edge %in% c(representative_od$origin)) |> 
+  group_by(edge) |> 
+  slice_head(n = 1) |> 
+  select(-route_id)
+```
+
+```{r}
+#| label: routes_plot
+
+# Sidebar plot showing all 3 candidate routes since plot_agent_learning()
+# only draws the chosen route per episode panel.
+ggplot() +
+    geom_path(
+      data = network_backdrop,
+      mapping = aes(x = x, y = y, group = edge),
+      color = "grey85",
+      linewidth = 0.3
+    ) +
+    geom_path(
+      data = route_geometry,
+      mapping = aes(
+        x = x, y = y, color = route_id
+      ),
+      lineend = "round"
+    ) +
+    scale_colour_manual(
+      values = c(
+        `Path 1` = "#000000",
+        `Path 2` = "#696969"
+      )
+    ) +
+    # Preserve network aspect ratio
+    coord_equal() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank(),
+      legend.position = "none",
+      panel.border = element_blank(),
+    ) +
+    geom_segment(
+      data = route_endpoint_segments,
+      mapping = aes(
+        x = x, y = y, xend = xend, yend = yend,
+      ),
+      lineend = "round",
+      arrow = arrow(length = unit(0.20, "cm"), type = "closed")
+    ) +
+    facet_wrap(~route_id, ncol = 2) +
+    ggrepel::geom_label_repel(
+      data = od_markers,
+      mapping = aes(x = x, y = y, label = role),
+
+      # label appearance
+      size = 3,
+      fontface = "bold",
+      label.size = NA,
+      fill = alpha("white", 0.8),
+
+      # repel behavior
+      box.padding = 0.5,
+      nudge_y = 1.5,
+      nudge_x = -0.5,
+
+        # connector
+      min.segment.length = 0,
+      segment.size = 0.3,
+      segment.color = "grey20",
+
+      # reproducibility
+      seed = 1,
+    ) +
+    labs(title = "Relevant routes for the considered OD pair")
+
+ggsave(
+  here("r","RQ12","figures","relevant_routes.png"),
+  width = 10.7,
+  height = 9.12,
+  units = "in",
+  dpi = 300
+  )
 ```
 
 
