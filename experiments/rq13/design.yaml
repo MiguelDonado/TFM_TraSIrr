@@ -70,10 +70,7 @@
 #
 # Why the threshold is a percentage, not a fixed number of seconds:
 # it's better to define the threshold in percentage terms than in
-# absolute terms. In reality I'd say humans don't react until at least 5
-# minutes of difference from the average. But on this network trips last
-# about 80 seconds, so a fixed 5-minute threshold would mean drivers never
-# reacting at all on this network — nonsensical. Re-expressed as a
+# absolute terms (weber-fechner laws). Re-expressed as a
 # percentage instead (e.g. "react after ~20% of expected cost"), the same
 # underlying threshold generalizes across networks with very different
 # typical trip lengths, instead of a fixed tau = 15s that wouldn't.
@@ -176,7 +173,7 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 
 # Why memory_level IS swept here, unlike RQ11/RQ12 (which fix it at 1.00
 # to isolate their own sensitivity parameter):
-# tau filters day-to-day noise in the perceived margin x_r. Under
+# tau filters day-to-day noise in the relative margin x_r. Under
 # memory_level=1 (full memory), PT_r/AC are running averages over an
 # agent's entire history — after enough episodes a single noisy day barely
 # moves them, so the noise tau is supposed to filter has already been
@@ -192,27 +189,25 @@ base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
 grid:
   learning:
     nonlinear_stimulus:
-      # - True
+      - True
       - False
     stimulus_tau:
       - 0
-      # - 0.05
-      # - 0.20
-      # - 0.40
+      - 0.05
+      - 0.20
+      - 0.40
     memory_level:
       - 1.00
-      # - 0.60
-      # - 0.10
+      - 0.60
+      - 0.10
   stopping_rule:
     k_no_change:
       - 5000
   randomness:
     seed:
       - 23
-      # - 42
-      # - 5
-      # - 1999
-      # - 8
+      - 42
+      - 5
   demand:
     n_agents:
       - 2000

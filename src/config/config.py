@@ -63,7 +63,7 @@ Derived fields (computed in __post_init__)
 YAML locations
 --------------
   Development  — experiments/developer_modes/
-  Production   — experiments/tmp/  (populated by scripts/launcher.py
+  Production   — experiments/tmp/  (populated by scripts/run_batch.py
                  during batch runs)
 
 Files aclaration

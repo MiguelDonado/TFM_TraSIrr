@@ -44,6 +44,7 @@ library(ggh4x)
 library(patchwork)
 library(xml2)
 library(glue)
+library(legendry)
 ```
 
 ```{r}
@@ -156,7 +157,7 @@ representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x
 # Hence to choose our representative OD we have to pick:
 # #########################
 # 1. representative_seed
-set.seed(123)
+set.seed(24)
 representative_seed <- sample(data$bm_rgap.parquet$seed, size = 1)
 # 2. representative_congestion
 representative_congestion <- 2000
@@ -232,9 +233,12 @@ representative_OD_df <-
   filter(n_routes > n_disrupted_routes) |> 
   filter(n_disrupted_routes > 0) |> 
   arrange(desc(demand), desc(n_routes), desc(n_disrupted_routes))
+```
 
+```{r}
+#| label: representative_od
 representative_OD <- representative_OD_df |> 
-  slice_head(n = 1)
+  slice(5)
 ```
 
 ```{r}
@@ -347,8 +351,11 @@ flow_paths_df <- flow_paths_df_query |>
   ) |> 
   mutate(
     memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
-  ) |> 
-  mutate(memory_level_fct = fct_rev(memory_level_fct))
+  ) |>
+```
+
+```{r}
+mutate(memory_level_fct = forcats::fct_rev(memory_level_fct))
   
 
 # Check flow share is correct
@@ -434,80 +441,89 @@ flow_paths_df_plot <- flow_paths_df |>
 ```
 
 ```{r}
-#| label: plot3
 # DISRUPTION: LABELS (only showed for the relevant paths, since the other are irrelevant)
 # PATH: COLOR
 # RELEVANT: LINEWIDTH 
 # (same path can be relevant for one memory level, and not relevant for another. 
 # Linewidths will be different across facets for same path. So is properly handle)
-
 path_labels_relevant <- flow_paths_df_plot |> 
   group_by(path, memory_level_fct) |> 
   filter(episode == max(episode, na.rm = TRUE)) |> 
   mutate(
-    path_type = if_else(disrupted, "Disrupted", "Unaffected")
+    path_type = if_else(disrupted, "Disrupted", "")
   ) |> 
   filter(relevant)
 
 # This plots refers to a particular OD, for a particular seed and congestion regime
 upper_y_axisx <- ceiling(max(flow_paths_df$flow) * 100 %/% 10) / 10
+```
 
+```{r}
+#| label: path_colors
+# Colour each route by whether it uses a degraded edge: disrupted routes get a
+# warm amber -> burnt-red ramp (matching the disruption band), unaffected routes
+# a light -> deep green ramp. Shades progress in path order within each group.
+path_disruption_lookup <- flow_paths_df_plot |>
+  distinct(path, disrupted) |>
+  arrange(path)
+
+disrupted_paths  <- as.character(path_disruption_lookup$path[path_disruption_lookup$disrupted])
+unaffected_paths <- as.character(path_disruption_lookup$path[!path_disruption_lookup$disrupted])
+
+ramp_disrupted  <- colorRampPalette(rev(c("#e6a15c", "#8c2d04")))
+ramp_unaffected <- colorRampPalette(rev(c("#7BC96F", "#1B7A3A")))
+
+path_colors <- c(
+  set_names(ramp_disrupted(max(length(disrupted_paths), 1)),  disrupted_paths),
+  set_names(ramp_unaffected(max(length(unaffected_paths), 1)), unaffected_paths)
+)
+
+# Group assignment for the legend: keys are clustered under "Disrupted" /
+# "Unaffected" sub-titles via legendry::guide_legend_group(), so the colour
+# meaning is read off the legend instead of from in-plot labels.
+path_breaks <- c(disrupted_paths, unaffected_paths)
+path_groups <- c(
+  rep("Disrupted",  length(disrupted_paths)),
+  rep("Unaffected", length(unaffected_paths))
+)
+```
+
+```{r}
+#| label: plot3
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
 
 ggplot(
   data = flow_paths_df_plot,
   mapping = aes(x = episode, y = flow)
 ) +
-  # Lines
-  geom_line(
-    mapping = aes(color = path, linewidth = relevant)
-  ) +
-  scale_linewidth_manual(
-    values = c("FALSE" = 0.2, "TRUE" = 0.9),
-    guide = 'none'
-  ) +
-  # Path type labels
-  ggrepel::geom_text_repel(
-    data = path_labels_relevant,
-    mapping = aes(
-      x = episode,
-      y = flow,
-      label = path_type,
-      color = path
-    ),
-    size = 4,
-    show.legend = FALSE,
-    nudge_x = 10,
-    box.padding = 0.2,
-    point.padding = 1,
-    max.overlaps = Inf,
-    hjust = 1
-  ) +
-  # Pre-learning shaded region
+  facet_grid(memory_level_fct ~ .) +
+  ### Pre-learning shaded region
   annotate(
     "rect",
     xmin = -Inf,
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.06
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.4
   ) +
-  scale_x_continuous(breaks = breaks, labels = labels) +
-  # Disruption phase shaded region
+  ### Disruption shaded region
   annotate(
     "rect",
     xmin = disruption_start,
     xmax = disruption_end,
     ymin = -Inf,
     ymax = Inf,
-    fill = "orange",
+    fill = "#d29f86",
     alpha = 0.20,
   ) +
   annotate(
@@ -516,7 +532,7 @@ ggplot(
     y = Inf,
     label = "Disruption",
     fontface = "bold",
-    colour = "firebrick",
+    colour = "#b58463",
     vjust = 2.5,
     size = 4
   ) +
@@ -524,26 +540,37 @@ ggplot(
   xintercept = disruption_start,
   linetype = 2,
   alpha = 0.5,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
   geom_vline(
   xintercept = disruption_end,
   linetype = 2,
   alpha = 0.5,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
+  # Lines
+  geom_line(
+    mapping = aes(color = path, linewidth = relevant)
+  ) +
+  scale_linewidth_manual(
+    values = c("FALSE" = 0.2, "TRUE" = 1.2),
+    guide = 'none'
+  ) +
+  scale_color_manual(
+    values = path_colors,
+    breaks = path_breaks,
+    guide = guide_legend_group(
+      key = key_group_lut(path_breaks, path_groups)
+    )
+  ) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   # Change y-axis to %
   scale_y_continuous(
     labels = scales::percent,
     limits = c(0, upper_y_axisx),
     breaks = seq(0, 1, 0.2)
-  ) +
-  # Change color scale
-  scale_color_brewer(palette = "Dark2", ) +
-  theme(
-    axis.text.x = element_text(size = 10),
   ) +
   labs(
     color = "Route",
@@ -552,12 +579,21 @@ ggplot(
     title = "Path-share evolution during a temporary network disruption",
     subtitle = glue(
       "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+    )
+  ) +
+  theme(
+    axis.text.x = element_text(size = 10),
+    strip.text.y = element_text(size = 12),
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank(),
+    # legendry: styling for the "Disrupted" / "Unaffected" group sub-titles
+    legendry.legend.subtitle = element_text(face = "bold", size = 10),
   )
-) +
-  facet_grid(memory_level_fct ~ .)
 
 ggsave(here("r","RQ4","figures","plot3_flow_share_evolution_paths.png"), width = 12, height = 6)
-
 ```
 
 

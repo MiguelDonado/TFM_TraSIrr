@@ -610,7 +610,7 @@ ggplot(
   labs(
     title = "Behavioral convergence: Route flow stability",
     subtitle = glue(
-      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {representative_OD$origin} → {representative_OD$dest}"
+      "{representative_congestion_label} | Seed {representative_seed} | OD pair: {second_representative_OD$origin} → {second_representative_OD$dest}"
     )
   )
 

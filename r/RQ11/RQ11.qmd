@@ -345,7 +345,7 @@ ggplot(
     point.padding = 0.3,
     force = 1,
     max.overlaps = Inf,
-    seed = 42,
+    seed = 123,
   ) +
   ggrepel::geom_text_repel(
     data = iso_cost_lines_plot,

@@ -18,8 +18,8 @@ Execution order
 
 Entry points
 ------------
-main()              called by __main__ or by scripts/launcher.py
-                    (launcher runs grid-search experiments in batch)
+main()              called by __main__ or by scripts/run_batch.py
+                    (run_batch runs grid-search experiments in batch)
 """
 
 import os

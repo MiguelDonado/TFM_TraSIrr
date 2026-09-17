@@ -184,8 +184,15 @@ ggplot(
   labs(
     title = "The dead-zone suppresses small margins and emphasizes large ones",
     subtitle = "Within the threshold, the response is zero; beyond it, the response grows quadratically.",
-    x = expression("Relative cost margin " * x[r] * " = (AC - PC"[r] * ")/AC"),
+    x = expression("Relative margin " * x[r]),
     y = expression("Transformed margin " * g(x[r]))
+  ) +
+  theme(
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank()
   )
 
 ggsave(here("r","RQ13","figures","plot1_nonlinear_mechanism.png"), width = 12, height = 6)
@@ -229,17 +236,6 @@ rgap_df <- data$bm_rgap |>
     memory_level_fct = fct_rev(factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels))
   ) |> 
   select(-c(stimulus_tau, memory_level))
-
-# Median and quantiles across seeds (here I always run the same episodes, 
-# so i can compute summaries on seeds, instead of having to plot individual trajectories)
-rgap_df_summary <- rgap_df |> 
-  group_by(episode, stimulus_tau_fct, memory_level_fct) |> 
-  summarise(
-    median_rgap = median(rgap),
-    q25_rgap    = quantile(rgap, 0.25),
-    q75_rgap    = quantile(rgap, 0.75)
-  ) |> 
-  ungroup()
 ```
 
 ```{r}
@@ -261,61 +257,63 @@ labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", explorat
 ```{r}
 #| label: plot_2
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 ggplot(
+  data = rgap_df,
+  mapping = aes(x = episode, y = rgap, group = seed)
 ) +
-  geom_line(
-    data = rgap_df_summary,
-    mapping = aes(x = episode, y = median_rgap),
-  ) + 
-  geom_ribbon(
-    data = rgap_df_summary,
-    mapping = aes(x = episode, ymin = q25_rgap, ymax = q75_rgap),
-    alpha = 0.1
-  ) +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    axis.text.x = element_text(size = 9),
-    axis.text.y = element_text(size = 9),
-    strip.text = element_text(size = 10)
-) +
-  labs(
-    x = "Episode",
-    y = "R-gap (%)",
-    title = "Nonlinear learning affects R-gap convergence",
-    subtitle = "Median R-gap across seeds; ribbons show variability"
-  ) +
-  scale_x_continuous(breaks = breaks, labels = labels) +
   annotate(
     "rect",
     xmin = -Inf,
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.5
   ) +
   geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  geom_line(alpha = 0.6, linewidth = 0.4) +
   geom_hline(
     yintercept = 5,
     colour = "grey40",
     linetype = "longdash",
     linewidth = 0.5
   ) +
+  facet_grid(stimulus_tau_fct ~ memory_level_fct) +
+  coord_cartesian(ylim = c(0, 30)) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   # Automatically chosen breaks and add one extra tick
   scale_y_continuous(
     breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5)))
-) +
-  facet_grid(memory_level_fct ~ stimulus_tau_fct)
+  ) +
+  labs(
+    x = "Episode",
+    y = "R-gap (%)",
+    title = "R-gap evolution across episodes",
+    subtitle = "Representative learning trajectories across three memory levels, three thresholds, and three random seeds (BM)"
+  ) +
+  theme(
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 12),
+    strip.text.y = element_text(size = 12)
+  ) 
 
-ggsave(here("r","RQ13","figures","plot2_rgap_evolution.png"), width = 12, height = 6)
+ggsave(here("r","RQ13","figures","plot2_rgap_evolution.png"), width = 12, height = 8)
 ```
 
 ########
@@ -330,14 +328,7 @@ random_seed <- sample(unique(data$bm_rgap$seed), size = 1)
 ```
 
 ```{r}
-#| label: representative_OD
-
-# Choose an OD whose shortest route is not the most stable (hence, there exist alternative routes that are longer but more stable).
-# Is gonna be chosen taking into account equally weighted means (without memory mechanism) and with theta=0 (under normal drivers scenario). 
-# We do it this way because we merely wanna inspect the network/demand structure to choose our OD and isolate it from the effect of other variables
-
-# We wamt that the shortest route is at least 5 seconds faster than the most stable route
-# (this way we could see a difference in the r-gap when implemented risk sensitivity model)
+#| label: choose_OD_pair
 
 rewards_df <- data$rewards |> 
   mutate(
@@ -380,11 +371,11 @@ representative_od_df <- rewards_df |>
   left_join(actions_df, by = c("episode", "agent_id")) |>
   left_join(agents_od_df, by = "agent_id")
 
+# Mean tt: Mean over all the episodes travel times and across all agents
 representative_od_df_summary <- representative_od_df |> 
   group_by(origin, destination, action) |> 
   summarise(
     mean_tt = mean(reward),
-    sd_tt = sd(reward),
     count = n()
   ) |> 
   ungroup() |> 
@@ -474,7 +465,7 @@ representative_OD <- data$demand_odt |> filter(
 ```
 
 ```{r}
-#| label: data2_plot3_qualitative
+#| label: compute_path_flows
 
 # Now that we have the scenario (defined by the seed) 
 # and we also have the representative OD whose paths we want to analyze, 
@@ -634,45 +625,50 @@ n_eff_annotation_df <- n_eff_routes_df |>
     mean_n_eff = mean(n_eff_routes),
     .groups = "drop"
   ) 
+
+write.table(n_eff_annotation_df, file=here("r", "RQ13", "figures", "n_eff_quantitative_table.txt"))
 ```
 
 ```{r}
 #| label: plot3
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
 # This plots refers to a particular OD, for a particular seed, and facet for stimulus_tau and memory_levels
 # Uniform, equal-weight color treatment (same 5-color legend, unchanged across every panel) is the right choice here specifically because the plot's job is to show a hierarchy dissolving, not to guide attention within a hierarchy that's assumed stable throughout.
 
 ggplot(
   data = flow_paths_df,
   mapping = aes(x = episode, y = share, group = path, color = path)
-) +
-  geom_line() +
-  facet_grid(stimulus_tau_fct ~ memory_level_fct) +
-  labs(
-    color = "Route",
-    y = "Route flow",
-    x = "Episode",
-  ) +
-  # Shaded region
+) + # Shaded region
   annotate(
     "rect",
     xmin = -Inf,
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.06
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.4
   ) +
-  # Change color scale
-  scale_color_brewer(palette = "Dark2", name = "Path") +
-  # Tweak miscellaneous stuff
+  facet_grid(stimulus_tau_fct ~ memory_level_fct) +
+  geom_line() +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_x_continuous(breaks = breaks, labels = labels) +
+  labs(
+    color = "Route",
+    x = "Episode",
+    y = "Route share (%)",
+    title = "Effect of τ on route flows",
+    subtitle = "Route share over episodes for a representative OD, faceted by τ and memory level"
+  ) +
   theme(
     legend.text  = element_text(size = 10),
     legend.key.size = unit(0.6, "lines"),
@@ -680,14 +676,17 @@ ggplot(
     strip.text.y = element_text(angle = 0, size = 11),
     axis.text.x = element_text(size = 9),
     axis.text.y = element_text(size = 9),
-) +
-  scale_y_continuous(labels = scales::percent_format()) +
-  scale_x_continuous(breaks = breaks, labels = labels) +
-  labs(
-    y = "Route share (%)",
-    title = "As τ grows, agents become less sensitive to small route differences",
-    subtitle = "Route share over episodes for a representative OD, faceted by τ and memory level"
-  ) 
+  ) +
+  scale_color_manual(
+    values = c(
+    "#000000",
+    "#3d453e",
+    "#626d65",
+    "#969b87",
+    "#c8c8ae"
+    ),
+    breaks = c(1,3,4,2,5)
+  )
 
 ggsave(here("r","RQ13","figures","plot3_qualitative_route_flow_evolution.png"), width = 12, height = 6)
 ```
@@ -706,6 +705,28 @@ representative_od_decision_df |>
   ) |> 
   select(origin, destination, route_id, mean_tt, distance_to_min)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #####
 APPENDIX
@@ -1017,6 +1038,7 @@ n_eff_annotation_df <- n_eff_routes_df |>
 
 ```{r}
 #| label: plot3
+#| 
 
 # This plots refers to a particular OD, for a particular seed, and facet for stimulus_tau and memory_levels
 # Uniform, equal-weight color treatment (same 5-color legend, unchanged across every panel) is the right choice here specifically because the plot's job is to show a hierarchy dissolving, not to guide attention within a hierarchy that's assumed stable throughout.

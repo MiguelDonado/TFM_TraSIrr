@@ -2,14 +2,24 @@ configuration_name:
   config_name: production
 
 randomness:
-  seed: 42
+  seed:
+    - 42
+    - 5
+    - 23
+    - 1999
+    - 8
 
 numerical_constants:
   epsilon: 1.0e-8
 
 learning:
   learning_rate: 0.3
-  memory_level: 1
+  memory_level: 
+    - 0.1
+    - 0.25
+    - 0.5
+    - 0.75
+    - 1
 
 simulation:
   simulation_time: 3600
@@ -18,8 +28,12 @@ simulation:
   maxtries: 1000
 
 network_path:
-  # network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
-  network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
+  network:
+    - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/Sioux_Falls.net.xml"
+  network_normal:
+    - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml"
+  network_degraded:
+    - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
 
 duarouter:
   routing_algorithm: "CH"
@@ -29,9 +43,13 @@ duarouter:
   n_routes_per_OD: 8
 
 stopping_rule:
-  max_episodes: 150
+  max_episodes: 450
   tolerance_stopping_rule: 0.01
-  k_no_change: 3
+  k_no_change: 5000
+  degradation_start_episode: 
+    - 151
+  degradation_end_episode:
+    - 301
 
 demand:
   n_agents: 2000
@@ -51,3 +69,4 @@ due_convergence:
 mode_and_flags:
   last_episode_gui_BM: false
   last_episode_gui_duaIterate: false
+

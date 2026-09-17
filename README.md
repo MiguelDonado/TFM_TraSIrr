@@ -152,7 +152,7 @@ src/
 ├── DUE_convergence/             # R-gap, TDSP, duaIterate benchmark pipeline
 ├── parsing/                     # XPath-driven SUMO XML parsers → Parquet
 ├── analysis/                    # SUMO-GUI edge-colour comparison of BM vs duaIterate
-├── mlflow_tracking/             # MLflow logging for simulation and analysis runs
+├── mlflow_tracking/             # MLflow logging for simulation runs
 ├── utils/                       # Agent/demand generation, free-flow TT, network stat helpers
 ├── tools/                       # One-off network prep tools + sensitivity/ parameter sweeps
 └── config/
@@ -160,8 +160,9 @@ src/
     ├── config.yaml              # XPath selectors for SUMO XML parsing
     └── paths.py                 # All paths derived from BASE_DIR
 scripts/
-├── launcher.py                  # Grid-search launcher (YAML design → combinations)
-├── run_analysis.py              # Quarto render + MLflow analysis run logging
+├── run_batch.py                 # Grid-search runner (YAML design → combinations) for one or more RQs
+├── run_analysis.py              # Pulls MLflow artifacts into combined parquets for R analysis
+├── manage_runs.py               # Bulk archive/restore of MLflow simulation runs
 └── start_mlflow.py              # MLflow UI pointed at project SQLite backend
 experiments/
 ├── rq1/                         # RQ1 configs: base.yaml + grid-search design.yaml

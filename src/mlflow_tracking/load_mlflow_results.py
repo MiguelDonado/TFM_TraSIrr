@@ -3,7 +3,7 @@ Utilities for programmatically recovering artifact data from multiple MLflow run
 
 Typical workflow
 ----------------
-1. Run batch experiments via scripts/launcher.py (many simulation runs,
+1. Run batch experiments via scripts/run_batch.py (many simulation runs,
    each with different hyperparameters).
 2. Use load_artifact_across_runs() to pull one artifact file from every
    matching run into a single concatenated DataFrame.

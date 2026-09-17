@@ -26,7 +26,7 @@ On this research question only the aggregated R-gap will be considered.
 
 **The plots to answer this question will be:**
 
-1. R-gap and Mean Travel Time evolution
+1. R-gap evolution
 2. Flow on disrupted edge
 3. Path share evolution
 
@@ -39,6 +39,7 @@ For more details, check the research questions document.
 library(renv)
 renv::load()
 library(tidyverse)
+library(glue)
 library(arrow)
 library(ggh4x)
 library(patchwork)
@@ -98,6 +99,22 @@ data <- parquet_files |>
 ```
 
 ```{r}
+#| label: representative_seeds_spaghetti_plots
+
+# Randomly select 3 seeds (seeded so the same 3 - and their colors - are
+# picked every time this re-renders)
+set.seed(23)
+representative_seeds <- sample(unique(data$bm_rgap$seed), size = 2)
+
+labels_seeds <- c("S1", "S2")
+
+color_lines <- c(
+  "S1" = "#9999a1",  
+  "S2" = "#000000"   
+  )  
+```
+
+```{r}
 #| label: get_warm_up_period(exploration)
 
 # It's not perfectly precise — the true per-agent start is episode > 24 and all routes visited, so some agents start a few episodes later than 24. But it's the honest guaranteed floor ("no agent has started learning before this point"), it's already computed for every run via config.warm_up, and given the plot already treats each seed's trajectory independently without forcing alignment (per the existing code comment about seeds finishing at very different episode counts), a single shared floor line is consistent with that treatment rather than adding seed-specific precision the rest of the plot doesn't have either.
@@ -111,7 +128,6 @@ exploration_phase_floor <- as.numeric(unique(data$bm_rgap$warm_up))
 representative_memory_levels <- c("1", "0.1")
 representative_memory_levels_labels <- map_chr(representative_memory_levels, \(x) paste0("Memory = ", x))
 ```
-
 
 ```{r}
 #| label: breaks_plot1
@@ -138,6 +154,7 @@ disruption_end <- as.numeric(unique(data$bm_rgap$degradation_end_episode))
 rgap_df <- data$bm_rgap |> 
   filter(
     n_agents == congestion_to_analyze,
+    seed %in% representative_seeds
   ) |> 
   mutate(
     congestion_regime = make_congestion_regime(n_agents)
@@ -147,27 +164,28 @@ rgap_df <- data$bm_rgap |>
     memory_level %in% representative_memory_levels
   ) |> 
   mutate(
-    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
+    memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels),
+    seed_fct = factor(seed, levels = representative_seeds, labels = labels_seeds)
   ) |> 
   mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
-  select(-memory_level)
- 
-# Median and quantiles across seeds (here I always run the same episodes, 
-# so i can compute summaries on seeds, instead of having to plot individual trajectories)
-rgap_df_summary <- rgap_df |> 
-  group_by(episode, congestion_regime, memory_level_fct) |> 
-  summarise(
-    median_rgap = median(rgap),
-    q25_rgap    = quantile(rgap, 0.25),
-    q75_rgap    = quantile(rgap, 0.75)
-  ) |> 
-  ungroup()
+  select(-memory_level, -seed)
 ```
 
 ```{r}
 #| label: plot_1_a
 
+## DONT MAKE THIS PLOT, R-GAP COMPUTATION IS WRONG FOR THIS CASE
+## BECAUSE THE NETWORK SPEED CHANGES, BUT WHEN IMPUTING MISSING VALUES IN THE AVG LINK TRAVEL TIME
+## TABLE IM USING THE FREE FLOW TRAVEL TIMES CONSIDERING SPEED OF 50 WHEN IN REALITY FOR THE DISRUPTED
+## EDGES IS 10 DURING THOSE DISRUPTED DAYS.
+
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
 ggplot(
+  data = rgap_df,
+  mapping = aes(x = episode, y = rgap, color = seed_fct, group = seed_fct)
 ) +
   annotate(
     "rect",
@@ -175,7 +193,7 @@ ggplot(
     xmax = disruption_end,
     ymin = -Inf,
     ymax = Inf,
-    fill = "orange",
+    fill = "#d29f86",
     alpha = 0.25,
   ) +
   annotate(
@@ -184,80 +202,79 @@ ggplot(
     y = Inf,
     label = "Disruption",
     fontface = "bold",
-    colour = "firebrick",
+    colour = "#b58463",
     vjust = 2.5,
-    size = 4
+    size = 4.5
   ) +
   geom_vline(
   xintercept = disruption_start,
   linetype = 2,
   alpha = 0.7,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
   geom_vline(
   xintercept = disruption_end,
   linetype = 2,
   alpha = 0.7,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
-  geom_line(
-    data = rgap_df_summary,
-    mapping = aes(x = episode, y = median_rgap),
-  ) + 
-  geom_ribbon(
-    data = rgap_df_summary,
-    mapping = aes(x = episode, ymin = q25_rgap, ymax = q75_rgap),
-    alpha = 0.1
-  ) +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    axis.text.x = element_text(angle = 0, hjust = 1, size = 9),
-) +
-  labs(
-    x = "Episode",
-    y = "R-gap (%)",
-    title = "Adaptation to temporary network disruption",
-    subtitle = "Evolution before, during, and after the disruption. High congestion (2000)"
-  ) +
-  scale_x_continuous(breaks = breaks, labels = labels) +
   annotate(
     "rect",
     xmin = -Inf,
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
-  xintercept = exploration_phase_floor,
-  linetype = 2,
-  alpha = 0.4,
-  color = "red",
-  linewidth = 0.5
-  ) +
-  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+    xintercept = exploration_phase_floor,
+    linetype = 2,
+    alpha = 0.4,
+    color = color,
+    linewidth = 0.5
+  ) + 
+  geom_line() + 
   geom_hline(
     yintercept = 5,
     colour = "grey40",
     linetype = "longdash",
     linewidth = 0.5
   ) +
+  geom_hline(yintercept = 0, alpha = 0.6, linewidth = 0.7, color = "#7D7D7D") +
+  scale_x_continuous(breaks = breaks, labels = labels) +
   # Automatically chosen breaks and add one extra tick
   scale_y_continuous(
-    breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5)))
-) +
-  facet_grid(memory_level_fct ~ .)
-
-ggsave(here("r","RQ4","figures","plot1_rgap_evolution.png"), width = 12, height = 6)
+    breaks = function(x) sort(unique(c(scales::breaks_pretty()(x), 5))),
+  ) +
+  scale_color_manual(name = "Seed", values = color_lines) +
+  labs(
+    x = "Episode",
+    y = "R-gap (%)",
+    title = "Adaptation to temporary network disruption",
+    subtitle = "Evolution before, during, and after the disruption | High congestion (2000)\nTraining trajectories for two random seeds (BM)"
+  ) +
+  facet_grid(memory_level_fct ~ .) +
+  theme(
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank(),
+    strip.text = element_text(size = 12)
+  ) +
+  coord_cartesian(ylim = c(0, 35))
   
+ggsave(here("r","RQ4","figures","plot1_rgap_evolution.png"), width = 12, height = 10)  
+
 ```
 
 ```{r}
 #| label: data_plot_2
+
+representative_seed <- as.numeric(representative_seeds[1])
 
 # Infer the degraded edges (with their NB/SB/EB/WB direction suffixes)
 # straight from the network files instead of hardcoding them: an edge
@@ -282,6 +299,7 @@ get_lane_speeds <- function(net_xml_path) {
 normal_speeds <- get_lane_speeds(network_normal_path)
 degraded_speeds <- get_lane_speeds(network_degraded_path)
 degraded_edges <- names(degraded_speeds)[degraded_speeds != normal_speeds[names(degraded_speeds)]]
+degraded_edges <- degraded_edges[c(3,4)]
 
 # Efficiently dealing with large dataframes
 
@@ -314,13 +332,14 @@ query <- edgedata_pq |>
     edge %in% degraded_edges,
     n_agents == congestion_to_analyze,
     memory_level %in% representative_memory_levels,
+    seed == representative_seed
   ) |> 
   mutate(
     entered = as.numeric(entered)
   ) |> 
-  group_by(episode, edge, seed, n_agents, memory_level) |> 
+  group_by(episode, edge, n_agents, memory_level) |> 
   summarise(
-    flow_edge = sum(entered)
+    flow_edge = sum(entered) 
   ) |> 
   ungroup() 
 
@@ -332,15 +351,6 @@ flow_degraded_edges_df <- flow_degraded_edges_df_tmp |>
   ) |> 
   mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
   select(-memory_level)
-  
-
-flow_degraded_edges_df_summary <- flow_degraded_edges_df |> 
-  group_by(episode, edge, n_agents, memory_level_fct) |> 
-  summarise(
-    median_flow = median(flow_edge),
-    q25_flow = quantile(flow_edge, 0.25),
-    q75_flow = quantile(flow_edge, 0.75)
-  )
 ```
 
 ```{r}
@@ -361,31 +371,27 @@ labels[breaks==exploration_phase_floor] <- paste0("Learning\nstarts (", explorat
 ```{r}
 #| label: plot_2
 
+fill <- "#E8E5DE"
+alpha <- 0.8
+color <- "#6F6C67"
+
+edge_colors <- set_names(c("#9999a1", "#000000"), degraded_edges)
+
 ggplot() +
-  geom_line(
-    data = flow_degraded_edges_df_summary,
-    mapping = aes(x = episode, y = median_flow, color = edge),
-  ) + 
-  geom_ribbon(
-    data = flow_degraded_edges_df_summary,
-    mapping = aes(x = episode, ymin = q25_flow, ymax = q75_flow),
-    alpha = 0.1
-  ) +
-  facet_grid(memory_level_fct~edge) +
   annotate(
     "rect",
     xmin = -Inf,
     xmax = exploration_phase_floor,
     ymin = -Inf,
     ymax = Inf,
-    fill = "red",
-    alpha = 0.08
+    fill = fill,
+    alpha = alpha
   ) +
   geom_vline(
   xintercept = exploration_phase_floor,
   linetype = 2,
   alpha = 0.4,
-  color = "red",
+  color = color,
   linewidth = 0.5
   ) +
   annotate(
@@ -394,7 +400,7 @@ ggplot() +
     xmax = disruption_end,
     ymin = -Inf,
     ymax = Inf,
-    fill = "orange",
+    fill = "#d29f86",
     alpha = 0.25,
   ) +
   annotate(
@@ -403,37 +409,48 @@ ggplot() +
     y = Inf,
     label = "Disruption",
     fontface = "bold",
-    colour = "firebrick",
+    colour = "#b58463",
     vjust = 2.5,
-    size = 4
+    size = 3.25
   ) +
   geom_vline(
   xintercept = disruption_start,
   linetype = 2,
   alpha = 0.7,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
   geom_vline(
   xintercept = disruption_end,
   linetype = 2,
   alpha = 0.7,
-  color = "orange",
+  color = "#d29f86",
   linewidth = 0.5
   ) +
-  scale_x_continuous(breaks = breaks, labels = labels) +
-  theme(
-    axis.text.x = element_text(angle = 0, hjust = 1, size = 9),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    legend.position = "none"
+  geom_line(
+    data = flow_degraded_edges_df,
+    mapping = aes(x = episode, y = flow_edge, color = edge),
   ) +
+  scale_color_manual(values = edge_colors) +
+  facet_grid(memory_level_fct~edge) +
   labs(
     x = "Episode",
     y = "Edge flow (vehicles)",
     title = "Flow evolution on disrupted edges",
-    subtitle = "Flows on the disrupted edges before, during, and after the disruption. High congestion (2000)"
-  )
+    subtitle = glue("Flows on the disrupted edges before, during, and after the disruption \nSeed: {representative_seed} | High congestion (2000)")
+  ) +
+  theme(
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    panel.grid.major.y = element_line(
+      color = "#E7E5DB",
+      linewidth = 0.30
+    ),
+    panel.grid.minor.y = element_blank(),
+    legend.position = "none",
+    strip.text.y = element_text(size = 10)
+  ) +
+  scale_x_continuous(breaks = breaks, labels = labels)
 
 ggsave(here("r","RQ4","figures","plot2_flow_disrupted_edges_evolution.png"), width = 12, height = 6)
 ```

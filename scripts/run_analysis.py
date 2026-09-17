@@ -1,9 +1,8 @@
 """
-Renders the Quarto report for a research question and logs results to MLflow.
+Prepare data to be used in the research questions R analysis scripts.
 
 Usage:
-  python scripts/run_analysis.py <research_question>              full pipeline
-  python scripts/run_analysis.py <research_question> --prepare-only  data prep only
+  python scripts/run_analysis.py <research_question>               data prep
 
 Steps:
   1. Prepare data — pull simulation artifacts from MLflow across all runs
@@ -12,14 +11,28 @@ Steps:
      single DataFrame. params_to_attach controls which MLflow params (e.g. seed,
      n_agents) are added as columns, so each row in the combined DataFrame can be
      identified by the run (combination) it came from. run_id is always added automatically.
-  2. Render      — run quarto render on r/<RQ>/<RQ>.qmd.  (skipped with --prepare-only)
-  3. Log         — log the rendered report and figures as an MLflow analysis run.  (skipped with --prepare-only)
-
---prepare-only is useful when developing R scripts
 
 ----- Evaluation runs analyzed -----
-Analysis will be performed for runs tagged with status = "active".
-Runs tagged with status = "archived" will not be analyzed.
+Only runs tagged status = "active" are analyzed. A simulation run's status
+tag goes through three states over its lifetime:
+
+  (no tag)  — just performed by run_batch.py. Not yet analyzed: results
+              haven't been checked in the MLflow UI yet, so they shouldn't
+              be trusted into a report sight unseen.
+  "active"  — manually promoted after reviewing the run's metrics in the
+              MLflow UI and confirming they look right. Only active runs
+              are pulled into analysis.
+  "archived"— manually excluded, either because a newer sweep replaced it
+              or because it was reviewed and rejected. Never analyzed.
+
+The (no tag) -> "active" promotion is done by hand in the MLflow UI, on
+purpose — it's the checkpoint where a run is actually looked at before
+being trusted in a report. The (no tag) -> "archived" is also done by hand
+in the MLflow UI.
+The "active" -> "archived" and "archived" -> "no status" is bulk, via
+scripts/manage_runs.py, since doing that one run at a time in the UI is
+tedious for a full grid.
+
 Runs logged with config_name = "development" (e.g. from a design_dev.yaml
 sweep) are also excluded, so dev-scale runs never mix into the report.
 
@@ -38,10 +51,8 @@ RQ12
 RQ13
 """
 
-import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -52,32 +63,17 @@ from mlflow import MlflowClient
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from config.paths import BASE_DIR
-from mlflow_tracking.analysis import log_analysis_run_MLflow
 from mlflow_tracking.load_mlflow_results import load_artifact_across_runs
 from mlflow_tracking.utils import set_tracking_uri
 
 
 def run_analysis_rq():
-    """Execute a research question analysis and log results to MLflow."""
 
     research_question = sys.argv[1]
     if not re.match(r"^RQ\d+$", research_question):
         sys.exit(f"Invalid research question '{research_question}'. Expected format: RQ1, RQ2, ...")
-    prepare_only = "--prepare-only" in sys.argv
 
     _prepare_data(research_question)
-
-    if prepare_only:
-        return
-
-    _render_analysis(research_question)
-    log_analysis_run_MLflow(
-        research_question=research_question,
-        artifact_path=BASE_DIR / "r" / research_question,
-    )
-
-    os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")
-
 
 def _prepare_data(research_question: str) -> None:
     """Download and combine MLflow artifacts for the given research question."""
@@ -111,7 +107,7 @@ def _prepare_rq1_data() -> None:
     """Pull R-gap artifacts from all RQ1 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ1' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "n_agents", "warm_up"]
@@ -142,7 +138,7 @@ def _prepare_rq2_data() -> None:
     """Pull R-gap artifacts from all RQ2 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ2' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "memory_level", "n_agents", "warm_up"]
@@ -172,12 +168,14 @@ def _prepare_rq3_data() -> None:
     """Pull R-gap artifacts from all RQ3 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ3' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "learning_rate", "n_agents", "warm_up"]
 
     artifacts = {
+        "agents_od": "environment/agents_od.parquet",
+        "bm_results": "agent_state/BM_results.parquet",
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "bm_policy_change": "agent_state/policy_change_BM.parquet",
@@ -203,7 +201,7 @@ def _prepare_rq4_data() -> None:
     """Pull R-gap artifacts from all RQ4 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ4' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = [
@@ -218,6 +216,7 @@ def _prepare_rq4_data() -> None:
 
     artifacts = {
         "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+        "agents_od": "environment/agents_od.parquet",
         "dua_rgap": "DUE/duaIterate/R-gap/rgap.parquet",
         "bm_edgedata": "processed/edgedata.parquet",
         "od_routes": "environment/od_routes.parquet",
@@ -241,7 +240,7 @@ def _prepare_rq5_data() -> None:
     """Pull R-gap artifacts from all RQ5 simulation runs and save combined parquets."""
     filter_string = (
         "tags.research_question = 'RQ5' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = [
@@ -288,7 +287,7 @@ def _prepare_rq7_data() -> None:
     """
     filter_string = (
         "tags.research_question = 'RQ7' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
 
@@ -349,7 +348,7 @@ def _prepare_rq8_data() -> None:
     """
     filter_string = (
         "tags.research_question = 'RQ8' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "memory_level"]
@@ -379,7 +378,7 @@ def _prepare_rq9_data() -> None:
     '''
     filter_string = (
         "tags.research_question = 'RQ2' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "memory_level", "n_agents"]
@@ -410,7 +409,7 @@ def _prepare_rq10_data() -> None:
     '''
     filter_string = (
         "tags.research_question = 'RQ10' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["memory_level", "network", "warm_up"]
@@ -443,7 +442,7 @@ def _prepare_rq11_data() -> None:
     '''
     filter_string = (
         "tags.research_question = 'RQ11' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "warm_up", "reliability_sensitivity"]
@@ -477,7 +476,7 @@ def _prepare_rq12_data() -> None:
     '''
     filter_string = (
         "tags.research_question = 'RQ12' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "warm_up", "waiting_time_sensitivity", "network"]
@@ -512,7 +511,7 @@ def _prepare_rq13_data() -> None:
     '''
     filter_string = (
         "tags.research_question = 'RQ13' and tags.run_type = 'simulation' "
-        "and tags.status != 'archived' and params.config_name = 'production'"
+        "and tags.status = 'active' and params.config_name = 'production'"
     )
     experiment_names = ["Thesis"]
     params_to_attach = ["seed", "warm_up", "stimulus_tau", "memory_level"]
@@ -556,26 +555,6 @@ def _prepare_rq13_data() -> None:
             params_to_attach=params_to_attach,
         )
         df.to_parquet(data_dir / f"{name}.parquet", index=False)
-
-def _render_analysis(research_question: str) -> None:
-    """Render the Quarto report(s) for a research question."""
-    rq_dir = BASE_DIR / "r" / research_question
-
-    if research_question in ("RQ4", "RQ7"):
-        qmd_files = [rq_dir / f"{research_question}.qmd", rq_dir / f"{research_question}_part2.qmd"]
-    else:
-        qmd_files = [rq_dir / f"{research_question}.qmd"]
-
-    for qmd_file in qmd_files:
-        subprocess.run(
-            [
-                "/usr/lib/rstudio/resources/app/bin/quarto/bin/quarto",
-                "render",
-                str(qmd_file),
-            ],
-            check=True,
-        )
-
 
 if __name__ == "__main__":
     run_analysis_rq()

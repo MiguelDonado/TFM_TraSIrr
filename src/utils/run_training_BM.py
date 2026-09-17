@@ -36,7 +36,7 @@ from stopping_rule.stopping_rule import check_marl_convergence, create_policies_
 # Debug: dump this agent's full state (history, p, ET, PT, stimulus) after
 # every episode to AGENT_DEBUG_TRACE, viewable in VS Code as a folding JSON
 # tree like the debugger's Locals/Watch panel. Set to None to disable.
-DEBUG_AGENT_ID = 'agent_1010'
+DEBUG_AGENT_ID = 'agent_1010' if config.n_agents == 2000 else 'agent_5'
 
 
 def _run_training_loop(

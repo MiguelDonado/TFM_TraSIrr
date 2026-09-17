@@ -1,112 +1,21 @@
-- [] Why I have chosen R-gap 5% threshold to qualify convergence to DUE. Ask Mari Paz which one to use and say that is kind of arbitrary. 
-- [] **Where do I establish the DUE convergence threshold, at 5 or 2.5?. On the averse extensions mention that be more accurate and careful when saying that averse population of drivers do not converge to DUE, because in some cases it goes slightly beyond the line.**
-- [] Mention in the averse extensions that introducing them is relevant when the shortest route is not the stablest or the one with least waiting time, otherwise does not matter if drivers averse or not they will choose the same route.
-- [] Maybe on the research questions of averse drivers i should reference again the section bounded rationality or the papers that support the introduction of those more realistic aspects of human behavior.
-- [] I dont know if in the formulation I presented all together. I believe so, then I should somehow in the averse extensions mention, that is studying one at a time, and keeping the sensitivity to 0 of the other averse extension.
-- [] Compute the route flow variability quantitative metric
-- [] Make sure that the insights that I have in /home/miguel/6.Projects/Thesis/Docs/research/4.BuildingRelevantNetwork/0.Network_demand_considerations.md are included in the thesis
-- In the RQ2, the first plot, maybe its enough with just analyzing the high congestion case, the most interesting.
-- [] Somewhere mention the launcher files i used to execute the experiments...
-- [] Explain meaning simulation, episode, time interval, simulation horizon...
-- [] Mention the simulation is intended to simulate 1 peak hour of communting travelers.
-- [] All the additional design choices and things relative to the research questions that are somewhat outside the main rpogram, i should explain them on each research question, all the code changes introduced because of that research question.
-- [] Include the map of traffic assignment
-- [] Explicitly mention that im only analyzing the post-warm up agents
-- [] All the hyperparameter sensitivity analysis use the same production.yaml file. Paste it somewhere in Github for reproducibility and say it on the thesis they can visit that link if they want more detail. I create the folder reproducibility, but all the files are the same, they are equal to production.yaml
-- [] 
-- [] Mention that I used AI
-- [] Well mention that the dependencies between the hyperparameters are somewhat circular, because all the hyyperparameters were evaluated using a demand of 2000, so it is not totally accurate say that i set this congestion regime hyperparameter almost at the end.
-- [] Specify that the congestion regimes have to be executed once at the beginning before anything else is done, to get the necessary demand to achieve each level. Becausse now is not completely automatic since it doesnt calibrate the demand automatically.
-- [] Mention somewhere, not only in the appendix that we are simulating 1 hour.
-- [] Check the captions make the figures self contained
-- [] Explicitly mention that there are several concepts of convergence, from the marl point of view when agents stop updating its policies, and from the traffic sense when it reaches DUE.
-- [] I could also say that a contribution was a new heuristic to search for a set of paths for an OD pair, usually they did k-shortest path.
-- [] Mention I used MLflow
-- [] Mention which sumo version im using.
-- [] Add explanation of why R-gap can be negative
-- [] Decirles de quedar la semana que viene. Darles varios dias para leer la thesis
-- [] Add Molano last paper LLM to literature review
-- [] Add the traffic assignment map that i did in DRAWIO. It is in downloads
-- [] Put evaluation paragraph comparing RL approach vs Classic approach in literature review
-- [] Explain properly the difference between classic traffic assignment and MARL approach. One uses flow update algorithms such as MSA that try to solve and update flows to get to an equilibrium, whereas MARL just update policies of agents based on past experiences and stopped when some number of iterations or when policies converge, but it does not try to solve any equilibrium, instead equilibrium may emerge naturally. It individually update route choice, whereas in classic assignment it updates aggregate flows to get to equilibrium instead of individually.
-
-- [] Explain all the extensions gotchas that I wrote in code comments, but on the latex. I think some of those detail explanations of why I used some formulas may be useful.
-- [] Mention that the nonlinear extension captures the intuition of the 4th assumption of BM framework, and the waiting time averse and risk averse captures the intuition of the 3th assumption of BM framework.
-- [] Mention that thesis is modelling the morning and evening peak periods related to work-related commutes.
-- [] I can even talk from my own experience, with rodalies in BCN and buses. I prefer to take a bus even if its a bit longer but more reliable.
-- [] Explain route choice can be day-to-day or within 
-- [] Acabar de leer todas las cosas que ponga en las referencias  
-- [] Añadir lineas best case scenario y worst case scenario 
-- [] En las graficas usar pocos colores 
-- [] En las graficas de los flow solo marcar los disrupted con la label (los otros se entienden por contraposicion que no estan disrupted). Las mas relevantes mas gordas las que no importa en gris
-- [] Llamarlo warm-up instead of pre-learning
-- [] Solucionar que al hacer lo de las referencias solo aparezca el numero
-- [] Lo del 90 percentil no quedo claro. Coger el worst case
-
-- [] Add to dedicatory "And to David Goggins, Kobe Bryant, and the other role models who helped me change my inner dialogue. As Goggins said, “Never pick the easy road.”
-- [] Revisar formulas paper 
-
-- [] Traffic dynamics can be modeled in continuous time, implying that travelers update their decision in real time. However, such an assumption is generally unrealistic, since individuals do not continuously replan their routes while traveling. Instead, it is more appropriate to adopt a discrete time framework, in which travelers make decisions at specific intervals. The way time is discretized depends on the moments at which drivers are assumed to make routing decisions. In some approaches, travelers revise their route choices between consecutive days based on previous travel experiences, leading to so-called day-to-day models. In other approaches, decisions are updated dynamically at road intersections during the trip, resulting in junction-level models. Since the objective is to model the behavior and decision-making processes of drivers, the problem can be naturally formulated as a sequential decision-making problem, for which reinforcement learning provides a suitable framework.
-
-- [] Include a summary figure that places what im doing in all the traffic assignment and bounded rationality structure that i explained in background and in traffic modelling and simulation
-- [] Be explicit and mention that Im using a classical RL algorithm, not a modern RL like Q-learning...
-- [] This BRUE formulation has been helpful in explaining observed changes in network flows after a disruption. For instance, assume that a link is removed from the network due to a disaster of some sort, and that flows adjust towards a new equilibrium in the network without the affected link. When the link is restored, flows will adjust again. If the principle of user equilibrium is true, the flows will move back to exactly the same values as before. However, in practice there has been some “stickiness” observed, and not all drivers will return to the same routes they were initially on. The BRUE framework provides a logical explanation for this: when the network is disrupted, certain drivers were forced to choose new paths. When the network is restored, they will only switch back to their original paths if the travel time savings are sufficiently large. Otherwise, they will remain on their new paths.
-- [] Lo de que el DTA se computa teniendo en cuenta los experienced travel time instead of the instantaneous travel time (Book: Transportation Network Analysis) ponerlo en la thesis, puesto que me resulto muy intuitivo y aclaratorio. Pag 28/701
-- [] Ver si el modelo mas irracional llega a DUE. Sino llegara entonces seria muy relevante, porque daria a indicar
-  que DUE no es para nada realista.
-- [] Memoria corta. Recomendacion 60 paginas y anexos.
-- [] Añadir que he utilizado la IA  
-- [] Make the thesis to be focused on my contribution
-- [] Define somewhere in the thesis the edge nomenclature
-- [] Mencionar en los caption que parámetros he usado (memory level, learning rate)
-- [] Cite or incorpore my own Thompson Sampling project.
-- [] Let clear, what it means a simulation, an episode, a time interval, experiment run (some explanatory figure may ease understanding)
-- [] Briefly acknowledge on the thesis that Im applying TDSP on a non-FIFO table. Example paragraph:
-    - The time-dependent shortest-path calculations were performed on discretized average link travel-time tables extracted from SUMO. Due to temporal aggregation, some link travel-time profiles do not strictly satisfy the FIFO property. Consequently, the TDSP computations should be interpreted as approximate shortest paths. However, the resulting Rgap values exhibited the expected convergence behavior, both during Bush-Mosteller learning and during DUA iterations, suggesting that the impact of these violations is limited for the studied scenarios.
-- [] A principle of experimental design is to fix parameters in an order that respects their dependencies. Every parameter should be evaluated under the conditions in which it will actually be used. If one parameter depends on another, the latter should be fixed first.
-- [] Explian what I saw in the paper where does this road go, that we trust more the information that we got from experience, than from Google Maps, internal information. This is a motivation to defend that even though exists Google Maps, that does not mean all people act ratioanlly. For example, sometimes google maps show us the shortest route, but warn us that there is some maintainance or congestion and that we should take another better alternative. Even so, we believe it wont be that bad and go on the "shortest route" that may not be the shortest anymore because of congestion...
-- [] Pagina con la notacion y abreviaturas
-- [] Incorporate the conclusions and results in the abstract
-- [] Literature review (state of the art). Related papers. At the end say which limitations
-- [] Things they told me in the meeting to change:
-  1. After literature review, SUMO outline
-  2. Research questions: Ponerlas al principio en los objetivos, y luego en las conclusiones lo menciono.
-  3. En results: Poner preguntas y responder
+Formato:
 - [] Para todo lo que vaya antes del cuerpo de la monografía (contenido de mi thesis) utilizar una numeración, para el contenido de mi thesis utilizar otra numeración que empieze desde 1 de nuevo.
 - [] Dont worry about list of figures and tables being added to the toc. Is the way this class works.
-- []
 
--  ### Non-study hyperparameters
-1. Perform sensitivity analysis on hyperparameters that directly influence the learning algorithm
-   or the r-gap values:
-   - min_distance_factor
-   - random_factor
-   - n_routes_per_od
-   - threshold_density
-   - warm_up_time
-   - fixed_time_min
-   - fixed_time_interval (yes)
-2. Fix implementation/computational hyperparameters using reasonable choices (without the need to 
-   perform sensitivity analysis), unless evidence that they materially affect the results:
-   - network
-   - tolerance_demand_calibration
-   - max_size_od_space
-   - simulation_time
-   - routing_algorithm
-   - max_attempts
-   - n_threads
-   - max_episodes
-   - tolerance_stopping_rule
-   - k_no_change
-   - heuristic_veh_km_hour_initial_guess
-   - fringe_factor
-   - duaIterate_max_iterations
-   - duaIterate_step_length
+Presentation:
+- [] I can even talk from my own experience, with rodalies in BCN and buses. I prefer to take a bus even if its a bit longer but more reliable.
 
 
-- [] Meet format requisites
+
+- [] In the conclusion explain at the beginning cost rank changes meaning.
+- [] Add Molano last paper LLM to literature review
+- [] Check all the plots have colors that allow them to be properly visualized
+- [] Mencionar que duaiterate estaba utilizando 5 rutas como maximo
+
+
+
+
 - [ ] **Evitar plagio**: La thesis debe haber sido revisada por el software Ouriginal (https://bibliotecnica.upc.edu/es/propietat-intellectual/ouriginal)
-- [ ] **Citas y bibliografia** (referencias)
 - [ ] **Numeración**
 
 - Los **epígrafes de capítulos, apartados y subapartados** deben aparecer jerarquizados por la tipografía y con números arábigos subdivididos por puntos. Por ejemplo:

@@ -33,8 +33,5 @@ python src/main.py <config.yaml>
 ## 2. Run analysis manually
 See module docstring /home/miguel/6.Projects/Thesis/scripts/run_analysis.py
 
-## 3. Batch run (grid search)
-See module docstring /home/miguel/6.Projects/Thesis/scripts/launcher.py
-
-## 4. Nightly batch run (multiple research questions)
+## 3. Batch run (grid search, one or more research questions)
 See module docstring /home/miguel/6.Projects/Thesis/scripts/run_batch.py

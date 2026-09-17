@@ -2,13 +2,29 @@ configuration_name:
   config_name: production
 
 randomness:
-  seed: 42
+  seed:       
+    - 42
+    - 5
+    - 23
+    - 1999
+    - 8
 
 numerical_constants:
   epsilon: 1.0e-8
 
 learning:
-  learning_rate: 0.3
+  learning_rate:
+    - 0.99
+    - 0.90
+    - 0.80
+    - 0.70
+    - 0.60
+    - 0.50
+    - 0.40
+    - 0.30
+    - 0.20
+    - 0.10
+    - 0.01
   memory_level: 1
 
 simulation:
@@ -18,7 +34,6 @@ simulation:
   maxtries: 1000
 
 network_path:
-  # network: "/home/miguel/6.Projects/Thesis/sumo/net/Koh/1st.net.xml"
   network: "/home/miguel/6.Projects/Thesis/sumo/net/Popular/Sioux_Falls.net.xml"
 
 duarouter:
@@ -34,7 +49,10 @@ stopping_rule:
   k_no_change: 3
 
 demand:
-  n_agents: 2000
+  n_agents: 
+    - 1300
+    - 1550
+    - 2000
 
 interval_time:
   fixed_time_min: 0.5  # minutes
