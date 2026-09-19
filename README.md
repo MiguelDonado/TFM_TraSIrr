@@ -16,9 +16,33 @@ A short walkthrough of the pipeline in action:
 
 ---
 
+## Tech Stack
+
+| Layer | Tools |
+|---|---|
+| Traffic simulation | SUMO (Simulation of Urban MObility) |
+| Reinforcement learning | Python |
+| Experiment tracking | MLflow |
+| Big Data | Arrow |
+| Data Science | R · tidyverse · Quarto |
+| Containerization | Docker |
+
+---
+
+## Software Architecture
+
+[View the main program architecture diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/1.Implementation/MainProgram.pdf>)
+
+The traffic assignment model actually implemented in this project, alongside the general/textbook formulation it's adapted from, for reference:
+
+- [Traffic assignment model — implemented](<thesis_document/media/1.Introduction/TrafficAssignmentModel_Implemented.pdf>)
+- [Traffic assignment model — general formulation](<thesis_document/media/1.Introduction/TrafficAssignmentModel.pdf>)
+
+---
+
 ## Background
 
-Traffic assignment models estimate how travel demand distributes itself across a road network. [This diagram](<thesis_document/media/4.LiteratureReview/MapTrafficAssignment(2)(1).drawio.pdf>) situates the day-to-day learning approach studied here among the broader family of traffic assignment methods.
+The following diagram shows the landscape of traffic assignment models and positioning of the proposed day-to-day boundedly rational MARL DTA model. [This diagram](<thesis_document/media/4.LiteratureReview/MapTrafficAssignment(2)(1).drawio.pdf>).
 
 ---
 
@@ -35,6 +59,14 @@ This thesis is guided by the following primary research questions:
 - **(Nonlinear Response)** How does introducing a nonlinear response to perceived travel-time differences — reflecting that people tend to ignore small differences, but once a difference becomes noticeable, react increasingly strongly — affect route-choice behavior and convergence toward a DUE state?
 - **(Heterogeneous Memory)** Whether considering populations of drivers with different memory levels changes convergence behavior compared with a homogeneous population.
 - **(Spatial Traffic Comparison)** A comparison between the implemented algorithm and the SUMO `duaIterate` benchmark algorithm.
+
+---
+
+## Networks
+
+**Sioux Falls** — the standard transportation research benchmark network used for all main experiments: 24 nodes, 76 directed edges, no traffic lights, uniform free-flow speed.
+
+[View the network diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/2.ExperimentalDesign/Sioux_Falls.drawio.pdf>)
 
 ---
 
@@ -62,11 +94,13 @@ The second research question compared the spatial traffic patterns produced by t
 
 ### Memory Sensitivity
 
-The third research question investigated the effect of memory. Lower memory levels increased route-flow variability. However, for the synthetic network and demand configuration considered, all tested memory levels still converged to DUE.
+The third research question investigated the effect of memory. Lower memory levels increased route-flow variability. However, for the synthetic network and demand configuration considered, all tested memory levels still converged to DUE. These results may differ in more complex network and demand configurations with more frequent changes in the cost ranking of routes across episodes, where memory and learning rate may have a stronger influence on the learning dynamics and convergence towards DUE.
 
 <p>
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot1_rgap_evolution_mem_seed.png" width="48%" alt="R-gap evolution across episodes for different memory levels">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot3_route_flow_stability.png" width="48%" alt="Route-flow stability by memory level">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot1_agent_learning_mem0_1.png" width="48%" alt="Agent learning process at memory level 0.1">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot1_agent_learning_mem1.png" width="48%" alt="Agent learning process at memory level 1">
 </p>
 
 ### Disruption Recovery
@@ -77,6 +111,7 @@ The influence of memory became more apparent when considering a temporary disrup
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/disrupted_network.png" width="32%" alt="Disrupted network segment">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/plot1_rgap_evolution.png" width="32%" alt="R-gap evolution around the disruption">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/plot2_flow_disrupted_edges_evolution.png" width="32%" alt="Flow evolution on disrupted edges">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/plot3_flow_share_evolution_paths.png" width="48%" alt="Route-flow share evolution across paths">
 </p>
 
 ### Learning-Rate Sensitivity
@@ -95,6 +130,8 @@ The sixth research question investigated the effect of risk-sensitive behavior. 
 <p>
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/plot1_risk_sensitivity_mechanism.png" width="48%" alt="Risk-sensitivity mechanism">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/plot2_convergence_plot.png" width="48%" alt="Convergence under risk sensitivity">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/plot3_qualitative_route_flow_evolution.png" width="48%" alt="Qualitative route-flow evolution under risk sensitivity">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/relevant_routes.png" width="48%" alt="Relevant routes for the risk-aversion scenario">
 </p>
 
 ### Waiting-Time Aversion
@@ -104,6 +141,8 @@ The seventh research question investigated the effect of waiting-time sensitive 
 <p>
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/plot1_waitingTime_sensitivity_mechanism.png" width="48%" alt="Waiting-time sensitivity mechanism">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/plot2_convergence_plot.png" width="48%" alt="Convergence under waiting-time sensitivity">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/plot3_qualitative_route_flow_evolution.png" width="48%" alt="Qualitative route-flow evolution under waiting-time sensitivity">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/relevant_routes.png" width="48%" alt="Relevant routes for the waiting-time-aversion scenario">
 </p>
 
 ### Nonlinear Response
@@ -113,6 +152,7 @@ Finally, the eighth research question investigated the nonlinear reinforcement m
 <p>
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ13/plot1_nonlinear_mechanism.png" width="48%" alt="Nonlinear stimulus mechanism">
 <img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ13/plot2_rgap_evolution.png" width="48%" alt="R-gap evolution under the nonlinear mechanism">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ13/plot3_qualitative_route_flow_evolution.png" width="48%" alt="Qualitative route-flow evolution under the nonlinear mechanism">
 </p>
 
 ### Summary
@@ -123,83 +163,111 @@ The introduction of additional behavioral mechanisms, such as waiting-time sensi
 
 ---
 
-## Tech Stack
+## Getting Started (Simulation + Tracking) 
 
-| Layer | Tools |
-|---|---|
-| Traffic simulation | SUMO (Simulation of Urban MObility) |
-| Reinforcement learning | Python |
-| Experiment tracking | MLflow |
-| Big Data | Arrow |
-| Data Science | R · tidyverse · Quarto |
-| Containerization | Docker |
+The environment needed for simulation and tracking (Python, SUMO, MLflow) has been containerized using Docker. Hence, to run the program it is only needed to have Docker installed, solving the Matrix From Hell problem.
 
----
+**Prerequisites:** Docker
 
-## Networks
+### Setup
 
-**Sioux Falls** — the standard transportation research benchmark network used for all main experiments: 24 nodes, 76 directed edges, no traffic lights, uniform free-flow speed.
+Copy the whole block below and paste it into your terminal — it clones the repo, pulls the pre-built image (skips compiling SUMO from source, which takes ~20 minutes), and prepares everything needed to bring the containers up:
 
-[View the network diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/2.ExperimentalDesign/Sioux_Falls.drawio.pdf>)
-
----
-
-## Software Architecture
-
-[View the main program architecture diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/1.Implementation/MainProgram.pdf>)
-
-The traffic assignment model actually implemented in this project, alongside the general/textbook formulation it's adapted from, for reference:
-
-- [Traffic assignment model — implemented](<thesis_document/media/1.Introduction/TrafficAssignmentModel_Implemented.pdf>)
-- [Traffic assignment model — general formulation](<thesis_document/media/1.Introduction/TrafficAssignmentModel.pdf>)
-
----
-
-## Getting Started with Docker
-
-The training/simulation/tracking pipeline (Python, SUMO, MLflow) is fully containerized — no manual dependency setup needed beyond Docker itself. R/Quarto analysis is intentionally kept outside Docker: it's used interactively in RStudio, and `renv.lock` already pins its package versions.
-
-**Prerequisites:** Docker with the Compose plugin (`docker compose version`).
-
-### Get the image
-
-Either pull the pre-built image (fast — skips compiling SUMO from source):
 ```sh
+# 1. Move to your home directory
+cd ~
+
+# 2. Create a folder for the project (whatever name you prefer)
+mkdir thesis_migueldonado_project
+
+# 3. Move into the created folder
+cd thesis_migueldonado_project
+
+# 4. Clone the repository into current folder
+git clone https://github.com/MiguelDonado/TFM_TraSIrr.git .
+
+# 5. Docker must be installed: https://docs.docker.com/engine/install/
 docker pull migueldonado/thesis-app:latest
+
+# 6. Tag the pulled image so docker-compose.yml can find it
 docker tag migueldonado/thesis-app:latest thesis-app:latest
-```
-or build it yourself (~20 minutes, compiles SUMO 1.26.0 from source):
-```sh
-docker build -t thesis-app .
-```
 
-### One-time setup
-
-Generate a `.env` file so containers run as your own user rather than root — otherwise files the container creates through the bind mount (logs, generated data, MLflow's database) end up owned by root on your host:
-```sh
+# 7. Generate a .env file so containers run as you, not as root
 echo "UID=$(id -u)" > .env
 echo "GID=$(id -g)" >> .env
+
+# 8. Bring the containers up
+docker compose up -d
 ```
 
-### Running it
+### Running it (without GUI support)
 
 ```sh
-docker compose up -d                                       # start the app + mlflow containers
-docker compose exec app python scripts/run_batch.py RQ1 --dev
-docker compose exec app python scripts/run_analysis.py RQ1
-docker compose exec app python scripts/manage_runs.py RQ1 --archive
-docker compose down                                         # stop when done
+# 1. Bring up the compose project (start the app + mlflow containers)
+docker compose up -d
+
+##########################
+# SCRIPTS THAT CAN BE RUN
+##########################
+# a) Run simulations experiments in batch
+docker compose exec app python scripts/run_batch.py RQ1 RQ2 RQ3 [--dev] 
+
+# b) Manage "status" of runs in mlflow
+docker compose exec app python scripts/manage_runs.py <research_question> --archive --apply     actually archive
+docker compose exec app python scripts/manage_runs.py <research_question> --restore --apply     actually restore (remove status tag)
+
+# c) Prepare data to be used in the research questions R analysis scripts
+docker compose exec app python scripts/run_analysis.py <research_question>  
+
+# 2. Stop when done
+docker compose down                                         
 ```
-MLflow UI: [http://localhost:5000](http://localhost:5000)
+### Check experiments in MLflow UI: 
 
-### GUI (optional, Linux only)
+Once the compose project is up, after running `docker compose up -d`, you can access the MLflow UI at: [http://localhost:5000](http://localhost:5000)
 
-A separate compose file adds SUMO GUI support via X11 forwarding:
+### Running it (with GUI support) (only works if your Linux distro uses X11):
+
 ```sh
+
+# 1. Needed for GUI functionality
 xhost +local:docker
+
+# 2. Bring up compose project with GUI support
 docker compose -f docker-compose-gui.yml up -d
-docker compose -f docker-compose-gui.yml exec app sumo-gui
-xhost -local:docker   # revoke access when done
+
+##########################
+# SCRIPTS THAT CAN BE RUN
+##########################
+# a) Run simulations experiments in batch
+docker compose exec app python scripts/run_batch.py RQ1 RQ2 RQ3 [--dev] 
+
+# b) Manage "status" of runs in mlflow
+docker compose exec app python scripts/manage_runs.py <research_question> --archive --apply     actually archive
+docker compose exec app python scripts/manage_runs.py <research_question> --restore --apply     actually restore (remove status tag)
+
+# c) Prepare data to be used in the research questions R analysis scripts
+docker compose exec app python scripts/run_analysis.py <research_question>  
+
+# 3. Stop when done
+docker compose -f docker-compose-gui.yml down
+xhost -local:docker  
+```
+---
+
+## Getting Started (Data Science)
+
+The data science part, in which the analysis of the simulation outputs is performed, is done in R. This part has not been containerized — it needs R and RStudio installed locally, and the exact package versions pinned in `renv.lock` restored.
+
+**Prerequisites:** R + RStudio
+
+1. Install R: [cran.r-project.org](https://cran.r-project.org/)
+2. Install RStudio: [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/)
+3. Clone the repo (skip if you already did this for the Docker setup above).
+4. Open `Thesis.Rproj` in RStudio — this triggers `.Rprofile`, which automatically activates `renv` for the project (bootstrapping `renv` itself if it isn't already installed).
+5. In the R console, install the required R packages:
+```r
+renv::restore()
 ```
 
 ---
