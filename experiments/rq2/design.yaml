@@ -7,13 +7,13 @@
 
 # In total: 99 experiments
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 grid:
   learning:
     memory_level:
       - 1.00
-      - 0.90
+      # - 0.90
       # - 0.80
       # - 0.70
       # - 0.60

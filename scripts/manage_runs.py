@@ -13,7 +13,7 @@ so this script does it in bulk.
 Usage:
   python scripts/manage_runs.py <research_question> --archive             dry run
   python scripts/manage_runs.py <research_question> --archive --apply     actually archive
-  python scripts/manage_runs.py <research_question> --restore --apply     actually restore
+  python scripts/manage_runs.py <research_question> --restore --apply     actually restore (remove status tag)
 
 --archive/--restore are mutually exclusive and one is required.
 --apply is required to write anything; without it the script only lists

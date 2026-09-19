@@ -169,7 +169,7 @@
 #            > 0  →  chosen route was cheaper than expected  →  reinforce
 #            < 0  →  chosen route was more expensive         →  penalise
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 # Why memory_level IS swept here, unlike RQ11/RQ12 (which fix it at 1.00
 # to isolate their own sensitivity parameter):

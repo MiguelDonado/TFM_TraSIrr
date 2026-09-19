@@ -1,0 +1,13 @@
+# The Dockerfile only ever COPYs requirements.txt — everything else (source
+# code, data, thesis media, R analysis, .git history) is bind-mounted at
+# runtime, not baked into the image.
+#
+# docker build packages the ENTIRE build context and sends it to the Docker
+# daemon before a single Dockerfile instruction runs — COPY just reaches
+# into that already-received bundle afterward. Without this file, the whole
+# repo (thesis PDFs, .git history, data/) would get packaged and transferred
+# upfront, only for 99.9% of it to sit unused for the rest of the build.
+# Excluding it here means it's never packaged or sent in the first place,
+# not just ignored after arrival.
+*
+!requirements.txt

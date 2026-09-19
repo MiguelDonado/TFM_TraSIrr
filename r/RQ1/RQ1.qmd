@@ -313,7 +313,6 @@ ggsave(here("r","RQ1","figures","plot2_refined_rgap_heatmap.png"), width = 12, h
 
 ```{r}
 #| label: data_plot3
-#| eval: false
 
 # Plot3: worst-case (90th percentile) OD-specific r-gap, one value per
 # algorithm x seed, computed across that seed's own final episode. 
@@ -432,7 +431,7 @@ ggplot(
   labs(
     x = NULL,
     y = "OD-specific R-gap (%)",
-    title = "Final OD-specific R-gap by Algorithm",
+    title = "OD-specific R-gap by Algorithm",
     subtitle = "Representative random seed; distributions computed from the final episodes."
   ) +
   theme(

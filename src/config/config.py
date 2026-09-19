@@ -78,6 +78,8 @@ from dataclasses import dataclass, field
 
 import yaml
 
+from config.paths import BASE_DIR
+
 
 def load_experiment_config(path):
     with open(path) as f:
@@ -241,6 +243,16 @@ class Config:
     # Derived values
     #####################
     def __post_init__(self):
+        # Resolve network paths against BASE_DIR so a path relative to the
+        # repo root works both natively and inside the container (BASE_DIR /
+        # already-absolute-path just ignores BASE_DIR, so this stays
+        # backward-compatible with any still-absolute entries).
+        self.network = str(BASE_DIR / self.network)
+        if self.network_normal:
+            self.network_normal = str(BASE_DIR / self.network_normal)
+        if self.network_degraded:
+            self.network_degraded = str(BASE_DIR / self.network_degraded)
+
         # Compute end_time
         self.end_time = self.warm_up_time + self.simulation_time
 

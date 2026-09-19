@@ -97,7 +97,7 @@
 # a deliberately dominant effect for mechanism-testing rather than a
 # realistic calibration.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 # Why memory_level is fixed at 1.00 (not swept) here:
 # memory_level (gamma) and waiting_time_sensitivity (phi) both independently

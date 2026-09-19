@@ -85,7 +85,7 @@
 #   Pass 2: compute deviations from that specific mean.
 #   Pass 3: combine PT_r + theta * sigma_r into PC_r.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 # Why memory_level is fixed at 1.00 (not swept) here:
 # memory_level (gamma) and reliability_sensitivity (theta) both independently

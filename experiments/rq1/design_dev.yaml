@@ -1,4 +1,4 @@
-base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
+base_config: experiments/base_dev.yaml
 
 grid:
   randomness:

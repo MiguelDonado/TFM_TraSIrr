@@ -345,12 +345,18 @@ query <- edgedata_pq |>
 
 flow_degraded_edges_df_tmp <- query |> collect()
 
+representative_edge_levels <- c("E10_15_NB", "E10_15_SB")
+representative_edge_levels_labels <- c("Link_10_15_NB", "Link_10_15_SB")
+
 flow_degraded_edges_df <- flow_degraded_edges_df_tmp |> 
   mutate(
     memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
   ) |> 
   mutate(memory_level_fct = fct_rev(memory_level_fct)) |> 
-  select(-memory_level)
+  select(-memory_level) |> 
+  mutate(
+    edge_fct = factor(edge, levels = representative_edge_levels, labels = representative_edge_levels_labels)
+  )
 ```
 
 ```{r}
@@ -435,9 +441,9 @@ ggplot() +
   facet_grid(memory_level_fct~edge) +
   labs(
     x = "Episode",
-    y = "Edge flow (vehicles)",
-    title = "Flow evolution on disrupted edges",
-    subtitle = glue("Flows on the disrupted edges before, during, and after the disruption \nSeed: {representative_seed} | High congestion (2000)")
+    y = "Link flow (vehicles)",
+    title = "Flow evolution on disrupted links",
+    subtitle = glue("Flows on the disrupted links before, during, and after the disruption \nSeed: {representative_seed} | High congestion (2000)")
   ) +
   theme(
     axis.text.x = element_text(size = 12),

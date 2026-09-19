@@ -88,8 +88,11 @@ def _load_design(path):
     with open(path) as f:
         design = yaml.safe_load(f)
 
-    # 2. Store the path of the base config file
-    base_config_path = design["base_config"]
+    # 2. Store the path of the base config file. Resolved against BASE_DIR
+    # so a path relative to the repo root works both natively and inside
+    # the container (BASE_DIR / already-absolute-path just ignores BASE_DIR,
+    # so this stays backward-compatible with any still-absolute entries).
+    base_config_path = BASE_DIR / design["base_config"]
 
     # 3. From the design YAML select the grid of parameters
     grid = design["grid"]

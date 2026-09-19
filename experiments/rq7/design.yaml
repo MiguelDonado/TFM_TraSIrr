@@ -19,7 +19,7 @@
 #   against, so it needs to be properly converged, not just a cheap
 #   baseline.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 grid:
   randomness:

@@ -17,7 +17,7 @@
 #   the reference agains which BM is compared, so it needs to be properly
 #   converged.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 grid:
   learning:

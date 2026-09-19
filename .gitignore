@@ -10,10 +10,12 @@ renv/library/
 /Walkthrough
 [0-9][0-9][0-9]/
 /mlruns
-mlflow.db
+/mlflow_db
 /data
 /experiments/logs
 *claude*
+/experiments/tmp
+.env
 
 # generated analysis outputs (RQ scripts regenerate these)
 r/RQ*/data/**/*.parquet

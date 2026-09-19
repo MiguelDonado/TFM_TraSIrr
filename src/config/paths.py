@@ -210,7 +210,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 BACKEND_DB = BASE_DIR / "mlflow_db" / "mlflow.db"
 
 # Dir that stores artifacts across runs
-ARTIFACTS_STORAGE = BASE_DIR / "mlruns" / "mlruns"
+ARTIFACTS_STORAGE = "mlruns/mlruns"
 
 # ============================================================
 # Main folders

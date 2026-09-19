@@ -44,7 +44,7 @@ def set_up_mlflow():
     # If its not, create it
     if mlflow.get_experiment_by_name(experiment_name) is None:
         mlflow.create_experiment(
-            experiment_name, artifact_location=f"file://{ARTIFACTS_STORAGE}"
+            experiment_name, artifact_location=ARTIFACTS_STORAGE
         )
 
     # 3. Specify which experiment this run belongs to

@@ -24,7 +24,7 @@
 #   (memory_level column), so it can be correlated against that agent's
 #   own behavior/convergence during analysis.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base_dev.yaml
+base_config: experiments/base_dev.yaml
 
 grid:
   learning:
@@ -38,14 +38,14 @@ grid:
       - 0.7
   network_path:
     network:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/Sioux_Falls.net.xml"
+      - "experiments/rq5/net/Sioux_Falls.net.xml"
     network_normal:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/templates/Normal_Sioux_Falls.net.xml"
+      - "experiments/rq5/net/templates/Normal_Sioux_Falls.net.xml"
     network_degraded:
-      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
-      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
-      - "/home/miguel/6.Projects/Thesis/experiments/rq5/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
-      # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      # - "experiments/rq4/net/templates/25km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+      - "experiments/rq5/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+      # - "experiments/rq4/net/templates/10km_h_Degraded_10-15_Sioux_Falls.net.xml"
   stopping_rule:
     max_episodes:
       - 300

@@ -21,7 +21,7 @@
 #   away after restoration instead of permanently biasing route choice —
 #   which is what should let the original equilibrium re-emerge.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 grid:
   learning:
@@ -33,12 +33,12 @@ grid:
       - 1
   network_path:
     network:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/Sioux_Falls.net.xml"
+      - "experiments/rq4/net/Sioux_Falls.net.xml"
     network_normal:
-      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml"
+      - "experiments/rq4/net/templates/Normal_Sioux_Falls.net.xml"
     network_degraded:
-    # - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
-      - "/home/miguel/6.Projects/Thesis/experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
+    # - "experiments/rq4/net/templates/25km_h_Degraded_10-15_Sioux_Falls.net.xml"
+      - "experiments/rq4/net/templates/10km_h_Degraded_10-11_10-15_Sioux_Falls.net.xml"
   stopping_rule:
     max_episodes:
       - 450

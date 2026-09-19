@@ -17,7 +17,7 @@
 #   (memory_level column), so it can be correlated against that agent's
 #   own behavior/convergence during analysis.
 
-base_config: /home/miguel/6.Projects/Thesis/experiments/base.yaml
+base_config: experiments/base.yaml
 
 grid:
   learning:

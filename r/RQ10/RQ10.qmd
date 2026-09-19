@@ -248,7 +248,7 @@ route_geometry <- build_route_geometry(
 # sits centered along the edge instead of right on top of a corner. Not
 # faceted by algorithm (same OD for both), so ggplot repeats it on both panels.
 roles_levels <- c("Origin", "Destination")
-roles_labels <- c("Origin edge", "Destination edge")
+roles_labels <- c("Origin link", "Destination link")
 
 od_markers <- bind_rows(
   Origin = edge_shapes |>
