@@ -1,27 +1,10 @@
-# Day-to-Day Route Choice with Multi-Agent Reinforcement Learning
+# Day-to-Day MARL Route-Choice Model
 
-**Research thesis** — Universidad Politécnica de Catalunya (UPC) · 2026
+**Research thesis** — Universidad Politècnica de Catalunya (UPC) · 2026
 
-Most traffic models assume drivers act rationally — choosing routes that minimise
-travel cost given full knowledge of network conditions. Decades of cognitive science
-research show otherwise: human decisions are systematically biased, heuristic, and
-frequently suboptimal.
+The objective of this thesis was to investigate whether a day-to-day multi-agent reinforcement learning (MARL) approach to route choice — in which agents learn solely from their own experiences — converges to a Dynamic User Equilibrium (DUE) within a dynamic traffic assignment (DTA) setting, using a microscopic traffic simulation. First, the study examined whether a DUE would emerge from the learning process of rational agents using a reinforcement learning approach. Second, more realistic behavioral traits were integrated into the agents' decision-making to examine how these traits affect the learning process and whether a DUE would still emerge.
 
-This project bridges traffic simulation and cognitive modeling in two phases. The
-first phase trains rational route-choice agents using Reinforcement Learning inside
-SUMO (Simulation of Urban MObility), an open-source microscopic traffic simulator,
-and validates their collective behavior against Dynamic User Equilibrium (DUE) — the
-theoretical outcome of perfectly rational route choice. The second phase introduces
-cognitively inspired agents whose decisions emerge from a mixture of subsystems: one
-reflecting the rational agent, others implementing known human heuristics grounded in
-cognitive science.
-
-This offers a novel framework for modeling urban mobility grounded in realistic human
-behavior, with applications in traffic forecasting, infrastructure planning, and
-behavioral intervention design.
-
-**Current status:** Phase 1 is under active development — the rational agent
-(Bush-Mosteller RL) and DUE convergence pipeline are implemented and being evaluated.
+📄 [Read the full thesis document](thesis_document/thesis.pdf)
 
 ---
 
@@ -29,88 +12,114 @@ behavioral intervention design.
 
 A short walkthrough of the pipeline in action:
 
-![Demo of the pipeline](Thesis.gif)
+![Demo of the pipeline](demo/demo.gif)
 
 ---
 
-## Research Scope
+## Background
 
-The thesis investigates multiple research directions around day-to-day route choice
-learning. The questions are grouped into the following themes:
+Traffic assignment models estimate how travel demand distributes itself across a road network. [This diagram](<thesis_document/media/4.LiteratureReview/MapTrafficAssignment(2)(1).drawio.pdf>) situates the day-to-day learning approach studied here among the broader family of traffic assignment methods.
 
-| Theme | Description |
-|---|---|
-| DUE convergence | Can RL agents collectively reach a DUE? How do hyperparameters affect convergence speed and stability? |
-| Behavioral extensions | Nonlinear update rules, travel-time variability as perceived cost |
-| Heterogeneous agents | Mixed populations with different memory decay rates |
-| Congestion regimes | Learning dynamics under light, moderate, and heavy congestion |
-| Path & congestion comparison | Do BM and duaIterate produce similar routes and congestion patterns? |
-| Traffic scenarios | Recovery from temporary link-capacity degradation |
+---
+
+## Thesis Objectives
+
+This thesis is guided by the following primary research questions:
+
+- **(Rational Agent)** Does a multi-agent reinforcement learning approach, following the Bush-Mosteller learning rule, converge toward a dynamic user equilibrium (DUE) when applied within a microscopic traffic simulation environment?
+- **(Memory Sensitivity)** Does reducing agents' memory level — how quickly older experiences lose weight relative to more recent ones when forming perceptions — prevent the model from converging toward a DUE state, and how does it affect route-choice behavior?
+- **(Learning-Rate Sensitivity)** Does reducing agents' learning rate — how quickly they update their beliefs in response to new experience — prevent the model from converging toward a DUE state, and how does it affect route-choice behavior?
+- **(Disruption Recovery)** If a link is temporarily disrupted and then restored, does the model recover the same route-choice equilibrium it had reached before the disruption?
+- **(Risk Aversion)** How does incorporating travel-time variability into a route's perceived cost, making agents sensitive to risk, not just to mean travel time, affect route-choice behavior and convergence toward a DUE state?
+- **(Waiting-Time Aversion)** How does incorporating time spent stopped into a route's perceived cost, making agents sensitive to waiting, not just to mean travel time, affect route-choice behavior and convergence toward a DUE state?
+- **(Nonlinear Response)** How does introducing a nonlinear response to perceived travel-time differences — reflecting that people tend to ignore small differences, but once a difference becomes noticeable, react increasingly strongly — affect route-choice behavior and convergence toward a DUE state?
+- **(Heterogeneous Memory)** Whether considering populations of drivers with different memory levels changes convergence behavior compared with a homogeneous population.
+- **(Spatial Traffic Comparison)** A comparison between the implemented algorithm and the SUMO `duaIterate` benchmark algorithm.
 
 ---
 
 ## Results
 
-**RQ1:** Does Bush-Mosteller multi-agent RL converge to a Dynamic User
-Equilibrium (DUE) in a microscopic SUMO traffic simulation? Convergence is
-measured via three R-gap variants — aggregate, by departure interval, and
-by OD pair — computed by the `DUE_convergence` pipeline (TDSP-based), and
-compared against `duaIterate`, SUMO's built-in DUE solver, as a baseline.
-Full analysis: [`r/RQ1/RQ1.qmd`](r/RQ1/RQ1.qmd).
+### Rational Agent
+
+The first research question examined whether a MARL approach based on the Bush-Mosteller algorithm could lead to a DUE state under the assumption of rational drivers. The results show that, under these assumptions, the agents converge to a DUE state through their individual learning process. Consequently, DUE can emerge not only through a conventional iterative assignment procedure but also through a MARL approach, where equilibrium results from individual route-choice decisions.
 
 <p>
-<img src="r/RQ1/figures/plot1_rgap_evolution.png" width="32%" alt="R-gap evolution across episodes">
-<img src="r/RQ1/figures/plot2_refined_rgap_heatmap.png" width="32%" alt="Refined R-gap heatmap by departure interval">
-<img src="r/RQ1/figures/plot3_od_rgap_worstcase.png" width="32%" alt="Worst-case OD-specific R-gap">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ1/plot1_rgap_evolution.png" width="32%" alt="R-gap evolution across episodes">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ1/plot2_refined_rgap_heatmap.png" width="32%" alt="Refined R-gap heatmap by departure interval">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ1/plot4_distribution_final_od_r_gap.png" width="32%" alt="Distribution of final OD-level R-gap">
 </p>
 
-**RQ2:** Does reducing agents' memory level prevent the Bush-Mosteller model from
-converging to a DUE? Convergence is measured via the aggregated R-gap — computed by
-the `DUE_convergence` pipeline (TDSP-based) — across different memory levels, and
-compared against `duaIterate` as a baseline.
-Full analysis: [`r/RQ2/RQ2.qmd`](r/RQ2/RQ2.qmd).
+### Spatial Traffic Comparison
+
+The second research question compared the spatial traffic patterns produced by the proposed Bush-Mosteller MARL approach with those obtained using the `duaIterate` benchmark. The resulting flows on the links were similar between the two approaches. However, at the path level, the Bush-Mosteller MARL approach distributed traffic more broadly among the available routes, whereas `duaIterate` concentrated traffic on fewer routes.
 
 <p>
-<img src="r/RQ2/figures/plot1_rgap_evolution_mem_seed.png" width="48%" alt="R-gap evolution across episodes for different memory levels">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ7/plot_route_composition_1.png" width="32%" alt="Route composition comparison, OD pair 1">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ7/plot_route_composition_5.png" width="32%" alt="Route composition comparison, OD pair 5">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ7/plot_route_composition_6.png" width="32%" alt="Route composition comparison, OD pair 6">
 </p>
 
-**RQ3:** Does the learning rate affect BM's convergence speed without significantly
-altering its final ability to approach a DUE? Convergence is measured via the
-aggregated R-gap — computed by the `DUE_convergence` pipeline (TDSP-based) — across
-different learning rates, and compared against `duaIterate` as a baseline.
-Full analysis: [`r/RQ3/RQ3.qmd`](r/RQ3/RQ3.qmd).
+### Memory Sensitivity
+
+The third research question investigated the effect of memory. Lower memory levels increased route-flow variability. However, for the synthetic network and demand configuration considered, all tested memory levels still converged to DUE.
 
 <p>
-<img src="r/RQ3/figures/plot1_rgap_evolution_l_seed.png" width="32%" alt="R-gap evolution across episodes for different learning rates">
-<img src="r/RQ3/figures/plot2_sensitivity_analysis_learning.png" width="32%" alt="Sensitivity analysis of final R-gap to learning rate">
-<img src="r/RQ3/figures/plot3_convergence_speed_l.png" width="32%" alt="Convergence episode vs learning rate">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot1_rgap_evolution_mem_seed.png" width="48%" alt="R-gap evolution across episodes for different memory levels">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ2/plot3_route_flow_stability.png" width="48%" alt="Route-flow stability by memory level">
 </p>
+
+### Disruption Recovery
+
+The influence of memory became more apparent when considering a temporary disruption: lower memory enabled faster adaptation to the disruption and partial recovery after the network was restored, whereas perfect memory resulted in slower adaptation and persistent avoidance of the previously disrupted routes.
+
 <p>
-<img src="r/RQ3/figures/plot4_policy_stabilization_learning_rate.png" width="48%" alt="Appendix: policy stabilization by learning rate">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/disrupted_network.png" width="32%" alt="Disrupted network segment">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/plot1_rgap_evolution.png" width="32%" alt="R-gap evolution around the disruption">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ4/plot2_flow_disrupted_edges_evolution.png" width="32%" alt="Flow evolution on disrupted edges">
 </p>
 
----
+### Learning-Rate Sensitivity
 
-## Technical Highlights
+The fifth research question examined the effect of learning rate. For the synthetic network and demand configuration considered, all tested learning rates converged towards DUE. Higher learning rates accelerated both the learning process and the attainment of DUE, although they resulted in slightly higher final R-gap values. These results may differ in more complex network and demand configurations with more frequent changes in the cost ranking of routes across episodes, where memory and learning rate may have a stronger influence on the learning dynamics and convergence towards DUE.
 
-- **Multi-agent RL system:** N Bush-Mosteller agents independently learn
-  route-choice probabilities from daily travel time observations, with no
-  centralised coordination.
-- **Congestion-metric sensitivity tools:** Measure the free-flow-normalised
-  congestion ratio produced by a given demand level, used to sweep
-  hyperparameters (agent count, warm-up time, etc.) against realistic
-  congestion regimes.
-- **No-TraCI architecture:** Routes are written as XML files each episode
-  rather than injected via socket — significantly faster for episodic
-  day-to-day learning where routes cannot change mid-episode.
-- **R-gap convergence verification:** Relative gap computed via time-dependent
-  shortest paths (TDSP), measured at both aggregate and OD-pair level.
-- **Experiment tracking:** MLflow logs all hyperparameters, training metrics,
-  and analysis artifacts. Simulation and analysis runs are linked via
-  `source_run_id` for full reproducibility.
-- **Grid-search launcher:** YAML-driven parameter sweep runner that generates
-  all combinations, writes temp configs, runs the simulation, and optionally
-  triggers the R analysis after each run.
+<p>
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ3/plot1_rgap_evolution_l_seed.png" width="48%" alt="R-gap evolution across episodes for different learning rates">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ3/plot4_route_flow_stability.png" width="48%" alt="Route-flow stability by learning rate">
+</p>
+
+### Risk Aversion
+
+The sixth research question investigated the effect of risk-sensitive behavior. The results indicate that the tested homogeneous populations, in which all drivers shared the same risk-aversion parameter, generally failed to converge towards DUE.
+
+<p>
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/plot1_risk_sensitivity_mechanism.png" width="48%" alt="Risk-sensitivity mechanism">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ11/plot2_convergence_plot.png" width="48%" alt="Convergence under risk sensitivity">
+</p>
+
+### Waiting-Time Aversion
+
+The seventh research question investigated the effect of waiting-time sensitive behavior. The results indicate that the tested homogeneous populations, in which all drivers shared the same waiting-time sensitivity parameter, generally failed to converge towards DUE.
+
+<p>
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/plot1_waitingTime_sensitivity_mechanism.png" width="48%" alt="Waiting-time sensitivity mechanism">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ12/plot2_convergence_plot.png" width="48%" alt="Convergence under waiting-time sensitivity">
+</p>
+
+### Nonlinear Response
+
+Finally, the eighth research question investigated the nonlinear reinforcement mechanism and its interaction with memory. The results showed that high values of τ (the dead-zone parameter) can prevent convergence towards DUE, particularly when combined with higher memory levels.
+
+<p>
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ13/plot1_nonlinear_mechanism.png" width="48%" alt="Nonlinear stimulus mechanism">
+<img src="thesis_document/media/5.ExperimentalDesign_Evaluation/3.ExperimentalEvaluation/RQ13/plot2_rgap_evolution.png" width="48%" alt="R-gap evolution under the nonlinear mechanism">
+</p>
+
+### Summary
+
+Overall, the results suggest that the proposed model converges to DUE under its more rational formulation, while variations in the existing behavioral parameters, namely memory level and learning rate, do not necessarily prevent convergence under the tested scenario. However, their influence may become stronger in more complex network-demand configurations with more frequent changes in the cost ranking of routes across episodes. Previous research has shown that lower memory levels can prevent convergence to UE in a STA setting where changes in route-cost ranking occur more frequently (Wei et al., 2014).
+
+The introduction of additional behavioral mechanisms, such as waiting-time sensitivity, risk aversion, and nonlinear response, can prevent convergence towards DUE. These results suggest that incorporating more realistic behavioral mechanisms into the agents' decision-making can prevent the network from reaching DUE, as reflected by higher R-gap values, although the effect depends on the behavioral parameters and the network-demand configuration.
 
 ---
 
@@ -119,91 +128,84 @@ Full analysis: [`r/RQ3/RQ3.qmd`](r/RQ3/RQ3.qmd).
 | Layer | Tools |
 |---|---|
 | Traffic simulation | SUMO (Simulation of Urban MObility) |
-| Reinforcement learning | Python · NumPy |
-| Experiment tracking | MLflow (SQLite backend) |
-| Data storage | Apache Parquet (PyArrow / R arrow) |
-| Analysis & visualisation | R · tidyverse · Quarto |
-| Configuration | YAML |
+| Reinforcement learning | Python |
+| Experiment tracking | MLflow |
+| Big Data | Arrow |
+| Data Science | R · tidyverse · Quarto |
+| Containerization | Docker |
 
 ---
 
 ## Networks
 
-| Network | Description |
-|---|---|
-| **Sioux Falls** | Standard transportation research benchmark — 24 nodes, 76 directed edges, no traffic lights, uniform free-flow speed. Used for all main experiments. |
-| **Toy network** | Small synthetic network used for initial development and validation of the pipeline. |
+**Sioux Falls** — the standard transportation research benchmark network used for all main experiments: 24 nodes, 76 directed edges, no traffic lights, uniform free-flow speed.
+
+[View the network diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/2.ExperimentalDesign/Sioux_Falls.drawio.pdf>)
 
 ---
 
-## Architecture
+## Software Architecture
 
+[View the main program architecture diagram](<thesis_document/media/5.ExperimentalDesign_Evaluation/1.Implementation/MainProgram.pdf>)
+
+The traffic assignment model actually implemented in this project, alongside the general/textbook formulation it's adapted from, for reference:
+
+- [Traffic assignment model — implemented](<thesis_document/media/1.Introduction/TrafficAssignmentModel_Implemented.pdf>)
+- [Traffic assignment model — general formulation](<thesis_document/media/1.Introduction/TrafficAssignmentModel.pdf>)
+
+---
+
+## Getting Started with Docker
+
+The training/simulation/tracking pipeline (Python, SUMO, MLflow) is fully containerized — no manual dependency setup needed beyond Docker itself. R/Quarto analysis is intentionally kept outside Docker: it's used interactively in RStudio, and `renv.lock` already pins its package versions.
+
+**Prerequisites:** Docker with the Compose plugin (`docker compose version`).
+
+### Get the image
+
+Either pull the pre-built image (fast — skips compiling SUMO from source):
+```sh
+docker pull migueldonado/thesis-app:latest
+docker tag migueldonado/thesis-app:latest thesis-app:latest
 ```
-src/
-├── main.py                      # Training loop orchestrator (generate agents → train → MLflow → GUI replay)
-├── experiment.py                # Per-episode data collection + end-of-run persistence to Parquet
-├── agents/
-│   ├── agent.py                 # BMAgent — ET, PT, stimulus, probability update
-│   └── factory.py               # Batch init / select / update over agent fleet
-├── simulation/
-│   ├── scenario.py              # OD pairs, k routes via duarouter, SUMO config files
-│   └── environment.py           # SUMO subprocess wrapper (file-based, no TraCI)
-├── stopping_rule/               # L1 norm policy-change convergence check (post-warm-up agents only)
-├── DUE_convergence/             # R-gap, TDSP, duaIterate benchmark pipeline
-├── parsing/                     # XPath-driven SUMO XML parsers → Parquet
-├── analysis/                    # SUMO-GUI edge-colour comparison of BM vs duaIterate
-├── mlflow_tracking/             # MLflow logging for simulation runs
-├── utils/                       # Agent/demand generation, free-flow TT, network stat helpers
-├── tools/                       # One-off network prep tools + sensitivity/ parameter sweeps
-└── config/
-    ├── config.py                # Config dataclass (hyperparameter groups) + RunMode
-    ├── config.yaml              # XPath selectors for SUMO XML parsing
-    └── paths.py                 # All paths derived from BASE_DIR
-scripts/
-├── run_batch.py                 # Grid-search runner (YAML design → combinations) for one or more RQs
-├── run_analysis.py              # Pulls MLflow artifacts into combined parquets for R analysis
-├── manage_runs.py               # Bulk archive/restore of MLflow simulation runs
-└── start_mlflow.py              # MLflow UI pointed at project SQLite backend
-experiments/
-├── rq1/                         # RQ1 configs: base.yaml + grid-search design.yaml
-├── rq2/                         # RQ2 configs
-└── developer_modes/             # debug / development / production config presets
-r/
-├── RQ1/RQ1.qmd                  # Quarto report: R-gap convergence analysis
-└── shared/theme.R               # Shared ggplot2 theme for thesis figures
+or build it yourself (~20 minutes, compiles SUMO 1.26.0 from source):
+```sh
+docker build -t thesis-app .
 ```
 
+### One-time setup
+
+Generate a `.env` file so containers run as your own user rather than root — otherwise files the container creates through the bind mount (logs, generated data, MLflow's database) end up owned by root on your host:
+```sh
+echo "UID=$(id -u)" > .env
+echo "GID=$(id -g)" >> .env
+```
+
+### Running it
+
+```sh
+docker compose up -d                                       # start the app + mlflow containers
+docker compose exec app python scripts/run_batch.py RQ1 --dev
+docker compose exec app python scripts/run_analysis.py RQ1
+docker compose exec app python scripts/manage_runs.py RQ1 --archive
+docker compose down                                         # stop when done
+```
+MLflow UI: [http://localhost:5000](http://localhost:5000)
+
+### GUI (optional, Linux only)
+
+A separate compose file adds SUMO GUI support via X11 forwarding:
+```sh
+xhost +local:docker
+docker compose -f docker-compose-gui.yml up -d
+docker compose -f docker-compose-gui.yml exec app sumo-gui
+xhost -local:docker   # revoke access when done
+```
+
 ---
 
-## Future Work
-
-**Phase 2 — Cognitive modeling:**
-Introduce agents whose route choices emerge from a mixture of decision-making
-subsystems. The rational subsystem will be the RL agent developed in Phase 1;
-additional subsystems will implement human heuristics from cognitive science.
-
-**Planned RL algorithms (Phase 1 extensions):**
-- Thompson Sampling — Bayesian exploration as an alternative to BM's stimulus-based
-  update; also a natural fit as a probabilistic cognitive subsystem in Phase 2
-- Q-learning / modern RL — comparison against classical BM in the same environment
-
-**Planned research themes:** behavioral extensions to BM, sensitivity analysis
-(learning rate, memory level), heterogeneous agent populations, congestion regime
-analysis, traffic scenario resilience.
-
-**Deployment (planned):** Dockerize the full environment — SUMO, Python, R, and
-MLflow — so experiments are reproducible without manual dependency setup across
-machines.
-
----
-
-## Reference
+## Main Reference
 
 Wei, F., Ma, S., & Jia, N. (2014). A Day-to-Day Route Choice Model Based on
 Reinforcement Learning. *Mathematical Problems in Engineering*, 2014, 646548.
 https://doi.org/10.1155/2014/646548
-
-María Paz Linares Herreros and Jaime Barceló Bugeda, 
-‘A Mesoscopic Traffic Simulation Based Dynamic Traffic Assignment’ 
-(Universitat Politècnica de Catalunya, 2014), 
-https://doi.org/10.5821/dissertation-2117-95313.

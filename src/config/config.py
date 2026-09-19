@@ -193,7 +193,7 @@ class Config:
     last_episode_gui_duaIterate: bool
     config_name: str
     research_question: str = ""
-    episodes_gui: set[int] = field(default_factory=lambda: {})
+    episodes_gui: set[int] = field(default_factory=lambda: {1})
     network_normal: str = ""
     network_degraded: str = ""
     degradation_start_episode: int = 0

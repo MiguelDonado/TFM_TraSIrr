@@ -86,6 +86,7 @@ def _log_mlflow_params():
 
 def _log_config_artifact():
     config_dict = asdict(config)
+    config_dict["episodes_gui"] = list(config.episodes_gui)
     with NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump(config_dict, f, indent=4)
 

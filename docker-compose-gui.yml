@@ -1,0 +1,35 @@
+services:
+  app:
+    user: "${UID}:${GID}"
+    environment:
+      - DISPLAY=${DISPLAY}
+    build: .
+    image: thesis-app
+    volumes: 
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    working_dir: /workspace
+    # Keeps the container alive so you can execute commands on a running container
+    # like 'docker-compose exec app ...' repeteadly
+    command: sleep infinity
+  mlflow:
+    user: "${UID}:${GID}"
+    build: .
+    image: thesis-app
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    ports:
+      - "5000:5000"
+      # --host 0.0.0.0 is required: mlflow ui defaults to binding 127.0.0.1
+    # (loopback), which only accepts connections from inside the container
+    # itself. Traffic forwarded in via the "ports" mapping above arrives
+    # through the container's network interface, not its loopback — so
+    # without this flag, localhost:5000 on the host would get connection
+    # refused even though the port mapping is correct.
+    # This command is like the command used in script start_mlflow.py
+    command: >
+      mlflow ui
+      --backend-store-uri sqlite:////workspace/mlflow_db/mlflow.db
+      --host 0.0.0.0
+      --port 5000

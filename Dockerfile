@@ -3,7 +3,7 @@
 # Python image (is just Debian 12 image with Python 3.12.3 installed on top of it)
 FROM python:3.12.3-bookworm
 
-# 1. Build tools + SUMO's own build dependencies 
+# 1. Build tools + SUMO's own build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     libxerces-c-dev \
@@ -52,9 +52,8 @@ RUN curl -fsSL "https://github.com/eclipse-sumo/sumo/archive/refs/tags/v${SUMO_V
     && rm -rf /tmp/sumo.tar.gz /tmp/sumo-src /tmp/sumo-build
 
 # 3. Python dependencies
-# Sets the cwd for every instruction that follows and it also becomes the default directory you land in 
+# Sets the cwd for every instruction that follows and it also becomes the default directory you land in
 # when you start a shell inside the container afterward
 WORKDIR /workspace
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-

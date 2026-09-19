@@ -12,22 +12,22 @@ base_config: experiments/base.yaml
 grid:
   learning:
     memory_level:
-      - 1.00
+      # - 1.00
       # - 0.90
       # - 0.80
       # - 0.70
       # - 0.60
       # - 0.50
       # - 0.40
-      # - 0.30
+      - 0.30
       # - 0.20
       # - 0.10
       # - 0.01
   randomness:
     seed:
-      # - 42
+      - 42
       # - 5
-      - 23
+      # - 23
   demand:
     n_agents:
       # - 1300
@@ -37,3 +37,6 @@ grid:
   due_convergence: 
     duaIterate_max_iterations: 
       - 1
+  mode_and_flags:
+    last_episode_gui_BM:
+      - true
