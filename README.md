@@ -231,7 +231,9 @@ cd thesis_migueldonado_project
 # 4. Clone the repository into current folder
 git clone https://github.com/MiguelDonado/TFM_TraSIrr.git .
 
-# 5. Docker must be installed: https://docs.docker.com/engine/install/
+# REQUISITE for the following steps: Docker must be installed: https://docs.docker.com/engine/install/ 
+
+# 5. Pull image from docker hub
 docker pull migueldonado/thesis-app:latest
 
 # 6. Tag the pulled image so docker-compose.yml can find it

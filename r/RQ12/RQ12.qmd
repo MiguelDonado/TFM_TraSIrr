@@ -337,14 +337,14 @@ iso_cost_lines_plot <- iso_cost_lines_plot_tmp |>
     phi_num = as.numeric(phi)
   ) |> 
   mutate(
-    x = ifelse(type == "vertical", xintercept, (cost - phi_num * WT)),
+    x = ifelse(type == "vertical", xintercept, (cost - phi_num * WT) + 5),
     y = ifelse(
       type == "vertical", 
       max(agent_last_episode_info_plot |> filter(agent_last_episode_info_plot$WT < upper_y_axis) |> pull(WT)), 
-      0
+      -0.5
     ),
     cost = round(cost, 0),
-    label = glue("\u03c6 = {phi}, C = {cost} s")
+    label = glue("\u03c6 = {phi}, PC = {cost} s")
   )
 ```
 
@@ -413,7 +413,7 @@ ggplot(
   x = expression("Perceived travel time " * PT[r] * " (s)"),
   y = expression("Perceived waiting time " * WT[r] * " (s)"),
   ) +
-  coord_cartesian(ylim = c(0, upper_y_axis))
+  coord_cartesian(ylim = c(0, upper_y_axis),xlim=c(120,275))
 
 ggsave(here("r","RQ12","figures","plot1_waitingTime_sensitivity_mechanism.png"), width = 12, height = 6)
 ```
@@ -1103,9 +1103,9 @@ route_segments <- route_geometry |>
 # `edge` is the edge its *start* point belongs to, so filtering on it picks
 # out exactly that edge's own segment
 route_endpoint_segments <- route_segments |>
-  filter(edge %in% c(representative_od$origin)) |> 
-  group_by(edge) |> 
-  slice_head(n = 1) |> 
+  filter(edge %in% c(representative_od$origin, representative_od$destination)) |>
+  group_by(edge) |>
+  slice_head(n = 1) |>
   select(-route_id)
 ```
 

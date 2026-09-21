@@ -352,11 +352,7 @@ flow_paths_df <- flow_paths_df_query |>
   mutate(
     memory_level_fct = factor(memory_level, levels = representative_memory_levels, labels = representative_memory_levels_labels) 
   ) |>
-```
-
-```{r}
-mutate(memory_level_fct = forcats::fct_rev(memory_level_fct))
-  
+  mutate(memory_level_fct = forcats::fct_rev(memory_level_fct))
 
 # Check flow share is correct
 if(!all(flow_paths_df |> group_by(episode, memory_level_fct) |> summarise(total=sum(flow)) |> pull(total) == "1")){
@@ -562,7 +558,9 @@ ggplot(
     values = path_colors,
     breaks = path_breaks,
     guide = guide_legend_group(
-      key = key_group_lut(path_breaks, path_groups)
+      key = key_group_lut(path_breaks, path_groups),
+      ncol = 1,
+      direction = "horizontal"
     )
   ) +
   scale_x_continuous(breaks = breaks, labels = labels) +
@@ -591,6 +589,8 @@ ggplot(
     panel.grid.minor.y = element_blank(),
     # legendry: styling for the "Disrupted" / "Unaffected" group sub-titles
     legendry.legend.subtitle = element_text(face = "bold", size = 10),
+    legend.title.position = "top",
+    legend.title = element_text(hjust = 0.5),
   )
 
 ggsave(here("r","RQ4","figures","plot3_flow_share_evolution_paths.png"), width = 12, height = 6)

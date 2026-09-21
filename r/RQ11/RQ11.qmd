@@ -306,7 +306,7 @@ iso_cost_lines_plot <- iso_cost_lines_plot_tmp |>
     x = ifelse(type == "vertical", xintercept, (cost - theta_num * sigma_r)),
     y = ifelse(type == "vertical", max(agent_last_episode_info_plot$sigma_r), 0),
     cost = round(cost, 0),
-    label = glue("\u03b8 = {theta}, C = {cost} s")
+    label = glue("\u03b8 = {theta}, PC = {cost} s")
   )
 ```
 
