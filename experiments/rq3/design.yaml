@@ -12,8 +12,8 @@ grid:
   learning:
     learning_rate:
       - 0.90
-      # - 0.60
-      # - 0.30
+      - 0.60
+      - 0.30
   randomness:
     seed:
       - 42

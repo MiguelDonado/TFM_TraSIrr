@@ -8,9 +8,21 @@ The objective of this thesis was to investigate whether a day-to-day multi-agent
 
 ---
 
+## 🎥 Video Tutorials
+
+> [!IMPORTANT]
+> **Watch these videos before using the application.** They walk through setup, running experiments, and how the code works.
+>
+> 1. ▶️ **[How to Set Up the Application Using Docker](https://youtu.be/LwC15-2MZUQ)**
+> 2. ▶️ **[Experiment Workflow Explained: Create, Modify & Run](https://youtu.be/YFuyVfsoclA)**
+> 3. ▶️ **[Understanding Program Logic Through Debugging](https://youtu.be/UnxYVW0cfpg)**
+
+---
+
 ## Table of Contents
 
 - [Day-to-Day MARL Route-Choice Model](#day-to-day-marl-route-choice-model)
+  - [🎥 Video Tutorials](#-video-tutorials)
   - [Table of Contents](#table-of-contents)
   - [Demo](#demo)
   - [Background](#background)
@@ -33,7 +45,6 @@ The objective of this thesis was to investigate whether a day-to-day multi-agent
     - [Setup](#setup)
     - [Running it (without GUI support)](#running-it-without-gui-support)
     - [Check experiments in MLflow UI:](#check-experiments-in-mlflow-ui)
-    - [Running it (with GUI support) (only works if your Linux distro uses X11):](#running-it-with-gui-support-only-works-if-your-linux-distro-uses-x11)
   - [Getting Started (Data Science)](#getting-started-data-science)
   - [Main Reference](#main-reference)
 
@@ -216,34 +227,46 @@ Docker can be used in two broad ways: a **dev-oriented** setup, where the image 
 
 ### Setup
 
+> [!TIP]
+> 🎥 Prefer video? Follow along with **[How to Set Up the Application Using Docker](https://youtu.be/LwC15-2MZUQ)**.
+
+First steps to prepare Docker setup:
+
+```sh
+# 0. Prerequisite: Docker must be installed — https://docs.docker.com/engine/install/
+
+# 1. Add your user to the docker group
+sudo usermod -aG docker $USER
+
+# 2. Log out and back in (or restart) for the group change to take effect
+```
+
 Copy the whole block below and paste it into your terminal — it clones the repo, pulls the pre-built image (skips compiling SUMO from source, which takes ~20 minutes), and prepares everything needed to bring the containers up:
 
 ```sh
-# 1. Move to your home directory
+# 3. Move to your home directory
 cd ~
 
-# 2. Create a folder for the project (whatever name you prefer)
+# 4. Create a folder for the project (whatever name you prefer)
 mkdir thesis_migueldonado_project
 
-# 3. Move into the created folder
+# 5. Move into the created folder
 cd thesis_migueldonado_project
 
-# 4. Clone the repository into current folder
-git clone https://github.com/MiguelDonado/TFM_TraSIrr.git .
+# 6. Clone the repository into current folder
+git clone --depth 1 https://github.com/MiguelDonado/TFM_TraSIrr.git .
 
-# REQUISITE for the following steps: Docker must be installed: https://docs.docker.com/engine/install/ 
-
-# 5. Pull image from docker hub
+# 7. Pull image from docker hub
 docker pull migueldonado/thesis-app:latest
 
-# 6. Tag the pulled image so docker-compose.yml can find it
+# 8. Tag the pulled image so docker-compose.yml can find it
 docker tag migueldonado/thesis-app:latest thesis-app:latest
 
-# 7. Generate a .env file so containers run as you, not as root
+# 9. Generate a .env file so containers run as you, not as root
 echo "UID=$(id -u)" > .env
 echo "GID=$(id -g)" >> .env
 
-# 8. Bring the containers up
+# 10. Bring the containers up
 docker compose up -d
 ```
 
@@ -274,34 +297,6 @@ docker compose down
 ### Check experiments in MLflow UI: 
 
 Once the compose project is up, after running `docker compose up -d`, you can access the MLflow UI at: [http://localhost:5000](http://localhost:5000)
-
-### Running it (with GUI support) (only works if your Linux distro uses X11):
-
-```sh
-
-# 1. Needed for GUI functionality
-xhost +local:docker
-
-# 2. Bring up compose project with GUI support
-docker compose -f docker-compose-gui.yml up -d
-
-##########################
-# SCRIPTS THAT CAN BE RUN
-##########################
-# a) Run simulations experiments in batch
-docker compose exec app python scripts/run_batch.py RQ1 RQ2 RQ3 [--dev] 
-
-# b) Manage "status" of runs in mlflow
-docker compose exec app python scripts/manage_runs.py <research_question> --archive --apply     actually archive
-docker compose exec app python scripts/manage_runs.py <research_question> --restore --apply     actually restore (remove status tag)
-
-# c) Prepare data to be used in the research questions R analysis scripts
-docker compose exec app python scripts/run_analysis.py <research_question>  
-
-# 3. Stop when done
-docker compose -f docker-compose-gui.yml down
-xhost -local:docker  
-```
 
 Each script above has a full usage guide in its own module docstring — open the file directly (top of the file, before any code) for all available flags and options:
 - `scripts/run_batch.py` — running simulation batches, `--dev`/`--shutdown` flags, dev vs. production designs

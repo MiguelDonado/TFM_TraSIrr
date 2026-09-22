@@ -457,6 +457,10 @@ class BMAgent:
         return p
 
     def _penalise_chosen(self, p, chosen, stimulus):
+        # the division cannot happen many times in a row, because it it happens once, 
+        # then it means it is penalised, and other small probabilities are gonna grow, 
+        # while dominant less dominant, so in the next iteration if penalised again, 
+        # we are not gonna have tiny numerical values
         """
         p_chosen ← p_chosen + p_chosen · β · stimulus                         (stimulus < 0)
         p_k      ← (p_k - p_k · p_chosen · β · stimulus) / (1 - p_chosen)    for k ≠ chosen
@@ -470,12 +474,12 @@ class BMAgent:
         p[chosen] = old_chosen + old_chosen * self.beta * stimulus
 
         # Exceptional case in which old_chosen is (near-)saturated: the other
-        # routes collectively held less than 1% of the mass, so their
+        # routes collectively held less than 0.1% of the mass, so their
         # individual values are noise, not signal — redistribute the freed
         # mass equally instead of proportionally scaling near-zero values
         # that can produce numerical instability because of dividing by
         # very small number (1-old_chosen)
-        if old_chosen >= 0.99:
+        if old_chosen >= 0.999:
             diff = 1 - p[chosen]
             for k in range(self.n_routes):
                 if k != chosen:

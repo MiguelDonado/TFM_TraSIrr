@@ -49,6 +49,7 @@ RQ10
 RQ11
 RQ12
 RQ13
+RQ14
 """
 
 import re
@@ -101,6 +102,8 @@ def _prepare_data(research_question: str) -> None:
         _prepare_rq12_data()
     elif research_question == "RQ13":
         _prepare_rq13_data()
+    elif research_question == "RQ14":
+        _prepare_rq14_data()
 
 
 def _prepare_rq1_data() -> None:
@@ -548,6 +551,41 @@ def _prepare_rq13_data() -> None:
         df.to_parquet(data_dir / f"{name}.parquet", index=False)
 
     for name, artifact_path in artifacts_full.items():
+        df = load_artifact_across_runs(
+            artifact_path=artifact_path,
+            filter_string=filter_string,
+            experiment_names=experiment_names,
+            params_to_attach=params_to_attach,
+        )
+        df.to_parquet(data_dir / f"{name}.parquet", index=False)
+
+def _prepare_rq14_data() -> None:
+    '''
+    Pull the needed information and save them into r/RQ14/data/
+    '''
+    filter_string = (
+        "tags.research_question = 'RQ14' and tags.run_type = 'simulation' "
+        "and tags.status = 'active' and params.config_name = 'production'"
+    )
+    experiment_names = ["Thesis"]
+    params_to_attach = ["seed", "warm_up", "memory_level", "learning_rate"]
+
+    artifacts = {
+            "bm_results": "agent_state/BM_results.parquet",
+            "agents_od": "environment/agents_od.parquet",
+            "flow_paths": "DUE/BM/flows_paths_odtp_k.parquet",
+            "od_routes": "environment/od_routes.parquet",
+            "bm_rgap": "DUE/BM/R-gap/rgap.parquet",
+            "demand_odt": "DUE/generic/demand_odt.parquet",
+            "actions": "agent_state/actions.parquet",
+            "rewards": "agent_state/rewards.parquet",
+            "trips_info": "processed/trips_info.parquet"
+        }
+    
+    data_dir = BASE_DIR / "r" / "RQ14" / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    for name, artifact_path in artifacts.items():
         df = load_artifact_across_runs(
             artifact_path=artifact_path,
             filter_string=filter_string,

@@ -18,6 +18,7 @@ renv/library/
 .env
 /demo/demo.kdenlive
 /demo/demo.mkv
+/demo/*.mkv
 
 # generated analysis outputs (RQ scripts regenerate these)
 r/RQ*/data/**/*.parquet

@@ -67,9 +67,15 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from config.paths import BASE_DIR, EXPERIMENTS_TMP
+from config.paths import BASE_DIR, EXPERIMENTS_TMP, ensure_dirs
 
-# 1. One timestamped log file per batch run
+# 1. Create every directory the batch run needs (e.g. experiments/tmp) up
+# front — on a fresh checkout/container these don't exist yet, and
+# src/main.py (which would normally create them) only runs as a subprocess
+# per combination, i.e. after _write_temp_config already needs EXPERIMENTS_TMP.
+ensure_dirs()
+
+# 2. One timestamped log file per batch run
 logs_dir = BASE_DIR / "experiments" / "logs"
 logs_dir.mkdir(parents=True, exist_ok=True)
 log_path = logs_dir / f"{datetime.now():%Y%m%d_%H%M%S}.log"
