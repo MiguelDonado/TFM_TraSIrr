@@ -108,7 +108,6 @@ def _run_training_loop(
             episode=episode,
             rewards=rewards,
             waiting_times=waiting_times,
-            warm_up=config.warm_up,
         )
 
         if DEBUG_AGENT_ID is not None:

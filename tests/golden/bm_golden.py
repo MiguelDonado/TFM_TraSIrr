@@ -68,7 +68,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from agents.agent import BMAgent
+from agents.bush_mosteller import BMAgent
 
 GOLDEN_FILE = Path(__file__).with_name("bm_golden.npz")
 
@@ -102,6 +102,7 @@ def _build_agents(params, rng):
                     agent_id=f"agent_{i}",
                     routes=list(range(n_routes)),
                     seed=MASTER_SEED+i,  # distinct seed per agent like factory.py
+                    warm_up=WARM_UP,
                     beta=params["beta"],
                     gamma=gamma,
                     epsilon=EPSILON,
@@ -153,7 +154,7 @@ def run_scenario(index, params):
         actions = np.array([agent.select_action() for agent in agents])
         travel_times, waiting_times = _environment(actions, groups, rng)
         for a, agent in enumerate(agents):
-            agent.update(int(actions[a]), float(travel_times[a]), float(waiting_times[a]), WARM_UP, episode)
+            agent.update(int(actions[a]), float(travel_times[a]), float(waiting_times[a]), episode)
             p_log[e, a, : agent.n_routes] = agent.p
         actions_log[e] = actions
 

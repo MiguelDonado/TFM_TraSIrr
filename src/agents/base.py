@@ -19,11 +19,11 @@ What lives where
                      departure_time, post_warm_up
   subclass.__init__  calls super().__init__(...) first, then sets its own
                      fields (BM: p, history, beta, gamma…)
+  agents.factory     creates the agents, and knows each algorithm's own
+                     parameters (which config fields map to which argument)
 
 Methods
 -------
-  from_config        builds one agent from the experiment config; each
-                     algorithm reads only its own parameters
   select_action      route index chosen for the next episode
   update             learn from the episode's travel and waiting time
   convergence_state  values whose change between episodes the stopping rule
@@ -54,30 +54,10 @@ class Learner(ABC):
         self.n_routes = len(routes)
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
+        # Whether this agent departs after the SUMO network warm-up window
+        # (see module docstring); used by the stopping rule to exclude
+        # warm-up agents from the convergence signal.
         self.post_warm_up = post_warm_up
-
-    # Declaration only: Learner never calls this. It forces every subclass to
-    # provide from_config, which the factory (initialize_agents) calls on the
-    # class, once per agent, to create it. The @classmethod here is a hint
-    # that the subclass's version must also be a @classmethod (called on the
-    # class, before any agent exists). @abstractmethod only checks the name
-    # exists, so a subclass that forgets @classmethod passes the check and
-    # only fails when the factory calls it.
-    @classmethod
-    @abstractmethod
-    def from_config(cls, common, config, rng) -> "Learner":
-        """
-        Build one agent from the experiment config.
-
-        cls:    the class it's called on (BMAgent…)
-        common: dict with the fields every agent has, whatever its algorithm
-                (agent_id, routes, seed, departure_time, post_warm_up)
-        config: experiment config; each algorithm reads only its own
-                parameters (BM: learning_rate, memory_level, epsilon…)
-        rng:    factory's shared generator, for per-agent parameter draws
-                at creation (BM: heterogeneous γ). Not the agent's own
-                self.rng, which is used for action selection.
-        """
 
     @abstractmethod
     def select_action(self) -> int:

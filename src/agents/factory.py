@@ -47,7 +47,7 @@ import numpy as np
 
 from config.config import config
 
-from .agent import BMAgent
+from .bush_mosteller import BMAgent
 
 
 def initialize_agents(scen, seed=None):
@@ -86,6 +86,7 @@ def initialize_agents(scen, seed=None):
             agent_id=agent_id,
             routes=routes,
             seed=seed + i,
+            warm_up=config.warm_up,
             beta=config.learning_rate,
             gamma=gamma,
             epsilon=config.epsilon,
@@ -104,10 +105,10 @@ def select_actions(agents):
     return actions
 
 
-def update_agents(agents, actions, rewards, waiting_times, warm_up, episode):
+def update_agents(agents, actions, rewards, waiting_times, episode):
     for agent_id, agent in agents.items():
         chosen_route = actions[agent_id]
         reward = rewards[agent_id]
         waiting_time = waiting_times[agent_id]
 
-        agent.update(chosen_route, reward, waiting_time, warm_up, episode)
+        agent.update(chosen_route, reward, waiting_time, episode)

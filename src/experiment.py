@@ -197,30 +197,7 @@ def _prepare_rewards(episode, rewards, agents):
 
 
 def _prepare_bm_data(episode, agents):
-    rows = []
-    for agent in agents.values():
-        if not agent.post_warm_up:
-            continue
-        memory_level = agent.gamma
-        for route_id in range(agent.n_routes):
-            rows.append(
-                {
-                    "episode": episode,
-                    "agent_id": agent.id,
-                    "memory_level": memory_level,
-                    "ET": agent.expected_travel_time,
-                    "sigma_ET": agent.travel_time_std,
-                    "AWT": agent.expected_waiting_time,
-                    "AC": agent.aspiration_cost,
-                    "stimulus": agent.stimulus,
-                    "route_id": route_id,
-                    "PT": float(agent.perceived_travel_times[route_id]),
-                    "sigma_r": float(agent.route_travel_time_std[route_id]),
-                    "WT": float(agent.perceived_waiting_times[route_id]),
-                    "PC": float(agent.perceived_costs[route_id]),
-                    "p": float(agent.p[route_id]),
-                }
-            )
+    rows = [row for agent in agents.values() if agent.post_warm_up for row in agent.internal_state(episode)]
     return rows
 
 def run_final_simulation():

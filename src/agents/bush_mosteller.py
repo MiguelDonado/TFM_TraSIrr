@@ -139,18 +139,35 @@ Agent lifecycle
                  recompute ET → PT → stimulus → update p
 """
 
+
+
 import numpy as np
 
+from .base import Learner
 
-class BMAgent:
+
+class BMAgent(Learner):     # "BMAgent is a learner: it inherits from it"
     """
     Bush-Mosteller reinforcement learning agent for route choice
     """
+    name = "bush_mosteller"
+    results_filename = "BM_results.parquet"
 
-    def __init__(self, agent_id, routes, seed, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity, nonlinear_stimulus, stimulus_tau):
-        self.id = agent_id
-        self.routes = routes
-        self.n_routes = len(routes)
+    def __init__(self, agent_id, routes, seed, warm_up, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity, nonlinear_stimulus, stimulus_tau):
+
+        ####################################
+        # Common parameters to all learners
+        ####################################
+        # super() does NOT create a separate Learner object: there is only one
+        # object, this BMAgent. It runs Learner.__init__ on this same self,
+        # which writes self.id, self.routes, self.n_routes, self.rng... onto it.
+        # That's why BM code (and inherited methods) can use self.id later.
+        super().__init__(agent_id, routes, seed, departure_time, post_warm_up)
+
+        ####################################
+        # Specific BM parameters
+        ####################################
+        self.warm_up = warm_up
         self.beta = beta  # Learning rate
         self.gamma = gamma  # Memory decay
         self.epsilon = epsilon
@@ -158,12 +175,6 @@ class BMAgent:
         self.waiting_time_sensitivity = waiting_time_sensitivity  # phi (RQ12)
         self.nonlinear_stimulus = nonlinear_stimulus  # RQ13
         self.stimulus_tau = stimulus_tau  # tau (RQ13)
-        self.rng = np.random.default_rng(seed)
-        self.departure_time = departure_time
-        # Whether this agent departs after the SUMO network warm-up window
-        # (see module docstring); used by the stopping rule to exclude
-        # warm-up agents from the convergence signal.
-        self.post_warm_up = post_warm_up
 
         # initial probabilities (uniform over routes, no preference in the beginning)
         self.p = np.ones(self.n_routes) / self.n_routes
@@ -198,7 +209,7 @@ class BMAgent:
         self.transformed_margins = np.zeros(self.n_routes)  # g_r
 
         # (scalar) Stimulus
-        self.stimulus = 0
+        self.stimulus = 0     
 
     def select_action(self):
         """
@@ -502,6 +513,33 @@ class BMAgent:
         info = (chosen, reward, waiting_time)
         self.history.append(info)
 
+    def internal_state(self, episode):
+        rows = []
+        memory_level = self.gamma
+        for route_id in range(self.n_routes):
+            rows.append(
+                {
+                    "episode": episode,
+                    "agent_id": self.id,
+                    "memory_level": memory_level,
+                    "ET": self.expected_travel_time,
+                    "sigma_ET": self.travel_time_std,
+                    "AWT": self.expected_waiting_time,
+                    "AC": self.aspiration_cost,
+                    "stimulus": self.stimulus,
+                    "route_id": route_id,
+                    "PT": float(self.perceived_travel_times[route_id]),
+                    "sigma_r": float(self.route_travel_time_std[route_id]),
+                    "WT": float(self.perceived_waiting_times[route_id]),
+                    "PC": float(self.perceived_costs[route_id]),
+                    "p": float(self.p[route_id]),
+                }
+            )
+        return rows
+
+    def convergence_state(self):
+        return self.p
+
     def snapshot(self):
         """
         Full internal state as JSON-serializable primitives (numpy arrays →
@@ -511,7 +549,9 @@ class BMAgent:
         way the debugger's Locals/Watch panel shows nested variables.
         """
         return {
-            "id": self.id,
+            # Runs Learner.snapshot on this same self → {"id": self.id}, unpacked
+            # here as the first key; BM adds its own fields below
+            **super().snapshot(),
             "history": [[int(route), float(tt), float(wt)] for route, tt, wt in self.history],
             "p": self.p.tolist(),
             "expected_travel_time": float(self.expected_travel_time),
@@ -529,7 +569,7 @@ class BMAgent:
             "chosen_tt": int(self.history[-1][1])
         }
 
-    def update(self, chosen, reward, waiting_time, warm_up, episode):
+    def update(self, chosen, reward, waiting_time, episode):
         self._update_history(chosen, reward, waiting_time)
 
         # Before learning starts, two conditions must be satisfied:
@@ -537,7 +577,7 @@ class BMAgent:
         # 2. The agent must have visited all routes at least once
         # The following conditional checks it:
         if (
-            episode > warm_up
+            episode > self.warm_up
             and len({route for route, _, _ in self.history}) == self.n_routes
         ):
             self._compute_expected_travel_time()
