@@ -4,13 +4,18 @@ Batch operations over the full agent fleet, called from main.py.
 Three functions map the per-agent BMAgent methods onto all agents at once:
 
   initialize_agents  — instantiate one BMAgent per entry in scen.agents.
+                       This is the one place that knows BM's own parameters
+                       (which config field maps to which constructor
+                       argument); BMAgent itself implements the generic
+                       Learner contract (agents.base).
                        Also passes through each agent's post_warm_up flag
                        (computed in utils.generate_agents when the agent
-                       list is built), consumed by the stopping rule to
-                       exclude warm-up agents from the convergence signal.
+                       list is built), consumed by the stopping rule and
+                       logging to exclude warm-up agents, and config.warm_up
+                       (episodes before BM may start learning).
   select_actions     — called before each episode; returns {agent_id: route_idx}
-  update_agents      — called after each episode; updates each agent's policy
-                       from its observed reward
+  update_agents      — called after each episode; updates each agent from its
+                       observed travel time and waiting time
 
 RQ5 heterogeneous memory
 -------------------------

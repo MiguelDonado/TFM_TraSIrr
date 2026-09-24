@@ -17,7 +17,10 @@ edgedata     — per-edge density and flow per time interval
 actions      — route index chosen by each agent per episode
 rewards      — travel time received by each agent per episode
 BM_results   — agent internal state (ET, PT, stimulus, p, memory_level) per
-               episode, one row per (agent, route). memory_level is each
+               episode, one row per (agent, route). The rows come from each
+               agent's internal_state(episode) (Learner contract, see
+               agents.base), so the columns are defined in
+               agents.bush_mosteller, not here. memory_level is each
                agent's own γ — constant across an agent's rows, but
                heterogeneous across agents when config.heterogeneous_memory
                is true (RQ5), so it's persisted per row rather than assumed
@@ -28,14 +31,17 @@ BM_results   — agent internal state (ET, PT, stimulus, p, memory_level) per
 
 Post-warm-up filtering
 -----------------------
-Warm-up agents (BMAgent.post_warm_up is False) are excluded from every
-per-agent stream, so nothing downstream (DUE convergence, plots) needs to
-re-apply that filter itself:
+Warm-up agents (agent.post_warm_up is False, a common Learner field) are
+excluded from every per-agent stream, so nothing downstream (DUE
+convergence, plots) needs to re-apply that filter itself:
   - vehroute, trips_info, fcd  — parsed from raw SUMO XML (all vehicles),
                                  then filtered post-parse by vehicle_id.
   - actions, rewards, BM_results — filtered at generation time, since each
-                                 row is built directly from a BMAgent that
-                                 already carries post_warm_up.
+                                 row is built directly from an agent that
+                                 already carries post_warm_up. For
+                                 BM_results the filter lives here, in the
+                                 caller: internal_state() returns rows for
+                                 every agent, warm-up or not.
 aggregated and edgedata are network/episode-level aggregates with no agent
 dimension — there is no per-agent row to filter, and they must keep
 reflecting all traffic (including warm-up vehicles) to stay physically

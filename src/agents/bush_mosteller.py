@@ -120,23 +120,32 @@ stimulus = (AC - PC_chosen) / normalisation
 
 Warm-up conditions (both must be satisfied before learning begins)
 ------------------------------------------------------------------
-1. episode > warm_up  (minimum number of episodes elapsed)
+1. episode > warm_up  (minimum number of episodes elapsed; self.warm_up,
+   set at construction from config.warm_up = n_routes_per_OD × 3)
 2. all routes visited at least once
    (prevents division by zero in the stimulus normalisation when
     some PT values are undefined)
 
-Note: this is unrelated to the agent's post_warm_up flag below, which is
-about simulation time (departure_time vs config.warm_up_time), not episode
-count — it marks whether the agent departs after the SUMO network's initial
-traffic-loading window, and is used by the stopping rule to decide which
-agents' policy changes count towards convergence.
+Note: this is unrelated to the agent's post_warm_up flag (set by
+Learner.__init__, see agents.base), which is about simulation time
+(departure_time vs config.warm_up_time), not episode count — it marks
+whether the agent departs after the SUMO network's initial traffic-loading
+window, and is used by the stopping rule and logging to exclude warm-up
+agents.
 
 Agent lifecycle
 ---------------
-  __init__       uniform probability vector p, empty history
-  select_action  sample route index from p
-  update         append (route, tt, wt) to history, then (if past warm-up)
-                 recompute ET → PT → stimulus → update p
+BMAgent implements the Learner contract (agents.base). Common fields (id,
+routes, n_routes, rng, departure_time, post_warm_up) are set by
+Learner.__init__ via super(); everything else here is BM-specific.
+
+  __init__        uniform probability vector p, empty history
+  select_action   sample route index from p
+  update          append (route, tt, wt) to history, then (if past warm-up)
+                  recompute ET → PT → stimulus → update p
+  internal_state  one row per route (ET, PT, σ, WT, PC, AC, stimulus, p) for
+                  BM_results.parquet
+  snapshot        full state for the single-agent debug trace
 """
 
 
