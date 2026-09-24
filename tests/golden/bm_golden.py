@@ -1,7 +1,7 @@
 """
 Golden (characterization) reference for the Bush-Mosteller agent.
 
-Freezes the CURRENT behavior of agents.agent.BMAgent so later refactors
+Freezes the CURRENT behavior of agents.bush_mosteller.BMAgent so later refactors
 can prove they change nothing.
 It does not prove BM is correct, only that its behavior hasn't changed.
 

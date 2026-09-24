@@ -85,16 +85,20 @@ def check_marl_convergence(policies_history, episode, no_change_count):
 ##################
 
 
-def create_policies_dict(BM_agents):
+def create_policies_dict(agents):
     """
-    Creates a dictionary with the ids of post-warm-up BM_agents as keys
+    Creates a dictionary with the ids of post-warm-up agents as keys
     and their current policies as values.
 
-    Warm-up agents (bm.post_warm_up is False) are excluded here, which is
+    Warm-up agents (agent.post_warm_up is False) are excluded here, which is
     what keeps them out of policies_history and therefore out of the
     stopping rule's convergence signal.
+
+    BM-specific: reads each agent's probability vector p directly. The L1
+    metric and tolerance_stopping_rule are calibrated for probabilities, so
+    another algorithm will need its own convergence signal.
     """
-    policies_dict = {bm.id: bm.p for bm in BM_agents.values() if bm.post_warm_up}
+    policies_dict = {agent.id: agent.p for agent in agents.values() if agent.post_warm_up}
     return policies_dict
 
 

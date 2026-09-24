@@ -1,7 +1,8 @@
 """
 Contract that every learning algorithm (Bush-Mosteller, later Thompson
-Sampling, Q-learning…) must follow, so the training loop, stopping rule and
-logging can use any of them without knowing which one it is.
+Sampling, Q-learning…) must follow, so the training loop and logging can
+use any of them without knowing which one it is. (The stopping rule is
+still BM-specific: it reads p directly.)
 
 Abstract Base Class (ABC)
 -------------------------
@@ -26,17 +27,9 @@ Methods
 -------
   select_action      route index chosen for the next episode
   update             learn from the episode's travel and waiting time
-  convergence_state  values whose change between episodes the stopping rule
-                     tracks (BM: p)
   internal_state     rows of the agent's internal variables for the
                      agent_state parquet (BM: ET, PT, stimulus, p…)
   snapshot           full state for the single-agent debug trace (optional)
-
-Class attributes each subclass sets
------------------------------------
-  name               identifier used in config.algorithm ("bush_mosteller")
-  results_filename   parquet under agent_state/ for internal_state rows
-                     ("BM_results.parquet")
 """
 
 from abc import ABC, abstractmethod
@@ -45,9 +38,6 @@ import numpy as np
 
 
 class Learner(ABC):
-    name: str  # "bush_mosteller"
-    results_filename: str  # "BM_results.parquet"
-
     def __init__(self, agent_id, routes, seed, departure_time, post_warm_up):
         self.id = agent_id
         self.routes = routes
@@ -55,8 +45,8 @@ class Learner(ABC):
         self.rng = np.random.default_rng(seed)
         self.departure_time = departure_time
         # Whether this agent departs after the SUMO network warm-up window
-        # (see module docstring); used by the stopping rule to exclude
-        # warm-up agents from the convergence signal.
+        # (simulation time, unrelated to BM's episode warm_up); used by the
+        # stopping rule and logging to exclude warm-up agents.
         self.post_warm_up = post_warm_up
 
     @abstractmethod
@@ -66,10 +56,6 @@ class Learner(ABC):
     @abstractmethod
     def update(self, route, travel_time, waiting_time, episode) -> None:
         """Learn from the travel and waiting time experienced on `route`."""
-
-    @abstractmethod
-    def convergence_state(self) -> np.ndarray:
-        """Values whose change between episodes signals convergence (BM: p). Used by the stopping rule."""
 
     @abstractmethod
     def internal_state(self, episode) -> list[dict]:

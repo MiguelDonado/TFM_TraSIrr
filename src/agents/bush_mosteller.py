@@ -150,9 +150,6 @@ class BMAgent(Learner):     # "BMAgent is a learner: it inherits from it"
     """
     Bush-Mosteller reinforcement learning agent for route choice
     """
-    name = "bush_mosteller"
-    results_filename = "BM_results.parquet"
-
     def __init__(self, agent_id, routes, seed, warm_up, beta, gamma, epsilon, departure_time, post_warm_up, reliability_sensitivity, waiting_time_sensitivity, nonlinear_stimulus, stimulus_tau):
 
         ####################################
@@ -536,9 +533,6 @@ class BMAgent(Learner):     # "BMAgent is a learner: it inherits from it"
                 }
             )
         return rows
-
-    def convergence_state(self):
-        return self.p
 
     def snapshot(self):
         """
