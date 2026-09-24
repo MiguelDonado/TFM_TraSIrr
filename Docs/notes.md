@@ -1,7 +1,3 @@
-## Pending
-- SUMO docker
-
-
 ## Improvements that won't be done
 ### Paralelization
 - Don't parallelize combinations naively — I checked config/paths.py: every output path (data/DUE/BM/R-gap/rgap.parquet, etc.) is fixed, not per-run. Two main.py processes running concurrently would clobber each other's scratch files mid-simulation. Real parallelism would need those paths made run-scoped (e.g. per-PID temp dirs) — a nontrivial refactor, so only worth it if the nightly batch keeps growing and single-machine wall-clock becomes the actual bottleneck.
