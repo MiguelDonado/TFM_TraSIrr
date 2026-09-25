@@ -26,7 +26,7 @@ import pandas as pd
 
 from agents.factory import initialize_agents, select_actions, update_agents
 from config.config import config
-from config.paths import AGENT_DEBUG_TRACE, POLICY_CHANGE_BM
+from config.paths import BM_STATE_PATHS
 from DUE_convergence.DUE_convergence import check_due_state_convergence
 from experiment import accumulate_results, prepare_data, save_processed_data
 from simulation.environment import Environment
@@ -138,7 +138,7 @@ def _run_training_loop(
             break
 
     if DEBUG_AGENT_ID is not None:
-        with open(AGENT_DEBUG_TRACE, "w") as f:
+        with open(BM_STATE_PATHS.agent_debug_trace, "w") as f:
             json.dump(debug_trace, f, indent=2)
 
     return results, policy_change_history
@@ -178,7 +178,7 @@ def orchestrate_training(
     # -----------------------------
     save_processed_data(results)
     df_policy_change = pd.DataFrame(policy_change_history)
-    df_policy_change.to_parquet(POLICY_CHANGE_BM)
+    df_policy_change.to_parquet(BM_STATE_PATHS.convergence_metric)
     # -----------------------------
     # 6. CHECK DUE convergence
     # -----------------------------

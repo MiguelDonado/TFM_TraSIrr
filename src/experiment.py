@@ -63,7 +63,7 @@ from lxml import etree
 from config.config import config
 from config.paths import (
     ACTIONS,
-    BM_RESULTS,
+    BM_STATE_PATHS,
     EDGEDATA_PARQUET,
     EDGEDATA_XML,
     FCD_PARQUET,
@@ -164,7 +164,7 @@ def save_processed_data(results):
         "edgedata": EDGEDATA_PARQUET,
         "actions": ACTIONS,
         "rewards": REWARDS,
-        "BM_results": BM_RESULTS,
+        "BM_results": BM_STATE_PATHS.results,
     }
 
     for key, path in mapping.items():

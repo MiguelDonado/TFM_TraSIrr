@@ -30,13 +30,14 @@ import pandas as pd
 
 from config.config import config
 from config.paths import (
-    AGENT_STATE_DIR,
+    ACTIONS,
     BM_PATHS,
+    BM_STATE_PATHS,
     DUA_PATHS,
     DUE_DATA_DIR,
     ENVIRONMENT_DIR,
-    POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
+    REWARDS,
     STATISTICS_PARQUET,
 )
 
@@ -147,7 +148,7 @@ def _log_bm_mean_travel_time():
 
 def _log_bm_policy_change():
     # 1. Read parquet file that contains "episode | mean_policy_change"
-    df_policy_change_bm = pd.read_parquet(POLICY_CHANGE_BM)
+    df_policy_change_bm = pd.read_parquet(BM_STATE_PATHS.convergence_metric)
 
     # 2. Log BM mean_policy_change over time
     metric_name = "mean_pol_change"
@@ -177,7 +178,9 @@ def _log_duaIterate_rgap_metric():
 
 
 def _log_mlflow_artifacts():
-    mlflow.log_artifact(AGENT_STATE_DIR)
+    mlflow.log_artifact(BM_STATE_PATHS.root, artifact_path = "agent_state")
+    mlflow.log_artifact(ACTIONS, artifact_path = "experiences")
+    mlflow.log_artifact(REWARDS, artifact_path = "experiences")
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)
     mlflow.log_artifact(ENVIRONMENT_DIR)
