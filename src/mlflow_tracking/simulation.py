@@ -31,9 +31,9 @@ import pandas as pd
 from config.config import config
 from config.paths import (
     ACTIONS,
-    BM_PATHS,
+    BM_DUE_PATHS,
     BM_STATE_PATHS,
-    DUA_PATHS,
+    DUAITERATE_DUE_PATHS,
     DUE_DATA_DIR,
     ENVIRONMENT_DIR,
     PROCESSED_DATA_DIR,

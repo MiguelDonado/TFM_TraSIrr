@@ -35,9 +35,9 @@ from config.config import config
 from config.paths import (
     ACTIONS,
     AGENTS_OD,
-    BM_PATHS,
-    DUA_EXTRA,
-    DUA_PATHS,
+    BM_DUE_PATHS,
+    DUAITERATE_DUE_EXTRA,
+    DUAITERATE_DUE_PATHS,
     EDGEDATA_PARQUET,
     ROUTES,
     ROUTES_LAST_EPISODE_BM,

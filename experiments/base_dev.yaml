@@ -8,6 +8,7 @@ numerical_constants:
   epsilon: 1.0e-8
 
 learning:
+  algorithm: "BM"
   learning_rate: 0.3
   memory_level: 1
 

@@ -192,6 +192,7 @@ class Config:
     last_episode_gui_BM: bool
     last_episode_gui_duaIterate: bool
     config_name: str
+    algorithm: str
     research_question: str = ""
     episodes_gui: set[int] = field(default_factory=lambda: {})
     network_normal: str = ""

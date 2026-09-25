@@ -59,7 +59,12 @@ import pandas as pd
 from lxml import etree
 
 from config.config import config
-from config.paths import BASE_DIR, DUA_EXTRA, DUA_PATHS, TRIPS_TDSP
+from config.paths import (
+    BASE_DIR,
+    DUAITERATE_DUE_EXTRA,
+    DUAITERATE_DUE_PATHS,
+    TRIPS_TDSP,
+)
 from parsing.sumo_outputs import parse_edgedata, parse_trips_info, parse_vehroute
 from utils.od_routes import od_routes_to_rows
 from utils.sumo_xml import write_meandata_file
