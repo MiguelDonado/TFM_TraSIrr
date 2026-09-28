@@ -32,7 +32,7 @@ from experiment import run_final_simulation
 from mlflow_tracking.simulation import log_simulation_mlflow
 from mlflow_tracking.utils import set_up_mlflow
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import orchestrate_training
+from utils.run_training import orchestrate_training
 
 
 def main():
@@ -63,7 +63,7 @@ def main():
         # -----------------------------
         # 3. GUI replay (optional, replays the last episode then exits)
         # -----------------------------
-        if config.last_episode_gui_BM:
+        if config.last_episode_gui_alg:
             run_final_simulation()
 
     os.system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga")

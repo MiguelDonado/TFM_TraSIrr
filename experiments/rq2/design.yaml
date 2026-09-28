@@ -38,5 +38,5 @@ grid:
     duaIterate_max_iterations: 
       - 1
   mode_and_flags:
-    last_episode_gui_BM:
+    last_episode_gui_alg:
       - true

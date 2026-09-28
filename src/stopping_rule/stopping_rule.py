@@ -44,45 +44,59 @@ only ever contains post-warm-up agents.
 """
 
 import numpy as np
+import pandas as pd
 
 from config.config import config
+from config.paths import BM_STATE_PATHS
 
 ##########
 # Policy stability (Stopping rule)
 ##########
 
-
-def check_marl_convergence(policies_history, episode, no_change_count):
-
-    # Get the mean policy change across post-warm-up agents
-    mean_policy_change = _compute_mean_policy_change(policies_history, episode)
-
-    # Skip warm-up
-    if mean_policy_change is None:
-        return False, no_change_count, None
-
-    # Update counter
-    if mean_policy_change < config.tolerance_stopping_rule:
-        no_change_count += 1
-    else:
-        no_change_count = 0
-
-    # Log
-    print(f"Mean policy change: {mean_policy_change}")
-    print(f"No change count: {no_change_count}")
-
-    # Check convergence
-    converged = no_change_count >= config.k_no_change
-
-    if converged:
-        print(f"Converged at episode {episode}")
-
-    return (converged, no_change_count, mean_policy_change)
-
+def stopping_rule(marl_convergence_dict, episode):
+    # Algorithm-specific
+    # 1. Bush-Mosteller
+    if config.algorithm == "BM":
+        should_stop, mean_policy_change = _check_bm_marl_convergence(marl_convergence_dict, episode)
+        if mean_policy_change:
+            marl_convergence_dict["policy_change_history"].append({"episode": episode, "mean_policy_change": mean_policy_change})
+        # Store evolution of convergence criteria
+        if should_stop:
+            df_policy_change = pd.DataFrame(marl_convergence_dict["policy_change_history"])
+            df_policy_change.to_parquet(BM_STATE_PATHS.convergence_metric)
+    return should_stop
+        
 
 ##################
 # HELPER FUNCTIONS
 ##################
+
+def _check_bm_marl_convergence(marl_convergence_dict, episode):
+
+    # Get the mean policy change across post-warm-up agents
+    mean_policy_change = _compute_mean_policy_change(marl_convergence_dict["policies_history"], episode)
+
+    # Skip warm-up
+    if mean_policy_change is None:
+        return False, None
+
+    # Update counter
+    if mean_policy_change < config.tolerance_stopping_rule:
+        marl_convergence_dict["no_change_count"] += 1
+    else:
+        marl_convergence_dict["no_change_count"] = 0
+
+    # Log
+    print(f"Mean policy change: {mean_policy_change}")
+    print(f"No change count: {marl_convergence_dict["no_change_count"]}")
+
+    # Check convergence
+    converged = marl_convergence_dict["no_change_count"] >= config.k_no_change
+
+    if converged:
+        print(f"Converged at episode {episode}")
+
+    return converged, mean_policy_change
 
 
 def create_policies_dict(agents):

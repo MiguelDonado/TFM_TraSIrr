@@ -56,9 +56,9 @@ from matplotlib.ticker import PercentFormatter
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
+from config.paths import BM_DUE_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import orchestrate_training
+from utils.run_training import orchestrate_training
 
 
 def main():
@@ -112,7 +112,7 @@ def main():
             )
 
             # 4. Get values of metrics (first episode, last episode and its r-gap)
-            rgap_df = pd.read_parquet(BM_PATHS.rgap)
+            rgap_df = pd.read_parquet(BM_DUE_PATHS.rgap)
             first_rgap = rgap_df.iloc[0]["rgap"]
             last_row = rgap_df.iloc[-1]
             last_episode = last_row["episode"]

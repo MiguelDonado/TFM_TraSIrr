@@ -11,7 +11,7 @@
 #   across seeds, so the grid is a single combination — no seed/parameter
 #   sweep, no run_analysis.py entry needed. The launcher run just produces
 #   the two local edgedata files (BM: EDGEDATA_PARQUET, duaIterate:
-#   DUA_EXTRA.edgedata_processed) that sumo_edge_analysis.py reads
+#   DUAITERATE_DUE_EXTRA.edgedata_processed) that sumo_edge_analysis.py reads
 #   directly afterwards.
 # - duaIterate_max_iterations is left at the production default (10)
 #   rather than the "1" used in RQ2-6. There, duaIterate is only a quick

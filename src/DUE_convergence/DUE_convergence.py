@@ -106,13 +106,13 @@ def _check_due_convergence_BM(threshold_density):
     print("--- Bush-Mosteller algorithm ---")
 
     # 2. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
-    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_PATHS.flows_paths)
+    compute_flows_odtp_k(actions_path=ACTIONS, output_file=BM_DUE_PATHS.flows_paths)
 
     # 3. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
         actions_path=ACTIONS,
         trips_info_processed_path=TRIPS_INFO_PARQUET,
-        output_file=BM_PATHS.cost_paths,
+        output_file=BM_DUE_PATHS.cost_paths,
     )
 
     # 4. TIME DEPENDENCE SHORTEST PATH
@@ -120,26 +120,26 @@ def _check_due_convergence_BM(threshold_density):
         vehroute_file=VEHROUTE_PARQUET,
         edgedata_file=EDGEDATA_PARQUET,
         agents_od_file=AGENTS_OD,
-        missingness_edge_file=BM_PATHS.missingness_edge,
-        missingness_episode_file=BM_PATHS.missingness_episode,
-        missingness_interval_file=BM_PATHS.missingness_int,
-        missingness_report_file=BM_PATHS.missingness_report,
-        cost_links=BM_PATHS.cost_links,
-        weights_dir=BM_PATHS.weights_dir,
-        shortest_path_dir=BM_PATHS.shortest_paths_dir,
-        cost_min_paths=BM_PATHS.cost_min_paths,
+        missingness_edge_file=BM_DUE_PATHS.missingness_edge,
+        missingness_episode_file=BM_DUE_PATHS.missingness_episode,
+        missingness_interval_file=BM_DUE_PATHS.missingness_int,
+        missingness_report_file=BM_DUE_PATHS.missingness_report,
+        cost_links=BM_DUE_PATHS.cost_links,
+        weights_dir=BM_DUE_PATHS.weights_dir,
+        shortest_path_dir=BM_DUE_PATHS.shortest_paths_dir,
+        cost_min_paths=BM_DUE_PATHS.cost_min_paths,
         threshold_density=threshold_density,
     )
 
     # Computation Rgap
     compute_rgap_and_refined_rgap(
-        flow_paths=BM_PATHS.flows_paths,
-        cost_paths=BM_PATHS.cost_paths,
-        cost_min_paths=BM_PATHS.cost_min_paths,
-        rgap_path=BM_PATHS.rgap,
-        refined_rgap_path=BM_PATHS.refined_rgap,
-        rgap_by_od_path=BM_PATHS.rgap_by_od,
-        refined_rgap_by_od_path=BM_PATHS.refined_rgap_by_od,
+        flow_paths=BM_DUE_PATHS.flows_paths,
+        cost_paths=BM_DUE_PATHS.cost_paths,
+        cost_min_paths=BM_DUE_PATHS.cost_min_paths,
+        rgap_path=BM_DUE_PATHS.rgap,
+        refined_rgap_path=BM_DUE_PATHS.refined_rgap,
+        rgap_by_od_path=BM_DUE_PATHS.rgap_by_od,
+        refined_rgap_by_od_path=BM_DUE_PATHS.refined_rgap_by_od,
     )
 
     # Snapshot the last episode's routes (ROUTES is overwritten every
@@ -186,7 +186,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # 7. Compute the path flows for all origin–destination pairs and all time intervals across all episodes
     compute_flows_odtp_k(
-        actions_path=DUA_EXTRA.actions, output_file=DUA_PATHS.flows_paths
+        actions_path=DUAITERATE_DUE_EXTRA.actions, output_file=DUAITERATE_DUE_PATHS.flows_paths
     )
 
     # 8. Process trips_info file
@@ -194,9 +194,9 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
 
     # 9. Compute avg path travel times for all od-pairs and all time intervals across all episodes
     compute_travel_time_paths_odtp_k(
-        actions_path=DUA_EXTRA.actions,
-        trips_info_processed_path=DUA_EXTRA.trips_info_processed,
-        output_file=DUA_PATHS.cost_paths,
+        actions_path=DUAITERATE_DUE_EXTRA.actions,
+        trips_info_processed_path=DUAITERATE_DUE_EXTRA.trips_info_processed,
+        output_file=DUAITERATE_DUE_PATHS.cost_paths,
     )
 
     # 10. Process vehroute duaIterate
@@ -216,29 +216,29 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     ######
     # 14. TIME DEPENDENCE SHORTEST PATH
     run_tdsp_pipeline(
-        vehroute_file=DUA_EXTRA.vehroute_processed,
-        edgedata_file=DUA_EXTRA.edgedata_processed,
+        vehroute_file=DUAITERATE_DUE_EXTRA.vehroute_processed,
+        edgedata_file=DUAITERATE_DUE_EXTRA.edgedata_processed,
         threshold_density=threshold_density,
         agents_od_file=AGENTS_OD,
-        missingness_edge_file=DUA_PATHS.missingness_edge,
-        missingness_episode_file=DUA_PATHS.missingness_episode,
-        missingness_interval_file=DUA_PATHS.missingness_int,
-        missingness_report_file=DUA_PATHS.missingness_report,
-        cost_links=DUA_PATHS.cost_links,
-        weights_dir=DUA_PATHS.weights_dir,
-        shortest_path_dir=DUA_PATHS.shortest_paths_dir,
-        cost_min_paths=DUA_PATHS.cost_min_paths,
+        missingness_edge_file=DUAITERATE_DUE_PATHS.missingness_edge,
+        missingness_episode_file=DUAITERATE_DUE_PATHS.missingness_episode,
+        missingness_interval_file=DUAITERATE_DUE_PATHS.missingness_int,
+        missingness_report_file=DUAITERATE_DUE_PATHS.missingness_report,
+        cost_links=DUAITERATE_DUE_PATHS.cost_links,
+        weights_dir=DUAITERATE_DUE_PATHS.weights_dir,
+        shortest_path_dir=DUAITERATE_DUE_PATHS.shortest_paths_dir,
+        cost_min_paths=DUAITERATE_DUE_PATHS.cost_min_paths,
     )
 
     # Computation Rgap
     compute_rgap_and_refined_rgap(
-        flow_paths=DUA_PATHS.flows_paths,
-        cost_paths=DUA_PATHS.cost_paths,
-        cost_min_paths=DUA_PATHS.cost_min_paths,
-        rgap_path=DUA_PATHS.rgap,
-        refined_rgap_path=DUA_PATHS.refined_rgap,
-        rgap_by_od_path=DUA_PATHS.rgap_by_od,
-        refined_rgap_by_od_path=DUA_PATHS.refined_rgap_by_od,
+        flow_paths=DUAITERATE_DUE_PATHS.flows_paths,
+        cost_paths=DUAITERATE_DUE_PATHS.cost_paths,
+        cost_min_paths=DUAITERATE_DUE_PATHS.cost_min_paths,
+        rgap_path=DUAITERATE_DUE_PATHS.rgap,
+        refined_rgap_path=DUAITERATE_DUE_PATHS.refined_rgap,
+        rgap_by_od_path=DUAITERATE_DUE_PATHS.rgap_by_od,
+        refined_rgap_by_od_path=DUAITERATE_DUE_PATHS.refined_rgap_by_od,
     )
 
     # Compute mean tt duaIterate
@@ -247,7 +247,7 @@ def _check_due_convergence_duaIterate(scen, threshold_density):
     # Snapshot the last iteration's routes so it survives as an MLflow
     # artifact for the sumo-gui edge-visualization replay (RQ7), before
     # its scratch folder is deleted below
-    copy2(routes_file, DUA_EXTRA.routes)
+    copy2(routes_file, DUAITERATE_DUE_EXTRA.routes)
 
     ################
     # 15. Delete duaIterate folders

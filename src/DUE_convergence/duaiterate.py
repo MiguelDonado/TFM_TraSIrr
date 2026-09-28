@@ -62,8 +62,6 @@ from config.config import config
 from config.paths import (
     BASE_DIR,
     DUAITERATE_DUE_EXTRA,
-    DUAITERATE_DUE_PATHS,
-    TRIPS_TDSP,
 )
 from parsing.sumo_outputs import parse_edgedata, parse_trips_info, parse_vehroute
 from utils.od_routes import od_routes_to_rows
@@ -81,7 +79,7 @@ def compute_avg_tt_duaIterate():
             {"Iteration": int(folder_number), "Mean_travel_time": mean_tt}
         )
     df = pd.DataFrame(mean_tt_iterations)
-    df.to_parquet(DUA_EXTRA.mean_tt)
+    df.to_parquet(DUAITERATE_DUE_EXTRA.mean_tt)
 
 
 def _compute_avg_travel_time_duaIterate(path):
@@ -93,7 +91,7 @@ def _compute_avg_travel_time_duaIterate(path):
 
 
 def generate_trips_file_duaIterate(agents):
-    with open(DUA_EXTRA.trips, "w") as f:
+    with open(DUAITERATE_DUE_EXTRA.trips, "w") as f:
         f.write(f"<routes>\n")
         for i, agent in enumerate(agents):
             f.write(
@@ -108,7 +106,7 @@ def call_duaIterate():
         "-n",
         config.network,
         "-t",
-        DUA_EXTRA.trips,
+        DUAITERATE_DUE_EXTRA.trips,
         "--last-step",
         str(config.duaIterate_max_iterations),
         "sumo--step-length",
@@ -184,7 +182,7 @@ def compute_od_routes_table_duaIterate(routes_file):
     processed_od_routes = _process_od_routes(od_routes)
 
     df = pd.DataFrame(processed_od_routes)
-    df.to_parquet(DUA_EXTRA.od_routes, engine="pyarrow")
+    df.to_parquet(DUAITERATE_DUE_EXTRA.od_routes, engine="pyarrow")
 
     return dict_agent_routes, od_routes
 
@@ -203,7 +201,7 @@ def compute_actions_table_duaIterate(agents, dict_agent_routes, od_routes):
         actions.append({"episode": 1, "agent_id": agent_id, "action": idx_route})
 
     df = pd.DataFrame(actions)
-    df.to_parquet(DUA_EXTRA.actions, engine="pyarrow")
+    df.to_parquet(DUAITERATE_DUE_EXTRA.actions, engine="pyarrow")
 
 
 def process_trips_info_duaIterate(post_warm_up_ids):
@@ -226,7 +224,7 @@ def process_trips_info_duaIterate(post_warm_up_ids):
 
     # Save trips info processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(DUA_EXTRA.trips_info_processed, engine="pyarrow")
+    df.to_parquet(DUAITERATE_DUE_EXTRA.trips_info_processed, engine="pyarrow")
 
 
 def process_vehroute_duaIterate(post_warm_up_ids):
@@ -247,7 +245,7 @@ def process_vehroute_duaIterate(post_warm_up_ids):
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(DUA_EXTRA.vehroute_processed, engine="pyarrow")
+    df.to_parquet(DUAITERATE_DUE_EXTRA.vehroute_processed, engine="pyarrow")
 
 
 def process_edgedata_duaIterate():
@@ -267,7 +265,7 @@ def process_edgedata_duaIterate():
 
     # Save vehroutes processed data in a parquet file
     df = pd.DataFrame(processed_data)
-    df.to_parquet(DUA_EXTRA.edgedata_processed, engine="pyarrow")
+    df.to_parquet(DUAITERATE_DUE_EXTRA.edgedata_processed, engine="pyarrow")
 
 
 def _parse_routes(routes_file):

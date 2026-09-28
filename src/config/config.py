@@ -189,7 +189,7 @@ class Config:
     #####################
     # 10. Flags
     #####################
-    last_episode_gui_BM: bool
+    last_episode_gui_alg: bool
     last_episode_gui_duaIterate: bool
     config_name: str
     algorithm: str

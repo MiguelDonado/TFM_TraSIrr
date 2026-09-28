@@ -31,7 +31,9 @@ from DUE_convergence.DUE_convergence import check_due_state_convergence
 from experiment import accumulate_results, prepare_data, save_processed_data
 from simulation.environment import Environment
 from simulation.scenario import Scenario
-from stopping_rule.stopping_rule import check_marl_convergence, create_policies_dict
+from stopping_rule.stopping_rule import stopping_rule
+
+from .helper_run_training import initialize_variables, marl_convergence_storage
 
 # Debug: dump this agent's full state (history, p, ET, PT, stimulus) after
 # every episode to AGENT_DEBUG_TRACE, viewable in VS Code as a folding JSON
@@ -43,23 +45,8 @@ def _run_training_loop(
     env,
     agents,
 ):
-    # > Policy stability
-    no_change_count = 0  # Counter consecutive times without policy changes
-    policies_history = []  # Stores policies of all agents for all episodes
-    policy_change_history = []
-    debug_trace = []  # DEBUG_AGENT_ID's full state, one entry per episode
 
-    # > Data
-    results = {
-        "aggregated": [],
-        "vehroute": [],
-        "trips_info": [],
-        "fcd": [],
-        "edgedata": [],
-        "actions": [],
-        "rewards": [],
-        "BM_results": [],  # ET (scalar), stimulus (scalar), PT (array), p (array)
-    }
+    debug_trace, results_dict, marl_convergence_dict = initialize_variables()  
 
     degradation_enabled = config.degradation_start_episode > 0
 
@@ -95,12 +82,7 @@ def _run_training_loop(
         # -----------------------------
         # 4. UPDATE AGENTS
         # -----------------------------
-        # Save policy used in THIS EPISODE (For checking policy convergence in the stopping rule)
-        # Only post-warm-up agents are included (see stopping_rule.create_policies_dict)
-        # After updating agents, they store the policy for NEXT EPISODE
-        current_policies = create_policies_dict(agents)
-        # Store current policies in history
-        policies_history.append(current_policies)
+        marl_convergence_storage(agents, marl_convergence_dict)
 
         update_agents(
             actions=actions,
@@ -119,21 +101,12 @@ def _run_training_loop(
         # 5. PREPARE GENERATED DATA
         # -----------------------------
         result = prepare_data(episode, actions, rewards, agents)
-        accumulate_results(results, result)
+        accumulate_results(results_dict, result)
 
         # -----------------------------
         # 6. STOPPING RULE
         # -----------------------------
-        should_stop, no_change_count, mean_policy_change = check_marl_convergence(
-            policies_history=policies_history,
-            episode=episode,
-            no_change_count=no_change_count,
-        )
-        if mean_policy_change:
-            policy_change_history.append(
-                {"episode": episode, "mean_policy_change": mean_policy_change}
-            )
-
+        should_stop = stopping_rule(marl_convergence_dict, episode)
         if should_stop:
             break
 
@@ -141,7 +114,7 @@ def _run_training_loop(
         with open(BM_STATE_PATHS.agent_debug_trace, "w") as f:
             json.dump(debug_trace, f, indent=2)
 
-    return results, policy_change_history
+    return results_dict
 
 
 def orchestrate_training(
@@ -171,14 +144,13 @@ def orchestrate_training(
     # -----------------------------
     # 4. TRAINING LOOP
     # -----------------------------
-    results, policy_change_history = _run_training_loop(env=env, agents=rl_agents)
+    results = _run_training_loop(env=env, agents=rl_agents)
 
     # -----------------------------
     # 5. SAVE OUTPUT
     # -----------------------------
     save_processed_data(results)
-    df_policy_change = pd.DataFrame(policy_change_history)
-    df_policy_change.to_parquet(BM_STATE_PATHS.convergence_metric)
+
     # -----------------------------
     # 6. CHECK DUE convergence
     # -----------------------------
