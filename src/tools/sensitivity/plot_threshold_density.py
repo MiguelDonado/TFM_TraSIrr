@@ -57,10 +57,10 @@ from matplotlib.ticker import PercentFormatter
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR
+from config.paths import BM_DUE_PATHS, SENSITIVITY_PLOTS_DIR
 from DUE_convergence.DUE_convergence import check_due_state_convergence
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import orchestrate_training
+from utils.run_training import orchestrate_training
 
 THRESHOLD_DENSITIES = [0, 1, 2, 5, 10, 20, 30, 40, 50]
 # THRESHOLD_DENSITIES = [0, 2]
@@ -95,7 +95,7 @@ def main():
         )
 
         # 6. Record first and final R-gap (first/last episode)
-        rgap_series = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+        rgap_series = pd.read_parquet(BM_DUE_PATHS.rgap)["rgap"]
         first_rgaps.append(rgap_series.iloc[0])
         last_rgaps.append(rgap_series.iloc[-1])
 

@@ -86,9 +86,9 @@ from matplotlib.ticker import PercentFormatter
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from config.config import config
-from config.paths import BM_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
+from config.paths import BM_DUE_PATHS, SENSITIVITY_PLOTS_DIR, SENSITIVITY_RESULTS_DIR
 from utils.generate_agents import demand_from_count
-from utils.run_training_BM import orchestrate_training
+from utils.run_training import orchestrate_training
 
 # Broad range of intervals (minutes)
 FIXED_TIME_MIN_CANDIDATES = [
@@ -178,11 +178,11 @@ def main():
             )
 
             # 6. Record full R-gap convergence curve
-            rgap_series = pd.read_parquet(BM_PATHS.rgap)["rgap"]
+            rgap_series = pd.read_parquet(BM_DUE_PATHS.rgap)["rgap"]
             rgap_curves[fixed_time_min_label] = rgap_series
 
             # 7. Record aggregate missingness proportion
-            missingness = _parse_missingness_proportion(BM_PATHS.missingness_report)
+            missingness = _parse_missingness_proportion(BM_DUE_PATHS.missingness_report)
             missingness_props[fixed_time_min_label] = missingness
 
             # 8. Stash rows for the combined results files

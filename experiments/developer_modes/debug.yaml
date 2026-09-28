@@ -8,6 +8,7 @@ numerical_constants:
   epsilon: 1.0e-8
 
 learning:
+  algorithm: "BM"
   learning_rate: 0.3
   memory_level: 1
 
@@ -49,5 +50,5 @@ due_convergence:
   duaIterate_step_length: 0.1
 
 mode_and_flags:
-  last_episode_gui_BM: false
+  last_episode_gui_alg: false
   last_episode_gui_duaIterate: false

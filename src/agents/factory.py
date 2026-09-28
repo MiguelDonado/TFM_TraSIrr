@@ -67,41 +67,36 @@ def initialize_agents(scen, seed=None):
     for i, agent_info in enumerate(scen.agents):
         agent_id = agent_info["id"]
         od = (agent_info["origin"], agent_info["destination"])
-
         routes = scen.od_routes[od]
-
-        # post_warm_up (computed in utils.generate_agents.generate_agents,
-        # just passed through here): departs after the SUMO network warm-up
-        # window, as opposed to only loading traffic during it. Consumed by
-        # the stopping rule (stopping_rule.create_policies_dict) to exclude
-        # warm-up agents from the convergence signal.
         departure_time = agent_info["departure_time"]
         post_warm_up = agent_info["post_warm_up"]
 
-        if config.heterogeneous_memory:
-            a = config.memory_mean * config.memory_concentration
-            b = config.memory_concentration*(1-config.memory_mean)
-            gamma = rng.beta(a, b)
-        else:
-            gamma = config.memory_level
+        # Bush-Mosteller Agents
+        if config.algorithm == "BM":
+            if config.heterogeneous_memory:
+                a = config.memory_mean * config.memory_concentration
+                b = config.memory_concentration*(1-config.memory_mean)
+                gamma = rng.beta(a, b)
+            else:
+                gamma = config.memory_level
 
-        # Distinct seed per agent (factory.py passes seed+i) so each agent's
-        # select_action draws are independent, not correlated across agents.
-        agents[agent_id] = BMAgent(
-            agent_id=agent_id,
-            routes=routes,
-            seed=seed + i,
-            warm_up=config.warm_up,
-            beta=config.learning_rate,
-            gamma=gamma,
-            epsilon=config.epsilon,
-            departure_time=departure_time,
-            post_warm_up=post_warm_up,
-            reliability_sensitivity=config.reliability_sensitivity,
-            waiting_time_sensitivity=config.waiting_time_sensitivity,
-            nonlinear_stimulus=config.nonlinear_stimulus,
-            stimulus_tau=config.stimulus_tau,
-        )
+            # Distinct seed per agent (factory.py passes seed+i) so each agent's
+            # select_action draws are independent, not correlated across agents.
+            agents[agent_id] = BMAgent(
+                agent_id=agent_id,
+                routes=routes,
+                seed=seed + i,
+                warm_up=config.warm_up,
+                beta=config.learning_rate,
+                gamma=gamma,
+                epsilon=config.epsilon,
+                departure_time=departure_time,
+                post_warm_up=post_warm_up,
+                reliability_sensitivity=config.reliability_sensitivity,
+                waiting_time_sensitivity=config.waiting_time_sensitivity,
+                nonlinear_stimulus=config.nonlinear_stimulus,
+                stimulus_tau=config.stimulus_tau,
+            )
     return agents
 
 

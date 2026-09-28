@@ -63,7 +63,7 @@ from lxml import etree
 from config.config import config
 from config.paths import (
     ACTIONS,
-    BM_RESULTS,
+    BM_STATE_PATHS,
     EDGEDATA_PARQUET,
     EDGEDATA_XML,
     FCD_PARQUET,
@@ -98,6 +98,7 @@ from parsing.sumo_outputs import (
 
 def prepare_data(episode, actions, rewards, agents):
 
+    # 1. Agnostic
     post_warm_up_ids = {
         agent_id for agent_id, agent in agents.items() if agent.post_warm_up
     }
@@ -121,17 +122,25 @@ def prepare_data(episode, actions, rewards, agents):
 
     actions = _prepare_actions(episode, actions, agents)
     rewards = _prepare_rewards(episode, rewards, agents)
-    bm_result = _prepare_bm_data(episode, agents)
-    return {
+
+    output_dict = {
         "aggregated_result": aggregated_result,
         "vehroute_result": vehroute_result,
         "trips_info_result": trips_info_result,
         "fcd_result": fcd_result,
         "edgedata_result": edgedata_result,
         "actions_result": actions,
-        "rewards_result": rewards,
-        "BM_result": bm_result,
+        "rewards_result": rewards
     }
+
+    # 2. Algorithm-specific
+    # Bush-Mosteller
+    if config.algorithm == "BM":
+        bm_result = _prepare_bm_data(episode, agents)
+        output_dict["algorithm_result"] = bm_result
+
+    return output_dict
+
 
 
 def _filter_post_warm_up(rows, post_warm_up_ids):
@@ -148,7 +157,7 @@ def accumulate_results(results, result):
         "edgedata": ("edgedata_result", "extend"),
         "actions": ("actions_result", "extend"),
         "rewards": ("rewards_result", "extend"),
-        "BM_results": ("BM_result", "extend"),
+        "algorithm_results": ("algorithm_result", "extend"),
     }
 
     for key, (res_key, method) in mapping.items():
@@ -156,6 +165,7 @@ def accumulate_results(results, result):
 
 
 def save_processed_data(results):
+    # 1. Agnostic
     mapping = {
         "aggregated": STATISTICS_PARQUET,
         "vehroute": VEHROUTE_PARQUET,
@@ -164,8 +174,12 @@ def save_processed_data(results):
         "edgedata": EDGEDATA_PARQUET,
         "actions": ACTIONS,
         "rewards": REWARDS,
-        "BM_results": BM_RESULTS,
     }
+
+    # 2. Algorithm-specific
+    # Bush-Mosteller
+    if config.algorithm == "BM":
+        mapping["algorithm_results"] = BM_STATE_PATHS.results
 
     for key, path in mapping.items():
         df = pd.DataFrame(results[key])

@@ -30,13 +30,14 @@ import pandas as pd
 
 from config.config import config
 from config.paths import (
-    AGENT_STATE_DIR,
-    BM_PATHS,
-    DUA_PATHS,
+    ACTIONS,
+    BM_DUE_PATHS,
+    BM_STATE_PATHS,
+    DUAITERATE_DUE_PATHS,
     DUE_DATA_DIR,
     ENVIRONMENT_DIR,
-    POLICY_CHANGE_BM,
     PROCESSED_DATA_DIR,
+    REWARDS,
     STATISTICS_PARQUET,
 )
 
@@ -60,12 +61,17 @@ def log_simulation_mlflow(run_id):
 
 
 def set_simulation_tags(run_id):
+    # Agnostic
     mlflow.set_tag("run_type", "simulation")
-    mlflow.set_tag("algorithm", "BM")
     if config.research_question:
         mlflow.set_tag("research_question", config.research_question)
-    run_name = f"BM_s{config.seed}_n{config.n_agents}_mem{config.memory_level}_l{config.learning_rate}_{run_id[:6]}"
-    mlflow.set_tag("mlflow.runName", run_name)
+
+    # Algorithm-specific
+    # Bush-Mosteller
+    if config.algorithm == "BM":
+        mlflow.set_tag("algorithm", "BM")
+        run_name = f"BM_s{config.seed}_n{config.n_agents}_mem{config.memory_level}_l{config.learning_rate}_{run_id[:6]}"
+        mlflow.set_tag("mlflow.runName", run_name)
 
 
 ##########
@@ -98,8 +104,10 @@ def _log_config_artifact():
 
 
 def _log_mlflow_metrics():
-    # 1. Log BM metrics
-    _log_bm_metrics()
+    # Algorithm-specific
+    # Bush-Mosteller Metrics
+    if config.algorithm == "BM":
+        _log_bm_metrics()
 
     # 2. Log duaIterate metrics
     _log_duaIterate_metrics()
@@ -118,7 +126,7 @@ def _log_bm_metrics():
 
 def _log_bm_rgap_metric():
     # 1. Read parquet file that contains "episode | rgap" for BM algorithm
-    df_rgap_bm = pd.read_parquet(BM_PATHS.rgap)
+    df_rgap_bm = pd.read_parquet(BM_DUE_PATHS.rgap)
     # 2. Log time series of the Rgap metric
     metric_name = "bm_rgap_pct"
     col_metric = "rgap"
@@ -147,7 +155,7 @@ def _log_bm_mean_travel_time():
 
 def _log_bm_policy_change():
     # 1. Read parquet file that contains "episode | mean_policy_change"
-    df_policy_change_bm = pd.read_parquet(POLICY_CHANGE_BM)
+    df_policy_change_bm = pd.read_parquet(BM_STATE_PATHS.convergence_metric)
 
     # 2. Log BM mean_policy_change over time
     metric_name = "mean_pol_change"
@@ -167,7 +175,7 @@ def _log_duaIterate_metrics():
 
 def _log_duaIterate_rgap_metric():
     # 1. Read parquet file that contains "episode | rgap" for duaIterate algorithm
-    df_rgap_duaIterate = pd.read_parquet(DUA_PATHS.rgap)
+    df_rgap_duaIterate = pd.read_parquet(DUAITERATE_DUE_PATHS.rgap)
 
     # 2. Log time series of the Rgap metric
     # (it only contains one value correspondent to the last episode) so its a scalar
@@ -177,11 +185,17 @@ def _log_duaIterate_rgap_metric():
 
 
 def _log_mlflow_artifacts():
-    mlflow.log_artifact(AGENT_STATE_DIR)
+    # Agnostic
+    mlflow.log_artifact(ACTIONS, artifact_path = "experiences")
+    mlflow.log_artifact(REWARDS, artifact_path = "experiences")
     mlflow.log_artifact(PROCESSED_DATA_DIR)
     mlflow.log_artifact(DUE_DATA_DIR)
     mlflow.log_artifact(ENVIRONMENT_DIR)
 
+    # Algorithm-specific
+    # Bush-Mosteller
+    if config.algorithm == "BM":
+        mlflow.log_artifact(BM_STATE_PATHS.root, artifact_path = "agent_state")
 
 def _log_metric_over_time(df, metric_name, col_metric, col_step):
     """
