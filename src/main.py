@@ -40,6 +40,8 @@ def main():
     ensure_dirs()
 
     set_up_mlflow()
+
+    # Continues an existing run if MLFLOW_RUN_ID is set (the API does this), else creates a new one
     with mlflow.start_run() as run:
         # -----------------------------
         # 0. GENERATE AGENTS

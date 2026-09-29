@@ -9,17 +9,19 @@ Job vs run — two different things, each with its own ID:
           fail without a simulation ever starting (e.g. src/main.py crashes
           on import), and lives only in the API's memory (lost on restart).
 
-  Run   — the actual simulation. Created by MLflow when src/main.py starts,
-          identified by MLflow's run_id. Stored permanently in the backend
-          DB together with its params, metrics and artifacts.
+  Run   — the actual simulation, identified by MLflow's run_id. Created by
+          the API when the job starts running (see jobs.py) and filled by
+          src/main.py. Stored permanently in the backend DB together with
+          its params, metrics and artifacts.
 
           POST /runs ──► job (queued) ──► job (running) ──► job (finished/failed)
-                                               │
+                                               │                  │
+                                               │                  └─ results read from the run
                                                └─ MLflow run (created here, persists)
 
 The URL says /runs because that is what the client wants (a run); job_id
-is the ticket to follow it. Keeping both names avoids ambiguity once the
-API also returns the MLflow run_id.
+is the ticket to follow it. JobInfo carries both IDs (job_id and
+mlflow_run_id), so keeping two names avoids ambiguity.
 """
 
 from typing import Annotated, Literal
@@ -57,8 +59,11 @@ class RunRequest(BaseModel):
     ] = 0.0
 
 
-class RunStatus(BaseModel):
-    """State of a job (returned by POST /runs and GET /runs/{job_id})."""
+class JobInfo(BaseModel):
+    """State of a job (returned by POST /runs, GET /runs and GET /runs/{job_id})."""
 
     job_id: Annotated[str, Field(description="Id of the job")]
     status: Annotated[JobStatus, Field(description="Current state of the job")]
+    mlflow_run_id: Annotated[str | None, Field(description="Id of the MLflow run (set once the job starts running)"),] = None
+    final_rgap_pct: Annotated[float | None, Field(description="R-gap (%) of the last episode (set once finished)"),] = None
+    episodes_to_converge: Annotated[int | None, Field(description="Last episode run: when MARL algorithm converged or max_episodes"),] = None

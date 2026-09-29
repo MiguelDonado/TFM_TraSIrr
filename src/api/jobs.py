@@ -37,6 +37,25 @@ How RUN_LOCK works:
   A job is "queued" exactly while its thread sleeps on the lock, because
   "running" is set inside the with block. Order among waiting jobs is not
   guaranteed (the OS picks which thread wakes up).
+
+Linking a job to its MLflow run (and reading its results):
+
+  1. run_job creates the MLflow run itself (CLIENT.create_run, tagged with
+     job_id), so the job knows its mlflow_run_id from the start.
+  2. It launches src/main.py with MLFLOW_RUN_ID=<that id> in the env.
+     mlflow.start_run() in src/main.py reads it and CONTINUES that run
+     instead of creating a new one (built-in MLflow behaviour, so the
+     simulation code does not change; without the var it creates a new run).
+  3. On success, _read_results reads the run's last logged metrics
+     (alg_rgap_pct, ep_to_conv) into the job, THEN sets "finished".
+  4. On failure the run is marked FAILED, so it never stays RUNNING.
+
+  The experiment comes from MLFLOW_EXPERIMENT_NAME (.env): set_up_mlflow()
+  reads it here, and src/main.py inherits it through {**os.environ}.
+
+  Getters (get_job, list_jobs, create_job) return copies (model_copy), never
+  the live JobInfo objects that run_job keeps modifying in another thread:
+  a response is always a consistent snapshot of one moment.
 """
 
 import os
@@ -46,35 +65,47 @@ import tempfile
 import threading
 import uuid
 
+import mlflow
 import yaml
 
-from api.schemas import JobStatus, RunRequest
+from api.schemas import JobInfo, RunRequest
 from config.paths import BASE_DIR, EXPERIMENTS_TMP, ensure_dirs
+from mlflow_tracking.utils import set_up_mlflow
 
 BASE_CONFIG = BASE_DIR / "experiments" / "base_dev.yaml"   # base.yaml once it works
-MLFLOW_EXPERIMENT = "api-runs"
+# Experiment name comes from .env (single source, also read by set_up_mlflow()
+# and inherited by src/main.py). Fail at startup if missing: otherwise API runs
+# would silently fall back to the "Thesis" experiment
+MLFLOW_EXPERIMENT = os.environ.get("MLFLOW_EXPERIMENT_NAME")
+if not MLFLOW_EXPERIMENT:
+    raise RuntimeError("Set MLFLOW_EXPERIMENT_NAME before starting the API")
 
 # In-memory job store
-JOBS: dict[str, JobStatus] = {}
+JOBS: dict[str, JobInfo] = {}
 # To avoid executing in parallel POST requests (parallel simulations, because they reuse the same paths)
 RUN_LOCK = threading.Lock()
 
 ensure_dirs()
+# Point at DB and create api-runs if needed
+set_up_mlflow()
+EXPERIMENT_ID = mlflow.get_experiment_by_name(MLFLOW_EXPERIMENT).experiment_id
+CLIENT = mlflow.MlflowClient()
 
+ 
+def create_job() -> JobInfo:
+    job = JobInfo(job_id=uuid.uuid4().hex, status="queued")
+    JOBS[job.job_id] = job
+    return job.model_copy()
 
-def create_job() -> str:
-    job_id = uuid.uuid4().hex
-    JOBS[job_id] = "queued"
-    return job_id
-
-def list_jobs() -> list[tuple[str, JobStatus]]:
+def list_jobs() -> list[JobInfo]:
     # list() - Creates a copy: Another thread may add a job (create_job) while we read
     # and raising an error
-    return list(JOBS.items())
+    return [job.model_copy() for job in list(JOBS.values())]
 
-def get_job_status(job_id: str) -> JobStatus | None:
+def get_job(job_id: str) -> JobInfo | None:
     # .get() Returns None if it doesn't exist
-    return JOBS.get(job_id)
+    job = JOBS.get(job_id)
+    return job.model_copy() if job else None
 
 def _write_config(request: RunRequest) -> str:
     # safe_load() and model_dump() both give a Python dict
@@ -98,20 +129,41 @@ def _write_config(request: RunRequest) -> str:
         return tmp.name
     
 def run_job(job_id: str, request: RunRequest) -> None:
+    job = JOBS[job_id]
     with RUN_LOCK:          # Waits here while another run is going
-        JOBS[job_id] = "running"
+        job.status = "running"
         path = None
         try:
+            # Create the MLflow run here, so we know its id from the start
+            run = CLIENT.create_run(EXPERIMENT_ID, tags={"job_id":job_id})
+            job.mlflow_run_id = run.info.run_id
             path = _write_config(request)
             result = subprocess.run(
                 [sys.executable, "src/main.py", path], 
                 cwd=BASE_DIR,
-                # copy all the environment variables and add one more
-                env={**os.environ, "MLFLOW_EXPERIMENT_NAME": MLFLOW_EXPERIMENT},
+                # Copy all the environment variables (incl. MLFLOW_EXPERIMENT_NAME)
+                # and add MLFLOW_RUN_ID: src/main.py's start_run() continues this run
+                env={**os.environ, "MLFLOW_RUN_ID": job.mlflow_run_id},
             )
-            JOBS[job_id] = "finished" if result.returncode == 0 else "failed"
+            if result.returncode == 0:
+                _read_results(job)
+                # After the results: a GET never sees "finished" with empty results
+                job.status = "finished"
+            else:
+                # Close the MLflow run in case src/main.py crashed before start_run()
+                # (otherwise it stays RUNNING forever; harmless if already FAILED)
+                CLIENT.set_terminated(job.mlflow_run_id, "FAILED")
+                job.status = "failed"
         except Exception:
-            JOBS[job_id] = "failed"
+            job.status = "failed"
         finally:
             if path:
                 os.remove(path)
+
+def _read_results(job: JobInfo) -> None:
+    run = CLIENT.get_run(job.mlflow_run_id)
+    # run.data.metrics: Returns the last value of each metric
+    metrics = run.data.metrics
+    job.final_rgap_pct = metrics["alg_rgap_pct"]
+    job.episodes_to_converge = int(metrics["ep_to_conv"])
+
