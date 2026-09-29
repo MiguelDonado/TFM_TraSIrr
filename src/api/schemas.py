@@ -14,7 +14,7 @@ Job vs run — two different things, each with its own ID:
           src/main.py. Stored permanently in the backend DB together with
           its params, metrics and artifacts.
 
-          POST /runs ──► job (queued) ──► job (running) ──► job (finished/failed)
+          POST /runs ──► job (queued) ──► job (running) ──► job (finished/failed/cancelled)
                                                │                  │
                                                │                  └─ results read from the run
                                                └─ MLflow run (created here, persists)
@@ -22,13 +22,16 @@ Job vs run — two different things, each with its own ID:
 The URL says /runs because that is what the client wants (a run); job_id
 is the ticket to follow it. JobInfo carries both IDs (job_id and
 mlflow_run_id), so keeping two names avoids ambiguity.
+
+A DELETE /runs/{job_id} can cancel a job while queued or running; the job
+stays listed with status "cancelled" (and its MLflow run, if any, is KILLED).
 """
 
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-JobStatus = Literal["queued", "running", "finished", "failed"]
+JobStatus = Literal["queued", "running", "finished", "failed", "cancelled"]
 
 
 class RunRequest(BaseModel):

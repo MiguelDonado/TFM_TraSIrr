@@ -4,6 +4,8 @@ API + endpoints.
   GET  /runs            list all jobs → [JobInfo, ...] (API key)
   POST /runs            launch a run (body: RunRequest) → 202 JobInfo (API key)
   GET  /runs/{job_id}   check a run → JobInfo, 404 if unknown
+  DELETE /runs/{job_id} cancel a queued/running job → JobInfo (status
+                        "cancelled"), 409 if already over, 404 if unknown (API key)
   GET  /                redirects to /docs
 
   JobInfo = {job_id, status, mlflow_run_id, final_rgap_pct,
@@ -65,6 +67,16 @@ def create_run(request: RunRequest, background_tasks: BackgroundTasks) -> JobInf
 @app.get("/runs/{job_id}", response_model=JobInfo)
 def read_run(job_id: str) -> JobInfo:
     job = jobs.get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+@app.delete("/runs/{job_id}", response_model=JobInfo, dependencies=[Depends(require_api_key)])
+def cancel_run(job_id: str) -> JobInfo:
+    try:
+        job = jobs.cancel_job(job_id)
+    except jobs.JobNotCancellable as e:
+        raise HTTPException(status_code=409, detail=str(e))
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return job

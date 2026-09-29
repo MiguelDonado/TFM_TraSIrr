@@ -48,7 +48,8 @@ Linking a job to its MLflow run (and reading its results):
      simulation code does not change; without the var it creates a new run).
   3. On success, _read_results reads the run's last logged metrics
      (alg_rgap_pct, ep_to_conv) into the job, THEN sets "finished".
-  4. On failure the run is marked FAILED, so it never stays RUNNING.
+  4. On failure the run is marked FAILED (on cancel, KILLED), so it never
+     stays RUNNING.
 
   The experiment comes from MLFLOW_EXPERIMENT_NAME (.env): set_up_mlflow()
   reads it here, and src/main.py inherits it through {**os.environ}.
@@ -56,9 +57,36 @@ Linking a job to its MLflow run (and reading its results):
   Getters (get_job, list_jobs, create_job) return copies (model_copy), never
   the live JobInfo objects that run_job keeps modifying in another thread:
   a response is always a consistent snapshot of one moment.
+
+Cancelling a job (DELETE /runs/{job_id} → cancel_job):
+
+  cancel_job runs in the DELETE request's thread; run_job in its own. The
+  only signal between them is job.status = "cancelled", which run_job checks
+  ("was I cancelled meanwhile?") at each point a cancel can land:
+
+    queued ──► gets lock ──► "running" ──► Popen ──► wait() ──► done
+      ▲           │                ▲                    ▲
+      cancel      check 1:         cancel here: no      cancel here:
+      here        return, never    process to kill yet  cancel_job kills it
+                  run anything     → check 2 kills it   → check 3: KILLED,
+                                   right after Popen    not "failed"
+
+  - subprocess.Popen (not run): starts the simulation and returns at once,
+    handing back the process object; it is stored in PROCESSES so
+    cancel_job can kill it, then process.wait() waits as run() did.
+  - Process group: src/main.py launches SUMO, duarouter... as its own
+    children. start_new_session=True makes src/main.py lead a new process
+    group, and _kill sends SIGTERM to the WHOLE group (os.killpg): killing
+    only src/main.py would leave SUMO running, writing to the shared files
+    while the next job starts.
+  - A killed process has a non-zero return code, like a crash; check 3 goes
+    before the returncode check so a cancel is never reported as "failed".
+  - Finished/failed/cancelled jobs can't be cancelled: JobNotCancellable
+    (main.py turns it into 409).
 """
 
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -82,6 +110,10 @@ if not MLFLOW_EXPERIMENT:
 
 # In-memory job store
 JOBS: dict[str, JobInfo] = {}
+# Running simulations: {job_id: process}, so cancel_job can kill them
+# subprocess.Popen: start a subprocess and gives you control over it
+PROCESSES: dict[str, subprocess.Popen] = {}
+
 # To avoid executing in parallel POST requests (parallel simulations, because they reuse the same paths)
 RUN_LOCK = threading.Lock()
 
@@ -91,6 +123,8 @@ set_up_mlflow()
 EXPERIMENT_ID = mlflow.get_experiment_by_name(MLFLOW_EXPERIMENT).experiment_id
 CLIENT = mlflow.MlflowClient()
 
+class JobNotCancellable(Exception):
+    """Raised when cancelling a job that is already over"""
  
 def create_job() -> JobInfo:
     job = JobInfo(job_id=uuid.uuid4().hex, status="queued")
@@ -106,6 +140,21 @@ def get_job(job_id: str) -> JobInfo | None:
     # .get() Returns None if it doesn't exist
     job = JOBS.get(job_id)
     return job.model_copy() if job else None
+
+def cancel_job(job_id: str) -> JobInfo | None:
+    job = JOBS.get(job_id)
+    if job is None:
+        return None
+    if job.status not in ("queued", "running"):
+        raise JobNotCancellable(f"Job already {job.status}, nothing to cancel")
+
+    job.status = "cancelled"
+    # Running → kill it now. Queued → run_job sees "cancelled" when it gets the lock
+    process = PROCESSES.get(job_id)
+    if process:
+        _kill(process)
+    return job.model_copy()
+
 
 def _write_config(request: RunRequest) -> str:
     # safe_load() and model_dump() both give a Python dict
@@ -131,6 +180,8 @@ def _write_config(request: RunRequest) -> str:
 def run_job(job_id: str, request: RunRequest) -> None:
     job = JOBS[job_id]
     with RUN_LOCK:          # Waits here while another run is going
+        if job.status == "cancelled":
+            return
         job.status = "running"
         path = None
         try:
@@ -138,25 +189,47 @@ def run_job(job_id: str, request: RunRequest) -> None:
             run = CLIENT.create_run(EXPERIMENT_ID, tags={"job_id":job_id})
             job.mlflow_run_id = run.info.run_id
             path = _write_config(request)
-            result = subprocess.run(
+
+            # subprocess.Popen instead of subprocess.run to have more control
+            # than with subprocess.run
+            # Main difference:
+            # > subprocess.run: Starts and wait, it does not move to the next line of code until execution finished
+            # > subprocess.Popen: Starts but does not wait automatically, it moves to the next line
+            # start_new_session=True: src/main.py leads its own process group
+            process = subprocess.Popen(
                 [sys.executable, "src/main.py", path], 
                 cwd=BASE_DIR,
                 # Copy all the environment variables (incl. MLFLOW_EXPERIMENT_NAME)
                 # and add MLFLOW_RUN_ID: src/main.py's start_run() continues this run
                 env={**os.environ, "MLFLOW_RUN_ID": job.mlflow_run_id},
+                start_new_session=True
             )
-            if result.returncode == 0:
+            PROCESSES[job_id] = process
+
+            # Cancelled before Popen
+            if job.status == "cancelled":
+                _kill(process)
+            # Wait until processes finishes, crashes or is killed
+            returncode = process.wait()
+
+            # mark status of the run as killed (mlflow)
+            if job.status == "cancelled":
+                CLIENT.set_terminated(job.mlflow_run_id, "KILLED")
+            # mark status of the run as finished (mlflow)
+            elif returncode == 0:
                 _read_results(job)
-                # After the results: a GET never sees "finished" with empty results
                 job.status = "finished"
+            # mark status of the run as failed (mlflow)
             else:
-                # Close the MLflow run in case src/main.py crashed before start_run()
-                # (otherwise it stays RUNNING forever; harmless if already FAILED)
                 CLIENT.set_terminated(job.mlflow_run_id, "FAILED")
                 job.status = "failed"
+        # Dont hide a cancel behind a failed
         except Exception:
-            job.status = "failed"
+            if job.status != "cancelled":
+                job.status = "failed"
         finally:
+            # No longer running 
+            PROCESSES.pop(job_id, None) 
             if path:
                 os.remove(path)
 
@@ -166,4 +239,13 @@ def _read_results(job: JobInfo) -> None:
     metrics = run.data.metrics
     job.final_rgap_pct = metrics["alg_rgap_pct"]
     job.episodes_to_converge = int(metrics["ep_to_conv"])
+
+def _kill(process: subprocess.Popen) -> None:
+    # Kill src/main.py AND its children (SUMO, duarouter...):
+    # they share its process group
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass    # already dead
+
 
