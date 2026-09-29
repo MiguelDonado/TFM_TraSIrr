@@ -67,6 +67,11 @@ def create_job() -> str:
     JOBS[job_id] = "queued"
     return job_id
 
+def list_jobs() -> list[tuple[str, JobStatus]]:
+    # list() - Creates a copy: Another thread may add a job (create_job) while we read
+    # and raising an error
+    return list(JOBS.items())
+
 def get_job_status(job_id: str) -> JobStatus | None:
     # .get() Returns None if it doesn't exist
     return JOBS.get(job_id)

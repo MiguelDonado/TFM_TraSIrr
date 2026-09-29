@@ -1,9 +1,14 @@
 """
 API + endpoints.
 
-  POST /runs            launch a run (body: RunRequest) → 202 {job_id, status}
+  GET  /runs            list all jobs → [{job_id, status}, ...] (API key)
+  POST /runs            launch a run (body: RunRequest) → 202 {job_id, status} (API key)
   GET  /runs/{job_id}   check a run → {job_id, status}, 404 if unknown
   GET  /                redirects to /docs
+
+  (API key) = requires the X-API-Key header, see security.py. GET /runs is
+  protected because it exposes every job_id; GET /runs/{job_id} stays open
+  since a random job_id can't be guessed.
 
 How to execute (from the repo root, with the thesis_master venv active):
 
@@ -37,6 +42,10 @@ app = FastAPI(title="Thesis runs API")
 @app.get("/", include_in_schema=False)
 def root():
     return RedirectResponse(url="/docs")
+
+@app.get("/runs", response_model=list[RunStatus], dependencies=[Depends(require_api_key)])
+def list_runs() -> list[RunStatus]:
+    return [RunStatus(job_id=job_id, status=status) for job_id, status in jobs.list_jobs()]
 
 # Depends(require_api_key) means before running this endpoint, run require_api_key first
 @app.post("/runs", response_model=RunStatus, status_code=202, dependencies=[Depends(require_api_key)])
