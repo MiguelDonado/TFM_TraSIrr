@@ -7,7 +7,7 @@ API + endpoints.
 
 How to execute (from the repo root, with the thesis_master venv active):
 
-  python3 -m uvicorn api.main:app --app-dir src
+  python3 -m uvicorn api.main:app --app-dir src --env-file .env
 
   - python3, not python: `python` resolves to SUMO's own Python, which has
     no uvicorn/fastapi.
@@ -17,17 +17,19 @@ How to execute (from the repo root, with the thesis_master venv active):
   - --reload (optional, development) → restarts on every file save, which
     wipes the in-memory JOBS and may cut off a running simulation.
   - Never add --workers (see the jobs.py docstring).
+  - --env-file .env → Loads the environment variables into the uvicorn process
 
 Then open http://127.0.0.1:8000/docs to try the endpoints from the browser
 (Try it out → Execute). Simulation output appears in the uvicorn terminal;
 results land in the MLflow experiment "api-runs".
 """
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 
 from api import jobs
 from api.schemas import RunRequest, RunStatus
+from api.security import require_api_key
 
 app = FastAPI(title="Thesis runs API")
 
@@ -36,7 +38,8 @@ app = FastAPI(title="Thesis runs API")
 def root():
     return RedirectResponse(url="/docs")
 
-@app.post("/runs", response_model=RunStatus, status_code=202)
+# Depends(require_api_key) means before running this endpoint, run require_api_key first
+@app.post("/runs", response_model=RunStatus, status_code=202, dependencies=[Depends(require_api_key)])
 def create_run(request: RunRequest, background_tasks: BackgroundTasks) -> RunStatus:
     job_id = jobs.create_job()
     # After sending the response, call jobs.run_job(job_id, request)
