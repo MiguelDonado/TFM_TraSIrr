@@ -100,7 +100,7 @@ from api.schemas import JobInfo, RunRequest
 from config.paths import BASE_DIR, EXPERIMENTS_TMP, ensure_dirs
 from mlflow_tracking.utils import set_up_mlflow
 
-BASE_CONFIG = BASE_DIR / "experiments" / "base_dev.yaml"   # base.yaml once it works
+BASE_CONFIG = BASE_DIR / "experiments" / "base.yaml"   # base.yaml once it works
 # Experiment name comes from .env (single source, also read by set_up_mlflow()
 # and inherited by src/main.py). Fail at startup if missing: otherwise API runs
 # would silently fall back to the "Thesis" experiment
