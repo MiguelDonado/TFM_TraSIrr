@@ -45,6 +45,9 @@ The objective of this thesis was to investigate whether a day-to-day multi-agent
     - [Setup](#setup)
     - [Running it (without GUI support)](#running-it-without-gui-support)
     - [Check experiments in MLflow UI:](#check-experiments-in-mlflow-ui)
+  - [Getting Started (API)](#getting-started-api)
+    - [Endpoints](#endpoints)
+    - [Tests](#tests)
   - [Getting Started (Data Science)](#getting-started-data-science)
   - [Main Reference](#main-reference)
 
@@ -87,6 +90,8 @@ This thesis is guided by the following primary research questions:
 | Traffic simulation | SUMO (Simulation of Urban MObility) |
 | Reinforcement learning | Python |
 | Experiment tracking | MLflow |
+| REST API | FastAPI · Pydantic · Uvicorn |
+| Testing | pytest |
 | Big Data | Arrow |
 | Data Science | R · tidyverse · Quarto |
 | Containerization | Docker |
@@ -303,6 +308,37 @@ Each script above has a full usage guide in its own module docstring — open th
 - `scripts/run_analysis.py` — the active-run lifecycle and what gets prepared for R
 - `scripts/manage_runs.py` — bulk archive/restore usage
 - `scripts/start_mlflow.py` — running the MLflow UI outside Docker
+
+---
+
+## Getting Started (API)
+
+A small REST API (FastAPI) to launch a single simulation run over HTTP instead of from the terminal: send the parameters, get back a job id, follow its status and, once finished, its results. Each run is executed exactly as `src/main.py` would run it (production scale, `experiments/base.yaml`) and is tracked in MLflow like any other run.
+
+Runs are executed **one at a time** (they share output files); extra requests wait in the queue. Jobs are stored in a small SQLite database (`api_db/jobs.db`), so they survive a server restart; a job that was queued or running when the server went down is marked `failed` (and its simulation stopped) on the next start.
+
+### Endpoints
+
+| Method | Path | What it does | API key |
+|---|---|---|---|
+| `POST` | `/runs` | Launch a run → `202` with a `queued` job | ✔ |
+| `GET` | `/runs/{job_id}` | Status of a job, plus results once finished | |
+| `GET` | `/runs` | List all jobs | ✔ |
+| `DELETE` | `/runs/{job_id}` | Cancel a queued or running job | ✔ |
+
+Parameters accepted by `POST /runs`: `seed`, `learning_rate` (β), `memory_level` (γ), and optionally `reliability_sensitivity` (θ) and `waiting_time_sensitivity` (φ), both `0` by default. Unknown or out-of-range values are rejected with `422`.
+
+A job goes `queued → running → finished | failed | cancelled`. Once `finished`, it also returns the MLflow run id, the final R-gap (%) and the number of episodes until convergence.
+
+The interactive documentation, where every endpoint can be tried from the browser, is at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) once the server is running.
+
+### Tests
+
+The API has an automated test suite (authentication, validation, status codes, cancellation). 
+
+```sh
+python3 -m pytest -v
+```
 
 ---
 

@@ -11,10 +11,14 @@ after it (a failing test's name says what broke). Setup and fixtures
   GET    /runs            401 without key, lists every job
   DELETE /runs/{job_id}   cancels a queued job, 409 if already over,
                           404 unknown, 401 without key
+  _recover_jobs           at startup, leftover queued/running jobs → failed
+                          (finished ones untouched), their simulation is
+                          killed and their MLflow run marked FAILED
   _write_config           request values land in the right YAML sections
 
-"Finished" jobs are simulated by editing jobs.JOBS directly, so results
-and 409 can be tested without running anything.
+"Finished" or "running" jobs are simulated by writing their row directly
+(jobs._update_job), so results, 409 and recovery can be tested without
+running anything. The jobs DB is a throwaway file (see conftest.py).
 
 Usage (from the repo root): python3 -m pytest -v
 
@@ -35,6 +39,8 @@ How pytest finds these tests (no list of tests exists anywhere):
 """
 
 import os
+import subprocess
+import sys
 
 import yaml
 
@@ -88,12 +94,10 @@ def test_get_unknown_job_returns_404(client):
 
 def test_get_finished_job_shows_results(client):
     # Simulate what run_job does on success
-    job = jobs.JOBS[jobs.create_job().job_id]
-    job.status = "finished"
-    job.final_rgap_pct = 0.84
-    job.episodes_to_converge = 63
+    job_id = jobs.create_job().job_id
+    jobs._update_job(job_id, status="finished", final_rgap_pct=0.84, episodes_to_converge=63)
 
-    body = client.get(f"/runs/{job.job_id}").json()
+    body = client.get(f"/runs/{job_id}").json()
     assert body["final_rgap_pct"] == 0.84
     assert body["episodes_to_converge"] == 63
 
@@ -123,9 +127,9 @@ def test_cancel_twice_conflicts(client, fake_run_job):
     assert client.delete(f"/runs/{job_id}", headers=AUTH).status_code == 409
 
 def test_cancel_finished_job_conflicts(client):
-    job = jobs.JOBS[jobs.create_job().job_id]
-    job.status = "finished"
-    assert client.delete(f"/runs/{job.job_id}", headers=AUTH).status_code == 409
+    job_id = jobs.create_job().job_id
+    jobs._update_job(job_id, status="finished")
+    assert client.delete(f"/runs/{job_id}", headers=AUTH).status_code == 409
 
 def test_cancel_unknown_job_returns_404(client):
     assert client.delete("/runs/doesnotexist", headers=AUTH).status_code == 404
@@ -133,6 +137,38 @@ def test_cancel_unknown_job_returns_404(client):
 def test_cancel_requires_key(client, fake_run_job):
     job_id = client.post("/runs", json=VALID_BODY, headers=AUTH).json()["job_id"]
     assert client.delete(f"/runs/{job_id}").status_code == 401
+
+# ---------- restart recovery (_recover_jobs) ----------
+
+def test_recover_fails_leftover_jobs_only():
+    # Jobs a previous server left behind, plus one that was already over
+    queued = jobs.create_job().job_id
+    running = jobs.create_job().job_id
+    finished = jobs.create_job().job_id
+    jobs._update_job(running, status="running")
+    jobs._update_job(finished, status="finished")
+
+    jobs._recover_jobs()    # what the next startup runs
+
+    assert jobs.get_job(queued).status == "failed"
+    assert jobs.get_job(running).status == "failed"
+    assert jobs.get_job(finished).status == "finished"
+
+def test_recover_kills_leftover_simulation_and_fails_mlflow_run():
+    # A "simulation" started like run_job does (own process group), that
+    # outlived its server, with its MLflow run still RUNNING
+    process = subprocess.Popen(
+        [sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True
+    )
+    run_id = jobs.CLIENT.create_run(jobs.EXPERIMENT_ID).info.run_id
+    job_id = jobs.create_job().job_id
+    jobs._update_job(job_id, status="running", pid=process.pid, mlflow_run_id=run_id)
+
+    jobs._recover_jobs()
+
+    # wait() returns once the process is dead (raises TimeoutExpired if still alive)
+    process.wait(timeout=5)
+    assert jobs.CLIENT.get_run(run_id).info.status == "FAILED"
 
 # ---------- _write_config ----------
 

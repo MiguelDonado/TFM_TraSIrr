@@ -7,7 +7,8 @@ Job vs run — two different things, each with its own ID:
           POST /runs arrives, identified by job_id. It exists before any
           simulation starts (status "queued" while waiting its turn), can
           fail without a simulation ever starting (e.g. src/main.py crashes
-          on import), and lives only in the API's memory (lost on restart).
+          on import), and is stored in the API's own SQLite DB (api_db/jobs.db),
+          so it survives server restarts.
 
   Run   — the actual simulation, identified by MLflow's run_id. Created by
           the API when the job starts running (see jobs.py) and filled by

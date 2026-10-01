@@ -3,19 +3,19 @@ Shared setup for the API tests (pytest loads this file automatically,
 before test_api.py, so its fixtures are available to every test there).
 
 The API can't be imported as-is in a test: at import time it needs env vars
-(security.py, jobs.py) and connects to the real MLflow DB (jobs.py calls
-set_up_mlflow()). So this file, IN THIS ORDER:
+(security.py, jobs.py) and connects to the real MLflow DB and jobs DB
+(jobs.py calls set_up_mlflow() and _init_db()). So this file, IN THIS ORDER:
 
   1. sets fake env vars (THESIS_API_KEY=test-key, never the real key)
-  2. points MLflow at a throwaway DB in a temp folder
+  2. points MLflow and the jobs DB at throwaway DBs in a temp folder
   3. only then imports the API
 
 Fixtures (a test gets one by naming it as a parameter):
 
   client        TestClient(app): sends requests straight into the app,
                 no uvicorn/server needed
-  clean_jobs    autouse: empties JOBS before and after every test, so
-                tests never see each other's jobs
+  clean_jobs    autouse: empties the jobs table before and after every
+                test, so tests never see each other's jobs
   fake_run_job  replaces jobs.run_job with a recorder, so a POST never
                 launches a real simulation (TestClient runs background
                 tasks before client.post returns); returns the list of
@@ -47,9 +47,14 @@ conftest:  from api.main import app
              └─ jobs.py: from mlflow_tracking.utils import set_up_mlflow
                           → utils already loaded → NOT run again → temp path survives ✔
 '''
+import config.paths as paths
 import mlflow_tracking.utils as mlflow_utils
 
-mlflow_utils.BACKEND_DB = Path(tempfile.mkdtemp()) / "mlflow.db"
+TMP_DIR = Path(tempfile.mkdtemp())
+mlflow_utils.BACKEND_DB = TMP_DIR / "mlflow.db"
+# Same rule for the jobs DB: jobs.py does `from config.paths import JOBS_DB`
+# on import, so it picks up this temp path (never the real api_db/jobs.db)
+paths.JOBS_DB = TMP_DIR / "jobs.db"
 
 # 3. Import the API
 from fastapi.testclient import TestClient
@@ -70,21 +75,29 @@ def client():
     return TestClient(app)
 
 '''
-The problem it solves: JOBS is a module-level dict, 
-so it survives from one test to the next. If test_A 
-creates 2 jobs, test_B would start with those 2 still there. 
-Then test_list_returns_all_jobs would find 4 jobs instead 
-of 2 and fail, depending on which tests happened to run first. 
+The problem it solves: the jobs table lives in a file,
+so it survives from one test to the next. If test_A
+creates 2 jobs, test_B would start with those 2 still there.
+Then test_list_returns_all_jobs would find 4 jobs instead
+of 2 and fail, depending on which tests happened to run first.
 Tests must not affect each other.
 
-autouse=True means "run this fixture for every test, even those 
+autouse=True means "run this fixture for every test, even those
 that doesn't name it
 '''
+def _delete_all_jobs():
+    conn = jobs._connect()
+    try:
+        conn.execute("DELETE FROM jobs")
+        conn.commit()
+    finally:
+        conn.close()
+
 @pytest.fixture(autouse=True)
 def clean_jobs():
-    jobs.JOBS.clear()   # Before the test
+    _delete_all_jobs()  # Before the test
     yield               # the test runs here
-    jobs.JOBS.clear()   # After the test
+    _delete_all_jobs()  # After the test
 
 
 '''
