@@ -91,7 +91,7 @@ This thesis is guided by the following primary research questions:
 | Traffic simulation | SUMO (Simulation of Urban MObility) |
 | Reinforcement learning | Python |
 | Experiment tracking | MLflow |
-| REST API | FastAPI · Pydantic · Uvicorn |
+| REST API | FastAPI |
 | Testing | pytest |
 | Big Data | Arrow |
 | Data Science | R · tidyverse · Quarto |
