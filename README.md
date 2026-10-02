@@ -46,6 +46,7 @@ The objective of this thesis was to investigate whether a day-to-day multi-agent
     - [Running it (without GUI support)](#running-it-without-gui-support)
     - [Check experiments in MLflow UI:](#check-experiments-in-mlflow-ui)
   - [Getting Started (API)](#getting-started-api)
+    - [Running the API](#running-the-api)
     - [Endpoints](#endpoints)
     - [Tests](#tests)
   - [Getting Started (Data Science)](#getting-started-data-science)
@@ -267,9 +268,12 @@ docker pull migueldonado/thesis-app:latest
 # 8. Tag the pulled image so docker-compose.yml can find it
 docker tag migueldonado/thesis-app:latest thesis-app:latest
 
-# 9. Generate a .env file so containers run as you, not as root
+# 9. Generate a .env file: containers run as you (not as root), plus the API settings
+#    (a random API key of your own, and the MLflow experiment API runs are stored in)
 echo "UID=$(id -u)" > .env
 echo "GID=$(id -g)" >> .env
+echo "THESIS_API_KEY=$(openssl rand -hex 32)" >> .env
+echo "MLFLOW_EXPERIMENT_NAME=api-runs" >> .env
 
 # 10. Bring the containers up
 docker compose up -d
@@ -280,7 +284,7 @@ docker compose up -d
 Since the code is bind-mounted (not baked into the image), you can make any changes in the source code and YAML configs and it will take effect immediately — no rebuild needed.
 
 ```sh
-# 1. Bring up the compose project (start the app + mlflow containers)
+# 1. Bring up the compose project (start the app + mlflow + api containers)
 docker compose up -d
 
 ##########################
@@ -315,7 +319,21 @@ Each script above has a full usage guide in its own module docstring — open th
 
 A small REST API (FastAPI) to launch a single simulation run over HTTP instead of from the terminal: send the parameters, get back a job id, follow its status and, once finished, its results. Each run is executed exactly as `src/main.py` would run it (production scale, `experiments/base.yaml`) and is tracked in MLflow like any other run.
 
-Runs are executed **one at a time** (they share output files); extra requests wait in the queue. Jobs are stored in a small SQLite database (`api_db/jobs.db`), so they survive a server restart; a job that was queued or running when the server went down is marked `failed` (and its simulation stopped) on the next start.
+Runs are executed **one at a time** (they share output files); extra requests wait in the queue.
+
+### Running the API
+
+The API runs in its own container (`api`), started together with the others by `docker compose up -d` (see [Setup](#setup)). It needs the two API lines of the `.env` file created in step 9 — without them the container refuses to start.
+
+```sh
+# 1. Start the containers (if not already up)
+docker compose up -d
+
+# 2. Show your API key (needed for every endpoint marked ✔ below)
+grep THESIS_API_KEY .env
+```
+
+Then open [http://localhost:8000/docs](http://localhost:8000/docs): click **Authorize**, paste the key, and try any endpoint with **Try it out → Execute**. Runs land in the `api-runs` experiment of the [MLflow UI](http://localhost:5000), and the output of each simulation can be read with `GET /runs/{job_id}/logs`.
 
 ### Endpoints
 
@@ -330,8 +348,6 @@ Runs are executed **one at a time** (they share output files); extra requests wa
 Parameters accepted by `POST /runs`: `seed`, `learning_rate` (β), `memory_level` (γ), and optionally `reliability_sensitivity` (θ) and `waiting_time_sensitivity` (φ), both `0` by default. Unknown or out-of-range values are rejected with `422`.
 
 A job goes `queued → running → finished | failed | cancelled`. Once `finished`, it also returns the MLflow run id, the final R-gap (%) and the number of episodes until convergence.
-
-The interactive documentation, where every endpoint can be tried from the browser, is at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) once the server is running.
 
 ### Tests
 
