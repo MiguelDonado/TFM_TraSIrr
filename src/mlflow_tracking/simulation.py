@@ -12,7 +12,7 @@ Logs
 ----
 Parameters  — full config (seed, n_agents, learning_rate, memory_level,
               network name, git commit hash, ...)
-Metrics     — bm_rgap_pct (time series), mean_tt (time series),
+Metrics     — alg_rgap_pct (time series), mean_tt (time series),
               mean_pol_change (time series), ep_to_conv (scalar),
               duaIterate_final_rgap_pct (scalar)
 Artifacts   — full config JSON, agent_state/, processed/, DUE/ directories
@@ -128,7 +128,7 @@ def _log_bm_rgap_metric():
     # 1. Read parquet file that contains "episode | rgap" for BM algorithm
     df_rgap_bm = pd.read_parquet(BM_DUE_PATHS.rgap)
     # 2. Log time series of the Rgap metric
-    metric_name = "bm_rgap_pct"
+    metric_name = "alg_rgap_pct"
     col_metric = "rgap"
     col_step = "episode"
 

@@ -10,8 +10,12 @@ the project. This module pins two storage locations:
   Artifact store      — file system directory at mlruns/mlruns/
                         stores files (artifacts) (parquet, JSON, plots)
 
-All runs are grouped under the experiment named "Thesis".
+Runs are grouped under the experiment named "Thesis" if no environment variable
+is set when executing the program or under the value of the environment variable
+MLFLOW_EXPERIMENT_NAME.
 """
+
+import os
 
 import mlflow
 
@@ -35,7 +39,12 @@ def set_up_mlflow():
     1. Set location for storage stuff
     2. Specify which experiment this run belongs to
     """
-    experiment_name = "Thesis"
+
+    # Two behaviours:
+    # 1. No environment variable: Uses "Thesis"
+    # 2. Environment variable: Uses whatever name we set when passing the environment variable
+    # e.g. MLFLOW_EXPERIMENT_NAME=api-test python src/main.py <config.yaml>
+    experiment_name = os.environ.get("MLFLOW_EXPERIMENT_NAME","Thesis")
 
     # 1. Set location backend db
     set_tracking_uri()

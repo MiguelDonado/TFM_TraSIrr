@@ -18,6 +18,7 @@ Sections
   Congestion Simulation    — Common: Files used during process of choosing representative demands for the congestion regimes
   DUE convergence (1)      — Common: Generic files
   DUE convergence (2)      — Algorithm-Specific: R-gap, TDSP, missingness
+  API                      — Common: API jobs database
 
   
 Agent state paths are generated via the AgentStatePaths dataclass 
@@ -317,6 +318,11 @@ BM_DUE_PATHS = build_due_paths(BM_DUE_DIR)
 # Used for the sumo-gui edge-visualization replay (RQ7).
 ROUTES_LAST_EPISODE_BM = BM_DUE_DIR / "routes_last_episode.rou.xml"
 
+# ============================================================
+# API
+# ============================================================
+JOBS_DB = BASE_DIR / "api_db" / "jobs.db"
+API_LOGS_DIR = BASE_DIR / "api_db" / "logs"
 
 
 ###########
