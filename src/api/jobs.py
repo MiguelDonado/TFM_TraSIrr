@@ -108,6 +108,10 @@ Cancelling a job (DELETE /runs/{job_id} → cancel_job):
                   never run        right after Popen    not "failed"
                   anything
 
+  - Output: src/main.py's stdout and stderr go to api_db/logs/<job_id>.log
+    (read_log returns its last N lines). The file is opened in a with block
+    that closes right after Popen: the simulation got its own copy of the
+    open file when it started and keeps writing to it until it ends.
   - subprocess.Popen (not run): starts the simulation and returns at once,
     handing back the process object; it is stored in PROCESSES so
     cancel_job can kill it (and its pid in the DB, for restart recovery),
@@ -132,13 +136,14 @@ import sys
 import tempfile
 import threading
 import uuid
+from collections import deque
 from datetime import datetime, timezone
 
 import mlflow
 import yaml
 
 from api.schemas import JobInfo, RunRequest
-from config.paths import BASE_DIR, EXPERIMENTS_TMP, JOBS_DB, ensure_dirs
+from config.paths import API_LOGS_DIR, BASE_DIR, EXPERIMENTS_TMP, JOBS_DB, ensure_dirs
 from mlflow_tracking.utils import set_up_mlflow
 
 BASE_CONFIG = BASE_DIR / "experiments" / "base.yaml"   # base.yaml once it works
@@ -308,6 +313,15 @@ def _write_config(request: RunRequest) -> str:
     ) as tmp:
         yaml.dump(config, tmp, default_flow_style=False)
         return tmp.name
+
+def read_log(job_id: str, lines: int) -> str:
+    """Read the last N lines of job's log,  '' if the job hasnt started yet"""
+    path = API_LOGS_DIR / f"{job_id}.log"
+    if not path.exists():
+        return ""           # queued (or failed before launching): no log yet
+    with open(path) as f:
+        # only last N lines
+        return "".join(deque(f, maxlen=lines))
     
 def run_job(job_id: str, request: RunRequest) -> None:
     with RUN_LOCK:          # Waits here while another run is going
@@ -328,14 +342,20 @@ def run_job(job_id: str, request: RunRequest) -> None:
             # > subprocess.run: Starts and wait, it does not move to the next line of code until execution finished
             # > subprocess.Popen: Starts but does not wait automatically, it moves to the next line
             # start_new_session=True: src/main.py leads its own process group
-            process = subprocess.Popen(
-                [sys.executable, "src/main.py", path], 
-                cwd=BASE_DIR,
-                # Copy all the environment variables (incl. MLFLOW_EXPERIMENT_NAME)
-                # and add MLFLOW_RUN_ID: src/main.py's start_run() continues this run
-                env={**os.environ, "MLFLOW_RUN_ID": mlflow_run_id},
-                start_new_session=True
-            )
+            with open(API_LOGS_DIR / f"{job_id}.log", "w") as log:
+                process = subprocess.Popen(
+                    [sys.executable, "src/main.py", path], 
+                    cwd=BASE_DIR,
+                    # Copy all the environment variables (incl. MLFLOW_EXPERIMENT_NAME)
+                    # and add MLFLOW_RUN_ID: src/main.py's start_run() continues this run
+                    # PYTHONUNBUFFERED=1: write each line to the log at once (to a file,
+                    # Python otherwise holds output in 8 KB chunks → empty/stuck log
+                    # while running, lines lost on cancel, traceback not at the end)
+                    env={**os.environ, "MLFLOW_RUN_ID": mlflow_run_id, "PYTHONUNBUFFERED": "1"},
+                    start_new_session=True,
+                    stdout=log,               # normal output → file
+                    stderr=subprocess.STDOUT, # errors (tracebacks) → same file
+                )
             PROCESSES[job_id] = process
             _update_job(job_id, pid=process.pid)
 
@@ -425,4 +445,3 @@ def _get_status(job_id: str) -> str | None:
     return row["status"] if row else None
 
 
-        

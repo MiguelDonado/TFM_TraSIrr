@@ -7,7 +7,7 @@ The API can't be imported as-is in a test: at import time it needs env vars
 (jobs.py calls set_up_mlflow() and _init_db()). So this file, IN THIS ORDER:
 
   1. sets fake env vars (THESIS_API_KEY=test-key, never the real key)
-  2. points MLflow and the jobs DB at throwaway DBs in a temp folder
+  2. points MLflow, the jobs DB and the job logs at a temp folder
   3. only then imports the API
 
 Fixtures (a test gets one by naming it as a parameter):
@@ -55,6 +55,8 @@ mlflow_utils.BACKEND_DB = TMP_DIR / "mlflow.db"
 # Same rule for the jobs DB: jobs.py does `from config.paths import JOBS_DB`
 # on import, so it picks up this temp path (never the real api_db/jobs.db)
 paths.JOBS_DB = TMP_DIR / "jobs.db"
+# Same for job logs (never the real api_db/logs/)
+paths.API_LOGS_DIR = TMP_DIR / "logs"
 
 # 3. Import the API
 from fastapi.testclient import TestClient

@@ -322,6 +322,7 @@ ROUTES_LAST_EPISODE_BM = BM_DUE_DIR / "routes_last_episode.rou.xml"
 # API
 # ============================================================
 JOBS_DB = BASE_DIR / "api_db" / "jobs.db"
+API_LOGS_DIR = BASE_DIR / "api_db" / "logs"
 
 
 ###########

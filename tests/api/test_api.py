@@ -11,6 +11,8 @@ after it (a failing test's name says what broke). Setup and fixtures
   GET    /runs            401 without key, lists every job
   DELETE /runs/{job_id}   cancels a queued job, 409 if already over,
                           404 unknown, 401 without key
+  GET    /runs/{id}/logs  401 without key, 404 unknown, "" while queued,
+                          only the last ?lines=N lines, 422 if N out of range
   _recover_jobs           at startup, leftover queued/running jobs → failed
                           (finished ones untouched), their simulation is
                           killed and their MLflow run marked FAILED
@@ -137,6 +139,35 @@ def test_cancel_unknown_job_returns_404(client):
 def test_cancel_requires_key(client, fake_run_job):
     job_id = client.post("/runs", json=VALID_BODY, headers=AUTH).json()["job_id"]
     assert client.delete(f"/runs/{job_id}").status_code == 401
+
+# ---------- GET /runs/{job_id}/logs ----------
+
+def test_logs_require_key(client):
+    job_id = jobs.create_job().job_id
+    assert client.get(f"/runs/{job_id}/logs").status_code == 401
+
+def test_logs_unknown_job_returns_404(client):
+    assert client.get("/runs/doesnotexist/logs", headers=AUTH).status_code == 404
+
+def test_logs_of_queued_job_are_empty(client):
+    job_id = jobs.create_job().job_id      # never started → no log file
+    response = client.get(f"/runs/{job_id}/logs", headers=AUTH)
+    assert response.status_code == 200
+    assert response.text == ""
+
+def test_logs_return_only_last_lines(client):
+    # Simulate the log run_job writes: 300 lines of output
+    job_id = jobs.create_job().job_id
+    (jobs.API_LOGS_DIR / f"{job_id}.log").write_text(
+        "".join(f"line {i}\n" for i in range(300))
+    )
+    response = client.get(f"/runs/{job_id}/logs?lines=10", headers=AUTH)
+    assert response.status_code == 200
+    assert response.text.splitlines() == [f"line {i}" for i in range(290, 300)]
+
+def test_logs_lines_out_of_range_is_rejected(client):
+    job_id = jobs.create_job().job_id
+    assert client.get(f"/runs/{job_id}/logs?lines=0", headers=AUTH).status_code == 422
 
 # ---------- restart recovery (_recover_jobs) ----------
 

@@ -325,6 +325,7 @@ Runs are executed **one at a time** (they share output files); extra requests wa
 | `GET` | `/runs/{job_id}` | Status of a job, plus results once finished | |
 | `GET` | `/runs` | List all jobs | ✔ |
 | `DELETE` | `/runs/{job_id}` | Cancel a queued or running job | ✔ |
+| `GET` | `/runs/{job_id}/logs` | Last lines of the simulation output (`?lines=N`, default 100) | ✔ |
 
 Parameters accepted by `POST /runs`: `seed`, `learning_rate` (β), `memory_level` (γ), and optionally `reliability_sensitivity` (θ) and `waiting_time_sensitivity` (φ), both `0` by default. Unknown or out-of-range values are rejected with `422`.
 

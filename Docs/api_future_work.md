@@ -36,35 +36,6 @@ first step towards deployment (4).
 
 ---
 
-## 2. Logs per job
-
-**Why:** when a job ends as `failed`, the only way to know why is the
-terminal where uvicorn runs. On a server (4) that terminal isn't visible.
-
-**What it involves:**
-
-- In `run_job`, send the output of `src/main.py` to a file per job
-  (e.g. `experiments/logs/api/<job_id>.log`) instead of the terminal.
-- New endpoint `GET /runs/{job_id}/logs` returning that file (or its last N
-  lines), protected with the API key.
-
----
-
-## 3. Persistent jobs
-
-**Why:** `JOBS` lives in memory, so every restart (deploy, crash, reboot)
-forgets all jobs; `GET /runs/{job_id}` then returns 404 for jobs whose runs
-are still in MLflow. A job running during a restart is lost.
-
-**What it involves:**
-
-- Store jobs in a small SQLite table instead of the `JOBS` dict. Only the
-  inside of `jobs.py` changes; `main.py` and `schemas.py` stay the same.
-- On startup, mark jobs left as `queued`/`running` by a previous server as
-  `failed` (their thread no longer exists).
-
----
-
 ## 4. Deployment + HTTPS
 
 **Why:** to use the API from outside your laptop (remotely, or to show it to

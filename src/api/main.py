@@ -6,6 +6,9 @@ API + endpoints.
   GET  /runs/{job_id}   check a run → JobInfo, 404 if unknown
   DELETE /runs/{job_id} cancel a queued/running job → JobInfo (status
                         "cancelled"), 409 if already over, 404 if unknown (API key)
+  GET  /runs/{job_id}/logs?lines=N
+                        last N lines (default 100) of the simulation output,
+                        plain text; "" while queued, 404 if unknown (API key)
   GET  /                redirects to /docs
 
   JobInfo = {job_id, status, mlflow_run_id, final_rgap_pct,
@@ -13,8 +16,9 @@ API + endpoints.
   the results once it is finished (null until then).
 
   (API key) = requires the X-API-Key header, see security.py. GET /runs is
-  protected because it exposes every job_id; GET /runs/{job_id} stays open
-  since a random job_id can't be guessed.
+  protected because it exposes every job_id, and the logs because they can
+  show internal details of the server (paths, tracebacks); GET
+  /runs/{job_id} stays open since a random job_id can't be guessed.
 
 How to execute (from the repo root, with the thesis_master venv active):
 
@@ -35,12 +39,14 @@ How to execute (from the repo root, with the thesis_master venv active):
       MLFLOW_EXPERIMENT_NAME=api-runs   (MLflow experiment for API runs)
 
 Then open http://127.0.0.1:8000/docs to try the endpoints from the browser
-(Try it out → Execute). Simulation output appears in the uvicorn terminal;
-runs land in the MLflow experiment named by MLFLOW_EXPERIMENT_NAME.
+(Try it out → Execute). Simulation output goes to one file per job
+(api_db/logs/<job_id>.log, read it with GET /runs/{job_id}/logs), not to
+the uvicorn terminal; runs land in the MLflow experiment named by
+MLFLOW_EXPERIMENT_NAME.
 """
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
+from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from api import jobs
 from api.schemas import JobInfo, RunRequest
@@ -109,3 +115,14 @@ def cancel_run(job_id: str) -> JobInfo:
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+@app.get("/runs/{job_id}/logs", response_class=PlainTextResponse, dependencies=[Depends(require_api_key)], responses={**UNAUTHORIZED, **NOT_FOUND})
+def read_run_logs(job_id: str, lines: int = Query(100, ge=1, le=5000)) -> str:
+    """Last lines of the simulation output of a job (default 100).
+    
+    Empty while the job is queued. Requires the API key.
+    lines: Query parameter
+    """
+    if jobs.get_job(job_id) is None:
+        raise HTTPException(status_code=404, detail = "Job not found")
+    return jobs.read_log(job_id, lines)
