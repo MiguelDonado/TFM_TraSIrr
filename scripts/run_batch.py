@@ -167,8 +167,10 @@ def _run_research_question(research_question, design_path):
         log.info("--- [%d/%d] %s ---", i, total, combo_str)
 
         tmp_path = _write_temp_config(base_config_path, param_specs, combination, research_question)
-        _run_combination(tmp_path)
-        Path(tmp_path).unlink()
+        try:
+            _run_combination(tmp_path)
+        finally:
+            Path(tmp_path).unlink()
 
 
 def main():

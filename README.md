@@ -4,7 +4,8 @@
 
 The objective of this thesis was to investigate whether a day-to-day multi-agent reinforcement learning (MARL) approach to route choice — in which agents learn solely from their own experiences — converges to a Dynamic User Equilibrium (DUE) within a dynamic traffic assignment (DTA) setting, using a microscopic traffic simulation. First, the study examined whether a DUE would emerge from the learning process of rational agents using a reinforcement learning approach. Second, more realistic behavioral traits were integrated into the agents' decision-making to examine how these traits affect the learning process and whether a DUE would still emerge.
 
-📄 [Read the full thesis document](thesis_document/thesis.pdf)
+📄 [Read the full thesis document](thesis_document/thesis.pdf)<br>
+🎤 [Watch the presentation practice](https://youtu.be/-3WKpwEnNY8)
 
 ---
 
